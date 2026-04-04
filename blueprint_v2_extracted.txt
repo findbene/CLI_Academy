@@ -1,0 +1,468 @@
+0002`t[Heading1] Table of Contents
+0005`t[Heading1] 1. Executive Summary
+0008`t[Heading2] What We Are Building
+0009`t[] AgentOps Academy is not a generic course site. It is an interactive, guided, safety-first AI operations learning and deployment platform that combines:
+0010`t[ListParagraph] Structured, role-based learning paths from beginner to power-user
+0011`t[ListParagraph] Embedded AI tutor and troubleshooting agent (contextual, cost-controlled, LangGraph-powered)
+0012`t[ListParagraph] Hands-on verified labs with proof-of-completion — not checkbox theater
+0013`t[ListParagraph] Downloadable runbooks, checklists, PDF kits, JSON configs, and deployment diagrams
+0014`t[ListParagraph] A real-time content freshness and release-tracking system (version labels, Drift Sentinel agent)
+0015`t[ListParagraph] Safe setup blueprints across Windows (WSL2), macOS, Linux, VPS, Docker, Raspberry Pi, and mini-PC
+0016`t[ListParagraph] Role-based paths for marketers, analysts, founders, sales teams, students, and operators
+0017`t[ListParagraph] Workflow automation training using n8n 2.0, Make, Zapier Agents, Claude API, and CrewAI
+0018`t[ListParagraph] shadcn/ui + Tailwind premium frontend — ships fast, looks excellent, zero design debt
+0020`t[Heading2] Market Opportunity (April 2026)
+0023`t[Heading2] Product Positioning
+0025`t[Heading2] Revenue Potential
+0027`t[] These targets are realistic, not aspirational. DataCamp generates ~$200K revenue per employee; Replit grew from $2.8M to $150M ARR in under a year. AgentOps Academy can reach meaningful revenue by focusing on depth before breadth and real outcomes before vanity metrics.
+0029`t[Heading1] 2. Product Identity & Unique Value
+0031`t[Heading2] 2.1  What Makes AgentOps Academy Unique
+0032`t[] Most AI tutorials are either too shallow ("just type this command"), too theoretical, or dangerously incomplete about security. AgentOps Academy is differentiated by five compounding advantages:
+0035`t[Heading2] 2.2  Brand Naming Options
+0036`t[] The working name 'AgentOps Academy' is competent but sounds more internal than consumer-ready. Recommended alternatives researched against domain and trademark availability:
+0040`t[Heading2] 2.3  Core Value Propositions by Segment
+0042`t[Heading1] 3. Complete Curriculum Architecture
+0045`t[Heading2] 3.1  Domain 1 — Claude Code: Setup, Config & Troubleshooting
+0046`t[Heading3] What This Domain Covers
+0047`t[] Claude Code is Anthropic's official agentic terminal-based coding assistant. As of April 2026 it supports computer use, 9,000+ plugins, MCP integration with 770+ servers, and GitHub Actions automation. Setting it up correctly — especially on Windows with WSL2 — remains one of the most common pain points for new users.
+0049`t[] Path 1A: Claude Code for Beginners (8 Lessons)
+0050`t[ListParagraph] Lesson 1: What Claude Code Is — agentic CLI vs. plain chat, model architecture, when to use it
+0051`t[ListParagraph] Lesson 2: Prerequisites — Node.js 18+, npm, Git, WSL2 (Windows), Homebrew (macOS), terminal basics
+0052`t[ListParagraph] Lesson 3: Installation — platform-specific install commands, verification, first launch
+0053`t[ListParagraph] Lesson 4: Your First Command — anatomy of a prompt, context window, reading the output
+0054`t[ListParagraph] Lesson 5: Key Commands Reference — /plan, /model, /cost, /stats, /context, /copy, custom commands
+0055`t[ListParagraph] Lesson 6: Configuration — claude.json settings, CLAUDE.md project brain, environment variables
+0056`t[ListParagraph] Lesson 7: Safe Defaults — permissions model, allowlists, what to NEVER expose, basic security hygiene
+0057`t[ListParagraph] Lesson 8: Capstone Lab — complete a real mini-project from first prompt to output, verified
+0059`t[] Path 1B: Claude Code on Windows (6 Lessons)
+0060`t[ListParagraph] Lesson 1: Windows AI Setup Overview — WSL2 architecture, why WSL2 is required, what can go wrong
+0061`t[ListParagraph] Lesson 2: WSL2 Installation & Configuration — step-by-step with screenshots, common failure points
+0062`t[ListParagraph] Lesson 3: Claude Code on Windows Install — npm, node, Git within WSL2, PATH issues
+0063`t[ListParagraph] Lesson 4: Shell Configuration & Browser Auth — BROWSER env var fix, manual URL login, session persistence
+0064`t[ListParagraph] Lesson 5: WSL2 Troubleshooting — filesystem permissions, Windows Defender, PATH conflicts, sandboxing with bubblewrap/socat
+0065`t[ListParagraph] Lesson 6: Windows Capstone — full working Claude Code session from WSL2 terminal, verified output
+0067`t[] Path 1C: Claude Code on macOS (5 Lessons)
+0068`t[ListParagraph] Lesson 1: macOS Prerequisites — Homebrew, Node.js, Git, Xcode CLI tools
+0069`t[ListParagraph] Lesson 2: Native macOS Installation — curl-based install, PATH setup, version verification
+0070`t[ListParagraph] Lesson 3: MCP Server Setup on macOS — configuration JSON location, adding servers, testing connections
+0071`t[ListParagraph] Lesson 4: macOS Security & Gatekeeper — app permissions, sandboxing considerations
+0072`t[ListParagraph] Lesson 5: macOS Capstone — verified end-to-end project with MCP connection
+0074`t[] Path 1D: MCP (Model Context Protocol) Mastery (6 Lessons)
+0075`t[] MCP is the fastest-growing Claude Code capability. As of 2026 it has 770+ official MCP servers and 9,000+ plugins. This path is a premium differentiator.
+0076`t[ListParagraph] Lesson 1: What MCP Is — the open standard for connecting Claude to external tools and data
+0077`t[ListParagraph] Lesson 2: MCP Configuration — JSON config files by platform, Desktop Extension one-click install vs. manual
+0078`t[ListParagraph] Lesson 3: Top 20 MCP Servers — practical walkthroughs of most-useful integrations
+0079`t[ListParagraph] Lesson 4: Building a Custom MCP Connection — connect Claude to your own tool or database
+0080`t[ListParagraph] Lesson 5: MCP Security — authorization, access controls, data handling, never expose credentials
+0081`t[ListParagraph] Lesson 6: MCP Capstone — live multi-tool workflow verified end-to-end
+0083`t[] Path 1E: Claude Code Advanced Operations (5 Lessons)
+0084`t[ListParagraph] Lesson 1: GitHub Actions Integration — /install-github-app, @claude PR mentions, automated code review
+0085`t[ListParagraph] Lesson 2: Custom Slash Commands — project-level and personal command libraries, prompt templates
+0086`t[ListParagraph] Lesson 3: Multi-Agent Sessions with Named Subagents — @mention typeahead, delegating subtasks
+0087`t[ListParagraph] Lesson 4: Computer Use Integration — March 2026 feature, autonomous screen actions, use cases, limits
+0088`t[ListParagraph] Lesson 5: Production Workflow Capstone — real-world engineering workflow from prompt to merged PR
+0091`t[Heading2] 3.2  Domain 2 — Claude Cowork: Zero to Mastery
+0092`t[] Claude Cowork launched January 2026 and transitioned to enterprise-grade product status by March 2026. It is a GUI-based agentic AI for office workers, distinct from the terminal-focused Claude Code. Teaching it requires a different pedagogical approach: less command-line, more visual workflow design.
+0094`t[] Path 2A: Claude Cowork Fundamentals (6 Lessons)
+0095`t[ListParagraph] Lesson 1: Cowork vs. Claude Code — when to use which, GUI vs. CLI, target user profiles
+0096`t[ListParagraph] Lesson 2: Setup & First Task — install, desktop app configuration, first autonomous task
+0097`t[ListParagraph] Lesson 3: Computer Use Features — how autonomous computer operation works, what it can and cannot do safely
+0098`t[ListParagraph] Lesson 4: Connectors & Plugins — Google Drive, Gmail, DocuSign, FactSet; domain plugins for Finance, HR, Legal
+0099`t[ListParagraph] Lesson 5: Scheduling & Recurring Tasks — creating on-demand and scheduled automations
+0100`t[ListParagraph] Lesson 6: Cowork Capstone — complete a real end-to-end office workflow, verified
+0102`t[] Path 2B: Cowork for Specific Roles
+0103`t[ListParagraph] Finance Teams: FactSet integration, expense report automation, financial data analysis, scheduled reports
+0104`t[ListParagraph] HR Teams: Candidate screening, onboarding automation, policy document processing, interview scheduling
+0105`t[ListParagraph] Legal Teams: Contract review workflows, DocuSign integration, compliance checklist automation
+0106`t[ListParagraph] Marketing Teams: Campaign brief automation, content scheduling, lead qualification workflows
+0107`t[ListParagraph] Operations Teams: Meeting note summarization, task delegation, cross-team status reporting
+0109`t[Heading2] 3.3  Domain 3 — OpenClaw Ecosystem: Setup, Config & Security
+0110`t[] The OpenClaw ecosystem is a collection of open-source projects extending Claude Code beyond its official boundaries. As of 2026 the 'Claw family' includes NemoClaw (NVIDIA), ZeroClaw, AutoClaw, NanoClaw, MetaClaw, IronClaw, and 6+ additional variants. Each has different security profiles, use cases, and setup requirements.
+0112`t[] The Claw Family: Quick Reference
+0115`t[] Path 3A: OpenClaw Fundamentals (6 Lessons)
+0116`t[ListParagraph] Lesson 1: The OpenClaw Ecosystem — what it is, how it relates to Claude Code, which variant is right for you
+0117`t[ListParagraph] Lesson 2: Local Install (Windows/macOS/Linux) — safe defaults, what NOT to expose, permission model
+0118`t[ListParagraph] Lesson 3: First Programmatic Session — ISession interface, calling Claude through OpenClaw, output handling
+0119`t[ListParagraph] Lesson 4: Multi-Model Configuration — switching between Claude, Codex, Gemini via unified interface
+0120`t[ListParagraph] Lesson 5: Security Audit Checklist — official GitHub advisories review, OWASP for AI agents, port hygiene
+0121`t[ListParagraph] Lesson 6: Capstone — secure, functional OpenClaw local installation with verified configuration
+0123`t[] Path 3B: OpenClaw Safe VPS + Docker Deployment (8 Lessons) — PREMIUM
+0124`t[ListParagraph] Lesson 1: VPS Architecture Overview — what VPS is, providers (Hetzner, DigitalOcean, Vultr), sizing
+0125`t[ListParagraph] Lesson 2: VPS Initial Hardening — SSH keys, fail2ban, UFW firewall, non-root user, automatic updates
+0126`t[ListParagraph] Lesson 3: Docker Installation & Compose Setup — rootless Docker, compose files, networking isolation
+0127`t[ListParagraph] Lesson 4: OpenClaw Container Deployment — running OpenClaw in Podman/Docker, environment variables
+0128`t[ListParagraph] Lesson 5: Port Exposure & Firewall Rules — what to open, what to NEVER open, reverse proxy setup
+0129`t[ListParagraph] Lesson 6: Secrets Management — environment variable hygiene, .env files, secret scanning basics
+0130`t[ListParagraph] Lesson 7: Update Workflow — safe rolling updates, backup before upgrade, rollback procedure
+0131`t[ListParagraph] Lesson 8: Production Capstone — full verified VPS deployment with security audit, uptime monitoring
+0133`t[] Path 3C: NemoClaw Secure Runtime (4 Lessons) — PREMIUM
+0134`t[ListParagraph] Lesson 1: Why NemoClaw Exists — NVIDIA's security rationale, OpenShell runtime, policy controls
+0135`t[ListParagraph] Lesson 2: NemoClaw Setup — NVIDIA prerequisites, installation, first sandboxed session
+0136`t[ListParagraph] Lesson 3: Policy Configuration — allowlists, execution boundaries, audit logging
+0137`t[ListParagraph] Lesson 4: NemoClaw Production Capstone — verified sandboxed agent workflow
+0139`t[] Path 3D: Raspberry Pi & Mini-PC Agent Hosting (5 Lessons)
+0140`t[ListParagraph] Lesson 1: Hardware Options — Raspberry Pi 4/5, Apple Mac mini, Intel NUC, comparison matrix
+0141`t[ListParagraph] Lesson 2: OS Setup & Hardening — Ubuntu/Raspberry Pi OS, SSH hardening, storage config
+0142`t[ListParagraph] Lesson 3: Docker on ARM — ARM64 considerations, image compatibility, resource limits
+0143`t[ListParagraph] Lesson 4: OpenClaw on Pi — lightweight config, memory constraints, temperature monitoring
+0144`t[ListParagraph] Lesson 5: Homelab Capstone — always-on local AI agent running verified on Pi or mini-PC
+0146`t[Heading2] 3.4  Domain 4 — AI Agents for Non-Coders
+0147`t[] This domain is the single biggest commercial opportunity for broadening the user base beyond developers. The 2026 no-code agent landscape has matured dramatically: Lindy, Dify, n8n 2.0, Zapier Agents, and Make's Maia AI all enable non-technical users to build powerful automations. Teaching this well means focusing on real-world outcomes, not tool mechanics.
+0149`t[] Path 4A: What Are AI Agents? (4 Lessons — Free)
+0150`t[ListParagraph] Lesson 1: Agents vs. Chatbots — the key distinction: agents take actions, chatbots only talk
+0151`t[ListParagraph] Lesson 2: The Agent Anatomy — tools, memory, planning, execution, output — in plain English
+0152`t[ListParagraph] Lesson 3: When to Use an Agent — decision framework: what tasks are worth automating
+0153`t[ListParagraph] Lesson 4: Your First Agent (No Code) — build a simple email-sorter or meeting-scheduler using Zapier/n8n
+0155`t[] Path 4B: No-Code Agent Building (8 Lessons) — PREMIUM
+0156`t[ListParagraph] Lesson 1: Platform Selection — Zapier Agents vs. Make (Maia AI) vs. n8n vs. Lindy vs. Dify — which is right for your use case
+0157`t[ListParagraph] Lesson 2: Zapier Agents Deep-Dive — building autonomous task executors across 8,000+ apps, plain-language configuration
+0158`t[ListParagraph] Lesson 3: n8n 2.0 AI Workflows — 70+ AI nodes, LangChain integration, visual workflow design, self-hosted option
+0159`t[ListParagraph] Lesson 4: Dify for Non-Technical Founders — RAG + agent + prompt engineering in one platform, production-ready without code
+0160`t[ListParagraph] Lesson 5: Memory & Context Management — how agents remember things, when to use knowledge bases, privacy considerations
+0161`t[ListParagraph] Lesson 6: Multi-Agent Teams — CrewAI concepts without code, role-based agent design, agent-to-agent communication basics
+0162`t[ListParagraph] Lesson 7: Connecting Claude API — API key setup, system prompts, tool use, vision integration — safely and cheaply
+0163`t[ListParagraph] Lesson 8: Agent Safety & Governance — guardrails, rate limits, error handling, audit logs, when to give an agent less access
+0165`t[] Path 4C: Real-World Agent Projects by Role
+0166`t[] Each of these is a standalone mini-course producing a deployable, working automation:
+0167`t[ListParagraph] Email Sorter & Responder — AI agent reads, categorizes, and drafts replies to your inbox
+0168`t[ListParagraph] Meeting Summarizer — agent captures meeting notes, extracts action items, posts to Notion/Slack
+0169`t[ListParagraph] Lead Qualifier — agent scores and routes inbound leads based on custom criteria
+0170`t[ListParagraph] Content Pipeline — agent takes a topic brief, researches, drafts, and schedules social posts
+0171`t[ListParagraph] Expense Report Automator — agent reads receipts, categorizes, fills spreadsheet, sends for approval
+0172`t[ListParagraph] Customer Support First-Responder — agent handles tier-1 support tickets, escalates edge cases
+0173`t[ListParagraph] Competitive Intel Monitor — agent tracks competitor news, summarizes weekly, emails digest
+0174`t[ListParagraph] LinkedIn Post Generator — agent takes raw notes and generates polished posts with your voice
+0176`t[Heading2] 3.5  Domain 5 — Workflow Automation Mastery
+0177`t[] Workflow automation in 2026 has moved from trigger-action scripts to true agentic territory. n8n 2.0 launched January 2026 with 70+ AI nodes and native LangChain integration. CrewAI powers 12M+ daily agent executions in production. This domain teaches the practical orchestration layer that makes all other domains more powerful.
+0179`t[] Path 5A: Workflow Automation Foundations (5 Lessons)
+0180`t[ListParagraph] Lesson 1: Automation Mindset — how to spot automation opportunities, ROI calculation, common mistakes
+0181`t[ListParagraph] Lesson 2: Trigger-Action vs. Agent-Based Workflows — when simple is better, when you need agents
+0182`t[ListParagraph] Lesson 3: Integration Ecosystem Overview — Zapier (8K+ apps), Make, n8n, native Claude API
+0183`t[ListParagraph] Lesson 4: Data Flow & Security — how data moves between systems, what to encrypt, GDPR/privacy basics
+0184`t[ListParagraph] Lesson 5: Building Your First Complete Workflow — end-to-end verified automation project
+0186`t[] Path 5B: Advanced Workflow Architecture (6 Lessons) — PREMIUM
+0187`t[ListParagraph] Lesson 1: n8n 2.0 — self-hosting, 70+ AI nodes, LangChain, sandboxed code execution
+0188`t[ListParagraph] Lesson 2: LangGraph Workflows — stateful graphs, persistence, production durability, 60-line multi-agent setup
+0189`t[ListParagraph] Lesson 3: CrewAI Role-Based Teams — role assignment, task delegation, agent-to-agent communication, MCP integration
+0190`t[ListParagraph] Lesson 4: Error Handling & Resilience — retries, dead-letter queues, notification on failure, circuit breakers
+0191`t[ListParagraph] Lesson 5: Monitoring & Observability — workflow run history, cost tracking, performance dashboards
+0192`t[ListParagraph] Lesson 6: Advanced Capstone — deploy a production-grade multi-step agentic workflow
+0194`t[] Path 5C: Role-Based Automation Workshops
+0196`t[Heading1] 4. Complete Feature Specifications
+0198`t[Heading2] 4.1  MVP Feature Set (Ship First)
+0201`t[Heading2] 4.2  Core User Flow (Page by Page)
+0202`t[] This is the complete logged-in user journey from landing to active learning:
+0205`t[Heading2] 4.3  Phase 2 Features (Post-Validation)
+0208`t[Heading2] 4.4  Phase 3+ Features (Scale)
+0211`t[Heading1] 5. Technical Architecture
+0214`t[Heading2] 5.1  Complete Tech Stack
+0217`t[Heading2] 5.2  Repository Structure (Monorepo Placement)
+0221`t[Heading2] 5.3  Security Architecture
+0222`t[ListParagraph] RLS (Row Level Security) on all user-owned data — never bypass without explicit audit
+0223`t[ListParagraph] Stripe webhook: service-role Supabase client + signature verification + payment_status=paid required
+0224`t[ListParagraph] Idempotency on all webhook events — deduplicate by session/subscription ID
+0225`t[ListParagraph] Tutor proxy: auth check before every LLM call, rate limit before LLM call, cost cap per tier
+0226`t[ListParagraph] No direct LLM provider calls from app code — all calls through canonical llm_client.py
+0227`t[ListParagraph] Env var hygiene: NEXT_PUBLIC_* only for public values; secrets only in server-side env
+0228`t[ListParagraph] Content validation CI: blocks merge of MDX missing required freshness metadata or safety warnings
+0229`t[ListParagraph] Least-privilege principle in agent tool allowlists — explicit, not implicit
+0230`t[ListParagraph] Secrets scanning in CI pipeline — block commits containing API keys or tokens
+0231`t[ListParagraph] Lesson-level WarnBlock required for all lessons covering port exposure, secret files, or destructive operations
+0233`t[Heading1] 6. Data Model
+0236`t[Heading2] 6.1  Core Tables
+0239`t[Heading2] 6.2  Content Freshness Schema (Critical)
+0240`t[] Because AgentOps Academy teaches rapidly evolving tools, content freshness is a product feature, not a metadata nicety. Every lesson and path MUST carry:
+0243`t[Heading2] 6.3  Entitlement Logic
+0244`t[ListParagraph] Free tier: access to academy_paths where tier_required = 'free' and is_published = true
+0245`t[ListParagraph] Pro tier: access to all published paths where tier_required IN ('free', 'pro')
+0246`t[ListParagraph] Access check lives in lib/entitlements/ — never scattered across individual route files
+0247`t[ListParagraph] Stripe webhook writes to academy_user_profiles.tier and subscription_status — service-role only
+0248`t[ListParagraph] On subscription cancellation: tier reverts to 'free'; enrollments preserved but access gated
+0249`t[ListParagraph] Future: DB-driven entitlement rules table replaces hardcoded tier map
+0251`t[Heading1] 7. Internal Agent System Design
+0254`t[Heading2] 7.1  MVP Tutor Architecture
+0255`t[] The academy tutor is a single LangGraph service with internal routing. It operates as a proxy from the Next.js frontend and returns streamed responses. The Floating Tutor Chat (FloatingTutor component) is always visible — bottom-right button, Sheet slide-over, Cmd/Ctrl+T shortcut.
+0258`t[Heading2] 7.2  Phase 2 Internal Improvement Agents
+0259`t[] These agents improve content quality and product performance — they do NOT face users directly:
+0262`t[Heading2] 7.3  Phase 3+ Advanced Agent System
+0263`t[ListParagraph] Curriculum Architect Agent — analyzes user behavior and gaps to propose new lesson structure
+0264`t[ListParagraph] Platform Detection Agent — detects user environment from onboarding + telemetry for smarter recommendations
+0265`t[ListParagraph] Update Agent — monitors Claude Code/OpenClaw releases, generates 'what changed' lesson updates
+0266`t[ListParagraph] PDF/Artifact Agent — generates dynamic checklists and runbooks from lesson content
+0267`t[ListParagraph] Marketing Repurposing Agent — turns completed lessons into social posts, email copy, lead magnets
+0268`t[ListParagraph] Customer Success Agent — monitors engagement signals, triggers re-engagement nudges
+0270`t[Heading1] 8. Learning Design Framework
+0272`t[Heading2] 8.1  The 8-Step Learning Loop
+0273`t[] Every lesson in AgentOps Academy follows this evidence-based sequence. Passive completion is not allowed — users must prove understanding at each gate.
+0276`t[Heading2] 8.2  Custom Lesson Block Components
+0279`t[Heading2] 8.3  Onboarding Personalization
+0280`t[] Users must complete a 5-question onboarding wizard before accessing their first lesson. Answers drive path recommendations and tutor context. User-agent detection may prefill but does NOT decide.
+0283`t[Heading2] 8.4  Gamification Design (Evidence-Based)
+0284`t[] Research shows gamification produces a mean effect of d=0.51 (significant, with high variance). The key finding: well-designed structural game logic outperforms superficial reward mechanics. Design accordingly:
+0287`t[Heading1] 9. Monetization Strategy
+0289`t[Heading2] 9.1  Pricing Tiers
+0293`t[Heading2] 9.2  Monetization Ladder
+0296`t[Heading2] 9.3  Revenue Streams
+0297`t[ListParagraph] Recurring subscriptions (Pro Monthly / Annual) — primary revenue engine
+0298`t[ListParagraph] One-time course bundles and starter packs — impulse purchases, no subscription friction
+0299`t[ListParagraph] Live workshops and cohort bootcamps — high-margin, faster cash, proof-of-value
+0300`t[ListParagraph] Certification fees — $49–$149 per exam; scales with community credibility
+0301`t[ListParagraph] Team/SMB licensing — seats + onboarding packages; highest LTV per customer
+0302`t[ListParagraph] Affiliate revenue — VPS providers (Hetzner, DigitalOcean), hardware (Raspberry Pi), tooling
+0303`t[ListParagraph] Curated template/blueprint store — first-party packs, later third-party commissions
+0304`t[ListParagraph] Enterprise contracts — annual agreements, custom paths, SSO, compliance reporting
+0306`t[Heading2] 9.4  Checkout & Payment Infrastructure
+0308`t[Heading1] 10. Marketing Strategy
+0310`t[Heading2] 10.1  Positioning & Messaging
+0311`t[] Your marketing should speak to fear, confusion, and wasted time — not technical sophistication. Test these headline directions:
+0314`t[Heading2] 10.2  Content Marketing Flywheel
+0315`t[] Marketing should be a compounding content engine, not a paid-ads dependency. Build in this order:
+0317`t[] Content Pillars
+0318`t[ListParagraph] Beginner-safe setup tutorials (YouTube + written)
+0319`t[ListParagraph] Role-based workflow walkthroughs (LinkedIn + TikTok/Reels)
+0320`t[ListParagraph] Security and hardening guides (SEO-rich long-form)
+0321`t[ListParagraph] Tool updates and what changed (newsletter + X/Twitter)
+0322`t[ListParagraph] Real project showcases and case studies
+0323`t[ListParagraph] Troubleshooting clips — 'one bug, one fix' format
+0324`t[ListParagraph] Mini-PC/VPS/Raspberry Pi deployment teardowns
+0325`t[ListParagraph] Tool comparisons — Claude Code vs. other AI coding tools
+0327`t[] Content Formats
+0328`t[ListParagraph] YouTube: 5–12 minute tutorials (primary acquisition channel)
+0329`t[ListParagraph] TikTok/Reels/Shorts: 30–90 second 'did you know' and quick-fix clips
+0330`t[ListParagraph] X (Twitter) threads: step-by-step install breakdowns, troubleshooting trees
+0331`t[ListParagraph] LinkedIn: role-based workflow posts for business segment
+0332`t[ListParagraph] Email newsletter: weekly AI tools update, one tip, one troubleshoot
+0333`t[ListParagraph] GitHub Discussions/Reddit: contribute value in self-hosting communities
+0335`t[Heading2] 10.3  Conversion Funnel
+0338`t[Heading2] 10.4  90-Day Launch Plan
+0341`t[Heading2] 10.5  SEO Content Clusters
+0342`t[] Build topical authority through content clusters. Each cluster has one pillar page plus 8–15 supporting articles:
+0343`t[ListParagraph] Cluster 1: 'Claude Code Setup' — pillar + Windows guide, macOS guide, WSL2 guide, MCP setup, GitHub Actions, troubleshooting 10 common errors
+0344`t[ListParagraph] Cluster 2: 'OpenClaw & Self-Hosted AI' — pillar + Docker deploy, VPS hardening, NemoClaw guide, security checklist, update workflow
+0345`t[ListParagraph] Cluster 3: 'AI Workflow Automation' — pillar + n8n AI nodes, Zapier agents, Make/Maia, no-code agent builders, role-based automations
+0346`t[ListParagraph] Cluster 4: 'Claude Code for Business Roles' — pillar + marketer guide, analyst guide, founder guide, sales ops guide
+0347`t[ListParagraph] Cluster 5: 'AI Agent Safety' — pillar + Docker isolation, port exposure risks, secrets management, OWASP for AI agents
+0349`t[Heading2] 10.6  Distribution & Partnership Strategy
+0351`t[Heading1] 11. Post-Launch Evolution Roadmap
+0354`t[Heading2] Stage 1: Post-Launch Stabilization (Weeks 1–4)
+0355`t[] Metrics That Matter
+0356`t[ListParagraph] Signup → onboarding completion rate (target: >70%)
+0357`t[ListParagraph] Onboarding → first lesson started (target: >60%)
+0358`t[ListParagraph] First lesson started → first lesson completed (target: >50%)
+0359`t[ListParagraph] Tutor opened → issue resolved (track subjective rating)
+0360`t[ListParagraph] Week-1 return rate (target: >40%)
+0361`t[] Work Items
+0362`t[ListParagraph] Bug triage: daily review of Sentry errors, webhook failures, tutor timeouts
+0363`t[ListParagraph] Telemetry audit: verify all 8 core events fire correctly
+0364`t[ListParagraph] Onboarding friction analysis: session recordings + 5 user interviews
+0365`t[ListParagraph] Lesson completion bottleneck: where do users drop — specific lessons?
+0366`t[ListParagraph] Tutor failure analysis: what questions fail? What context is missing?
+0367`t[ListParagraph] Content QA: re-verify all live lessons against current tool versions
+0368`t[ListParagraph] Support triage: respond to all beta user questions within 24 hours
+0370`t[Heading2] Stage 2: Validation & Activation Optimization (Months 1–3)
+0371`t[] Key Initiatives
+0372`t[ListParagraph] Improve onboarding — add environment detection prefill, reduce to 4 questions
+0373`t[ListParagraph] First-value acceleration — get users to a working state in under 30 minutes
+0374`t[ListParagraph] Tutor context improvements — add more lesson context, improve troubleshoot mode
+0375`t[ListParagraph] Upgrade prompt optimization — show Pro benefits at peak value moment
+0376`t[ListParagraph] Pricing experiment — test $19 vs. $29 vs. $39 monthly
+0377`t[ListParagraph] Annual plan push — make annual the default on upgrade prompt
+0378`t[ListParagraph] Email sequence — 5-email onboarding: welcome, first win, first lab, pro teaser, upgrade
+0380`t[Heading2] Stage 3: Retention, Trust & Content Depth (Months 3–6)
+0381`t[] Key Initiatives
+0382`t[ListParagraph] Release notes center — changelog for Claude Code, OpenClaw, Cowork with lesson impact mapping
+0383`t[ListParagraph] Known issues center — active issues, workarounds, estimated fixes
+0384`t[ListParagraph] Lesson freshness system — visible version badges, 'last reviewed' dates, stale content alerts
+0385`t[ListParagraph] Certificate/badge system — path completion credentials, LinkedIn integration
+0386`t[ListParagraph] Streak and re-engagement mechanics — 3/7/30 day streaks, lapse re-engagement email
+0387`t[ListParagraph] Download library expansion — one professional-grade PDF per path
+0389`t[Heading2] Stage 4: Monetization Expansion & Role-Based Growth (Months 6–12)
+0390`t[] Key Initiatives
+0391`t[ListParagraph] Role-based path launches: Marketers, Analysts, Founders, Sales Ops, Students
+0392`t[ListParagraph] One-time premium bundles: Setup Mastery Pack, VPS Hardening Kit, Windows/WSL2 Rescue Pack
+0393`t[ListParagraph] MCP Mastery path launch (highest demand from Claude Code users)
+0394`t[ListParagraph] Live workshops: 2-day cohort, $299–$499 per seat
+0395`t[ListParagraph] Certification program: exam-based, $99–$149 fee
+0396`t[ListParagraph] Affiliate program launch — Lemon Squeezy affiliate system
+0398`t[Heading2] Stage 5–8: Team/SMB, Platform Hardening, Enterprise, Category Leader
+0401`t[Heading1] 12. Documentation & Project Operations
+0403`t[Heading2] 12.1  Required Documentation Suite
+0406`t[Heading2] 12.2  CLAUDE.md — Key Operating Rules for AI Builder
+0407`t[ListParagraph] Every major change must pass: does it improve activation, trust, retention, or monetization?
+0408`t[ListParagraph] MVP boundary is strict: do not add admin CMS, team tier, or certificate system until justified
+0409`t[ListParagraph] All LLM calls through canonical llm_client.py — no direct provider imports ever
+0410`t[ListParagraph] Schema contract from migration 013 is canonical — backend and frontend must match exactly
+0411`t[ListParagraph] Stripe webhook must use service-role client, verify signature, require payment_status=paid
+0412`t[ListParagraph] Paid checkout disabled until all premium-path TODOs are resolved and PDFs are real
+0413`t[ListParagraph] Free tutor allowed on free path with daily cap; Pro users get higher cap — must be consistent everywhere
+0414`t[ListParagraph] Content freshness metadata (version_label, last_reviewed_at) required on every lesson
+0415`t[ListParagraph] Definition of done: compiles, tested, docs updated, no regression, launch implications understood
+0417`t[Heading1] 13. Launch Readiness Checklist
+0420`t[ListParagraph] Verify academy router is mounted in src/api/main.py
+0421`t[ListParagraph] Confirm router table/column names match migration 013 exactly
+0422`t[ListParagraph] Apply Supabase migration 013_academy_schema.sql in production
+0423`t[ListParagraph] Run python scripts/verify_supabase_readiness.py — verify all passes
+0424`t[ListParagraph] Set all environment variables in .env.local and Vercel
+0425`t[ListParagraph] Deploy frontend to Vercel (apps/agentops-academy/ as root)
+0426`t[ListParagraph] Register Stripe webhook for checkout.session.completed and customer.subscription.deleted
+0427`t[ListParagraph] Run python scripts/sync_academy_content.py — sync lesson metadata to DB
+0428`t[ListParagraph] Rename middleware.ts to proxy.ts (Next.js 16 convention compliance)
+0430`t[] Smoke Test Matrix
+0431`t[ListParagraph] Anonymous visitor: landing page, pricing page, path catalog all load
+0432`t[ListParagraph] Signup/login: auth flow completes, session persists
+0433`t[ListParagraph] Onboarding: answers save to academy_onboarding table
+0434`t[ListParagraph] Free enrollment: user enrolled in free path, RLS allows access
+0435`t[ListParagraph] Lesson load: MDX renders correctly with all custom blocks
+0436`t[ListParagraph] Progress: marking lesson complete saves and dashboard updates
+0437`t[ListParagraph] Tutor: proxy round-trip returns streamed response, rate limit enforced
+0438`t[ListParagraph] FloatingTutor: button visible, opens correctly, Cmd/Ctrl+T shortcut works
+0439`t[ListParagraph] Downloads: free downloads accessible, pro downloads gated
+0440`t[ListParagraph] Telemetry: core events firing (check PostHog or events table)
+0441`t[ListParagraph] Checkout: Stripe checkout session creates (do not complete real payment in test)
+0444`t[ListParagraph] All lessons in Paths 2 and 3 complete — no TODO placeholders
+0445`t[ListParagraph] All downloadable PDFs and assets replaced with real content
+0446`t[ListParagraph] Stripe webhook grants Pro access correctly, verified end-to-end
+0447`t[ListParagraph] Stripe webhook revokes access on subscription cancellation
+0448`t[ListParagraph] Webhook idempotency tested — duplicate events do not double-grant
+0449`t[ListParagraph] Pro user tutor cap set higher than free user cap, consistent across code and UI
+0450`t[ListParagraph] Pricing page accurately reflects what Pro includes — no overstatements
+0451`t[ListParagraph] Refund/help policy page live and linked
+0452`t[ListParagraph] Support channel live (Crisp/Intercom) — someone monitoring
+0453`t[ListParagraph] Annual plan created in Stripe and tested
+0455`t[Heading1] 14. Risk Register & Mitigation
+0458`t[Heading1] 15. Recommended Build Sequence
+0461`t[Heading2] Immediate (Launch Blockers — Do Now)
+0462`t[ListParagraph] Mount academy router in FastAPI, verify schema contract matches migration 013
+0463`t[ListParagraph] Fix Stripe webhook: service-role client + signature verify + paid status + idempotency
+0464`t[ListParagraph] Disable paid checkout until all premium TODOs resolved
+0465`t[ListParagraph] Unify tutor policy: capped free mode on free path, higher-cap Pro mode
+0466`t[ListParagraph] Fix env var drift (standardize to NEXT_PUBLIC_API_URL everywhere)
+0467`t[ListParagraph] Fix downloads URL/payload bug + lesson completion logic
+0468`t[ListParagraph] Fix lint pipeline; add real academy contract tests
+0469`t[ListParagraph] Apply migration, set env vars, deploy, smoke test all critical paths
+0471`t[Heading2] Week 1–2 (Reliability + Content)
+0472`t[ListParagraph] Complete all TODO lessons in Paths 2 and 3
+0473`t[ListParagraph] Replace placeholder PDFs with real, polished assets
+0474`t[ListParagraph] Verify paid-path content end-to-end with a test user
+0475`t[ListParagraph] Enable Pro checkout publicly
+0476`t[ListParagraph] Add trust surfaces: last reviewed, tested-on badges, known issues page
+0477`t[ListParagraph] Ship FloatingTutor component with Cmd/Ctrl+T shortcut
+0478`t[ListParagraph] Launch first YouTube tutorial video + X thread for soft launch
+0480`t[Heading2] Month 1–3 (Activation Optimization)
+0481`t[ListParagraph] Instrument and review onboarding completion, lesson completion, tutor usage weekly
+0482`t[ListParagraph] Improve first lesson based on completion data
+0483`t[ListParagraph] Build email onboarding sequence (welcome → 5-email series)
+0484`t[ListParagraph] Launch annual plan with 21% discount (shown as default on upgrade)
+0485`t[ListParagraph] Ship Mastery Badges + one-click LinkedIn share
+0486`t[ListParagraph] Publish 10 YouTube tutorials
+0487`t[ListParagraph] Build 3 role-based path outlines (Marketers, Analysts, Founders)
+0489`t[Heading2] Month 3–6 (Retention + Monetization)
+0490`t[ListParagraph] Launch role-based paths starting with highest-demand persona
+0491`t[ListParagraph] Launch first live workshop/cohort ($299–$499)
+0492`t[ListParagraph] Build release notes center and known issues center
+0493`t[ListParagraph] Add streak mechanic and completion badges + StreakWidget dashboard
+0494`t[ListParagraph] Launch affiliate program for VPS/hardware partners
+0495`t[ListParagraph] Build MCP Mastery path (fastest-growing Claude Code feature)
+0497`t[Heading2] Month 6–12 (Expansion)
+0498`t[ListParagraph] Launch GitHub Actions + Claude Code path
+0499`t[ListParagraph] Build certificate/badge system with LinkedIn export
+0500`t[ListParagraph] Build AI Agents for Non-Coders domain (high TAM expansion)
+0501`t[ListParagraph] Build Workflow Automation domain (n8n, Zapier, Make)
+0502`t[ListParagraph] Plan Team workspace architecture for Phase 3
+0503`t[ListParagraph] Apply to Anthropic partner program with metrics in hand
+0505`t[Heading1] 16. Competitive Intelligence & Gap Map
+0508`t[Heading2] 16.1  Named Competitor Matrix
+0511`t[Heading2] 16.2  Our Definitive Differentiation Matrix
+0514`t[Heading2] 16.3  Moat-Building Priority
+0515`t[] Short-term moats are content depth and freshness. Long-term moats are brand trust, community, and credentials. Protect them in this order:
+0518`t[Heading1] 17. User Personas & Buyer Psychology
+0520`t[] These three personas represent 80% of the addressable audience. Every product, curriculum, and marketing decision should be filtered through at least one of them.
+0528`t[Heading2] 17.4  Persona-to-Path Routing
+0531`t[Heading1] 18. OKR & KPI Framework
+0534`t[Heading2] 18.1  Activation Metrics (First 7 Days)
+0537`t[Heading2] 18.2  Retention Metrics (Ongoing)
+0540`t[Heading2] 18.3  Monetization Metrics
+0543`t[Heading2] 18.4  Quarterly OKRs (First 3 Quarters)
+0551`t[Heading1] 19. Partnership & Distribution Deep-Dive
+0554`t[Heading2] 19.1  Anthropic Partnership Path
+0555`t[] Anthropic is expanding its Claude ecosystem and has strong incentives to support quality education infrastructure around Claude Code and Claude Cowork. The partnership path:
+0558`t[Heading2] 19.2  Creator & Influencer Partnership Tiers
+0561`t[Heading2] 19.3  Launch Sequencing (ProductHunt + Community)
+0564`t[Heading2] 19.4  Affiliate Architecture
+0567`t[Heading2] 19.5  Email Newsletter Strategy
+0568`t[] The newsletter is the single most valuable owned asset outside the product itself. Target 5K subscribers by Month 12, 25K by Month 24.
+0571`t[Heading1] 20. Complete Sample Lesson & MDX Template
+0573`t[] This section demonstrates the full lesson standard. Every path lesson must meet this quality bar. This sample is Path 1A, Lesson 2: Prerequisites for Claude Code.
+0575`t[Heading2] 20.1  MDX Frontmatter Standard
+0576`t[] Every lesson file must include complete frontmatter. The CI validation script blocks any merge missing required fields.
+0579`t[Heading2] 20.2  Full Lesson Content (8-Step Loop Applied)
+0581`t[Heading3] Step 1 — SEE: What We're Installing and Why
+0583`t[Heading3] Step 2 — EXPLAIN: Why These Specific Versions Matter
+0584`t[] Claude Code requires Node.js 18 or higher. This is not arbitrary — Node 18 introduced features Claude Code's internals depend on. If you have Node 12 or 14 installed, Claude Code will fail silently or produce confusing errors. Git is required for Claude Code's GitHub Actions integration and for version-controlling your CLAUDE.md project files. Installing the wrong version is the #1 reason for support questions in the first week.
+0587`t[Heading3] Step 3 — DO: Install Node.js Using nvm
+0590`t[Heading3] Step 4 — CHECK: Verify Your Installation
+0591`t[] Run all three verification commands. Expected output shown next to each:
+0595`t[Heading3] Step 5 — APPLY: Confirm nvm Persists Across Sessions
+0596`t[] Open a new terminal window and run 'node --version' again. If it shows v18, your nvm config is permanent. If it shows 'command not found' or an older version, your shell profile needs updating — add the nvm source line to your .bashrc or .zshrc file.
+0598`t[Heading3] Step 6 — TROUBLESHOOT: Common Errors & Fixes
+0601`t[Heading3] Step 7 — RECAP: Key Commands to Remember
+0603`t[Heading3] Step 8 — PROVE: Lab Completion Requirement
+0605`t[] Lesson 2 complete. Next: Lesson 3 — Claude Code Installation. Estimated time: 20 minutes.
+0607`t[Heading2] 20.3  Quiz Block Standard (3 Questions Per Lesson)
+0610`t[Heading2] 20.4  Downloadable Asset Standard (Per Lesson)
+0611`t[] Each lesson must have at least one downloadable asset for Pro users:
+0612`t[ListParagraph] Lesson 2 Download: 'Claude Code Prerequisites Checklist' — 1-page PDF with all install commands, version requirements, WSL2 setup steps, and common error table
+0613`t[ListParagraph] Format: PDF generated from Markdown template. File naming: cc-l2-prerequisites-checklist-v1.2.pdf
+0614`t[ListParagraph] Freshness: PDF version_label must match lesson version_label. Update required when tool versions change.
+0616`t[Heading1] 21. Team & Hiring Roadmap
+0619`t[Heading2] 21.1  Solo Founder Phase (Month 0–6)
+0620`t[] At sub-$10K MRR, Biniyam is the product, the engineer, the content creator, and the support agent. This is not a gap — it is a feature. Direct contact with users at this stage generates insights no amount of tooling can replace.
+0623`t[Heading2] 21.2  First Contractor Triggers
+0624`t[] Hire a contractor when one of these threshold conditions is met and has persisted for at least 3 weeks:
+0627`t[Heading2] 21.3  First Full-Time Hire Triggers ($10K–$30K MRR)
+0628`t[] At $10K–$30K MRR you have enough cash flow to consider a first FTE. The rule: hire the role that, if filled tomorrow, would directly unblock your next $10K MRR.
+0631`t[Heading2] 21.4  Contractor vs. FTE Decision Matrix
+0634`t[Heading2] 21.5  Org Chart Evolution
+0637`t[Heading1] 22. Investor & Partner Pitch Narrative
+0639`t[] This section is the tightly-written pitch for: (a) Anthropic partnership conversations, (b) angel investors, (c) accelerator applications, (d) any strategic partner considering co-marketing or distribution. It should be adaptable — the core narrative below is the foundation.
+0643`t[Heading2] 22.1  The Problem (Investor Framing)
+0644`t[ListParagraph] Anthropic has 40M+ registered Claude users and is adding millions monthly. Adoption is skyrocketing.
+0645`t[ListParagraph] Claude Code, Claude Cowork, and OpenClaw runtimes are among the most powerful productivity tools in history — but setup failure rates are enormous.
+0646`t[ListParagraph] The average new Claude Code user spends 3–8 hours on setup problems in week one. Many give up. Many expose security vulnerabilities they don't know exist.
+0647`t[ListParagraph] There is no high-quality, safety-first, role-specific education resource for these tools. YouTube tutorials are shallow and stale. Documentation is developer-only. Generic AI courses don't cover operations.
+0648`t[ListParagraph] The gap between 'I bought access' and 'I actually use this productively' costs enterprises millions in wasted licenses and unrealized productivity gains.
+0650`t[Heading2] 22.2  The Solution
+0651`t[ListParagraph] AgentOps Academy closes the gap with a structured, interactive learning platform built specifically for AI tool operators — not AI researchers.
+0652`t[ListParagraph] Our 5-domain curriculum (Claude Code, Claude Cowork, OpenClaw, AI Agents, Workflow Automation) maps to real professional pain points and outcomes.
+0653`t[ListParagraph] Our embedded AI tutor (LangGraph-powered) provides contextual teach and troubleshoot support — the equivalent of a senior Claude engineer sitting next to every learner.
+0654`t[ListParagraph] Our content freshness system (version labels, last-reviewed dates, Drift Sentinel agent) makes us the only source professionals can trust as tools evolve weekly.
+0655`t[ListParagraph] Our safety-first doctrine (mandatory WarnBlocks, NemoClaw sandbox guidance, port hygiene) protects users where every competitor is silent.
+0657`t[Heading2] 22.3  Market Opportunity
+0660`t[Heading2] 22.4  Traction Milestones (Pre-Raise)
+0661`t[] Share the most relevant of these when pitching:
+0662`t[ListParagraph] Beta users recruited and product validated through direct interviews before launch
+0663`t[ListParagraph] First paid subscribers acquired without paid advertising (organic only)
+0664`t[ListParagraph] NPS > 40 from first cohort of paying users
+0665`t[ListParagraph] First YouTube tutorial: [X] views, [Y] clicks to landing page
+0666`t[ListParagraph] First enterprise/team sale — proof of B2B motion
+0667`t[ListParagraph] Content freshness system: first Drift Sentinel agent run preventing stale lesson
+0669`t[Heading2] 22.5  The Ask (Context-Dependent)
+0672`t[Heading2] 22.6  Competitive Moat Summary (Pitch-Ready)
+0673`t[] When asked 'why can't [big competitor] just add this?':
+0674`t[ListParagraph] DataCamp, Coursera, and Codecademy are curriculum companies — they teach established, stable technologies. Claude Code changes weekly. Our architecture is built for rapid content evolution. Theirs is not.
+0675`t[ListParagraph] Anthropic builds the tools; they won't build deep training content for them. That would be a distraction from their core mission. We are the natural partner, not the competitor.
+0676`t[ListParagraph] Our safety doctrine is a deep content moat: every deployment lesson includes verified, security-reviewed guidance. Building this correctly takes 12–24 months. A fast follower cannot copy it overnight.
+0677`t[ListParagraph] Our AI tutor has lesson-scoped context and troubleshooting heuristics trained on real user errors. This compounds — the more users, the better the tutor context gets.
+0679`t[Heading1] Appendix A: shadcn/ui Component Manifest & UI Patterns
+0681`t[] The AgentOps Academy frontend is built entirely with shadcn/ui primitives + Tailwind CSS. No custom design system is needed. Every component below is available via 'npx shadcn-ui@latest add [component]'. This list is the complete component inventory for MVP.
+0683`t[Heading2] A.1  Core Components by Page
+0686`t[Heading2] A.2  Key Custom Components (Built on shadcn Primitives)
+0689`t[Heading2] A.3  Animation Guidelines (Framer Motion)
+0690`t[] All animations must be < 50ms perceived delay and GPU-accelerated. Never use animations that block interactivity or play on every render.
+0693`t[Heading1] Appendix B: Supabase Schema SQL & Deployment Spec
+0695`t[] This appendix contains the complete SQL migration for the academy schema, the RLS policy design, and the Vercel + Railway deployment spec. This is the technical handoff document for the builder.
+0698`t[Heading2] B.1  Core Schema (Key Tables)
+0701`t[Heading2] B.2  RLS Policy Design
+0704`t[Heading2] B.3  Deployment Spec
+0707`t[Heading2] B.4  Environment Variable Checklist
+0713`t[] AgentOps Academy Master Blueprint  •  Version 2.0  •  April 2026   |   Confidential & Proprietary  |   Built for execution, not presentation.
