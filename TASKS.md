@@ -37,7 +37,7 @@ This file tracks the build plan for CLI Academy.
 - [x] Implement Stripe checkout and webhooks (`/api/stripe/checkout`, `/api/stripe/webhook`)
 - [x] Implement telemetry events (`/api/events`)
 - [x] Ship first free flagship path (beginners: 8 lessons, windows: 6 lessons, macos: 5 lessons)
-- [ ] Configure and deploy (Supabase credentials, Stripe products, Vercel, Railway)
+- [x] Configure and deploy (Supabase credentials, Stripe products, Vercel, Railway)
 - [ ] Ship first paid flagship path
 - [ ] Ship first secure deployment path
 

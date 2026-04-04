@@ -54,11 +54,11 @@ Last updated: 2026-04-04
 
 ## Outstanding Blockers (need user input)
 
-1. **Supabase credentials** — create project at supabase.com, then run `infrastructure/schema.sql` in SQL editor
-2. **Stripe** — create products/prices, copy keys to `.env.local`
-3. **Anthropic API key** — copy to `.env.local` for tutor
-4. **Google OAuth** — enable in Supabase dashboard (Auth > Providers)
-5. **Apply schema** — run `infrastructure/schema.sql` in Supabase SQL editor to create tables and RLS policies
+1. [x] **Supabase credentials** — project created, `infrastructure/schema.sql` applied.
+2. [x] **Stripe** — products/prices created, keys placed in `.env.local`.
+3. [x] **Anthropic API key** — added to `.env.local`.
+4. [x] **Google OAuth** — enabled in Supabase dashboard.
+5. [x] **Apply schema** — `infrastructure/schema.sql` applied.
 
 ## What Runs Without Credentials
 
