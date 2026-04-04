@@ -1,0 +1,384 @@
+---
+title: "Safe Prompting Habits"
+description: "Learn what NOT to give Claude Code and how to use CLAUDE.md to prevent security mistakes."
+slug: "safe-prompting-habits"
+lesson_number: 6
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: true
+tags: ["safety", "beginner", "security"]
+---
+
+## What You'll See
+
+You'll learn a set of habits that keep your project secure when working with Claude Code. You'll understand what information is dangerous to share and how to structure your CLAUDE.md to prevent accidental leaks.
+
+## Why This Matters
+
+Claude Code can edit any file in your project. If you give it a secret API key or ask it to hardcode a password, it will do exactly that—thoughtlessly. Your job is to prevent this by being intentional about what you ask Claude Code to do and what information you expose.
+
+The good news: this is mostly about habits, not complex security. Follow a few simple rules and you'll stay safe.
+
+<WarnBlock title="Critical Rule: Never Paste Secrets Into Claude Code">
+This is the most important rule. Never, ever paste:
+- API keys
+- Database passwords
+- Authentication tokens
+- Encryption keys
+- Private SSH keys
+- OAuth client secrets
+- Firebase credentials
+- AWS credentials
+
+If you already did, assume they're compromised. Rotate them immediately.
+</WarnBlock>
+
+## What You Should Never Give Claude Code
+
+### 1. API Keys and Tokens
+
+Bad:
+```
+> Here's my Stripe key: sk_live_abcd1234. Can you integrate payments?
+```
+
+Good:
+```
+> Can you add a Stripe payment integration? I'll put the API key in .env before running.
+```
+
+Even better:
+```
+> Add a Stripe integration that reads the key from the STRIPE_SECRET_KEY environment variable.
+> Never hardcode keys. Use .env for all secrets.
+```
+
+The last example tells Claude Code to use environment variables. It won't hardcode secrets.
+
+### 2. Passwords and Credentials
+
+Bad:
+```
+> Connect to my database. The password is "MyPassword123".
+```
+
+Good:
+```
+> Add database connection logic. Read the connection string from process.env.DATABASE_URL.
+> Never hardcode the password.
+```
+
+### 3. Real User Data
+
+Bad:
+```
+> Here's a sample of user emails from production: alice@example.com, bob@example.com, ...
+```
+
+Good:
+```
+> Add a function to export user emails. Make it read from a CSV file in the data/ directory.
+> Use sample data: test-users.csv (already in the repo).
+```
+
+If you must show Claude Code real data, anonymize it first. Remove names, emails, and identifiers.
+
+### 4. Full Stack Traces with Secrets
+
+Bad:
+```
+I got this error:
+Error: ENOENT: no such file or directory open '/home/user/.aws/credentials'
+AUTH_TOKEN=sk_live_abcd1234 node app.js
+```
+
+You just leaked your AWS path and token.
+
+Good:
+```
+I got this error when running the app:
+Error: ENOENT: no such file or directory open '/home/user/.aws/credentials'
+
+What setup step am I missing?
+```
+
+Remove the command line that shows secrets.
+
+## How to Use .env Safely
+
+Here's the pattern for any secret or configuration:
+
+### Step 1: Create .env.example
+
+In your project root, create `.env.example` with placeholder values:
+
+```bash
+# .env.example
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+STRIPE_SECRET_KEY=sk_test_example_key_here
+API_TOKEN=your_api_token_here
+JWT_SECRET=your_jwt_secret_here
+```
+
+This is a template. No real values.
+
+### Step 2: Add .env to .gitignore
+
+Make sure `.env` is never committed:
+
+```bash
+# .gitignore
+.env
+.env.local
+.env.*.local
+```
+
+### Step 3: Reference .env.example in CLAUDE.md
+
+Tell Claude Code to look at the example:
+
+```markdown
+## Environment Variables
+
+All secrets are stored in `.env`. See `.env.example` for required variables.
+
+**Never hardcode secrets.** Always read them from `process.env` or `os.environ`.
+
+When Claude Code asks you to add new configuration:
+1. Check `.env.example` for the variable name
+2. Read it from environment in your code
+3. If you need a new variable, add it to `.env.example` (not real values)
+```
+
+### Step 4: When Using Claude Code
+
+When you ask Claude Code to integrate a service:
+
+```
+> Add Stripe integration. Read the key from STRIPE_SECRET_KEY environment variable.
+> Never hardcode or hardcoded keys. Check .env.example for the variable name.
+```
+
+Claude Code will read your CLAUDE.md, understand your pattern, and do the right thing.
+
+## Safe CLAUDE.md Patterns
+
+Your CLAUDE.md is where you enforce security by default. Here are patterns that work:
+
+### Pattern 1: Environment Variable Rule
+
+```markdown
+## Secrets and Configuration
+
+All secrets are stored in `.env` (not committed to Git).
+See `.env.example` for the template.
+
+**Rule:** Never hardcode secrets, API keys, or passwords.
+Always read them from environment variables:
+- Python: `os.getenv("VARIABLE_NAME")`
+- Node.js: `process.env.VARIABLE_NAME`
+- Go: `os.Getenv("VARIABLE_NAME")`
+
+When adding new configuration, update `.env.example` with the key and a placeholder value.
+```
+
+### Pattern 2: Git Ignore Rule
+
+```markdown
+## Before Committing
+
+Never commit:
+- `.env` files
+- `credentials/` directory
+- `secrets/` directory
+- Private keys or certificates
+- API keys or tokens
+- Database passwords
+
+Run `git status` before committing. Ask if unsure.
+```
+
+### Pattern 3: Logging Rule
+
+```markdown
+## Logging
+
+Never log secrets, even in debug mode. This includes:
+- API keys
+- User passwords
+- Auth tokens
+- Database connection strings with passwords
+
+If you see a secret in code, flag it and ask Claude to remove it.
+```
+
+## Real Example: Building a Secure Integration
+
+You're adding Stripe payments to your app. Here's the safe workflow:
+
+### Step 1: Update .env.example
+
+```bash
+# .env.example
+STRIPE_SECRET_KEY=sk_test_example_key
+STRIPE_PUBLISHABLE_KEY=pk_test_example_key
+```
+
+### Step 2: Add to CLAUDE.md
+
+```markdown
+## Stripe Integration
+
+Keys are in `.env`:
+- Read `STRIPE_SECRET_KEY` in backend code
+- Read `STRIPE_PUBLISHABLE_KEY` in frontend code
+
+Never hardcode or commit real keys.
+```
+
+### Step 3: Ask Claude Code
+
+```
+> Add Stripe payment processing to the checkout page.
+> Read STRIPE_PUBLISHABLE_KEY from environment.
+> The backend should read STRIPE_SECRET_KEY and validate payments.
+> Never hardcode keys.
+```
+
+Claude Code:
+- Reads your CLAUDE.md
+- Understands the pattern
+- Adds the integration
+- Uses `process.env.STRIPE_SECRET_KEY` (Node.js) or `os.getenv()` (Python)
+- Shows you code that's safe by design
+
+### Step 4: You Add Real Keys
+
+After Claude Code is done, you manually:
+
+```bash
+cp .env.example .env
+# Edit .env with your real keys
+STRIPE_SECRET_KEY=sk_live_your_real_key
+```
+
+Git won't commit `.env` because it's in `.gitignore`. Only you have the real keys.
+
+## Common Safe Prompting Mistakes
+
+**Mistake 1: Pasting errors that contain secrets**
+
+Error messages often include paths, configuration, or keys. Sanitize before pasting.
+
+Bad:
+```
+> I got this error:
+> /home/alice/.config/app/secret.key: Permission denied
+> DATABASE_URL=pg://admin:SuperSecure123@prod-db.example.com:5432/main
+```
+
+Good:
+```
+> I got this error:
+> Error: Permission denied when reading secret key file
+> What setup step am I missing?
+```
+
+**Mistake 2: Asking Claude Code to debug with real credentials**
+
+Bad:
+```
+> Can you test the database connection? Here's the connection string:
+> postgresql://admin:MyPassword123@prod.db.example.com:5432/myapp
+```
+
+Good:
+```
+> Can you add code to test the database connection?
+> It should read the connection string from DATABASE_URL environment variable.
+> I'll test it myself after you add the code.
+```
+
+**Mistake 3: Hardcoding in test data**
+
+Bad:
+```
+> Create test data with real user emails: alice@company.com, bob@company.com
+```
+
+Good:
+```
+> Create test data using fake emails: test1@example.com, test2@example.com
+> Use example.com domain for all test emails.
+```
+
+**Mistake 4: Assuming Claude Code knows what's secret**
+
+Claude Code won't magically know that `private_api_key_12345` is secret. Tell it:
+
+```
+> Add API authentication. The key is secret—read it from PRIVATE_API_KEY environment variable.
+> Never hardcode it or log it.
+```
+
+## Checking Your Work
+
+Before committing, always check:
+
+```bash
+git diff HEAD
+```
+
+Look for:
+- Any API keys or tokens
+- Any passwords
+- Any hardcoded credentials
+- Any real user data
+
+If you see any, stop. Don't commit. Remove them and ask Claude Code to fix it.
+
+```bash
+git checkout -- <file>  # Undo if needed
+claude
+> The file <file> has hardcoded secrets. Please remove them and use environment variables instead.
+```
+
+## When to Ask Claude Code for Help
+
+It's actually safe to ask Claude Code about security issues:
+
+Good:
+```
+> I'm not sure if this code is secure. Can you review it for hardcoded secrets?
+```
+
+Good:
+```
+> What's the best way to handle database credentials in a Flask app?
+```
+
+Good:
+```
+> I accidentally committed an API key. What should I do?
+```
+
+Claude Code understands security and can help guide you. It won't judge you for mistakes—it will help you fix them.
+
+## Recap
+
+- Never paste API keys, passwords, or tokens into Claude Code
+- Use `.env` for all secrets. Add to `.gitignore`
+- Create `.env.example` with placeholders
+- Tell Claude Code to use environment variables in CLAUDE.md
+- Sanitize error messages before pasting (remove paths, credentials)
+- Always check `git diff` before committing
+- It's safe to ask Claude Code for help with security questions
+
+## What's Next
+
+You now have the habits to use Claude Code safely. Next, you'll learn how to read Claude Code's output—understand what it's doing and why it matters.

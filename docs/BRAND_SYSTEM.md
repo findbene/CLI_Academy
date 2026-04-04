@@ -1,4 +1,4 @@
-# Zero to Claude Brand System
+# CLI Academy Brand System
 
 Last updated: 2026-04-03
 Status: accepted working brand foundation
@@ -6,13 +6,13 @@ Status: accepted working brand foundation
 ## 1. Brand Decision
 
 Public brand:
-`Zero to Claude`
+`CLI Academy`
 
 Product descriptor:
-`Zero to Claude Academy`
+`CLI Academy`
 
 Short answer on the name:
-Yes, `Zero to Claude` is a strong product name for this launch.
+Yes, `CLI Academy` is a strong product name for this launch.
 
 Why it works:
 
@@ -20,7 +20,7 @@ Why it works:
 - it is easy to remember
 - it is friendly to beginners without sounding childish
 - it is specific enough to convert high-intent traffic
-- it pairs naturally with the domain `zerotoclaude.com`
+- it pairs naturally with the domain `cliacademy.app`
 
 What to watch:
 
@@ -29,13 +29,13 @@ What to watch:
 
 Recommendation:
 
-- keep `Zero to Claude` as the launch brand
-- use `Zero to Claude Academy` when extra context helps on marketing pages and documents
+- keep `CLI Academy` as the launch brand
+- use `CLI Academy` consistently across all marketing pages and documents
 - do not invent a broader umbrella brand yet
 
 ## 2. Brand Promise
 
-Zero to Claude is the safest, clearest path from curiosity to confident use of Claude-powered workflows.
+CLI Academy is the safest, clearest path from curiosity to confident use of Claude-powered workflows.
 
 This is not a hype brand.
 It is a trust brand with momentum.

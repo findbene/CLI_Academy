@@ -1,0 +1,330 @@
+---
+title: "WSL2 Complete Setup"
+description: "Install and configure WSL2, Ubuntu, Node.js, and Claude Code. Step-by-step with verification at each stage."
+slug: "wsl2-setup"
+lesson_number: 2
+estimated_minutes: 20
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["windows", "setup", "wsl2"]
+---
+
+## What You'll See
+
+A fully configured WSL2 environment with Ubuntu, Node.js, npm, and Claude Code installed and ready to use. You'll have a terminal where you can run `claude` and start working.
+
+## Prerequisites
+
+- **Windows 10 version 2004 or later, or Windows 11**
+- **Administrator access** to your machine
+- **About 20 minutes of time**
+
+Not sure which version you have? Open PowerShell and type:
+
+```powershell
+[System.Environment]::OSVersion
+```
+
+Look for version 10.0.19041 or higher. If you have that, you're good.
+
+## Step by Step
+
+### Step 1: Enable WSL2
+
+Open PowerShell **as Administrator**:
+
+1. Press Windows key
+2. Type "PowerShell"
+3. Right-click "Windows PowerShell"
+4. Click "Run as administrator"
+
+In the PowerShell window, type:
+
+```powershell
+wsl --install
+```
+
+This command:
+- Enables the Windows Subsystem for Linux feature
+- Installs WSL2
+- Downloads and installs Ubuntu (the default Linux distribution)
+
+**This will take 5-10 minutes.** Your computer may restart during this process. Let it. If it asks you to restart, do so, then run the command again.
+
+After it finishes, you should see:
+
+```
+Installation successful!
+```
+
+### Step 2: Set WSL Default Version to 2
+
+Still in PowerShell (as Administrator), type:
+
+```powershell
+wsl --set-default-version 2
+```
+
+This ensures any future distributions use WSL2 (not WSL1, which is slower).
+
+### Step 3: Start WSL2 and Ubuntu
+
+Close and reopen PowerShell (you can close the admin window now).
+
+Type:
+
+```powershell
+wsl
+```
+
+This launches WSL2 and opens an Ubuntu terminal. You'll see a prompt like:
+
+```
+user@computer-name:~$
+```
+
+Congratulations. You're in Linux now. Everything from here on is Linux commands.
+
+### Step 4: Update Ubuntu
+
+In the Ubuntu terminal, type:
+
+```bash
+sudo apt update
+sudo apt upgrade -y
+```
+
+The first command updates the package list. The second upgrades all installed packages. `-y` means "yes to all prompts."
+
+This takes 2-3 minutes.
+
+### Step 5: Install Node.js and npm
+
+Ubuntu comes with some tools but not Node.js. Install it:
+
+```bash
+sudo apt install -y nodejs npm
+```
+
+Verify it worked:
+
+```bash
+node --version
+npm --version
+```
+
+You should see version numbers. Node.js 18+ is already in Ubuntu's packages (check what you got—any version 16 or higher is fine for Claude Code).
+
+**Note:** If you need a specific Node.js version or want to use nvm (Node Version Manager) for flexibility, see the macOS path for the nvm pattern. It works the same in WSL2. But for now, the apt version is fine.
+
+### Step 6: Install Claude Code
+
+Now that npm is installed, install Claude Code globally:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+This downloads and installs Claude Code. Takes 30 seconds to 1 minute.
+
+Verify:
+
+```bash
+claude --version
+```
+
+You should see a version number like `1.0.0` or similar.
+
+### Step 7: Authenticate Claude Code
+
+Run:
+
+```bash
+claude auth
+```
+
+Claude Code will ask for your Anthropic API key. Paste it (from [console.anthropic.com](https://console.anthropic.com) if you haven't gotten one yet).
+
+Claude Code stores the key securely and confirms:
+
+```
+✓ Authentication successful
+```
+
+### Step 8: Test Claude Code
+
+Create a test directory:
+
+```bash
+mkdir test-claude
+cd test-claude
+```
+
+Initialize Claude Code:
+
+```bash
+claude
+```
+
+You should see:
+
+```
+Claude Code │ test-claude
+
+Ready. What would you like me to help with?
+
+>
+```
+
+Great! Claude Code is working. Test it with a simple request:
+
+```
+Create a file called hello.txt that says "Claude Code on WSL2 works!"
+```
+
+Claude Code should create the file. Verify:
+
+```bash
+ls
+cat hello.txt
+```
+
+You should see the file and its contents.
+
+Exit Claude Code:
+
+```bash
+exit
+```
+
+### Step 9: Set Up a Better Terminal (Optional but Recommended)
+
+PowerShell can launch WSL, but it's better to use a dedicated terminal. Windows Terminal is built into Windows 11 and available free for Windows 10.
+
+**To use Windows Terminal:**
+
+1. Open Microsoft Store
+2. Search for "Windows Terminal"
+3. Install it
+
+Windows Terminal automatically detects WSL2 and gives you direct access. Open Windows Terminal and click the `+` button to create a new tab. You should see "Ubuntu" as an option.
+
+Click "Ubuntu" to open an Ubuntu terminal.
+
+## Verification Checklist
+
+Before moving on, verify everything:
+
+```bash
+# Check Node.js
+node --version  # Should be 16+
+
+# Check npm
+npm --version  # Should be 6+
+
+# Check Claude Code
+claude --version  # Should show a version number
+
+# Check that Claude Code can access files
+claude  # Should start without error
+exit  # Return to bash prompt
+```
+
+If any of these fail, see the Common Issues section below.
+
+## Common Issues
+
+**Issue: "wsl: command not found" in PowerShell**
+
+You might have WSL installed but the command isn't in your PATH.
+
+**Fix:**
+1. Restart your computer
+2. Try again in a new PowerShell window
+
+**Issue: "The operation completed successfully" but WSL doesn't start**
+
+WSL installation succeeded but didn't automatically start Ubuntu.
+
+**Fix:**
+1. In PowerShell: `wsl --install Ubuntu`
+2. Then: `wsl`
+
+**Issue: Ubuntu asks for a username/password after installing**
+
+This is normal. Set a username and password (you'll need them for `sudo` commands).
+
+Just type whatever you want. Examples:
+- Username: `dev`
+- Password: anything (you'll use this for sudo)
+
+**Issue: "node: command not found" in WSL**
+
+Node.js didn't install, or you're in the wrong location.
+
+**Fix:**
+1. Make sure you're in WSL (you should see `user@computer-name:~$`, not `PS C:\...>`)
+2. Try again: `sudo apt install -y nodejs npm`
+3. Verify: `which node`
+
+**Issue: "claude: command not found" in WSL**
+
+npm didn't install Claude Code globally, or npm's global path is misconfigured.
+
+**Fix:**
+1. Try again: `npm install -g @anthropic-ai/claude-code`
+2. Check where npm installs: `npm list -g`
+3. If still broken, ensure `~/.npm-global/bin` is in your PATH:
+   ```bash
+   echo $PATH | grep npm-global
+   ```
+
+**Issue: "Authentication failed" in Claude Code**
+
+Your API key is wrong or expired.
+
+**Fix:**
+1. Get a new key from [console.anthropic.com](https://console.anthropic.com)
+2. Run: `claude auth`
+3. Paste the new key
+
+## Accessing Windows Files From WSL2
+
+Your Windows C: drive is available at `/mnt/c/`. Example:
+
+```bash
+# Navigate to your Documents folder
+cd /mnt/c/Users/YourUsername/Documents
+
+# List files
+ls
+```
+
+You can work on projects in Windows (using your favorite editor) and run Claude Code from WSL2 (using the Linux command line). Just navigate to the right directory.
+
+**Recommendation:** Create a projects folder in Windows (e.g., `C:\Users\YourUsername\projects`), then access it from WSL2:
+
+```bash
+cd /mnt/c/Users/YourUsername/projects
+```
+
+This keeps your projects in one place and accessible from both Windows and WSL2.
+
+## Recap
+
+- WSL2 is installed and running Ubuntu
+- Node.js and npm are installed
+- Claude Code is installed and authenticated
+- You've tested Claude Code successfully
+- You can access Windows files from WSL2 via `/mnt/c/`
+
+## What's Next
+
+Your WSL2 environment is ready. Next, you'll learn about Windows file system quirks and then do your first real Claude Code session on Windows.
+
+You can now skip the "PowerShell Alternative" lesson (you're not using PowerShell for development). Jump to "Windows File System Quirks."

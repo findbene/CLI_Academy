@@ -1,0 +1,343 @@
+---
+title: "Windows File System Quirks"
+description: "Understand the differences between Windows and Unix file systems, why they matter for Claude Code, and how to avoid pain."
+slug: "windows-file-system-quirks"
+lesson_number: 4
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["windows", "advanced", "filesystem"]
+---
+
+## What You'll See
+
+A practical guide to the biggest file system differences between Windows and Linux/macOS. You'll learn why they matter and how to prevent them from breaking your projects.
+
+## Why This Matters
+
+If you're using WSL2, you're working in both Windows and Linux file systems. If you're using PowerShell, you're working with Windows quirks. Either way, understanding these differences prevents frustration.
+
+The main issues:
+
+1. **Path format** — Backslashes vs forward slashes
+2. **Line endings** — CRLF vs LF
+3. **Symbolic links** — Windows doesn't support them well
+4. **Case sensitivity** — Windows ignores case; Linux cares
+5. **Special characters** — Some are illegal on Windows
+
+## Path Format: `\` vs `/`
+
+### The Problem
+
+Windows uses backslashes: `C:\Users\Name\projects\my-app`
+
+Unix/Linux uses forward slashes: `/home/name/projects/my-app`
+
+When you work across systems (Windows editor, WSL2 commands), paths get confusing.
+
+### The Real Issue
+
+Most tools expect forward slashes. Windows uses backslashes. When you hardcode a path with backslashes in code, it breaks on Unix.
+
+**Bad (Windows-specific):**
+```javascript
+const path = "C:\Users\Name\projects\data.json";
+```
+
+This breaks on Mac/Linux.
+
+**Good (cross-platform):**
+```javascript
+const path = "C:/Users/Name/projects/data.json";
+// Or use path.join()
+const path = require('path').join("C:", "Users", "Name", "projects", "data.json");
+```
+
+### How to Handle This
+
+**Rule 1: Always use forward slashes in code**
+
+```javascript
+// Yes
+const file = "./src/components/Button.tsx";
+
+// No
+const file = ".\\src\\components\\Button.tsx";
+```
+
+**Rule 2: Use `path.join()` in Node.js**
+
+```javascript
+const path = require('path');
+const file = path.join(__dirname, 'src', 'components', 'Button.tsx');
+```
+
+`path.join()` uses the correct separator for the OS automatically.
+
+**Rule 3: Tell Claude Code**
+
+Add to CLAUDE.md:
+
+```markdown
+## File Paths
+
+Always use forward slashes in code, even on Windows.
+
+Use `path.join()` for dynamic paths:
+```js
+const file = path.join(__dirname, 'src', 'data.json');
+```
+
+Never hardcode backslash paths.
+```
+
+Claude Code will follow this pattern automatically.
+
+## Line Endings: CRLF vs LF
+
+### The Problem
+
+Windows uses CRLF (Carriage Return + Line Feed): two characters to end a line.
+
+Unix/Linux/macOS use LF (Line Feed): one character to end a line.
+
+Your text editor creates files with CRLF on Windows. When you commit to Git, it gets confused.
+
+```
+warning: CRLF will be replaced by LF the next time Git touches this file
+```
+
+This warning means: "Your file uses Windows line endings. Unix tools expect Linux line endings. I'm going to convert them."
+
+### How to Handle This
+
+**Solution 1: Configure Git (once)**
+
+In PowerShell or WSL2, run:
+
+```bash
+git config --global core.autocrlf true
+```
+
+This tells Git: "Automatically convert CRLF ↔ LF."
+
+Now:
+- When you commit a file, Git converts CRLF to LF (for the repository)
+- When you check out a file, Git converts LF back to CRLF (for your Windows editor)
+
+Everyone on the team sees correct line endings. No warnings.
+
+**Solution 2: Use .gitattributes (stronger)**
+
+Create `.gitattributes` in your project root:
+
+```
+* text=auto
+* eol=lf
+```
+
+This forces all text files to use LF in the repository, regardless of OS.
+
+Then run once:
+```bash
+git add -A
+git commit -m "Normalize line endings"
+```
+
+Now everyone uses LF, no conversions, no confusion.
+
+**Best practice:** Do Solution 1 (configure Git globally) right after installing Git. Do Solution 2 (`.gitattributes`) for any new project.
+
+## Symbolic Links
+
+### The Problem
+
+Unix/Linux has symbolic links (symlinks): shortcuts to other files or directories.
+
+```bash
+# Unix: create a symlink
+ln -s /real/file /shortcut
+```
+
+Windows doesn't support symlinks without special permissions. Some npm packages create symlinks, which fail on Windows without Administrator mode.
+
+Error:
+```
+Error: EPERM: operation not permitted, symlink '/real/file' -> '/shortcut'
+```
+
+### How to Handle This
+
+**Solution 1: Run as Administrator**
+
+For problematic `npm install` commands, run PowerShell as Administrator.
+
+**Solution 2: Use npm ci instead of npm install**
+
+```powershell
+npm ci
+# Instead of
+npm install
+```
+
+`npm ci` (clean install) handles dependencies more reliably on Windows.
+
+**Solution 3: Use WSL2**
+
+WSL2 handles symlinks correctly. If symlinks are a blocker, switch to WSL2.
+
+**Solution 4: Tell Claude Code**
+
+Add to CLAUDE.md:
+
+```markdown
+## npm Installation
+
+Run npm commands as Administrator on Windows.
+If that fails, use `npm ci` instead of `npm install`.
+```
+
+## Case Sensitivity
+
+### The Problem
+
+Windows is case-insensitive: `file.txt`, `File.txt`, and `FILE.txt` are the same file.
+
+Unix/Linux is case-sensitive: they're three different files.
+
+This causes problems when you work on a project across Windows and Linux.
+
+**Example:**
+```
+You create: Button.tsx
+But you import: button.tsx
+On Windows: works fine
+On Linux/Mac: file not found error
+```
+
+### How to Handle This
+
+**Rule 1: Be consistent with casing**
+
+```javascript
+// Define once
+export function Button() { ... }
+
+// Import consistently
+import { Button } from './Button.tsx';  // Capital B, always
+```
+
+**Rule 2: Follow conventions**
+
+- Components: PascalCase (`Button.tsx`, `UserProfile.tsx`)
+- Utilities: camelCase (`formatPrice.ts`, `parseJson.ts`)
+- Constants: UPPER_CASE (`MAX_RETRIES.ts`)
+
+**Rule 3: Tell Claude Code**
+
+Add to CLAUDE.md:
+
+```markdown
+## File Naming
+
+Follow strict casing:
+- React components: PascalCase (Button.tsx, UserCard.tsx)
+- Utilities: camelCase (formatDate.ts, parseQuery.ts)
+- Constants: UPPER_CASE (API_KEY.ts, MAX_TIMEOUT.ts)
+
+Never mix case. If a file is named Button.tsx, import from Button, not button.
+```
+
+Claude Code will enforce this.
+
+## Special Characters in Filenames
+
+### The Problem
+
+Windows has illegal characters in filenames:
+- `<` `>` `:` `"` `/` `\` `|` `?` `*`
+
+Linux allows them (except `/` and null character).
+
+If you create a file named `question?.txt` on Windows, that filename is invalid.
+
+### How to Handle This
+
+Simple: avoid special characters in filenames.
+
+Use:
+- Letters and numbers
+- Hyphens and underscores
+- Dots for extensions
+
+Never use: `<`, `>`, `:`, `"`, `/`, `\`, `|`, `?`, `*`
+
+Good filenames:
+- `user-profile.ts`
+- `validate_email.ts`
+- `config.prod.json`
+- `API_KEY.ts`
+
+Bad filenames:
+- `user:profile.ts` (colon not allowed)
+- `validate|email.ts` (pipe not allowed)
+- `question?.ts` (question mark not allowed)
+
+## WSL2-Specific: The `/mnt/c` Issue
+
+If you're using WSL2, your Windows files appear at `/mnt/c/`.
+
+### The Problem
+
+Accessing Windows files from WSL2 via `/mnt/c/` is slower than native WSL2 files.
+
+Performance difference:
+- WSL2 files (in `/home/`): Very fast
+- Windows files (in `/mnt/c/`): 2-5x slower
+
+If your project is on Windows and you access it via WSL2, it's slower.
+
+### How to Handle This
+
+**Solution 1: Keep projects in WSL2**
+
+Create projects inside WSL2 (in `/home/username/projects/`), not on Windows.
+
+```bash
+# Good: project inside WSL2
+mkdir ~/projects/my-app
+cd ~/projects/my-app
+claude
+
+# Slower: project on Windows, accessed from WSL2
+cd /mnt/c/Users/YourName/projects/my-app
+claude
+```
+
+**Solution 2: Use Windows editor with WSL2 backend**
+
+Visual Studio Code can use WSL2 as the backend. You edit in Windows (fast), but code runs in WSL2 (native performance).
+
+Install the "Remote - WSL" extension in VS Code, then open your Windows folder through WSL2. VS Code handles the connection.
+
+**Solution 3: Don't worry about it**
+
+For most projects, the performance difference doesn't matter. Work wherever is convenient.
+
+## Recap
+
+- **Paths:** Use forward slashes, even on Windows. Use `path.join()` for dynamic paths.
+- **Line endings:** Run `git config --global core.autocrlf true` once. Add `.gitattributes` to new projects.
+- **Symlinks:** Run as Administrator if npm install fails. Use `npm ci` as a fallback.
+- **Case sensitivity:** Be consistent. Match casing exactly. Document conventions in CLAUDE.md.
+- **Special characters:** Don't use them in filenames. Keep it simple.
+- **WSL2 performance:** Keep projects in WSL2 for speed. Or use VS Code's WSL2 extension.
+
+## What's Next
+
+You now understand Windows file system quirks. Next, you'll do your first Claude Code session on Windows from start to finish.

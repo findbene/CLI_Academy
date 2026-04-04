@@ -1,12 +1,12 @@
 # Technical Requirements Document
 
-Project: Zero to Claude
+Project: CLI Academy
 Version: 1.0
 Status: planning
 
 ## 1. Architecture Summary
 
-Zero to Claude is an independent monorepo with:
+CLI Academy is an independent monorepo with:
 
 - Next.js frontend
 - FastAPI backend

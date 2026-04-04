@@ -1,6 +1,6 @@
 # Launch Plan
 
-Project: Zero to Claude
+Project: CLI Academy
 Version: 1.0
 
 ## 1. Launch Philosophy

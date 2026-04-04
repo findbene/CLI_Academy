@@ -1,0 +1,437 @@
+---
+title: "Reading Agent Output"
+description: "Understand what Claude Code is doing when it shows you tool calls, permission requests, and confirmations."
+slug: "reading-agent-output"
+lesson_number: 7
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["workflow", "beginner", "understanding"]
+---
+
+## What You'll See
+
+You'll learn to read and understand Claude Code's output. You'll see tool calls, permission requests, diffs, and status messages. You'll understand what each one means and how to respond.
+
+## Why This Matters
+
+Claude Code shows you everything it's doing. Understanding this output is how you stay in control. You're not blindly trusting Claude Code to do the right thing—you're reading what it does and verifying it's correct before accepting changes.
+
+This is critical for beginners. You're learning. You need to see what Claude Code builds so you can learn from it.
+
+## Example Output Session
+
+Let's walk through a real Claude Code session and understand each type of output.
+
+### Starting Up
+
+You type:
+
+```bash
+claude
+```
+
+Claude Code responds:
+
+```
+Claude Code │ my-project
+
+Loading CLAUDE.md...
+✓ Loaded CLAUDE.md (Architecture: Next.js + TypeScript)
+
+Ready. What would you like me to help with?
+
+>
+```
+
+This is Claude Code saying:
+- "I'm ready"
+- "I've read your CLAUDE.md"
+- "I understand your project setup"
+- "Waiting for your request"
+
+### Making a Request
+
+You type:
+
+```
+Create a new utility function called formatPrice that converts a number to USD currency format.
+```
+
+Claude Code shows its thinking:
+
+```
+I'll create a utility function for currency formatting.
+
+Planning:
+- Create src/lib/formatPrice.ts
+- Export a function that formats numbers as USD
+- Add JSDoc comments
+- Create a test file src/lib/__tests__/formatPrice.test.ts
+
+Is this plan okay?
+```
+
+Claude Code is:
+1. Showing its plan before executing
+2. Asking for permission
+3. Telling you what files it will create or modify
+
+This is good. You can review the plan and say "yes" or ask for changes.
+
+You type: `yes`
+
+### Executing Changes
+
+Claude Code starts working:
+
+```
+Creating src/lib/formatPrice.ts...
+✓ Created src/lib/formatPrice.ts
+
+Here's the code I created:
+
+───────────────────────────────────────────────────────────────────
+src/lib/formatPrice.ts
+───────────────────────────────────────────────────────────────────
+
+/**
+ * Format a number as USD currency
+ * @param amount - The amount in cents
+ * @returns Formatted string like "$12.34"
+ */
+export function formatPrice(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount / 100);
+}
+
+───────────────────────────────────────────────────────────────────
+
+Creating test file...
+✓ Created src/lib/__tests__/formatPrice.test.ts
+
+Running tests...
+✓ All tests passed (1 new test)
+
+Done. You can now use formatPrice() in your components.
+
+>
+```
+
+Let's break down what you're seeing:
+
+- `Creating src/lib/formatPrice.ts...` — Claude Code is about to create this file
+- `✓ Created src/lib/formatPrice.ts` — Success. The file was created.
+- Code block — The full content of the file Claude Code created
+- `Creating test file...` — Claude Code is creating a test
+- `✓ Created src/lib/__tests__/formatPrice.test.ts` — Test created
+- `Running tests...` — Claude Code is executing your test suite
+- `✓ All tests passed` — Tests passed. Claude Code verified its work.
+
+This is a complete, verified output. Claude Code didn't just create code—it tested it.
+
+## Understanding Different Output Types
+
+### 1. Planning Output
+
+```
+I'll add error handling to the API route.
+
+Planning:
+- Update src/api/users.ts
+- Add try/catch around database call
+- Return 500 status on error
+- Log errors to console
+
+Shall I proceed?
+```
+
+This is Claude Code telling you what it will do before doing it. You can:
+
+- Type `yes` to approve
+- Type `no` to cancel
+- Ask a question: `What error cases are you handling?`
+
+### 2. Tool Call Output
+
+```
+Reading src/components/Button.tsx to understand the component structure...
+✓ Read file (247 lines)
+```
+
+Claude Code is reading a file to understand context. It shows:
+
+- What it's doing (`Reading...`)
+- What tool it's using (read)
+- How many lines it read
+
+This is normal. Claude Code reads files to understand your project before making changes.
+
+### 3. Diff Output
+
+When Claude Code edits an existing file, it shows a diff:
+
+```
+Updating src/api/users.ts...
+
+───────────────────────────────────────────────────────────────────
+Diff:
+───────────────────────────────────────────────────────────────────
+
+@@ -15,6 +15,18 @@ export async function GET(req: Request) {
+   const users = await db.query("SELECT * FROM users");
+   return Response.json(users);
+ }
++
++export async function POST(req: Request) {
++  try {
++    const body = await req.json();
++    const user = await db.query(
++      "INSERT INTO users (name, email) VALUES (?, ?)",
++      [body.name, body.email]
++    );
++    return Response.json(user, { status: 201 });
++  } catch (error) {
++    return Response.json({ error: "Failed to create user" }, { status: 500 });
++  }
++}
+
+✓ Updated src/api/users.ts
+```
+
+Reading a diff:
+
+- Lines with `+` are additions
+- Lines with `-` are deletions
+- Context lines (no +/-) show surrounding code
+- The header `@@ -15,6 +15,18 @@` shows where in the file the change is
+
+In this case, Claude Code is adding a new POST function to the API.
+
+### 4. Running Commands
+
+```
+Running tests to verify the changes work...
+
+> npm test
+
+PASS  src/api/users.test.ts
+  POST /api/users
+    ✓ creates a new user (45ms)
+    ✓ returns 500 on database error (23ms)
+
+Tests:       2 passed, 2 total
+Time:        1.2s
+
+✓ All tests passed
+```
+
+Claude Code ran `npm test` and shows:
+
+- The command that ran
+- The output (test results)
+- Success indicator
+
+This is important. Claude Code verified its code works before showing it to you.
+
+### 5. Permission Request
+
+```
+I'm about to delete the old-component.tsx file. Shall I continue?
+
+(This is a destructive operation. Review carefully.)
+```
+
+Claude Code is asking permission before doing something risky. It shows:
+
+- What it wants to do (delete a file)
+- Why it's asking (destructive operation)
+- Your decision point
+
+You can:
+
+- `yes` to approve
+- `no` to cancel
+- `explain` to see why Claude Code thinks this is needed
+
+### 6. Error Output
+
+```
+Running tests...
+
+FAIL  src/components/Button.test.tsx
+  Button component
+    ✗ renders without crashing (Error: Cannot find module 'lucide-react')
+
+Tests: 1 failed, 1 total
+
+Claude Code analysis:
+The lucide-react package is not installed. Would you like me to:
+1. Install it: npm install lucide-react
+2. Remove the import from Button.tsx
+3. Use a different icon library
+
+Which should I do?
+```
+
+Claude Code encountered an error. It shows:
+
+- What failed (the test)
+- Why it failed (missing package)
+- What Claude Code suggests to fix it
+- Your options
+
+You decide. Claude Code isn't making risky decisions alone.
+
+## Understanding Status Symbols
+
+You'll see consistent symbols in Claude Code's output:
+
+| Symbol | Meaning |
+|--------|---------|
+| `✓` | Success. Command worked, file created, test passed. |
+| `✗` | Failure. Something went wrong. |
+| `→` | In progress. Claude Code is working on this. |
+| `⚠` | Warning. Not critical, but worth noting. |
+| `?` | Question. Claude Code needs your input. |
+
+Example:
+
+```
+→ Reading src/main.tsx...
+✓ Read 342 lines
+→ Modifying Component.tsx...
+✓ Updated Component.tsx
+⚠ Warning: TypeScript type issue on line 45. Should be fixed.
+? Should I fix this type issue automatically?
+```
+
+## Asking Claude Code to Explain
+
+You don't have to understand everything immediately. Ask:
+
+```
+> Why did you make that change to the Button component?
+```
+
+Claude Code will explain its reasoning. This is how you learn.
+
+```
+I updated the Button component to add disabled state handling.
+
+The original code didn't prevent clicks on disabled buttons.
+Now it checks the `disabled` prop and:
+1. Disables the HTML button element
+2. Adds visual styling (opacity, cursor)
+3. Prevents onClick from firing
+
+This follows React best practices for accessible buttons.
+```
+
+## Verifying Changes
+
+Before accepting changes, you should:
+
+1. **Read the diff** — Does it make sense?
+2. **Run tests** — Did Claude Code verify its work?
+3. **Build locally** — Does it compile? Does it run?
+4. **Try it** — Use the feature. Does it work?
+
+You can do all of this yourself after Claude Code shows you the changes:
+
+```bash
+# See all changes since last commit
+git diff
+
+# Run tests manually
+npm test
+
+# Build manually
+npm run build
+
+# Run the app
+npm run dev
+```
+
+Claude Code usually does these steps automatically, but you can always verify yourself.
+
+## Common Output Patterns
+
+### Pattern 1: Quick Changes
+
+```
+I'll add a console.log to debug the function.
+
+✓ Updated src/main.ts
+
+Done. Added logging at line 42.
+```
+
+Fast, simple change. No tests needed.
+
+### Pattern 2: Feature With Tests
+
+```
+I'll add a new function with full tests.
+
+✓ Created src/lib/calculateTotal.ts
+✓ Created src/lib/__tests__/calculateTotal.test.ts
+Running tests...
+✓ All tests passed
+
+Done. The function is fully tested and ready to use.
+```
+
+More complex. Claude Code tested it.
+
+### Pattern 3: Multi-File Change
+
+```
+I'll refactor authentication across three files.
+
+✓ Updated src/auth/login.ts
+✓ Updated src/auth/logout.ts
+✓ Updated src/auth/guard.ts
+Running full test suite...
+✓ All 23 tests passed
+
+Done. All auth functions now use consistent error handling.
+```
+
+Large change across files. Claude Code ran the full test suite.
+
+## Reading Long Output
+
+Sometimes Claude Code's output is long. Focus on:
+
+1. The summary at the top (the plan)
+2. The file list (what changed)
+3. The success/failure indicator (did it work?)
+4. The next steps (what to do now)
+
+You don't need to read every line of code if it compiled and tests passed. You can always ask Claude Code to explain specific changes:
+
+```
+> Explain the changes to src/database.ts. What was the problem?
+```
+
+## Recap
+
+- Claude Code shows its plan before executing
+- It uses symbols: `✓` for success, `✗` for failure, `→` for in progress
+- Diffs show exact changes: `+` for additions, `-` for deletions
+- Claude Code runs tests to verify changes work
+- Permission requests give you control over risky actions
+- You can ask Claude Code to explain any change
+- Always read diffs carefully before accepting
+
+## What's Next
+
+You now understand what Claude Code is doing and how to read its output. In the next lesson, you'll tie everything together and learn what comes after the beginners path.

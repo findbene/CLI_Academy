@@ -1,0 +1,198 @@
+---
+title: "Installing Claude Code"
+description: "Install Claude Code globally, authenticate with your API key, and verify the setup works."
+slug: "installing-on-your-machine"
+lesson_number: 2
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: true
+tags: ["setup", "beginner", "installation"]
+---
+
+## What You'll See
+
+You'll have Claude Code installed globally on your machine, authenticated, and ready to use. You'll see a terminal prompt where you can type `claude` and start working with the agent.
+
+## Why This Matters
+
+Claude Code runs as a command-line tool. Like any tool, it needs to be installed and authenticated before you can use it. This lesson gets you to the starting line—past setup friction and ready to actually build something.
+
+Installation is one-time. It takes 5 minutes. After this, every new project just means opening a terminal and typing `claude`.
+
+<WarnBlock title="API Key Safety">
+Claude Code uses your Anthropic API key to make requests. Your key is private—never share it, never commit it to Git, never paste it in public forums. Treat it like a password. In this lesson, you'll learn where to store it safely.
+</WarnBlock>
+
+## Prerequisites
+
+You need:
+
+- **Node.js 18+** — Claude Code is installed via npm. If you don't have Node yet, head to [nodejs.org](https://nodejs.org) and install the LTS version.
+- **A terminal** — macOS comes with Terminal.app. Windows needs either WSL2 or PowerShell. Linux: you already know what to do.
+- **An Anthropic API key** — Get one at [console.anthropic.com](https://console.anthropic.com).
+
+Not sure if you have Node? Open a terminal and type:
+
+```bash
+node --version
+```
+
+If you see a version number (v18.0.0 or higher), you're good. If not, install Node first, then come back to this lesson.
+
+## Step by Step
+
+### Step 1: Verify Node and npm
+
+Open a terminal and check that both are installed:
+
+```bash
+node --version
+npm --version
+```
+
+You should see version numbers for both. If either is missing, install Node from [nodejs.org](https://nodejs.org).
+
+**What this does:** npm is the package manager for Node.js. It comes bundled with Node, so checking both ensures your environment is ready.
+
+### Step 2: Install Claude Code Globally
+
+Run this command:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+The `-g` flag means "global"—Claude Code installs in a system location, not in your project folder. This lets you run `claude` from any directory.
+
+**What this does:** npm fetches Claude Code from the public registry and installs it. It may take 30-60 seconds.
+
+### Step 3: Check Your Installation
+
+After installation finishes, verify it worked:
+
+```bash
+claude --version
+```
+
+You should see a version number like `1.0.0` or similar. If you get a "command not found" error, see the Common Issues section below.
+
+### Step 4: Create Your API Key
+
+Go to [console.anthropic.com](https://console.anthropic.com) (you need an Anthropic account). Under API Keys, click "Create Key" and copy it. You'll use it in the next step.
+
+**What this does:** Your API key authenticates Claude Code to Anthropic's servers. It's how Claude Code makes requests on your behalf.
+
+### Step 5: Authenticate Claude Code
+
+Open a terminal and run:
+
+```bash
+claude auth
+```
+
+Claude Code will ask for your API key. Paste the key you copied in Step 4. It will look something like `sk-ant-...`.
+
+After you paste it, Claude Code stores the key locally and confirms authentication is working.
+
+**What this does:** Claude stores your API key in a secure location on your machine (typically `~/.claude/auth.json` on macOS/Linux or `%USERPROFILE%\.claude\auth.json` on Windows). The key stays local—never sent anywhere except to Anthropic's servers when Claude Code makes requests.
+
+### Step 6: Verify Authentication Works
+
+Run this command:
+
+```bash
+claude --version
+```
+
+If it shows your version number and doesn't error, authentication is working. You're ready to use Claude Code.
+
+## Check Your Work
+
+To verify everything is set up correctly, navigate to an empty folder and run:
+
+```bash
+mkdir test-claude && cd test-claude
+```
+
+Then initialize Claude Code:
+
+```bash
+claude
+```
+
+You should see the Claude Code prompt and be able to type a request. Try:
+
+```
+Create a simple hello.txt file that says "Hello, Claude Code!"
+```
+
+Claude Code will create the file and confirm it. You can verify by listing files:
+
+```bash
+ls
+```
+
+You should see `hello.txt`. Open it:
+
+```bash
+cat hello.txt
+```
+
+You should see: `Hello, Claude Code!`
+
+If all of that works, installation is complete.
+
+## Common Issues
+
+**"command not found: claude"**
+
+This usually means npm didn't install Claude Code globally, or your system PATH is misconfigured.
+
+**Fix:**
+1. Check that npm installed it: `npm list -g @anthropic-ai/claude-code`
+2. If not installed, try: `npm install -g @anthropic-ai/claude-code` again
+3. If still missing, your PATH may need updating. Ask Claude Code (in any existing project) to help debug this, or see the platform-specific setup lessons for Windows or macOS.
+
+**"Authentication failed" or "Invalid API key"**
+
+Your API key is wrong or expired.
+
+**Fix:**
+1. Go back to [console.anthropic.com](https://console.anthropic.com)
+2. Create a new API key
+3. Run `claude auth` again and paste the new key
+4. Test with `claude --version`
+
+**"npm: command not found"**
+
+Node.js is not installed.
+
+**Fix:**
+1. Go to [nodejs.org](https://nodejs.org)
+2. Download and install the LTS version
+3. Restart your terminal
+4. Try `npm --version` to verify
+5. Then run `npm install -g @anthropic-ai/claude-code`
+
+**On macOS: "Error: EACCES: permission denied"**
+
+npm is trying to install globally without permission.
+
+**Fix:** Don't use `sudo` with npm. Instead, follow the macOS setup lesson for Homebrew + nvm setup, which handles permissions correctly.
+
+## Recap
+
+- Claude Code is installed via npm with `npm install -g @anthropic-ai/claude-code`
+- Your API key authenticates you—store it safely, never commit it to Git
+- Claude Code stores your key locally in `~/.claude/auth.json` (or Windows equivalent)
+- Verify setup by running `claude` in a terminal and asking it to create a test file
+- The installation is one-time. All future projects just need a terminal and `claude`
+
+## What's Next
+
+In the next lesson, you'll learn about CLAUDE.md—the instruction file that tells Claude Code how to work on your specific project.

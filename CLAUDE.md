@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file defines the operating rules for AI builders working inside the Zero to Claude repo.
+This file defines the operating rules for AI builders working inside the CLI Academy repo.
 
 ## Mission
 
@@ -16,15 +16,15 @@ The product is:
 
 ## Repo Rule
 
-This repo is the canonical home for Zero to Claude.
+This repo is the canonical home for CLI Academy.
 
 Do not re-embed the product inside `C:\Citadel_AI_Automation`.
 Borrow ideas and patterns from Citadel when useful, but keep this project independent in architecture, documentation, and implementation.
 
 ## Current Product Strategy
 
-The working public brand is `Zero to Claude`.
-The working descriptor is `Zero to Claude Academy`.
+The working public brand is `CLI Academy`.
+The working descriptor is `CLI Academy`.
 
 The primary wedge is:
 

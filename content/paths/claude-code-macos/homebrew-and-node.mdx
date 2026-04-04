@@ -1,0 +1,236 @@
+---
+title: "Homebrew and Node.js"
+description: "Install Homebrew, then use it to install Node.js and npm on macOS properly."
+slug: "homebrew-and-node"
+lesson_number: 1
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["macos", "setup", "homebrew"]
+---
+
+## What You'll See
+
+Homebrew installed, Node.js installed, npm working, and Claude Code ready to install. A proper development environment on macOS.
+
+## Why This Matters
+
+macOS comes with some tools but not Node.js. You could download Node.js directly from nodejs.org, but that's not the professional approach.
+
+Homebrew is macOS's package manager. It handles installation, updates, and dependency management cleanly. Once you have Homebrew, installing Node.js and future tools is one command.
+
+Plus, Homebrew keeps everything in the right place, so you don't get permission issues.
+
+## Prerequisites
+
+- **macOS 10.13 or later**
+- **A terminal**
+- **Administrator access** (for sudo)
+
+That's it. If you have a Mac, you have everything needed.
+
+## Step 1: Open Terminal
+
+Press Command+Space to open Spotlight search, type "Terminal", and press Enter.
+
+You'll see a terminal prompt:
+
+```
+username@computer-name ~ %
+```
+
+(The `~` means you're in your home directory.)
+
+## Step 2: Install Homebrew
+
+Paste this command into Terminal:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+This:
+- Downloads the Homebrew installer
+- Runs it
+- Installs Homebrew in `/usr/local/Cellar/` (the standard location)
+
+**This will take 2-5 minutes.** Homebrew downloads and compiles some dependencies.
+
+At the end, you'll see:
+
+```
+==> Installation successful!
+```
+
+## Step 3: Verify Homebrew Works
+
+Type:
+
+```bash
+brew --version
+```
+
+You should see something like:
+
+```
+Homebrew 4.0.0
+```
+
+Great! Homebrew is installed.
+
+## Step 4: Install Node.js via Homebrew
+
+Type:
+
+```bash
+brew install node
+```
+
+Homebrew:
+- Downloads Node.js
+- Installs it in `/usr/local/Cellar/`
+- Creates symbolic links so `node` and `npm` work globally
+- Takes 1-2 minutes
+
+At the end, you'll see:
+
+```
+==> Summary
+node: /usr/local/Cellar/node/XX.XX.XX
+npm: XX.XX.XX
+```
+
+## Step 5: Verify Node.js and npm
+
+Check Node.js:
+
+```bash
+node --version
+```
+
+You should see `v18.0.0` or higher.
+
+Check npm:
+
+```bash
+npm --version
+```
+
+You should see `8.0.0` or higher.
+
+Both should show version numbers. If they don't, see Common Issues below.
+
+## Step 6: Update npm (Optional but Recommended)
+
+npm updates frequently. You might have an older version with Homebrew.
+
+Update to the latest:
+
+```bash
+npm install -g npm@latest
+```
+
+This upgrades npm globally.
+
+Verify:
+
+```bash
+npm --version
+```
+
+Should be 9.0.0 or higher (depends on when you're reading this—it's always improving).
+
+## Step 7: Install Claude Code
+
+Now that npm works, install Claude Code globally:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Verify:
+
+```bash
+claude --version
+```
+
+You should see a version number like `1.0.0`.
+
+## Step 8: Authenticate Claude Code
+
+```bash
+claude auth
+```
+
+Claude Code asks for your Anthropic API key. Get one at [console.anthropic.com](https://console.anthropic.com) if you don't have one.
+
+Paste it when prompted.
+
+You'll see:
+
+```
+✓ Authentication successful
+```
+
+## Verify Everything Works
+
+Create a test directory:
+
+```bash
+mkdir test-claude
+cd test-claude
+```
+
+Start Claude Code:
+
+```bash
+claude
+```
+
+You should see:
+
+```
+Claude Code │ test-claude
+
+Ready. What would you like me to help with?
+
+>
+```
+
+Test it:
+
+```
+Create a file called hello.txt that says "Claude Code works on macOS!"
+```
+
+Claude Code creates the file. Verify:
+
+```bash
+ls
+cat hello.txt
+```
+
+Exit Claude Code:
+
+```bash
+exit
+```
+
+Perfect! Everything works.
+
+## Recap
+
+- Homebrew is macOS's package manager
+- Installed Homebrew: `/usr/local/Cellar/`
+- Installed Node.js via Homebrew
+- Installed Claude Code via npm
+- Verified everything works
+
+## What's Next
+
+Now that Node.js is installed via Homebrew, you should configure your shell so everything works smoothly across sessions. Next lesson: Zsh Configuration.

@@ -1,0 +1,248 @@
+---
+title: "Zsh Configuration"
+description: "Configure your .zshrc to ensure Node.js, npm, and Claude Code work smoothly in every new terminal session."
+slug: "zsh-configuration"
+lesson_number: 2
+estimated_minutes: 8
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["macos", "setup", "shell"]
+---
+
+## What You'll See
+
+A properly configured terminal that knows where to find Node.js, npm, and Claude Code. Every new terminal window will work correctly without setup.
+
+## Why This Matters
+
+macOS Catalina switched from Bash to Zsh as the default shell. Zsh reads `.zshrc` at startup.
+
+When you install Homebrew and Node.js, they might not be in your PATH automatically. This lesson ensures they are—so `npm` and `node` commands work in any terminal window you open.
+
+Without this, you might get "command not found" errors in new terminal windows, which is frustrating.
+
+## Understanding .zshrc
+
+`.zshrc` is a configuration file for Zsh. It runs every time you open a new terminal.
+
+You can add commands to it that set environment variables, add to PATH, define aliases, etc.
+
+**Key variables:**
+
+- `PATH` — Where the shell looks for commands. When you type `npm`, the shell searches directories in PATH to find the `npm` executable.
+- `HOME` — Your home directory (`~`)
+- `SHELL` — Your shell (`/bin/zsh`)
+
+## Step 1: Find Your .zshrc
+
+Open Terminal and type:
+
+```bash
+nano ~/.zshrc
+```
+
+This opens `.zshrc` in the `nano` text editor. If the file doesn't exist, nano creates it.
+
+You'll see either:
+- An empty editor (new .zshrc)
+- Your existing configuration
+
+## Step 2: Add Homebrew to PATH
+
+If it's not already there, add these lines:
+
+```bash
+# Homebrew
+export PATH="/usr/local/bin:$PATH"
+```
+
+(On Apple Silicon Macs, use `/opt/homebrew/bin` instead of `/usr/local/bin`.)
+
+**How to know which one:**
+
+Open a new Terminal window and type:
+
+```bash
+which brew
+```
+
+If you see `/usr/local/bin/brew`, use `/usr/local/bin`.
+If you see `/opt/homebrew/bin/brew`, use `/opt/homebrew/bin`.
+
+## Step 3: Add npm Global Path (Optional)
+
+If you ever get "command not found" for global npm packages, add:
+
+```bash
+# npm global
+export PATH="$HOME/.npm-global/bin:$PATH"
+```
+
+This isn't usually necessary with Homebrew, but it's good to have.
+
+## Step 4: Add Common Aliases (Optional)
+
+Aliases are shortcuts for long commands. Add these if you like:
+
+```bash
+# Aliases
+alias ll='ls -la'
+alias la='ls -A'
+alias l='ls -CF'
+alias cls='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+```
+
+These let you type `ll` instead of `ls -la`, `cls` instead of `clear`, etc.
+
+## Step 5: A Complete Example .zshrc
+
+Here's a minimal but complete `.zshrc`:
+
+```bash
+# Homebrew
+export PATH="/usr/local/bin:$PATH"
+
+# npm global (if using npm -g packages)
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+# Aliases
+alias ll='ls -la'
+alias la='ls -A'
+alias l='ls -CF'
+alias cls='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+
+# Optional: History settings (better command history)
+HISTFILE=~/.zsh_history
+HISTSIZE=1000000
+SAVEHIST=1000000
+setopt EXTENDED_HISTORY
+
+# Optional: Better autocomplete
+autoload -Uz compinit && compinit
+```
+
+Don't feel obligated to add everything. The important parts are:
+- Homebrew to PATH
+- Aliases (optional, quality of life)
+
+## Step 6: Save Your Changes
+
+You're in `nano`. To save:
+
+1. Press `Ctrl+O` (write out)
+2. Press `Enter` (confirm filename)
+3. Press `Ctrl+X` (exit nano)
+
+You're back at the terminal prompt.
+
+## Step 7: Apply Changes
+
+Your new `.zshrc` doesn't apply automatically to the current terminal. Tell the terminal to reload it:
+
+```bash
+source ~/.zshrc
+```
+
+Or close and reopen Terminal.
+
+## Step 8: Verify Everything
+
+Test that the PATH is correct:
+
+```bash
+which npm
+```
+
+Should show `/usr/local/bin/npm` (or `/opt/homebrew/bin/npm` on Apple Silicon).
+
+```bash
+which node
+```
+
+Should show `/usr/local/bin/node` (or `/opt/homebrew/bin/node`).
+
+```bash
+which claude
+```
+
+Should show wherever npm put it.
+
+If all three show paths (not "not found"), you're good.
+
+## Common Issues
+
+**Issue: "command not found: npm" in new terminal windows**
+
+This means npm isn't in your PATH.
+
+**Fix:**
+1. Check where npm actually is: `which npm` (in a Terminal window where npm works)
+2. Add that directory to PATH in .zshrc
+3. Run `source ~/.zshrc` to reload
+4. Open a new Terminal and try again
+
+**Issue: .zshrc doesn't seem to take effect**
+
+You might have opened Terminal before making changes.
+
+**Fix:**
+1. Open a new Terminal window
+2. Or run `source ~/.zshrc` in the current window
+
+**Issue: Apple Silicon Mac getting wrong path**
+
+Homebrew installs to `/opt/homebrew/bin` on Apple Silicon, not `/usr/local/bin`.
+
+**Fix:**
+1. Type `which brew` to find where Homebrew is
+2. Update PATH in .zshrc to use that directory
+3. Reload: `source ~/.zshrc`
+
+## Optional: Using nvm for Node Version Management
+
+If you want flexibility to use multiple Node.js versions, you can use nvm (Node Version Manager) instead of Homebrew's Node.js.
+
+This is optional and more advanced. You only need nvm if you:
+- Work on multiple projects with different Node versions
+- Need to test your code on Node 16, 18, and 20
+
+If that's you, here's how to set up nvm:
+
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Then add to .zshrc:
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Then reload
+source ~/.zshrc
+
+# Then install Node
+nvm install 18
+nvm use 18
+```
+
+But for beginners, Homebrew's Node.js is simpler and sufficient.
+
+## Recap
+
+- `.zshrc` is your Zsh configuration file
+- Add Homebrew path: `export PATH="/usr/local/bin:$PATH"` (or `/opt/homebrew/bin` on Apple Silicon)
+- Add aliases for convenience
+- Reload with `source ~/.zshrc` after editing
+- Verify with `which npm` and `which node`
+
+## What's Next
+
+Your shell is configured. Next, learn about Apple Silicon Macs and any quirks specific to that architecture (or skip if you have an Intel Mac).

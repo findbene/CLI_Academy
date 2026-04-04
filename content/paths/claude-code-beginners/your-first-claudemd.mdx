@@ -1,0 +1,386 @@
+---
+title: "Your First CLAUDE.md"
+description: "Learn what CLAUDE.md is and how to write one that tells Claude Code how to work on your project."
+slug: "your-first-claudemd"
+lesson_number: 3
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["setup", "beginner", "configuration"]
+---
+
+## What You'll See
+
+You'll create a CLAUDE.md file in your project root. Claude Code will read it automatically and use it to understand your project's architecture, conventions, and constraints. Your instructions will be visible in Claude Code's context window—shaping every request you make.
+
+## Why This Matters
+
+CLAUDE.md is your instruction manual for Claude Code. Without it, Claude Code is powerful but directionless. With it, Claude Code becomes your collaborative coding partner—following your conventions, respecting your constraints, and working the way your project expects.
+
+The best part: you write CLAUDE.md once, and it shapes every interaction you have with Claude Code on that project. It's a force multiplier.
+
+## What Is CLAUDE.md?
+
+CLAUDE.md is a Markdown file in your project root. Claude Code reads it at startup and uses it as a "system instruction" for how to work on your project.
+
+Think of it as your project's coding constitution. It says things like:
+
+- "We use TypeScript with strict type checking"
+- "Tests must pass before any code is merged"
+- "Never commit secrets or .env files"
+- "Component files go in `/src/components/`, utilities in `/src/lib/`"
+- "We follow ESLint rules defined in `.eslintrc.json`"
+
+Claude Code reads these rules and follows them automatically. You don't have to repeat them in every request.
+
+## Structure of CLAUDE.md
+
+Here's a minimal but effective CLAUDE.md:
+
+```markdown
+# Project: My Awesome App
+
+## Mission or Purpose
+
+Brief description of what this project does.
+
+## Architecture
+
+- Frontend: React + TypeScript
+- Backend: Node.js + Express
+- Database: PostgreSQL
+- Deployment: Vercel
+
+## File Organization
+
+- `/src/components/` — React components
+- `/src/pages/` — Next.js pages
+- `/src/lib/` — Utility functions
+- `/src/styles/` — CSS modules
+- `/tests/` — Jest test files
+
+## Coding Standards
+
+- All code must be TypeScript with strict mode enabled
+- All functions must be documented with JSDoc
+- All UI components must have tests
+- Use ESLint; fix all warnings before committing
+
+## Before You Code
+
+- Read all lint/type errors first
+- Run tests to see the current state
+- Never commit secrets, env files, or tokens
+- Update CLAUDE.md if architecture changes
+
+## Definition of Done
+
+A task is done when:
+- Lint passes: `npm run lint`
+- Type check passes: `npx tsc --noEmit`
+- Tests pass: `npm test`
+- Build succeeds: `npm run build`
+
+## What Not to Do
+
+- Never use `any` in TypeScript
+- Never hardcode API keys
+- Never modify the database schema without migration
+- Never add dependencies without discussing tradeoffs
+```
+
+That's a real, usable CLAUDE.md for a typical Node.js/React project. You can adapt it for your own project.
+
+## Building Your CLAUDE.md
+
+Effective CLAUDE.md files include these sections:
+
+### 1. Project Title and Purpose
+
+What is this project? Keep it to 1-2 sentences.
+
+```markdown
+# Project: Todo App
+
+A simple todo list app for learning React fundamentals.
+```
+
+### 2. Architecture
+
+What tech stack are you using? Be specific:
+
+```markdown
+## Architecture
+
+- Frontend: React 18 with TypeScript
+- Styling: Tailwind CSS
+- Testing: Jest + React Testing Library
+- Package manager: npm
+```
+
+### 3. File Organization
+
+Where do things go?
+
+```markdown
+## File Organization
+
+- `/src/components/` — Reusable React components
+- `/src/pages/` — Page-level components
+- `/src/hooks/` — Custom React hooks
+- `/src/types/` — TypeScript types
+- `/src/styles/` — Global styles
+- `/tests/` — Test files
+```
+
+### 4. Coding Standards
+
+What rules must the code follow?
+
+```markdown
+## Coding Standards
+
+- All code must pass TypeScript strict mode
+- All functions must have return types
+- All React components must use functional syntax
+- All strings must be checked for i18n keys
+- Commit message format: `type(scope): description`
+```
+
+### 5. Before You Code
+
+What should Claude Code check first?
+
+```markdown
+## Before You Code
+
+- Run `npm run lint` and fix all errors
+- Run `npm test` and verify current test status
+- Read the current `README.md` if this is your first time
+- Never hardcode values — use `.env.example` for references
+```
+
+### 6. Definition of Done
+
+When is a task actually complete?
+
+```markdown
+## Definition of Done
+
+A task is done when:
+- Lint passes: `npm run lint`
+- Type check passes: `npx tsc --noEmit`
+- Tests pass: `npm test`
+- Build succeeds: `npm run build`
+- Comments explain WHY, not WHAT
+```
+
+## Creating Your First CLAUDE.md
+
+Let's build one for a real project. Say you're starting a Node.js CLI tool.
+
+### Step 1: Open Your Project Root
+
+Navigate to your project folder:
+
+```bash
+cd my-project
+```
+
+### Step 2: Create CLAUDE.md
+
+Create a new file called `CLAUDE.md`:
+
+```bash
+touch CLAUDE.md
+```
+
+(On Windows, you can also just create it with your editor.)
+
+### Step 3: Write the Content
+
+Open `CLAUDE.md` in your editor and paste the template, customized for your project.
+
+Here's a complete example for a CLI tool:
+
+```markdown
+# Project: Data Transformer CLI
+
+A command-line tool that transforms CSV to JSON with validation.
+
+## Architecture
+
+- Runtime: Node.js 18+
+- Language: JavaScript (ES modules)
+- CLI framework: Commander.js
+- Testing: Jest
+- Linting: ESLint
+
+## File Organization
+
+- `/bin/` — CLI entry point
+- `/src/` — Source code
+  - `/src/commands/` — CLI command handlers
+  - `/src/transforms/` — Data transformation logic
+  - `/src/types/` — TypeScript types (JSDoc comments)
+- `/tests/` — Jest tests
+- `/examples/` — Sample data files
+
+## Coding Standards
+
+- Use JSDoc for all functions
+- Add comments explaining complex logic, not obvious lines
+- Write tests for all data transformations
+- Test error cases, not just happy path
+- All async code must use try/catch
+
+## Before You Code
+
+1. Run `npm test` to see current test status
+2. Run `npm run lint` to check code style
+3. Check `.env.example` for required env vars
+4. Never commit `.env` or secrets
+
+## Definition of Done
+
+A task is done when:
+- `npm test` passes
+- `npm run lint` passes
+- `npm run build` succeeds (if applicable)
+- All new functions have JSDoc comments
+- All new features have test coverage
+```
+
+Save this file.
+
+### Step 4: Let Claude Code Read It
+
+Now, when you run Claude Code on this project, it reads CLAUDE.md automatically. Every request you make will follow these rules.
+
+Test it:
+
+```bash
+claude
+```
+
+Ask Claude Code:
+
+```
+Create a function that transforms a CSV string to JSON.
+```
+
+Claude Code will:
+1. Read CLAUDE.md
+2. Follow your conventions (JSDoc, error handling, tests)
+3. Place the code in `/src/transforms/`
+4. Write a test for it
+5. Show you the changes
+
+Without CLAUDE.md, it might have created the function anywhere, with any style. With CLAUDE.md, it knows exactly what you expect.
+
+## Real Examples from Production
+
+Here are excerpts from real CLAUDE.md files that work:
+
+### Full-Stack Next.js App
+
+```markdown
+## Before Any Code Change
+
+1. Run `npm run lint` — fix all warnings
+2. Run `npx tsc --noEmit` — fix all type errors
+3. Run `npm test` — check test health
+4. Read `DECISIONS.md` for recent architecture choices
+
+## TypeScript Rules (Strict)
+
+- Never use `any` — use proper types or generics
+- All API routes must have request/response types
+- All database queries must be typed
+- Prefer `interface` for object shapes
+
+## Definition of Done
+
+A feature is done when:
+- Linting passes
+- Type checking passes
+- All tests pass (including new tests for new logic)
+- Build succeeds without warnings
+```
+
+### Python FastAPI Backend
+
+```markdown
+## Architecture
+
+- Framework: FastAPI
+- Database: PostgreSQL + SQLAlchemy
+- Auth: JWT via Supabase
+- Testing: pytest
+- Code quality: Black, isort, mypy
+
+## Before You Code
+
+1. Run `pytest` to see test status
+2. Run `black --check .` to verify formatting
+3. Run `mypy .` to check type hints
+4. Check `.env.example` for required environment variables
+
+## Definition of Done
+
+A feature is done when:
+- All tests pass: `pytest`
+- Code is formatted: `black .`
+- Imports are sorted: `isort .`
+- Type hints pass: `mypy .`
+- Database migrations are created if schema changed
+```
+
+## Common CLAUDE.md Mistakes
+
+**Mistake 1: Making it too long and vague**
+
+```markdown
+# Bad CLAUDE.md
+We use best practices. Code should be clean. Tests are important.
+```
+
+This doesn't help Claude Code. It's too generic.
+
+**Fix: Be specific.**
+
+```markdown
+# Good CLAUDE.md
+- All functions must be tested with Jest
+- Coverage must be above 80% for new code
+- Tests go in `/tests/__tests__/` directory
+```
+
+**Mistake 2: Writing rules you don't enforce**
+
+If you write "Always add TypeScript types" but then allow `any`, Claude Code gets confused about what you actually want.
+
+**Fix: Only list rules you'll stick to.**
+
+**Mistake 3: Ignoring it after creation**
+
+Your project evolves. So should CLAUDE.md. If you add a new linter, switch frameworks, or change conventions, update CLAUDE.md.
+
+**Fix: Treat CLAUDE.md as a living document.**
+
+## Recap
+
+- CLAUDE.md is a Markdown file that tells Claude Code how to work on your project
+- It should include architecture, file organization, coding standards, and definition of done
+- Claude Code reads it automatically at startup and follows your rules
+- A good CLAUDE.md is specific, enforced, and kept up to date
+- You write it once. It shapes every interaction with Claude Code
+
+## What's Next
+
+You've got Claude Code installed and you've written CLAUDE.md. Next, you'll learn how to actually use Claude Code—how to ask for help, understand what it's doing, and work with it productively.

@@ -1,13 +1,13 @@
-# Zero to Claude Master Blueprint
+# CLI Academy Master Blueprint
 
 Version: 1.0
 Status: execution-ready foundation
-Owner: Zero to Claude
+Owner: CLI Academy
 Purpose: the canonical blueprint for building the product from scratch in this repo
 
 ## 1. Executive Summary
 
-Zero to Claude is a premium SaaS learning product that helps people go from zero to productive with Claude-based tools and secure agent workflows.
+CLI Academy is a premium SaaS learning product that helps people go from zero to productive with Claude-based tools and secure agent workflows.
 
 It is designed to win on:
 
@@ -84,8 +84,8 @@ This wedge matters because:
 
 ### Recommendation
 
-Use `Zero to Claude` publicly.
-Use `Zero to Claude Academy` where a more descriptive product label helps.
+Use `CLI Academy` publicly.
+Use `CLI Academy` consistently across all surfaces.
 
 ### Why the Name Works
 
@@ -102,7 +102,7 @@ Use `Zero to Claude Academy` where a more descriptive product label helps.
 ### Resolution
 
 Keep the product architecture open enough to expand later, but do not dilute the current brand.
-Use the clarity of `Zero to Claude` while it is an advantage.
+Use the clarity of `CLI Academy` while it is an advantage.
 
 ## 5. Target Users
 
@@ -351,7 +351,7 @@ Phase 1 is the version we can confidently build next.
 
 ## 10. Phase 1 Core Paths
 
-### Path 1: Zero to Claude Foundations
+### Path 1: CLI Academy Foundations
 
 Free.
 The hero acquisition path.
@@ -677,7 +677,7 @@ It does that by:
 
 ## 22. Final Recommendation
 
-Build Zero to Claude now as an independent learner product with a hidden internal swarm.
+Build CLI Academy now as an independent learner product with a hidden internal swarm.
 
 Use the best ideas from the original larger blueprint.
 Use the discipline and implementation realism learned from Citadel.

@@ -1,13 +1,13 @@
 # DECISIONS.md
 
-This file records the key product and architecture decisions for Zero to Claude.
+This file records the key product and architecture decisions for CLI Academy.
 
 ## D-001: Independent Repo
 
 Status: accepted
 
 Decision:
-Zero to Claude lives in its own repo and its own product home.
+CLI Academy lives in its own repo and its own product home.
 
 Reason:
 The product needs clear ownership, cleaner architecture, brand independence, and a simpler build story than an embedded sub-app inside Citadel.
@@ -17,13 +17,13 @@ The product needs clear ownership, cleaner architecture, brand independence, and
 Status: accepted
 
 Decision:
-Use `Zero to Claude` as the working public brand and `Zero to Claude Academy` as the product descriptor.
+Use `CLI Academy` as the working public brand and product name.
 
 Reason:
 It is clear, memorable, learner-oriented, and strong for acquisition.
 
 Risk:
-It is Claude-specific. If the product later broadens beyond Claude, we may introduce an umbrella company brand while keeping Zero to Claude as the flagship learning product.
+It is Claude-specific. If the product later broadens beyond Claude, we may introduce an umbrella company brand while keeping CLI Academy as the flagship learning product.
 
 ## D-003: Core Wedge
 

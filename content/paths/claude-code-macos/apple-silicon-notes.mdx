@@ -1,0 +1,256 @@
+---
+title: "Apple Silicon Notes"
+description: "If you have an M1/M2/M3 Mac: what you need to know about ARM architecture and when it matters."
+slug: "apple-silicon-notes"
+lesson_number: 3
+estimated_minutes: 8
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["macos", "hardware", "advanced"]
+---
+
+## What You'll See
+
+Understanding what "Apple Silicon" means, why it matters for some tools, and what to do if you encounter compatibility issues.
+
+## Do I Have Apple Silicon?
+
+Open Terminal and type:
+
+```bash
+uname -m
+```
+
+If you see:
+- `arm64` — You have Apple Silicon (M1, M2, M3, etc.)
+- `x86_64` — You have Intel
+
+This lesson is only for Apple Silicon users. Intel users can skip to "First Run on macOS."
+
+If you have Apple Silicon, keep reading.
+
+## What Is Apple Silicon?
+
+Apple Silicon is Apple's custom processor for Macs. The original Intel-based Macs used x86_64 architecture. Apple Silicon uses ARM architecture (arm64).
+
+They're fundamentally different architectures. Software compiled for one doesn't automatically work on the other.
+
+**Why does this matter?**
+
+Some software is only compiled for x86_64 (Intel). On an Apple Silicon Mac, you can run it via Rosetta—a translation layer that converts x86_64 instructions to ARM in real-time. But Rosetta adds overhead.
+
+Most modern software (including Node.js, npm, and Claude Code) is now compiled for both architectures. So you rarely hit this issue.
+
+But sometimes you will. This lesson teaches you to recognize and handle it.
+
+## Native vs Rosetta
+
+**Native (ARM):**
+- Compiled specifically for Apple Silicon
+- Fast
+- Uses less battery
+- What you want
+
+**Rosetta (x86_64 translated):**
+- Original Intel version translated on-the-fly
+- Slower (not terribly, but measurable)
+- Uses more battery
+- Fallback when native unavailable
+
+## When You Hit Silicon Issues
+
+### Scenario 1: Npm Package Fails to Install
+
+Error:
+```
+npm ERR! code 1
+npm ERR! pre-build... failed
+npm ERR! gyp ERR! build error
+```
+
+This usually means a package tried to compile a binary for x86_64 but you're on ARM.
+
+**Fix 1: Use Homebrew's Node.js**
+
+If you installed Node.js via Homebrew (from the previous lesson), it's native ARM. That's correct. The issue is with the npm package, not your setup.
+
+**Fix 2: Check the Package's Node Support**
+
+Some npm packages need newer versions of Node.js. Try:
+
+```bash
+node --version
+npm install --save-dev package-name@latest
+```
+
+If it still fails, the package might not support Apple Silicon yet.
+
+**Fix 3: Use a Different Package**
+
+If a package genuinely doesn't work on Apple Silicon, consider alternatives or wait for an update.
+
+### Scenario 2: A Tool Says It's Only for Intel
+
+Some documentation says: "Only available for macOS x86_64."
+
+**If you need it:**
+- Check if a native ARM version exists
+- Or run it under Rosetta (slower, but works)
+
+**To run a command under Rosetta:**
+
+```bash
+arch -x86_64 node script.js
+```
+
+This forces the `node` command to run as x86_64. Most Intel packages work this way.
+
+### Scenario 3: Docker and Containers
+
+Docker on Apple Silicon Macs can be tricky.
+
+**Solution:** Use Docker Desktop for Mac with native ARM support. It's maintained by Docker and works well.
+
+If you're doing serious Docker work, make sure you have Docker Desktop installed (from docker.com), not the old legacy version.
+
+## Best Practices for Apple Silicon Macs
+
+**Practice 1: Install via Homebrew when possible**
+
+Homebrew manages both Intel and ARM versions. When you `brew install something`, it installs the correct native version automatically.
+
+```bash
+# Good: Homebrew handles the architecture
+brew install node
+
+# Also good: npm packages (usually fine)
+npm install package-name
+
+# Potentially problematic: Direct downloads
+# Only do this if Homebrew doesn't have it
+```
+
+**Practice 2: Use native when possible, Rosetta as fallback**
+
+Most development tools have native ARM versions now. Use them.
+
+If something doesn't work natively, Rosetta is a reliable fallback:
+
+```bash
+arch -x86_64 npm install
+arch -x86_64 node script.js
+```
+
+**Practice 3: Verify you're running native**
+
+To check if a process is native or Rosetta:
+
+```bash
+# Check what architecture you're in
+uname -m  # Shows arm64 or x86_64
+
+# Check what Node is using
+node -e "console.log(process.platform, process.arch)"
+# Should show: darwin arm64 (native) or darwin x64 (Rosetta)
+```
+
+**Practice 4: Keep Node.js updated**
+
+Newer versions have better Apple Silicon support. Update regularly:
+
+```bash
+brew upgrade node
+```
+
+## Common Apple Silicon Gotchas
+
+**Gotcha 1: Mixing x86_64 and ARM tools**
+
+Don't mix them in the same project. If Node is running as x86_64, npm packages should be compiled for x86_64. Mixing causes conflicts.
+
+**Solution:** Be consistent. Install everything native (ARM) if possible.
+
+**Gotcha 2: Building native packages**
+
+Some npm packages include native code that needs compilation. On Apple Silicon, they need Xcode Command Line Tools:
+
+```bash
+xcode-select --install
+```
+
+You only need to run this once.
+
+**Gotcha 3: Path confusion with arch**
+
+If you use `arch -x86_64 npm ...`, environment variables might not transfer correctly.
+
+**Better approach:** Set up a .zshrc alias:
+
+```bash
+# In .zshrc
+alias node-x86="arch -x86_64 node"
+alias npm-x86="arch -x86_64 npm"
+
+# Then use like:
+npm-x86 install some-package
+```
+
+## Checking Homebrew Installed the Right Version
+
+Verify Node.js is native:
+
+```bash
+# Check where it's installed
+which node
+
+# Should be:
+# /usr/local/bin/node (Intel Mac) or
+# /opt/homebrew/bin/node (Apple Silicon)
+
+# Check architecture
+file $(which node)
+
+# Should show: Mach-O 64-bit executable arm64 (native)
+# NOT: Mach-O 64-bit executable x86_64 (Rosetta)
+```
+
+If `file` shows x86_64, something went wrong. Reinstall:
+
+```bash
+brew uninstall node
+brew install node
+```
+
+## Do I Need to Worry About This?
+
+Short answer: Usually no.
+
+- Homebrew handles architecture correctly
+- Node.js and npm are native on ARM
+- Most npm packages are native or have Rosetta fallback
+- Claude Code works natively on Apple Silicon
+
+You only need to know this if:
+- You hit a package that doesn't install
+- You see architecture-related errors
+- You're doing Docker or other containerized work
+- You care about performance optimization
+
+For most development, it just works.
+
+## Recap
+
+- `uname -m` tells you your architecture (arm64 = Apple Silicon, x86_64 = Intel)
+- Install via Homebrew: it handles architecture correctly
+- Most modern tools are native ARM
+- Rosetta is a reliable fallback if native unavailable
+- Don't mix x86_64 and ARM in same project
+
+## What's Next
+
+You're fully configured on macOS. Next: First Run on macOS—your first Claude Code session.

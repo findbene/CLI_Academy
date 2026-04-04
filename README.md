@@ -1,12 +1,12 @@
-# Zero to Claude
+# CLI Academy
 
-Zero to Claude is an independent SaaS learning platform built to take people from curiosity to confident, productive use of Claude-powered tools.
+CLI Academy is an independent SaaS learning platform built to take people from curiosity to confident, productive use of Claude-powered tools.
 
 This repo is the new home for the product. It is intentionally separate from `C:\Citadel_AI_Automation`. We can borrow what was strong from Citadel, but this codebase is designed to stand on its own.
 
 ## Product Thesis
 
-Zero to Claude is not a generic course site.
+CLI Academy is not a generic course site.
 
 It is a guided product for learning, applying, troubleshooting, and safely operating Claude-based workflows and secure agent systems through:
 
@@ -24,7 +24,7 @@ The core wedge:
 
 ## Brand Direction
 
-`zerotoclaude.com` is a strong domain for this product.
+`cliacademy.app` is a strong domain for this product.
 
 Why it works:
 
@@ -39,8 +39,8 @@ Its risk:
 
 Current recommendation:
 
-- Public brand: `Zero to Claude`
-- Product descriptor: `Zero to Claude Academy`
+- Public brand: `CLI Academy`
+- Product descriptor: `CLI Academy`
 - Future umbrella company: decide later only if expansion truly demands it
 
 ## Current Status

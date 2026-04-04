@@ -1,0 +1,394 @@
+---
+title: "First Run on macOS"
+description: "Walk through your first Claude Code session on macOS, from opening Terminal to building something real."
+slug: "first-run-on-macos"
+lesson_number: 4
+estimated_minutes: 15
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["macos", "workflow", "beginner"]
+---
+
+## What You'll See
+
+A complete walkthrough of your first Claude Code session on macOS. You'll create a project, write CLAUDE.md, ask Claude Code to build something real, and verify it works.
+
+## Prerequisites
+
+You've completed:
+
+- **Homebrew and Node.js** — Node.js, npm, and Claude Code are installed
+- **Zsh Configuration** — Your .zshrc is set up so commands work
+- **(Optional) Apple Silicon Notes** — If you have an M1/M2/M3, you understand the architecture
+
+## The Project: A Task List CLI
+
+We're going to build a simple task list application you can use from the command line. It will:
+- Add tasks
+- List tasks
+- Mark tasks complete
+- Delete tasks
+
+Real enough to be useful, simple enough to finish in 15 minutes.
+
+## Step 1: Create Project Directory
+
+Open Terminal (Command+Space, type "Terminal", press Enter).
+
+Create and navigate to a project directory:
+
+```bash
+mkdir -p ~/projects/task-list
+cd ~/projects/task-list
+```
+
+## Step 2: Create CLAUDE.md
+
+Create the file with nano:
+
+```bash
+nano CLAUDE.md
+```
+
+Type (or paste) this:
+
+```markdown
+# Project: Task List CLI
+
+A command-line application to manage tasks. Stores data in a JSON file.
+
+## Architecture
+
+- Runtime: Node.js
+- Language: JavaScript
+- Storage: JSON file (tasks.json)
+- Entry point: index.js
+
+## File Organization
+
+- `index.js` — CLI entry point
+- `lib/` — Library code
+  - `TaskList.js` — Main task management class
+- `tasks.json` — Persistent storage (created at runtime)
+
+## Coding Standards
+
+- Use ES6 modules (import/export)
+- Add JSDoc comments to all methods
+- Keep functions small and focused
+- Use const by default, let when necessary
+
+## Before You Code
+
+1. Verify Node.js is installed: `node --version`
+2. npm is available: `npm --version`
+3. This project has no external dependencies initially
+
+## Definition of Done
+
+A feature is done when:
+- `node index.js --help` shows usage information
+- The feature works as described
+- Code is readable and commented
+- Data persists in tasks.json between runs
+```
+
+Save and exit:
+- `Ctrl+O` to save
+- `Enter` to confirm
+- `Ctrl+X` to exit
+
+## Step 3: Create package.json
+
+```bash
+nano package.json
+```
+
+Paste:
+
+```json
+{
+  "name": "task-list",
+  "version": "1.0.0",
+  "description": "A command-line task list manager",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["task", "cli", "todo"],
+  "author": "",
+  "license": "ISC"
+}
+```
+
+Save and exit.
+
+## Step 4: Start Claude Code
+
+```bash
+claude
+```
+
+You should see:
+
+```
+Claude Code │ task-list
+
+Loading CLAUDE.md...
+✓ Loaded CLAUDE.md (Architecture: Node.js CLI)
+
+Ready. What would you like me to help with?
+
+>
+```
+
+Perfect! Claude Code read your CLAUDE.md.
+
+## Step 5: Ask Claude Code to Build the Task Manager
+
+Type this request:
+
+```
+Create a TaskList class in lib/TaskList.js that manages tasks.
+
+Methods:
+- addTask(title) — adds a new task, returns task ID
+- getTasks() — returns all tasks with their IDs and status
+- completeTask(id) — marks a task complete
+- deleteTask(id) — removes a task
+- saveTasks(filepath) — saves tasks to JSON file
+- loadTasks(filepath) — loads tasks from JSON file
+
+Each task should have: id, title, completed (boolean), createdAt (timestamp).
+Use a simple Map internally to store tasks.
+```
+
+Claude Code will show a plan:
+
+```
+I'll create a TaskList class with full task management functionality.
+
+Planning:
+- Create lib/TaskList.js with the TaskList class
+- Implement all requested methods
+- Handle JSON serialization for persistence
+- Use unique IDs for tasks
+
+Is this okay?
+```
+
+Type: `yes`
+
+Claude Code creates and shows the class. It's well-structured with JSDoc comments.
+
+## Step 6: Ask Claude Code to Build the CLI
+
+Type:
+
+```
+Now create index.js that uses TaskList for a command-line interface.
+
+Commands:
+- node index.js add "Task title" — add a task
+- node index.js list — show all tasks
+- node index.js done <id> — mark task complete
+- node index.js delete <id> — delete task
+- node index.js --help — show usage
+
+Store tasks in tasks.json. Load and save between runs.
+```
+
+Claude Code creates:
+
+```
+Creating index.js...
+✓ Created index.js
+
+The CLI is ready. Try it:
+  node index.js add "Buy groceries"
+  node index.js list
+  node index.js done 1
+  node index.js list
+```
+
+## Step 7: Test the CLI
+
+Try the CLI:
+
+```bash
+node index.js add "Buy groceries"
+```
+
+Response:
+
+```
+✓ Added task: Buy groceries (ID: 1)
+```
+
+Add another:
+
+```bash
+node index.js add "Write documentation"
+```
+
+List tasks:
+
+```bash
+node index.js list
+```
+
+Response:
+
+```
+Tasks:
+  [1] Buy groceries
+  [2] Write documentation
+```
+
+Mark one complete:
+
+```bash
+node index.js done 1
+```
+
+List again:
+
+```bash
+node index.js list
+```
+
+Response:
+
+```
+Tasks:
+  [1] ✓ Buy groceries
+  [2] Write documentation
+```
+
+Excellent! The application works. You asked Claude Code to build it, reviewed the code, and verified it works.
+
+## Step 8: Check What Was Created
+
+See the files:
+
+```bash
+ls -la
+```
+
+You should see:
+
+```
+CLAUDE.md
+index.js
+package.json
+lib/
+  TaskList.js
+tasks.json (created when you added tasks)
+```
+
+View the generated tasks.json:
+
+```bash
+cat tasks.json
+```
+
+You'll see structured data—your tasks persisted to a file.
+
+## Step 9: Add a Feature
+
+Start Claude Code again:
+
+```bash
+claude
+```
+
+Ask for an enhancement:
+
+```
+Add a summary command that shows:
+- Total tasks
+- Completed tasks
+- Remaining tasks
+
+Usage: node index.js summary
+```
+
+Claude Code updates index.js to add the summary command. Test it:
+
+```bash
+node index.js summary
+```
+
+Response:
+
+```
+Summary:
+  Total: 2
+  Completed: 1
+  Remaining: 1
+```
+
+Perfect iteration. One feature request, Claude Code delivered it.
+
+## Step 10: Exit and Review
+
+Exit Claude Code:
+
+```bash
+exit
+```
+
+Review what you built:
+
+```bash
+cat index.js | head -30
+cat lib/TaskList.js | head -30
+cat tasks.json
+```
+
+You can see the code quality, documentation, and data structure.
+
+## Step 11: Commit Your Work
+
+Initialize Git (if not already done):
+
+```bash
+git init
+git add .
+git commit -m "feat: initial task list CLI with persistence"
+```
+
+## Recap
+
+- Created a real project on macOS with CLAUDE.md
+- Asked Claude Code to build a task management library
+- Asked Claude Code to build a CLI interface
+- Tested all functionality locally
+- Iterated with an enhancement
+- Committed to Git
+
+This is the workflow for every project. The cycle repeats:
+
+1. Create project + CLAUDE.md
+2. Ask Claude Code for a feature
+3. Test it
+4. Iterate with refinements
+5. Commit
+
+You're now a Claude Code user on macOS.
+
+## What's Next
+
+You've completed the macOS path! You're ready to:
+
+- Build real projects
+- Work productively with Claude Code
+- Iterate quickly on features
+
+Return to the main "Next Steps" lesson to see what advanced topics you want to explore, or start building a real project that matters to you.

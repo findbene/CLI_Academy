@@ -1,4 +1,4 @@
-# Zero to Claude UI System
+# CLI Academy UI System
 
 Last updated: 2026-04-03
 Status: launch-ready design system plan

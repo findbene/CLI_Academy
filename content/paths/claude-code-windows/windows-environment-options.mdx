@@ -1,0 +1,179 @@
+---
+title: "Windows Environment Options"
+description: "Understand your options for running Claude Code on Windows: WSL2, Git Bash, or PowerShell—and which to choose."
+slug: "windows-environment-options"
+lesson_number: 1
+estimated_minutes: 8
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["windows", "setup", "platform"]
+---
+
+## What You'll See
+
+An honest comparison of three ways to run Claude Code on Windows. You'll understand the tradeoffs and get a clear recommendation.
+
+## Why This Matters
+
+Windows is not Linux. Claude Code was designed to work best in a Unix-like environment (Linux, macOS). On Windows, you have three main options, each with different performance characteristics, complexity, and limitations.
+
+Choosing the right one saves you hours of frustration later.
+
+## Option 1: WSL2 (Windows Subsystem for Linux 2)
+
+**What is it?**
+
+WSL2 is a lightweight Linux virtual machine running inside Windows. You get a real Linux kernel and filesystem, but it integrates seamlessly with Windows. It's like having Ubuntu on your machine without the overhead of traditional virtualization.
+
+**Pros:**
+
+- Fastest option. Native Linux performance.
+- Full Unix/Linux environment. All tools work the same as on real Linux.
+- Claude Code works perfectly. No quirks.
+- Good file access to Windows files (via `/mnt/c/`).
+- Can run servers and services reliably.
+- Industry standard for professional developers on Windows.
+
+**Cons:**
+
+- Requires Windows 10 version 2004 or later, or Windows 11.
+- Initial setup takes 15-20 minutes.
+- Uses ~1GB of RAM when idle, ~2-3GB when active.
+- File performance between Windows and Linux can be slightly slower (not a big deal for most projects).
+
+**Best for:**
+
+- Professional development
+- Running services and databases
+- Anything serious
+
+**Setup time:** 20 minutes (one-time)
+
+**Recommendation:** Start here unless you can't. It's the best overall experience.
+
+## Option 2: Git Bash
+
+**What is it?**
+
+Git Bash is a terminal that emulates a Unix environment inside Windows. It comes with Git for Windows. It's a shell (bash) plus Unix-like tools (ls, grep, etc.) running on top of Windows.
+
+**Pros:**
+
+- Simple. If you have Git installed, you might already have Git Bash.
+- No additional setup required.
+- Works for development tasks.
+- Lower resource usage than WSL2.
+
+**Cons:**
+
+- Not a real Unix environment. It's an emulation layer.
+- Some tools don't work reliably (Docker, certain Node packages).
+- File path handling is quirky. Mixing Windows paths (`C:\`) and Unix paths (`/c/`) causes confusion.
+- Some npm packages fail to install.
+- Servers and background services can be unreliable.
+- Performance slower than native Linux.
+
+**Best for:**
+
+- Quick scripts
+- Simple Node.js projects
+- People who just want something to work without setup
+
+**Setup time:** 0 minutes (if you have Git installed) or 5 minutes (to install Git)
+
+**Recommendation:** Good as a fallback. Better than PowerShell, but not as good as WSL2.
+
+## Option 3: PowerShell
+
+**What is it?**
+
+PowerShell is Windows' native scripting language and terminal. It's powerful and integrated with Windows, but it's not Unix-like.
+
+**Pros:**
+
+- No setup. It's built into Windows.
+- Great integration with Windows tools.
+- Works fine for basic tasks.
+
+**Cons:**
+
+- Very different syntax from Unix/Linux. Commands look weird.
+- npm and Node.js work, but the experience is different.
+- Path handling uses backslashes (`\`) which confuse Unix tools.
+- Many tutorials assume bash/Unix syntax.
+- Slower for development workflows.
+- Docker and other containerized tools struggle.
+- File permissions and symbolic links don't work the same.
+
+**Best for:**
+
+- System administration tasks
+- Quick npm installs
+- Temporary testing
+
+**Setup time:** 0 minutes
+
+**Recommendation:** Last resort. Use WSL2 or Git Bash instead.
+
+## Quick Comparison Table
+
+| Feature | WSL2 | Git Bash | PowerShell |
+|---------|------|----------|------------|
+| Setup Time | 20 min | 0-5 min | 0 min |
+| Performance | Excellent | Good | Fair |
+| Unix Compatibility | 100% | 85% | 50% |
+| Docker Support | Yes | Partial | Limited |
+| npm Reliability | 100% | 95% | 90% |
+| Learning Curve | Medium | Low | Steep |
+| Professional Use | Yes | Sometimes | Rare |
+| Resource Usage | ~2GB RAM | ~100MB | ~50MB |
+
+## The Clear Winner: WSL2
+
+For Claude Code development on Windows, **WSL2 is the best choice**.
+
+Why?
+
+1. You get a real Linux environment. Claude Code, Node.js, npm, Git, Docker—all work exactly as they do on Linux and macOS.
+2. You're learning on the same platform as professional developers everywhere.
+3. No weird path issues or command syntax differences.
+4. If you follow tutorials, examples, and advice online, it all just works.
+5. When you hit a problem, solutions from StackOverflow and GitHub work first try.
+
+Yes, WSL2 requires 20 minutes of setup. That investment pays off immediately.
+
+## The Practical Recommendation
+
+**If you can:** Use WSL2. The setup time is worth it.
+
+**If you have Git installed:** Use Git Bash. It's 80% as good with zero setup.
+
+**If you must:** Use PowerShell. You'll hit some rough edges, but you can still use Claude Code.
+
+## What This Path Covers
+
+The next lessons in this path assume you're using WSL2. They walk you through:
+
+1. **WSL2 Setup** — Install WSL2, install Ubuntu, verify everything works
+2. **PowerShell Alternative** — If you chose PowerShell, how to adapt
+3. **Path and Permissions** — Windows-specific quirks you need to know
+4. **File System Quirks** — Why `/mnt/c` exists and when it matters
+5. **First Run on Windows** — End-to-end walkthrough
+
+If you're committed to WSL2, proceed to the next lesson. If you're going with Git Bash or PowerShell, you can skim the WSL2 lesson and jump to "Path and Permissions."
+
+## Recap
+
+- WSL2: Best option. Real Linux environment. 20-minute setup.
+- Git Bash: Good fallback. No setup, but some quirks.
+- PowerShell: Functional but awkward for development.
+- Recommendation: WSL2 for serious work, Git Bash for quick stuff.
+
+## What's Next
+
+If you're doing WSL2, go to the next lesson: WSL2 Setup. If you're doing PowerShell, skip ahead to the PowerShell Alternative lesson.

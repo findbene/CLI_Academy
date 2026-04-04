@@ -1,0 +1,414 @@
+---
+title: "Common macOS Gotchas"
+description: "Understand and prevent the most common macOS-specific issues that affect Claude Code and development work."
+slug: "common-macos-gotchas"
+lesson_number: 5
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.x"
+has_safety_warning: false
+tags: ["macos", "troubleshooting", "advanced"]
+---
+
+## What You'll See
+
+The most common gotchas that trip up developers on macOS. For each, you'll understand what's happening and how to prevent it.
+
+## Gotcha 1: Gatekeeper Blocking Downloads
+
+### The Problem
+
+You download a tool (a binary, a script), and macOS blocks it with:
+
+```
+"app" cannot be opened because it is from an unidentified developer.
+```
+
+Or:
+
+```
+Error: "python" cannot be opened because the developer cannot be verified.
+```
+
+Gatekeeper is macOS's security system. It blocks software from unknown sources by default.
+
+### The Fix
+
+For legitimate software you trust:
+
+```bash
+# Allow a specific file
+xattr -d com.apple.quarantine /path/to/file
+
+# Example: allow a Python script
+xattr -d com.apple.quarantine ~/Downloads/script.py
+```
+
+This removes the quarantine flag. Now you can run it.
+
+**Better:** Use Homebrew or official installers instead of downloading binaries. Homebrew is trusted:
+
+```bash
+brew install thing-you-want
+# Instead of manually downloading
+```
+
+### Prevention
+
+- Install via Homebrew when possible
+- Download from official sources
+- If you do get blocked, use the `xattr` command above
+
+## Gotcha 2: System Integrity Protection (SIP) Blocking Modifications
+
+### The Problem
+
+You get permission errors when trying to modify system files:
+
+```
+Operation not permitted (even with sudo)
+```
+
+SIP (System Integrity Protection) prevents even root from modifying critical system directories.
+
+Protected locations:
+- `/System/`
+- `/Library/` (system library)
+- `/usr/bin/` (system binaries)
+- Some system processes
+
+### The Real Issue
+
+You probably don't need to modify these anyway. But if you do:
+
+Never disable SIP. It's there for security.
+
+Instead, work around it:
+
+**Solution 1: Use Homebrew's locations**
+
+Homebrew installs to `/usr/local/` (Intel) or `/opt/homebrew/` (Apple Silicon), which aren't protected by SIP.
+
+```bash
+# Good: installs to /opt/homebrew/bin/
+brew install node
+
+# Bad: tries to install to /usr/bin/ (fails)
+# (Don't do this)
+```
+
+**Solution 2: Use user directories**
+
+Store your stuff in your home directory (`~/`), not system directories.
+
+```bash
+# Good: user directory
+~/projects/my-app
+
+# Bad: system directory
+/Applications/my-app
+```
+
+### Prevention
+
+- Always use Homebrew for system tools
+- Never run `sudo` with package managers
+- Store projects in your home directory
+
+## Gotcha 3: npm Global Install Permissions
+
+### The Problem
+
+You try to install a tool globally:
+
+```bash
+npm install -g some-tool
+```
+
+And get:
+
+```
+Error: EACCES: permission denied, mkdir '/usr/local/lib/node_modules'
+```
+
+### Why It Happens
+
+npm tries to install to a system directory (`/usr/local/lib/`) but doesn't have permission.
+
+### The Fixes
+
+**Fix 1: Use Homebrew (Recommended)**
+
+If it's available via Homebrew, use that instead of npm:
+
+```bash
+# Instead of npm
+npm install -g node-sass
+
+# Use Homebrew
+brew install node-sass
+```
+
+**Fix 2: Configure npm to use a user directory**
+
+```bash
+# Create a directory for npm global packages
+mkdir -p ~/.npm-global
+
+# Tell npm to use it
+npm config set prefix '~/.npm-global'
+
+# Add it to PATH in .zshrc
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+# Reload
+source ~/.zshrc
+```
+
+Now `npm install -g` works without permission errors.
+
+**Fix 3: Don't use sudo**
+
+Never run `sudo npm install -g`. It breaks permissions and causes more problems.
+
+### Prevention
+
+- Use Homebrew for global tools
+- Or configure npm to use a user directory
+- Never use `sudo` with npm
+
+## Gotcha 4: Node.js Version Conflicts
+
+### The Problem
+
+You have Node.js installed from multiple sources (Homebrew, nodejs.org, nvm). Commands are slow or give unexpected behavior.
+
+```bash
+which node  # /usr/local/bin/node
+node --version  # v14.0.0
+
+# But you thought you installed v18
+```
+
+### Why It Happens
+
+You have multiple Node.js installations. The first one in PATH is used, which might not be the one you want.
+
+### The Fix
+
+First, find all installations:
+
+```bash
+which -a node
+which -a npm
+
+# You'll see multiple paths if there are conflicts
+```
+
+Remove duplicates. Choose one source of truth:
+
+**Option A: Use Homebrew (simplest)**
+
+```bash
+# Uninstall other versions
+# If from nodejs.org: use the uninstaller from Applications
+# If from nvm: nvm uninstall version-number
+
+# Install cleanly via Homebrew
+brew install node
+
+# Verify it's the only one
+which node  # Should show /usr/local/bin/node or /opt/homebrew/bin/node
+```
+
+**Option B: Use nvm (if you need multiple versions)**
+
+```bash
+# Uninstall Homebrew's Node
+brew uninstall node
+
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Install Node via nvm
+nvm install 18
+nvm use 18
+```
+
+### Prevention
+
+- Stick to one installation method (Homebrew or nvm)
+- If you see multiple installations, clean it up
+- Keep `which node` showing one path
+
+## Gotcha 5: Shell Configuration Not Reloading
+
+### The Problem
+
+You edit `.zshrc` but changes don't take effect:
+
+```bash
+# Edit .zshrc to add something
+nano ~/.zshrc
+
+# Try using it
+some-command
+# command not found
+```
+
+### Why It Happens
+
+You're in an old Terminal session that hasn't reloaded `.zshrc`.
+
+### The Fix
+
+Either:
+
+```bash
+# Reload in current Terminal
+source ~/.zshrc
+
+# Or open a new Terminal window
+# New windows automatically read .zshrc
+```
+
+### Prevention
+
+- After editing `.zshrc`, always run `source ~/.zshrc`
+- Or open a new Terminal window
+- Test with `echo $PATH` or `which node` to verify changes
+
+## Gotcha 6: Docker Desktop and Apple Silicon Compatibility
+
+### The Problem
+
+You're on an M1/M2/M3 Mac and Docker doesn't work:
+
+```
+Error: Error response from daemon: no matching manifest for linux/arm64
+```
+
+Or Docker is very slow.
+
+### Why It Happens
+
+The Docker image isn't available for ARM architecture, or Docker Desktop isn't properly configured for Apple Silicon.
+
+### The Fix
+
+**Fix 1: Use Docker Desktop for Mac (official)**
+
+Download Docker Desktop for Mac from [docker.com](https://docker.com). It has native Apple Silicon support.
+
+```bash
+# Verify it's installed correctly
+docker run --rm hello-world
+
+# Should print a hello message
+```
+
+**Fix 2: Specify multi-arch images**
+
+Some images have both ARM and Intel versions. Specify the ARM one:
+
+```bash
+# When doing docker run or docker pull
+docker run --platform linux/arm64 image-name
+
+# Or in Dockerfile
+FROM --platform=linux/arm64 ubuntu:22.04
+```
+
+**Fix 3: Use Rosetta emulation as fallback**
+
+If an image is only available for x86_64, Docker can translate it via Rosetta (slow but works):
+
+```bash
+# In Docker Desktop > Settings > Resources > Use Rosetta for x86/amd64 emulation
+# Enable this toggle
+```
+
+### Prevention
+
+- Use Docker Desktop for Mac (official)
+- Use `docker run hello-world` to verify it works
+- Be aware Apple Silicon is faster, Rosetta is slower
+
+## Gotcha 7: Git Credential Problems
+
+### The Problem
+
+When you push to GitHub, you get authentication errors:
+
+```
+fatal: Authentication failed for 'https://github.com/...'
+```
+
+Or it keeps asking for your password.
+
+### Why It Happens
+
+macOS has a credential manager (Keychain) that stores Git credentials. It can get out of sync or corrupted.
+
+### The Fix
+
+**Fix 1: Use SSH keys (Recommended)**
+
+Set up SSH keys instead of HTTPS:
+
+```bash
+# Generate a key
+ssh-keygen -t ed25519 -C "your@email.com"
+
+# Add the public key to GitHub.com > Settings > SSH Keys
+# (Follow GitHub's instructions)
+
+# Test it
+ssh -T git@github.com
+# Should say "You've successfully authenticated"
+
+# Clone via SSH (not HTTPS)
+git clone git@github.com:user/repo.git
+```
+
+**Fix 2: Clear cached credentials**
+
+```bash
+# Remove stored Git credentials
+git credential-osxkeychain erase
+# Then press Enter twice (blank host/protocol)
+
+# Try the operation again
+git push
+# It will prompt for password, or ask for auth via browser
+```
+
+**Fix 3: Use Personal Access Token**
+
+In GitHub settings, create a Personal Access Token. Use it as your password.
+
+### Prevention
+
+- Use SSH keys (fastest, most secure)
+- Keep your Keychain updated
+- Test with `ssh -T git@github.com`
+
+## Recap
+
+- **Gatekeeper:** Use `xattr` to unblock files, or use Homebrew
+- **SIP:** Never disable it. Use Homebrew's safe locations.
+- **npm Permissions:** Use Homebrew or configure npm for user directory. Never use sudo.
+- **Node Conflicts:** Use one source of truth (Homebrew or nvm). Clean up duplicates.
+- **Shell Config:** Run `source ~/.zshrc` after editing, or open new Terminal
+- **Docker:** Use Docker Desktop official version for Apple Silicon. Enable Rosetta if needed.
+- **Git Auth:** Use SSH keys. Or clear Keychain credentials if stuck.
+
+## What's Next
+
+You've learned macOS-specific knowledge. You're fully equipped to work productively on macOS with Claude Code.
+
+Now it's time to build something real. Go back to "Next Steps" and choose what to learn next, or start working on a project that matters to you.

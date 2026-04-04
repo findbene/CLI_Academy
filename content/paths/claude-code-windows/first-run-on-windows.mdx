@@ -1,0 +1,473 @@
+---
+title: "First Run on Windows"
+description: "Walk through your first Claude Code session on Windows, from setup to asking for help to reviewing changes."
+slug: "first-run-on-windows"
+lesson_number: 5
+estimated_minutes: 15
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["windows", "workflow", "beginner"]
+---
+
+## What You'll See
+
+A complete walkthrough of your first Claude Code session on Windows. You'll create a project, set up CLAUDE.md, ask Claude Code to build something, and verify it works.
+
+## Prerequisites
+
+You've completed either:
+
+- **WSL2 Setup** (recommended) — You have WSL2, Ubuntu, Node.js, npm, and Claude Code installed
+- **PowerShell Alternative** — You have PowerShell, Node.js, npm, and Claude Code installed
+
+You understand CLAUDE.md from the Beginners path.
+
+## The Project: A Simple CLI Tool
+
+We're going to build a simple command-line tool that converts temperatures. This is real enough to be useful, simple enough to complete in 15 minutes.
+
+The tool will:
+- Accept a temperature and unit (Celsius/Fahrenheit)
+- Convert between the two
+- Be easy to use from the command line
+
+## Step 1: Create the Project Directory
+
+**In WSL2:**
+```bash
+mkdir -p ~/projects/temp-converter
+cd ~/projects/temp-converter
+```
+
+**In PowerShell:**
+```powershell
+mkdir C:\Users\YourName\projects\temp-converter
+cd C:\Users\YourName\projects\temp-converter
+```
+
+From now on, assume you're in this directory in your terminal.
+
+## Step 2: Create CLAUDE.md
+
+Create a file called `CLAUDE.md` in the project directory:
+
+```markdown
+# Project: Temperature Converter CLI
+
+A command-line tool that converts between Celsius and Fahrenheit.
+
+## Architecture
+
+- Runtime: Node.js
+- Language: JavaScript
+- Testing: Jest
+- Entry point: index.js or bin/temp-convert
+
+## File Organization
+
+- `bin/` — CLI entry point
+- `lib/` — Conversion logic
+- `test/` — Jest tests
+- `package.json` — Dependencies and scripts
+
+## Coding Standards
+
+- All functions must be documented with JSDoc comments
+- All utility functions must have tests
+- Use const instead of let/var
+- No console.log in library code (only in bin/)
+
+## Before You Code
+
+1. Run `npm test` to verify tests pass
+2. Check that Node.js is available: `node --version`
+3. If anything is unclear, ask me questions
+
+## Definition of Done
+
+A feature is done when:
+- Code passes linting: `npm run lint` (if configured)
+- Tests pass: `npm test`
+- The CLI works: `node bin/temp-convert 32 F` returns the result
+- Documentation is updated
+```
+
+## Step 3: Create package.json
+
+Create a file called `package.json`:
+
+```json
+{
+  "name": "temp-converter",
+  "version": "1.0.0",
+  "description": "A simple temperature converter CLI",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "temp-convert": "bin/temp-convert.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "dev": "node bin/temp-convert.js"
+  },
+  "keywords": ["temperature", "converter"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
+```
+
+## Step 4: Install Dependencies
+
+```bash
+npm install
+```
+
+This creates `node_modules/` and `package-lock.json`. Takes 30 seconds to 1 minute.
+
+## Step 5: Start Claude Code
+
+```bash
+claude
+```
+
+You should see:
+
+```
+Claude Code │ temp-converter
+
+Loading CLAUDE.md...
+✓ Loaded CLAUDE.md (Architecture: Node.js CLI)
+
+Ready. What would you like me to help with?
+
+>
+```
+
+Great! Claude Code is running and has read your CLAUDE.md.
+
+## Step 6: Ask Claude Code to Build the Converter
+
+Type:
+
+```
+Create the conversion logic in lib/converter.js with functions:
+- celsiusToFahrenheit(celsius) - converts C to F
+- fahrenheitToCelsius(fahrenheit) - converts F to C
+
+Add JSDoc comments. Then create tests in test/converter.test.js.
+```
+
+Claude Code will:
+
+1. Show its plan
+2. Create `lib/converter.js` with the functions
+3. Create `test/converter.test.js` with tests
+4. Run tests to verify
+
+You'll see output like:
+
+```
+I'll create the conversion logic with two functions and add tests.
+
+Planning:
+- Create lib/converter.js with C↔F conversion functions
+- Add JSDoc comments to both functions
+- Create test/converter.test.js with Jest tests
+- Run tests to verify everything works
+
+Is this okay?
+```
+
+Type: `yes`
+
+Claude Code executes:
+
+```
+Creating lib/converter.js...
+✓ Created lib/converter.js
+
+Here's the conversion logic:
+
+───────────────────────────────────────────────────────────
+lib/converter.js
+───────────────────────────────────────────────────────────
+
+/**
+ * Convert Celsius to Fahrenheit
+ * @param {number} celsius - Temperature in Celsius
+ * @returns {number} Temperature in Fahrenheit
+ */
+export function celsiusToFahrenheit(celsius) {
+  return (celsius * 9) / 5 + 32;
+}
+
+/**
+ * Convert Fahrenheit to Celsius
+ * @param {number} fahrenheit - Temperature in Fahrenheit
+ * @returns {number} Temperature in Celsius
+ */
+export function fahrenheitToCelsius(fahrenheit) {
+  return ((fahrenheit - 32) * 5) / 9;
+}
+
+───────────────────────────────────────────────────────────
+
+Creating test/converter.test.js...
+✓ Created test/converter.test.js
+
+Running tests...
+PASS  test/converter.test.js
+  celsiusToFahrenheit
+    ✓ converts 0°C to 32°F (2ms)
+    ✓ converts 100°C to 212°F (1ms)
+  fahrenheitToCelsius
+    ✓ converts 32°F to 0°C (1ms)
+    ✓ converts 212°F to 100°C (1ms)
+
+Tests: 4 passed, 4 total
+Time: 0.8s
+
+✓ All tests passed
+```
+
+Excellent! Tests are passing. Now you have the conversion logic built and tested.
+
+## Step 7: Ask Claude Code to Create the CLI
+
+Type:
+
+```
+Now create the CLI in bin/temp-convert.js that:
+- Takes command line arguments: temperature and unit (C or F)
+- Calls the appropriate conversion function
+- Prints the result in a friendly format
+
+Example usage:
+  node bin/temp-convert.js 32 F  → 0°C
+  node bin/temp-convert.js 0 C   → 32°F
+```
+
+Claude Code creates:
+
+```
+Creating bin/temp-convert.js...
+✓ Created bin/temp-convert.js
+
+Here's the CLI:
+
+───────────────────────────────────────────────────────────
+bin/temp-convert.js
+───────────────────────────────────────────────────────────
+
+#!/usr/bin/env node
+
+import { celsiusToFahrenheit, fahrenheitToCelsius } from '../lib/converter.js';
+
+const [temperature, unit] = process.argv.slice(2);
+
+if (!temperature || !unit) {
+  console.log('Usage: temp-convert <temperature> <C|F>');
+  process.exit(1);
+}
+
+const temp = parseFloat(temperature);
+
+if (isNaN(temp)) {
+  console.log('Error: Temperature must be a number');
+  process.exit(1);
+}
+
+if (unit.toUpperCase() === 'C') {
+  const result = celsiusToFahrenheit(temp);
+  console.log(`${temp}°C = ${result.toFixed(1)}°F`);
+} else if (unit.toUpperCase() === 'F') {
+  const result = fahrenheitToCelsius(temp);
+  console.log(`${temp}°F = ${result.toFixed(1)}°C`);
+} else {
+  console.log('Error: Unit must be C or F');
+  process.exit(1);
+}
+
+───────────────────────────────────────────────────────────
+
+✓ Created bin/temp-convert.js
+
+The CLI is ready. Try it:
+  node bin/temp-convert.js 32 F
+  node bin/temp-convert.js 100 C
+```
+
+Perfect! Claude Code is done. Now test it yourself.
+
+## Step 8: Test the CLI
+
+In your terminal (still in the project directory, but you can exit Claude Code first):
+
+```bash
+node bin/temp-convert.js 32 F
+```
+
+You should see:
+
+```
+32°F = 0°C
+```
+
+Try another:
+
+```bash
+node bin/temp-convert.js 100 C
+```
+
+You should see:
+
+```
+100°C = 212°F
+```
+
+Excellent! The tool works. You asked Claude Code to build it, reviewed the code, and verified it works.
+
+## Step 9: Review What Was Built
+
+Let's see what files exist:
+
+```bash
+ls -la
+```
+
+You should see:
+
+```
+.
+├── bin/
+│   └── temp-convert.js
+├── lib/
+│   └── converter.js
+├── test/
+│   └── converter.test.js
+├── node_modules/
+├── CLAUDE.md
+├── package.json
+└── package-lock.json
+```
+
+Check the git status to see what's new:
+
+```bash
+git init
+git add .
+git status
+```
+
+(If git isn't initialized, it will be after `git init`.)
+
+You'll see files ready to commit. This is a real, working project.
+
+## Step 10: Make an Enhancement
+
+Start Claude Code again:
+
+```bash
+claude
+```
+
+Ask for an improvement:
+
+```
+Add a README.md that explains how to use the CLI.
+```
+
+Claude Code creates a README:
+
+```
+Creating README.md...
+✓ Created README.md
+
+# Temperature Converter CLI
+
+A simple command-line tool to convert between Celsius and Fahrenheit.
+
+## Installation
+
+```bash
+npm install
+```
+
+## Usage
+
+```bash
+node bin/temp-convert.js <temperature> <C|F>
+```
+
+Examples:
+- `node bin/temp-convert.js 32 F` → Converts 32°F to Celsius
+- `node bin/temp-convert.js 100 C` → Converts 100°C to Fahrenheit
+
+## How It Works
+
+The tool reads a temperature and unit from the command line, then calls the appropriate conversion function.
+
+## Tests
+
+Run tests:
+```bash
+npm test
+```
+
+All tests pass!
+```
+
+Perfect. Your project is getting better with each request.
+
+## Step 11: Exit and Commit
+
+Exit Claude Code:
+
+```bash
+exit
+```
+
+Commit your work:
+
+```bash
+git add .
+git commit -m "feat: initial temperature converter CLI with tests and docs"
+```
+
+You've just completed your first real Claude Code project on Windows!
+
+## Recap
+
+- Created a real project directory with CLAUDE.md
+- Set up package.json with dependencies
+- Used Claude Code to build conversion logic with tests
+- Used Claude Code to build a CLI interface
+- Tested everything locally
+- Made an enhancement (README)
+- Committed to Git
+
+This is the workflow you'll repeat for every project:
+
+1. Create directory + CLAUDE.md
+2. Ask Claude Code to build features
+3. Review and test the code
+4. Iterate with refinements
+5. Commit and deploy
+
+## What's Next
+
+You've completed the Windows path! You're ready to:
+
+- Build real projects
+- Use Claude Code productively
+- Work on your platform with confidence
+
+Return to the main "Next Steps" lesson to see what to learn next: advanced MCP tools, agent workflows, or just start building.

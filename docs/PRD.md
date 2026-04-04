@@ -1,12 +1,12 @@
 # Product Requirements Document
 
-Project: Zero to Claude
+Project: CLI Academy
 Version: 1.0
 Status: Phase 1 planning
 
 ## 1. Product Overview
 
-Zero to Claude is a premium SaaS learning platform that helps people become productive with Claude-based tools and secure agent workflows through guided content, verified labs, downloadable assets, and contextual troubleshooting.
+CLI Academy is a premium SaaS learning platform that helps people become productive with Claude-based tools and secure agent workflows through guided content, verified labs, downloadable assets, and contextual troubleshooting.
 
 ## 2. Goals
 

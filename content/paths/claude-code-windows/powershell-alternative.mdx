@@ -1,0 +1,301 @@
+---
+title: "PowerShell Alternative"
+description: "Using Claude Code in Windows PowerShell: what works, what doesn't, and how to adapt."
+slug: "powershell-alternative"
+lesson_number: 3
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["windows", "setup", "powershell"]
+---
+
+## What You'll See
+
+How to use Claude Code in PowerShell, what limitations you'll encounter, and how to work around them. This is for people who can't or won't use WSL2.
+
+## Why This Exists
+
+Some people can't use WSL2 (older Windows versions, system restrictions). Some prefer to stay in PowerShell (fair, but there are tradeoffs). This lesson is for both groups.
+
+**Be honest with yourself:** If you can use WSL2, use it. PowerShell development on Windows is slower, more painful, and less compatible with the tools the rest of the world uses. But it works.
+
+## Prerequisites
+
+- **Windows 10 or Windows 11**
+- **PowerShell 5.1 or higher** (comes with Windows)
+- **Node.js installed** (from [nodejs.org](https://nodejs.org))
+- **npm working** (comes with Node.js)
+
+Check what you have:
+
+```powershell
+$PSVersionTable.PSVersion  # PowerShell version
+node --version  # Node.js version
+npm --version  # npm version
+```
+
+If all three show version numbers, you're ready.
+
+## Installing Claude Code in PowerShell
+
+Open PowerShell (not as Administrator, regular user is fine):
+
+```powershell
+npm install -g @anthropic-ai/claude-code
+```
+
+Verify:
+
+```powershell
+claude --version
+```
+
+Authenticate:
+
+```powershell
+claude auth
+```
+
+Paste your Anthropic API key when prompted.
+
+That's it. Claude Code is installed and ready to use in PowerShell.
+
+## What Works Well
+
+✓ **Basic file operations** — Claude Code can create, edit, and delete files. Works fine.
+
+✓ **npm commands** — Running npm, installing packages. Works.
+
+✓ **Node.js projects** — Building Node.js applications. Works.
+
+✓ **Text manipulation** — Editing code, creating configs. Works.
+
+✓ **Python projects** — If you have Python installed, Claude Code can work with Python files. Works.
+
+✓ **Simple scripts** — Writing and running simple shell scripts. Works.
+
+## What Doesn't Work Well (Or Requires Adaptation)
+
+### 1. Unix-Specific Commands
+
+Many tutorials and examples use bash syntax. PowerShell syntax is different.
+
+**Problem:**
+```powershell
+# This bash command doesn't work in PowerShell
+> rm -rf node_modules
+
+# PowerShell equivalent
+> Remove-Item -Recurse node_modules
+```
+
+**Solution:**
+- When Claude Code shows bash commands, it might be confused about the platform
+- You can ask Claude Code to use PowerShell syntax: "Use PowerShell syntax, not bash"
+- Or you can mentally translate (rm → Remove-Item, mkdir → New-Item -ItemType Directory)
+
+### 2. File Paths
+
+Windows uses backslashes (`\`). Unix uses forward slashes (`/`). They're different.
+
+**Problem:**
+```powershell
+# Windows path
+C:\Users\YourName\projects\my-app
+
+# Unix path (what many tools expect)
+C:/Users/YourName/projects/my-app
+```
+
+**Solution:**
+PowerShell actually accepts both. So you can use forward slashes and it works:
+```powershell
+cd C:/Users/YourName/projects/my-app
+```
+
+### 3. Symbolic Links and Permissions
+
+PowerShell doesn't handle Unix permissions well. Some npm packages create symbolic links that don't work properly on Windows without special setup.
+
+**Problem:**
+Some packages fail to install: "Error: EPERM: operation not permitted"
+
+**Solution:**
+- Usually, running PowerShell as Administrator fixes this
+- Or use WSL2 (it handles permissions correctly)
+
+### 4. Docker
+
+Docker requires WSL2 or Hyper-V. You can't use Docker well from PowerShell.
+
+**Problem:**
+If you try to work on a project with Docker, Claude Code will struggle.
+
+**Solution:**
+- For simple projects: fine
+- For projects requiring Docker: use WSL2
+
+### 5. Line Endings
+
+Windows uses CRLF (carriage return + line feed). Unix uses LF (line feed only).
+
+This causes Git to complain: "warning: LF will be replaced by CRLF the next time Git touches this file."
+
+**Solution:**
+In your project, configure Git:
+```powershell
+git config --global core.autocrlf true
+```
+
+This tells Git to handle line ending conversions automatically.
+
+## Working Around Limitations
+
+### Use Git Bash For Command-Heavy Work
+
+If your project requires a lot of shell commands, consider opening **Git Bash** (not WSL2, just Git Bash) for those tasks, and use PowerShell for Claude Code.
+
+```powershell
+# In PowerShell, start Claude Code
+claude
+
+# When you need bash commands, open Git Bash in another window
+bash
+```
+
+Both see the same files. It's a reasonable hybrid.
+
+### Tell Claude Code You're Using PowerShell
+
+Add this to your CLAUDE.md:
+
+```markdown
+## Environment
+
+This project is developed on Windows using PowerShell.
+
+When running shell commands, use PowerShell syntax:
+- Use `Remove-Item` instead of `rm`
+- Use `New-Item -ItemType Directory` instead of `mkdir`
+- Use `Get-ChildItem` instead of `ls`
+- Use `Set-Location` instead of `cd`
+
+When showing file paths, use backslashes: `C:\path\to\file`
+
+If you need Unix-style commands, I'll translate them.
+```
+
+Claude Code will read this and adapt.
+
+### Use Absolute Paths
+
+In PowerShell, relative paths can be confusing. Use absolute paths when asking Claude Code to work on files:
+
+Bad:
+```
+> Edit the auth file to add logging
+```
+
+Good:
+```
+> Edit C:\Users\YourName\projects\my-app\src\auth.ps1 to add logging
+```
+
+Absolute paths remove ambiguity.
+
+## Example: Using Claude Code in PowerShell
+
+Open PowerShell:
+
+```powershell
+cd C:/Users/YourName/projects
+mkdir my-app
+cd my-app
+claude
+```
+
+Ask Claude Code:
+
+```
+Create a Node.js project with a simple server. Use Express.
+```
+
+Claude Code will:
+1. Create package.json
+2. Create a server file
+3. Explain how to run it
+
+You run it:
+
+```powershell
+npm install
+npm start
+```
+
+Works fine. The experience is good enough.
+
+Now ask Claude Code:
+
+```
+Add logging to the server. Every request should log the method and path.
+```
+
+Claude Code will edit the server file. Works fine.
+
+## Known Quirks
+
+**Quirk 1: npm scripts with bash**
+
+If your package.json has scripts with bash syntax, PowerShell might struggle:
+
+```json
+{
+  "scripts": {
+    "build": "rm -rf dist && tsc"  // This fails in PowerShell
+  }
+}
+```
+
+**Fix:** Ask Claude Code to use PowerShell syntax or use `npm-run-all` for cross-platform compatibility.
+
+**Quirk 2: ESLint and other linters**
+
+Sometimes ESLint paths get confused. If you see path errors:
+
+```powershell
+# Try using an absolute path
+npx eslint C:/full/path/to/file.js
+```
+
+**Quirk 3: Git line ending warnings**
+
+You'll see Git warnings about line endings. It's harmless:
+
+```
+warning: CRLF will be replaced by LF the next time Git touches this file
+```
+
+Run once:
+```powershell
+git config --global core.autocrlf true
+```
+
+Then you won't see it again.
+
+## Recap
+
+- Claude Code works in PowerShell. Node.js and npm work fine.
+- Unix-specific commands don't work. Ask Claude Code to use PowerShell syntax.
+- File paths use backslashes, but PowerShell accepts forward slashes too.
+- Line endings can cause issues. Use `git config --global core.autocrlf true`
+- For serious work with Docker or complex shell needs, WSL2 is better.
+- Add PowerShell context to CLAUDE.md so Claude Code understands your environment.
+
+## What's Next
+
+You're set up in PowerShell. Next, learn about Windows file system quirks and path handling to avoid common pain points.

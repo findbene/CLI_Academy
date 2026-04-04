@@ -1,0 +1,336 @@
+---
+title: "Basic Chat and File Edits"
+description: "Learn how to ask Claude Code to read files, create new ones, and understand what it's doing in real time."
+slug: "basic-chat-and-file-edits"
+lesson_number: 4
+estimated_minutes: 15
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["workflow", "beginner", "core-concepts"]
+---
+
+## What You'll See
+
+You'll interact with Claude Code in a terminal session. You'll ask it to create files, edit them, and understand what changes it's making. You'll see tool calls, file diffs, and how Claude Code works through a problem step by step.
+
+## Why This Matters
+
+Using Claude Code isn't about magic. It's about asking clearly and understanding the feedback loop. This lesson teaches you that loop. Once you understand it, you can work with Claude Code on any project.
+
+## Starting Claude Code
+
+Navigate to your project (which has a CLAUDE.md file):
+
+```bash
+cd my-project
+claude
+```
+
+You'll see a prompt like:
+
+```
+Claude Code │ my-project
+>
+```
+
+This is the Claude Code prompt. You're now in a session with Claude Code. You can type requests here, and Claude Code will respond.
+
+## The Basic Chat Loop
+
+Type a simple request:
+
+```
+Create a new file called hello.py that prints "Hello, Claude Code!"
+```
+
+Claude Code will:
+
+1. **Read your CLAUDE.md** — understand your conventions
+2. **Reason about the request** — plan what files to create, edit, or run
+3. **Show you its plan** — explain what it's about to do
+4. **Ask permission** — "I'll create hello.py in the project root. Is that okay?"
+5. **Make the change** — create or edit the file
+6. **Show the diff** — exactly what changed
+7. **Verify** — optionally run the file to show it works
+8. **Return to prompt** — ready for your next request
+
+You'll see output like:
+
+```
+I'll create a new Python file called hello.py that prints a greeting.
+
+Creating hello.py...
+✓ Created hello.py
+
+Here's what I created:
+
+```python
+print("Hello, Claude Code!")
+```
+
+Done. You can run it with: python hello.py
+```
+
+Then you're back at the prompt. You can ask another question.
+
+## Understanding Tool Calls
+
+Behind the scenes, Claude Code uses tools to interact with your filesystem:
+
+- **read** — read a file to understand its contents
+- **write** — create or overwrite a file
+- **edit** — make targeted changes to an existing file
+- **bash** — run shell commands (npm, git, python, etc.)
+- **list_directory** — see what files exist in a folder
+
+You don't need to know the technical details, but it helps to understand the pattern. When you see output like:
+
+```
+I'm reading src/main.py to understand the current structure...
+```
+
+Claude Code is using the read tool. When you see:
+
+```
+Running tests with: npm test
+```
+
+Claude Code is using the bash tool.
+
+These tools always stay in sync with your filesystem. No magic. No hidden changes. You can always see exactly what happened.
+
+## Common Request Patterns
+
+### Pattern 1: Creating a New File
+
+Request:
+```
+Create a new file called config.js with default settings.
+```
+
+Claude Code:
+- Plans the structure
+- Creates the file
+- Shows you the contents
+- Suggests next steps
+
+### Pattern 2: Editing an Existing File
+
+Request:
+```
+Edit src/app.py to add error handling for the database connection.
+```
+
+Claude Code:
+- Reads src/app.py to understand the current code
+- Plans the changes
+- Edits the file (shows the diff)
+- Optionally runs tests to verify it works
+
+### Pattern 3: Understanding Code
+
+Request:
+```
+Explain what's in src/utils/database.py. What does it do?
+```
+
+Claude Code:
+- Reads the file
+- Breaks down the functions and classes
+- Explains the purpose and logic
+- Suggests improvements if relevant
+
+### Pattern 4: Fixing a Problem
+
+Request:
+```
+I'm getting this error: "ModuleNotFoundError: No module named 'requests'". What's wrong?
+```
+
+Claude Code:
+- Asks clarifying questions (what command did you run?)
+- Diagnoses the issue (missing dependency)
+- Fixes it (adds to requirements.txt, runs pip install, etc.)
+- Verifies the fix
+
+### Pattern 5: Adding a Feature
+
+Request:
+```
+Add a new route to handle user logout. It should clear the session and redirect to home.
+```
+
+Claude Code:
+- Reads your current routes to understand the pattern
+- Plans the new route (HTTP method, path, logic)
+- Edits the relevant file
+- Adds a test for the new route
+- Shows you the diff
+- Runs tests to verify it works
+
+## Iterative Refinement
+
+One of the most powerful patterns with Claude Code is refinement. You ask for something, Claude Code builds it, then you ask for changes.
+
+Example:
+
+```
+> Create a simple calculator app in Python.
+
+I'll create a calculator with add, subtract, multiply, and divide functions.
+
+[Claude Code creates calc.py with basic functions]
+
+> Now add a main function that lets users input numbers and choose an operation.
+
+I'll add a menu system that prompts for input.
+
+[Claude Code edits calc.py, adds the menu]
+
+> Make the menu repeat until the user types 'quit'.
+
+I'll wrap the menu in a loop.
+
+[Claude Code edits calc.py again, adds the loop]
+```
+
+Each refinement is quick. Claude Code understands the context from your previous requests and edits intelligently.
+
+## Reading File Output
+
+When Claude Code shows you a file change, it uses a diff format. You'll see:
+
+```
+--- src/main.py
++++ src/main.py
+@@ -10,3 +10,8 @@
+  def main():
+      print("Starting app...")
++
++    # Handle errors gracefully
++    try:
++        run()
++    except Exception as e:
++        print(f"Error: {e}")
+```
+
+The `+` lines are additions. The `-` lines are deletions (if any). The unchanged lines provide context.
+
+If a file is large and Claude Code only changed a small part, it shows just that section, not the whole file.
+
+## Asking Clearly
+
+Claude Code works best when you:
+
+1. **Be specific** — "Add a button" is vague. "Add a red Delete button in the top right of the toolbar" is clear.
+2. **Give context** — "Fix the bug" doesn't work. "The login form isn't submitting—it's throwing a network error after clicking Submit" is helpful.
+3. **Reference files when needed** — "Edit src/auth.py to..." is clearer than "Edit the auth file to..."
+4. **Ask for one thing at a time** — Multiple changes in one request are harder to verify. Break it down.
+5. **Ask Claude Code to explain** — "Why did you make that change?" helps you learn and verify correctness.
+
+## What Claude Code Won't Do Silently
+
+Claude Code is conservative about risky actions. It asks permission before:
+
+- Deleting files or directories
+- Running destructive commands
+- Modifying database schemas
+- Committing to Git (without explicit ask)
+- Installing packages that change your app's behavior significantly
+
+This is by design. You're in control. Claude Code is an agent that amplifies your ability, not a tool that runs wild.
+
+If Claude Code asks for permission and you're unsure, say "no" and ask for clarification. There's no penalty. You can always ask again.
+
+## Exiting Claude Code
+
+To leave a Claude Code session, type:
+
+```
+exit
+```
+
+or press `Ctrl+C` twice.
+
+Your files are saved. Your project state is unchanged except for the files you asked Claude Code to modify. You can run `claude` again anytime to start a new session.
+
+## Check Your Work
+
+Let's verify you can use Claude Code. In your project folder, run:
+
+```bash
+claude
+```
+
+Then ask:
+
+```
+Create a file called test.txt with the text "Claude Code is working!"
+```
+
+Claude Code should create the file. Verify:
+
+```bash
+cat test.txt
+```
+
+You should see: `Claude Code is working!`
+
+If that worked, you've got the hang of it. Delete the test file:
+
+```bash
+rm test.txt
+```
+
+And you're ready for more complex work.
+
+## Common Gotchas
+
+**Gotcha: Asking Claude Code to do too much in one request**
+
+Request: "Build a complete REST API with user auth, database, and tests."
+
+This is vague and too large. Claude Code will try, but it's better to break it down.
+
+**Better:** "Create a new FastAPI app with a single GET /health endpoint that returns status."
+
+Then: "Add a POST /users endpoint to create new users."
+
+Then: "Add authentication using JWT."
+
+Build incrementally.
+
+**Gotcha: Not reading the diff carefully**
+
+Claude Code shows changes, but it's your responsibility to review them. Before accepting:
+
+1. Read the diff
+2. Verify it makes sense
+3. Ask for clarification if unsure
+4. Test if needed
+
+**Gotcha: Expecting Claude Code to know your full project without asking**
+
+Claude Code reads files and your CLAUDE.md, but it can't know assumptions you've made. If you have specific conventions or quirks, tell Claude Code about them.
+
+Bad: "Add a feature."
+Good: "Add a feature. Note: we use Redux for state, TypeScript strict mode, and Jest for tests. Check src/store/ and src/types/ for patterns."
+
+## Recap
+
+- Start Claude Code with `claude` in your project root
+- Type requests. Claude Code reads files, makes plans, and executes
+- You see every change. Review diffs before accepting
+- Refine iteratively—ask for changes until it's right
+- Be specific and provide context
+- Claude Code asks permission before risky actions
+- You're in control. If unsure, ask Claude Code to explain
+
+## What's Next
+
+You can now chat with Claude Code and ask it to edit files. Next, you'll learn about context windows—why it matters and how to keep Claude Code focused on the right part of your project.

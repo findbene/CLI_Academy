@@ -1,6 +1,6 @@
 # TASKS.md
 
-This file tracks the build plan for Zero to Claude.
+This file tracks the build plan for CLI Academy.
 
 ## Phase 0 - Repo Foundation
 

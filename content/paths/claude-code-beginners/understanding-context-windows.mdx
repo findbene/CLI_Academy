@@ -1,0 +1,224 @@
+---
+title: "Understanding Context Windows"
+description: "Learn what a context window is, why it matters for Claude Code, and how to keep Claude Code focused on your work."
+slug: "understanding-context-windows"
+lesson_number: 5
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["concepts", "beginner", "workflow"]
+---
+
+## What You'll See
+
+You'll understand how Claude Code's memory works, what "context window" means, and how to avoid the situation where Claude Code forgets what you've told it or gets confused about your project.
+
+## Why This Matters
+
+Claude Code is powerful, but it has limits. Every conversation uses a "context window"—roughly the number of tokens (words/chunks of text) Claude Code can "remember" in one session.
+
+For small projects, this isn't a problem. But as your project grows or your conversation gets longer, you might hit a limit. Understanding this helps you work smarter, not harder.
+
+## What Is a Context Window?
+
+Think of Claude Code's memory like a whiteboard. When you start a session:
+
+1. Claude Code reads your CLAUDE.md (puts it on the whiteboard)
+2. You ask Claude Code to work on a file (Claude Code reads it, puts it on the whiteboard)
+3. You ask another question (more text goes on the whiteboard)
+4. The whiteboard gets fuller and fuller
+
+The whiteboard is the "context window." It has a maximum size. Once it fills up, Claude Code has to "forget" older things to make room for new things.
+
+**In real numbers:** Claude Code has a context window of ~200K tokens. A token is roughly a word. So Claude Code can hold about 200,000 words in its memory at once.
+
+Sounds huge? It's actually more limited than you'd think:
+
+- A large file (1000 lines of code) = ~2000 tokens
+- A medium project (5-10 main files) = ~10,000 tokens
+- A long conversation (50+ exchanges) = ~5,000-10,000 tokens
+- Your CLAUDE.md = ~500 tokens
+
+So a typical working session might consume 15,000-30,000 tokens. You still have room, but it's not infinite.
+
+## Why This Matters
+
+If your context window fills up, Claude Code has to forget things:
+
+- It might forget your CLAUDE.md rules
+- It might forget earlier files you asked it to edit
+- It might forget what you said three requests ago
+- It might reintroduce bugs you already fixed
+
+You don't want that. So you need to know how to manage it.
+
+## How to Keep Context Efficient
+
+### Rule 1: Scope Your Requests
+
+Bad: "Build an entire e-commerce system."
+
+Good: "Create a shopping cart component. It should display items and a total price."
+
+Large requests make Claude Code load more context. Scoped requests are faster and more focused.
+
+### Rule 2: Work in Sessions
+
+One session = one feature or bug fix.
+
+Good workflow:
+```
+Session 1: Build the login form
+Save your work. Close Claude Code. `exit`
+
+Session 2: Add validation to the login form
+Start a new Claude Code session. `claude`
+Ask Claude Code to work on the login form
+```
+
+Each session starts fresh. Your files stay. But Claude Code doesn't carry over context from Session 1 to Session 2 (by default).
+
+### Rule 3: Use Clear File References
+
+Bad: "Edit the auth file to add logging."
+
+Good: "Edit src/auth/login.ts to add console.log statements at the start and end of the authenticate() function."
+
+Being specific reduces the files Claude Code needs to read to understand the context.
+
+### Rule 4: Archive Old Conversations
+
+If you've been chatting with Claude Code for 100+ exchanges in one session, the context window is getting full.
+
+What to do: Exit and start a new session.
+
+```bash
+exit
+```
+
+Then start fresh:
+
+```bash
+claude
+```
+
+Claude Code reads your CLAUDE.md and current files. It's like hitting the reset button, but your files stay intact.
+
+### Rule 5: Split Large Projects
+
+If your project is huge (thousands of files, hundreds of thousands of lines of code), Claude Code might struggle.
+
+Solution: Use your CLAUDE.md to focus Claude Code on the relevant part.
+
+Example CLAUDE.md:
+```markdown
+## Current Focus
+
+Right now, we're building the payment system.
+Key files: src/payments/*.ts, tests/payments/*.test.ts
+Other files: src/auth/, src/database/ — don't edit these yet.
+```
+
+This tells Claude Code: "You have a huge project, but focus here."
+
+## What Happens When Context Fills
+
+Claude Code doesn't crash. It handles it gracefully:
+
+1. It tracks token usage and warns you: "Context window is getting full. Consider starting a new session soon."
+2. It starts dropping less important context (older conversation history, but not files)
+3. It keeps your CLAUDE.md and current files safe
+4. If the window fills completely, it asks you to start a new session
+
+You'll see a message like:
+
+```
+Context window is 85% full. 
+Your conversation is getting long. 
+Consider saving your work and starting a new session with `exit` and `claude`.
+```
+
+If you see this, heed the warning. Exit and start fresh.
+
+## Reading Claude Code's Token Usage
+
+During a session, Claude Code shows token counts. You might see:
+
+```
+I've read 3 files (about 5,000 tokens).
+Your current context usage is about 12,000 / 200,000 tokens.
+```
+
+This is helpful. If you're at 150,000+ tokens, wrap up and start a new session.
+
+## Context and CLAUDE.md
+
+Your CLAUDE.md is special. Claude Code keeps it in context the entire session, even if the context window gets tight. This is intentional—your rules stay active.
+
+But this means: **Make your CLAUDE.md concise.** Don't write a 500-line CLAUDE.md with every possible rule. A good CLAUDE.md is 50-200 lines. It covers the essentials.
+
+Bad CLAUDE.md: 500 lines with every possible rule and edge case.
+Good CLAUDE.md: 100 lines with the core rules and a link to deeper docs if needed.
+
+## Example: Working With Context Efficiently
+
+Scenario: You're building a todo app. You've been chatting with Claude Code for a while.
+
+Claude Code: "Context window is getting full (75%). Consider starting a new session."
+
+You:
+```
+> exit
+```
+
+Your work is saved. Now start a new session:
+
+```bash
+claude
+```
+
+You can resume work. Claude Code reads your CLAUDE.md and the current state of your project. It knows what's been built because it reads the files. You can ask:
+
+```
+> What features have been implemented so far? (Just read the main files, don't read all tests.)
+```
+
+Claude Code:
+1. Reads your main source files
+2. Ignores test files (you told it to)
+3. Summarizes what's been built
+4. You continue from there
+
+Efficient. No loss of work. Fresh context.
+
+## When Context Doesn't Matter
+
+Context windows aren't a problem for:
+
+- Small projects (< 50 files, < 100K total lines of code)
+- Short sessions (< 20 exchanges)
+- Focused work (one feature, one bug fix)
+
+Most beginner projects fall into this category. You won't hit context limits unless you're working on a massive codebase or having very long conversations.
+
+Start worrying about context only when Claude Code warns you. Until then, work normally.
+
+## Recap
+
+- Context window is Claude Code's working memory (roughly 200K tokens)
+- One token ≈ one word. A typical file is 1-3K tokens
+- Keep sessions focused. One session = one feature or bug fix
+- Scope your requests. "Add a button" not "Build the entire app"
+- If Claude Code warns about full context, exit and start a new session
+- Your CLAUDE.md stays in context the entire session
+- Files are saved between sessions, but context resets
+- For most small projects, you won't hit limits
+
+## What's Next
+
+You now understand how Claude Code works and how to keep it focused. Next, you'll learn safe prompting habits—how to ask Claude Code for help without accidentally introducing bugs or security issues.

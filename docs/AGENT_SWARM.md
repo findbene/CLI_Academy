@@ -1,6 +1,6 @@
 # Agent Swarm Architecture
 
-This document defines the internal agent system for Zero to Claude.
+This document defines the internal agent system for CLI Academy.
 
 The public product is one learner-facing app.
 Internally, it is powered by a swarm of specialized agents.
@@ -173,7 +173,7 @@ Examples:
 
 ## 6. Why This Matters
 
-This swarm model lets Zero to Claude become more than a static course app.
+This swarm model lets CLI Academy become more than a static course app.
 
 It becomes:
 

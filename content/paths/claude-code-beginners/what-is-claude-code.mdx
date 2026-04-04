@@ -1,0 +1,142 @@
+---
+title: "What Is Claude Code?"
+description: "Understand how Claude Code differs from Claude.ai and what makes it a powerful agent for real development work."
+slug: "what-is-claude-code"
+lesson_number: 1
+estimated_minutes: 8
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["foundation", "beginner", "concepts"]
+---
+
+## What You'll See
+
+By the end of this lesson, you'll understand Claude Code as a terminal-based AI agent that reads and writes your files, runs commands, and reasons about your entire project—not as a chatbot, but as a collaborator that amplifies your coding ability.
+
+## Why This Matters
+
+Claude.ai is a chatbot. Claude Code is different. It's an AI agent that lives in your terminal, understands your project structure, reads and edits your files, runs shell commands, and learns from the results. The difference changes what you can build.
+
+If you've used Claude.ai for coding questions, you know the friction: copy code, paste it back, deal with merge conflicts, try to remember what changed. Claude Code eliminates that friction. You describe what needs to happen. It happens. You stay in flow.
+
+## Core Concepts
+
+### Claude.ai vs Claude Code
+
+**Claude.ai:**
+- Chat interface in your browser
+- Reads prompts, writes long responses
+- You copy/paste code back to your editor
+- No direct access to your files or filesystem
+- Good for questions, brainstorming, code review
+
+**Claude Code:**
+- Terminal application you run locally
+- Reads and writes your actual files
+- Runs shell commands and sees the results
+- Understands your whole project context
+- Good for building, refactoring, debugging, automating
+
+### What Claude Code Actually Does
+
+Claude Code is an AI agent loop. Here's the pattern:
+
+1. You ask Claude to do something: "Add a login button to my dashboard"
+2. Claude reads your project files to understand the structure
+3. Claude makes a plan: "I'll add a Button component, wire it to auth, update the page"
+4. Claude executes: it edits files, runs tests, asks permission when needed
+5. Claude shows you what changed and why
+6. You decide: accept, ask for changes, or take it from here
+
+This cycle happens fast—often in seconds. You're not waiting for Claude to finish thinking. You're collaborating in real time.
+
+### Why This Matters for Beginners
+
+You might think: "I'm a beginner. An AI agent is overkill." Actually, it's backwards.
+
+Beginners benefit most because:
+
+- **You learn by doing, not by reading.** Claude Code lets you build real projects immediately, with an expert looking over your shoulder.
+- **You don't waste time on boilerplate.** Focus on logic, not setup.
+- **You understand decisions.** When Claude edits your code, it explains why. That's learning.
+- **You stay unblocked.** Stuck on a bug? Claude Code can debug alongside you, running tests and checking error output.
+
+### What Claude Code Cannot Do
+
+Claude Code is powerful, but it's not magic:
+
+- **It can't see your screen.** It reads files and terminal output, not your monitor. You have to describe what you see.
+- **It can't access the internet.** It can't fetch live data, check websites, or pull from remote APIs (except through your code).
+- **It won't overwrite files without permission.** It asks before making changes.
+- **It doesn't have infinite memory.** Your project's full context fits in a window. Very large codebases may need guidance.
+- **It can't fix unsafe code for you.** It respects your security rules. You have to keep it honest.
+
+## How Claude Code Fits Into Your Workflow
+
+### Before Claude Code
+```
+1. Think of feature
+2. Open editor
+3. Type boilerplate
+4. Write business logic
+5. Copy/paste to ChatGPT
+6. Copy/paste back
+7. Fix merge conflicts
+8. Run tests manually
+9. Debug
+10. Repeat 7-9
+```
+
+### With Claude Code
+```
+1. Think of feature
+2. Open terminal: claude
+3. Describe what you want
+4. Claude reads your code, makes a plan, executes
+5. Review changes
+6. Ask for refinements or move on
+```
+
+The time saved compounds as your project grows.
+
+## A Real Example
+
+Let's say you're building a to-do app. You've got the basic structure:
+
+```
+todo-app/
+  app.py (Flask)
+  templates/
+    index.html
+  static/
+    style.css
+```
+
+You ask Claude Code: "Add a delete button next to each to-do item."
+
+Claude Code:
+1. Reads `app.py`, `index.html`, and `style.css` to understand the structure
+2. Plans the changes: add a route, update the template, add CSS styling
+3. Edits the files
+4. Runs tests or restarts the server if you've set that up
+5. Shows you the diff and explains what changed
+
+You can then ask: "Make the delete button red and add a confirmation dialog." Claude Code makes that change. No copy-paste. No context loss. No merge conflicts.
+
+## Key Takeaways
+
+- Claude Code is an AI agent, not a chatbot. It reads and writes your actual files.
+- It understands your whole project, not just isolated code snippets.
+- It's fastest for iteration—describe a change, Claude Code executes, you review.
+- It works best when you describe clearly what you want, not how to build it.
+- It respects permissions and asks before making risky changes.
+- It's not a replacement for you—it's a collaborator that amplifies your ability.
+
+## What's Next
+
+In the next lesson, you'll install Claude Code on your machine and set up your first project workspace.
