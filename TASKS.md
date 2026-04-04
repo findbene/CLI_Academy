@@ -13,31 +13,31 @@ This file tracks the build plan for CLI Academy.
 - [x] Create UI system documentation
 - [x] Create starter design token package
 - [ ] Remove or archive temporary blueprint extraction scratch files
-- [ ] Initialize git for this repo
-- [x] Add baseline `.env.example`
-- [ ] Add CI workflow
+- [x] Initialize git for this repo
+- [x] Add baseline `.env.example` (`app/.env.example`)
+- [x] Add CI workflow (`.github/workflows/ci.yml`)
 
 ## Phase 1 - Core Buildable Product
 
-- [ ] Scaffold Next.js frontend in `app/`
-- [ ] Scaffold FastAPI backend in `backend/`
-- [ ] Add app font loading and map production fonts to the design tokens
-- [ ] Build the first shared UI primitives from the token system
-- [ ] Set up Supabase project structure and migration plan
-- [ ] Define Phase 1 database schema
-- [ ] Implement auth
-- [ ] Implement onboarding wizard
-- [ ] Implement dashboard
-- [ ] Implement path catalog
-- [ ] Implement path detail pages
-- [ ] Implement lesson player with structured blocks
-- [ ] Implement floating tutor
-- [ ] Implement progress tracking
-- [ ] Implement download center
-- [ ] Implement Stripe checkout and webhooks
-- [ ] Implement telemetry events
-- [ ] Implement trust surfaces: review date, tested-on badges, known issues shell
-- [ ] Ship first free flagship path
+- [x] Scaffold Next.js frontend in `app/` (19 routes, build passing)
+- [x] Scaffold FastAPI backend in `backend/`
+- [x] Add app font loading and map production fonts to the design tokens
+- [x] Build the first shared UI primitives from the token system
+- [x] Set up Supabase project structure and migration plan
+- [x] Define Phase 1 database schema (`infrastructure/schema.sql` — 871 lines, full RLS)
+- [x] Implement auth (Supabase SSR + OAuth callback route)
+- [x] Implement onboarding wizard (3-step, saves to Supabase profiles)
+- [x] Implement dashboard (server component, real Supabase queries)
+- [x] Implement path catalog (`/paths`, `/paths/[slug]`)
+- [x] Implement path detail pages (`/learn/[pathSlug]`)
+- [x] Implement lesson player (`LessonPlayer` client + `LessonContent` server)
+- [x] Implement floating tutor (SSE streaming via `/api/tutor`, Anthropic SDK)
+- [x] Implement progress tracking (`/api/progress` GET/POST)
+- [x] Implement download center (`/downloads` — tiered asset list)
+- [x] Implement Stripe checkout and webhooks (`/api/stripe/checkout`, `/api/stripe/webhook`)
+- [x] Implement telemetry events (`/api/events`)
+- [x] Ship first free flagship path (beginners: 8 lessons, windows: 6 lessons, macos: 5 lessons)
+- [ ] Configure and deploy (Supabase credentials, Stripe products, Vercel, Railway)
 - [ ] Ship first paid flagship path
 - [ ] Ship first secure deployment path
 

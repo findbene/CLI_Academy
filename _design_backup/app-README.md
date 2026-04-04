@@ -1,6 +1,6 @@
 # app/
 
-This directory will hold the Next.js frontend for Zero to Claude.
+This directory will hold the Next.js frontend for CLI Academy.
 
 Planned responsibilities:
 

@@ -1,7 +1,7 @@
 0002`t[Heading1] Table of Contents
 0005`t[Heading1] 1. Executive Summary
 0008`t[Heading2] What We Are Building
-0009`t[] AgentOps Academy is not a generic course site. It is an interactive, guided, safety-first AI operations learning and deployment platform that combines:
+0009`t[] CLI Academy is not a generic course site. It is an interactive, guided, safety-first AI operations learning and deployment platform that combines:
 0010`t[ListParagraph] Structured, role-based learning paths from beginner to power-user
 0011`t[ListParagraph] Embedded AI tutor and troubleshooting agent (contextual, cost-controlled, LangGraph-powered)
 0012`t[ListParagraph] Hands-on verified labs with proof-of-completion — not checkbox theater
@@ -14,12 +14,12 @@
 0020`t[Heading2] Market Opportunity (April 2026)
 0023`t[Heading2] Product Positioning
 0025`t[Heading2] Revenue Potential
-0027`t[] These targets are realistic, not aspirational. DataCamp generates ~$200K revenue per employee; Replit grew from $2.8M to $150M ARR in under a year. AgentOps Academy can reach meaningful revenue by focusing on depth before breadth and real outcomes before vanity metrics.
+0027`t[] These targets are realistic, not aspirational. DataCamp generates ~$200K revenue per employee; Replit grew from $2.8M to $150M ARR in under a year. CLI Academy can reach meaningful revenue by focusing on depth before breadth and real outcomes before vanity metrics.
 0029`t[Heading1] 2. Product Identity & Unique Value
-0031`t[Heading2] 2.1  What Makes AgentOps Academy Unique
-0032`t[] Most AI tutorials are either too shallow ("just type this command"), too theoretical, or dangerously incomplete about security. AgentOps Academy is differentiated by five compounding advantages:
+0031`t[Heading2] 2.1  What Makes CLI Academy Unique
+0032`t[] Most AI tutorials are either too shallow ("just type this command"), too theoretical, or dangerously incomplete about security. CLI Academy is differentiated by five compounding advantages:
 0035`t[Heading2] 2.2  Brand Naming Options
-0036`t[] The working name 'AgentOps Academy' is competent but sounds more internal than consumer-ready. Recommended alternatives researched against domain and trademark availability:
+0036`t[] The working name 'CLI Academy' is competent but sounds more internal than consumer-ready. Recommended alternatives researched against domain and trademark availability:
 0040`t[Heading2] 2.3  Core Value Propositions by Segment
 0042`t[Heading1] 3. Complete Curriculum Architecture
 0045`t[Heading2] 3.1  Domain 1 — Claude Code: Setup, Config & Troubleshooting
@@ -171,7 +171,7 @@
 0233`t[Heading1] 6. Data Model
 0236`t[Heading2] 6.1  Core Tables
 0239`t[Heading2] 6.2  Content Freshness Schema (Critical)
-0240`t[] Because AgentOps Academy teaches rapidly evolving tools, content freshness is a product feature, not a metadata nicety. Every lesson and path MUST carry:
+0240`t[] Because CLI Academy teaches rapidly evolving tools, content freshness is a product feature, not a metadata nicety. Every lesson and path MUST carry:
 0243`t[Heading2] 6.3  Entitlement Logic
 0244`t[ListParagraph] Free tier: access to academy_paths where tier_required = 'free' and is_published = true
 0245`t[ListParagraph] Pro tier: access to all published paths where tier_required IN ('free', 'pro')
@@ -193,7 +193,7 @@
 0268`t[ListParagraph] Customer Success Agent — monitors engagement signals, triggers re-engagement nudges
 0270`t[Heading1] 8. Learning Design Framework
 0272`t[Heading2] 8.1  The 8-Step Learning Loop
-0273`t[] Every lesson in AgentOps Academy follows this evidence-based sequence. Passive completion is not allowed — users must prove understanding at each gate.
+0273`t[] Every lesson in CLI Academy follows this evidence-based sequence. Passive completion is not allowed — users must prove understanding at each gate.
 0276`t[Heading2] 8.2  Custom Lesson Block Components
 0279`t[Heading2] 8.3  Onboarding Personalization
 0280`t[] Users must complete a 5-question onboarding wizard before accessing their first lesson. Answers drive path recommendations and tutor context. User-agent detection may prefill but does NOT decide.
@@ -432,7 +432,7 @@
 0647`t[ListParagraph] There is no high-quality, safety-first, role-specific education resource for these tools. YouTube tutorials are shallow and stale. Documentation is developer-only. Generic AI courses don't cover operations.
 0648`t[ListParagraph] The gap between 'I bought access' and 'I actually use this productively' costs enterprises millions in wasted licenses and unrealized productivity gains.
 0650`t[Heading2] 22.2  The Solution
-0651`t[ListParagraph] AgentOps Academy closes the gap with a structured, interactive learning platform built specifically for AI tool operators — not AI researchers.
+0651`t[ListParagraph] CLI Academy closes the gap with a structured, interactive learning platform built specifically for AI tool operators — not AI researchers.
 0652`t[ListParagraph] Our 5-domain curriculum (Claude Code, Claude Cowork, OpenClaw, AI Agents, Workflow Automation) maps to real professional pain points and outcomes.
 0653`t[ListParagraph] Our embedded AI tutor (LangGraph-powered) provides contextual teach and troubleshoot support — the equivalent of a senior Claude engineer sitting next to every learner.
 0654`t[ListParagraph] Our content freshness system (version labels, last-reviewed dates, Drift Sentinel agent) makes us the only source professionals can trust as tools evolve weekly.
@@ -454,7 +454,7 @@
 0676`t[ListParagraph] Our safety doctrine is a deep content moat: every deployment lesson includes verified, security-reviewed guidance. Building this correctly takes 12–24 months. A fast follower cannot copy it overnight.
 0677`t[ListParagraph] Our AI tutor has lesson-scoped context and troubleshooting heuristics trained on real user errors. This compounds — the more users, the better the tutor context gets.
 0679`t[Heading1] Appendix A: shadcn/ui Component Manifest & UI Patterns
-0681`t[] The AgentOps Academy frontend is built entirely with shadcn/ui primitives + Tailwind CSS. No custom design system is needed. Every component below is available via 'npx shadcn-ui@latest add [component]'. This list is the complete component inventory for MVP.
+0681`t[] The CLI Academy frontend is built entirely with shadcn/ui primitives + Tailwind CSS. No custom design system is needed. Every component below is available via 'npx shadcn-ui@latest add [component]'. This list is the complete component inventory for MVP.
 0683`t[Heading2] A.1  Core Components by Page
 0686`t[Heading2] A.2  Key Custom Components (Built on shadcn Primitives)
 0689`t[Heading2] A.3  Animation Guidelines (Framer Motion)
@@ -465,4 +465,4 @@
 0701`t[Heading2] B.2  RLS Policy Design
 0704`t[Heading2] B.3  Deployment Spec
 0707`t[Heading2] B.4  Environment Variable Checklist
-0713`t[] AgentOps Academy Master Blueprint  •  Version 2.0  •  April 2026   |   Confidential & Proprietary  |   Built for execution, not presentation.
+0713`t[] CLI Academy Master Blueprint  •  Version 2.0  •  April 2026   |   Confidential & Proprietary  |   Built for execution, not presentation.

@@ -5,7 +5,7 @@ Last updated: 2026-04-03
 ## Product Overview
 
 **One-liner:**
-Zero to Claude is the safest, most beginner-friendly way to go from zero to productive with Claude Code and secure AI agent workflows.
+CLI Academy is the safest, most beginner-friendly way to go from zero to productive with Claude Code and secure AI agent workflows.
 
 **What it does:**
 It helps learners install, configure, understand, troubleshoot, and safely use Claude-based tools through guided paths, verified labs, contextual tutoring, and practical downloads. It is designed to turn curiosity into confident use, not just content consumption.

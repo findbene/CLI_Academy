@@ -163,3 +163,37 @@ Prefer one orchestrated system of specialized internal agents over one public-fa
 Reason:
 Specialized agents are easier to evaluate, improve, and constrain.
 An orchestration layer keeps the product coherent while allowing each agent to own a narrower job.
+
+## D-013: Server/Client MDX Split
+
+Status: accepted
+
+Decision:
+`LessonContent` is a React Server Component that reads MDX from the filesystem.
+`LessonPlayer` is a Client Component that handles SSE streaming, mark-complete, and nav.
+They connect via the `children` prop — server page renders `<LessonContent>` and passes it as `children` to `<LessonPlayer>`.
+
+Reason:
+`fs` and `path` modules crash the client bundle. Server components cannot be imported by client components. The children pattern avoids this while keeping the lesson page architecture clean.
+
+## D-014: Lazy SDK Initialization
+
+Status: accepted
+
+Decision:
+Stripe and Anthropic SDK clients are initialized inside request handlers, not at module level.
+
+Reason:
+Module-level `new Stripe(key)` and `new Anthropic({apiKey})` throw at build time when environment variables are not set. Lazy initialization allows the build to succeed without credentials configured.
+
+## D-015: Route Group Architecture
+
+Status: accepted
+
+Decision:
+- `(marketing)/layout.tsx` — public nav + footer for all marketing pages
+- `(app)/layout.tsx` — sidebar nav, Supabase session required for all app pages
+- Root `layout.tsx` — fonts, ThemeProvider, Toaster only. No AppShell.
+
+Reason:
+Prevents double-wrapping (marketing nav + app sidebar). Each route group owns its own shell, keeping the root layout minimal.

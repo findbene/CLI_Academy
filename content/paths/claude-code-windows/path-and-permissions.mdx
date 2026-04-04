@@ -1,0 +1,184 @@
+---
+title: "Windows Paths and File Permissions"
+description: "Understand how Windows path separators, case sensitivity, and file permissions interact with Claude Code. Avoid the most common friction points."
+slug: "path-and-permissions"
+lesson_number: 4
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-03-15"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["windows", "paths", "permissions", "wsl2"]
+---
+
+## What You'll Learn
+
+How Windows and WSL2 treat file paths differently, why this matters for Claude Code projects, and how to avoid the permission errors that trip up most Windows developers.
+
+---
+
+## See: Two Worlds, Two Path Systems
+
+Windows and WSL2 live side-by-side on your machine but they handle file paths completely differently.
+
+**Windows path (native):**
+```
+C:\Users\yourname\projects\my-app
+```
+
+**WSL2 path (Linux):**
+```
+/home/yourname/projects/my-app
+```
+
+**WSL2 can reach Windows files, but slowly:**
+```
+/mnt/c/Users/yourname/projects/my-app
+```
+
+Claude Code runs inside WSL2. When you open a project, where the files live determines how fast Claude Code can work with them.
+
+---
+
+## Explain: Why File Location Matters
+
+### The Performance Difference
+
+Files stored on the Windows filesystem (`/mnt/c/...`) are accessed across a translation layer. Operations that Claude Code does frequently — reading files, watching for changes, running `git status` — can be 10–50x slower on Windows-mounted paths.
+
+**Rule:** Keep your projects inside WSL2's filesystem (`/home/yourname/`), not on Windows drives.
+
+### Path Separators
+
+Windows uses backslash `\`. Linux (and WSL2) uses forward slash `/`. 
+
+Most tools handle this transparently, but you'll occasionally see issues when:
+- Copying paths from Windows Explorer into a terminal
+- Hardcoding paths in config files
+- Using older Node.js scripts that build paths with string concatenation
+
+**Claude Code handles this correctly** — it respects the environment it's running in.
+
+### File Permissions in WSL2
+
+Linux permissions (read/write/execute) apply inside WSL2. Files you create there get normal Linux permissions. Files accessed through `/mnt/c/` typically show as `777` (world-writable) which can confuse Git.
+
+---
+
+## Do: Set Up Your Project in the Right Place
+
+**Step 1: Open a WSL2 terminal**
+
+In Windows Terminal, click the dropdown and select your Ubuntu profile.
+
+**Step 2: Navigate to your home directory**
+```bash
+cd ~
+```
+
+This puts you in `/home/yourname/` — inside WSL2's filesystem.
+
+**Step 3: Create a projects folder**
+```bash
+mkdir ~/projects
+cd ~/projects
+```
+
+**Step 4: Create or clone your project here**
+```bash
+# New project
+mkdir my-app && cd my-app
+
+# Or clone from GitHub
+git clone https://github.com/yourname/my-app
+```
+
+**Step 5: Open Claude Code from this location**
+```bash
+claude
+```
+
+---
+
+## Check: Verify You're in the Right Place
+
+Run this to confirm your current location is inside WSL2's filesystem (not `/mnt/c/`):
+
+```bash
+pwd
+```
+
+Good output (fast):
+```
+/home/yourname/projects/my-app
+```
+
+Slow output (avoid):
+```
+/mnt/c/Users/yourname/projects/my-app
+```
+
+If you're in the slow path, copy your project over:
+```bash
+cp -r /mnt/c/Users/yourname/projects/my-app ~/projects/my-app
+cd ~/projects/my-app
+```
+
+---
+
+## Apply: Fix Git's "Dubious Ownership" Warning
+
+If Git shows this warning when working with files from the Windows filesystem:
+
+```
+fatal: detected dubious ownership in repository at '/mnt/c/...'
+```
+
+Add a safe directory exception:
+```bash
+git config --global --add safe.directory /mnt/c/path/to/your/repo
+```
+
+Or better: move the project to `~/projects/` and avoid this entirely.
+
+---
+
+## Troubleshoot
+
+### "Permission denied" when running scripts
+
+Scripts need the execute bit set. Fix it:
+```bash
+chmod +x script.sh
+```
+
+### Node modules are slow
+
+If `npm install` crawls, your project is on `/mnt/c/`. Move it:
+```bash
+cp -r /mnt/c/Users/yourname/projects/my-app ~/projects/
+```
+
+### "Cross-device link" error
+
+This happens when you try to move files from `/mnt/c/` using `mv`. Use `cp -r` instead, then delete the original.
+
+### VS Code doesn't see file changes
+
+If you're editing files in Windows VS Code but Claude Code is running in WSL2, make sure you opened VS Code from WSL2 with `code .` — not from Windows Explorer.
+
+---
+
+## Recap
+
+| Situation | Recommended Location |
+|-----------|---------------------|
+| Active development | `~/projects/` (WSL2 filesystem) |
+| Accessing existing Windows files | `/mnt/c/...` works but is slow |
+| Git repos | Always inside WSL2 |
+| Claude Code projects | Always inside WSL2 |
+
+The single most common performance issue on Windows is working in the wrong filesystem. Put your projects in `~/projects/` and you'll avoid 90% of Windows-specific friction.

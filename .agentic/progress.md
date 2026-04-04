@@ -41,8 +41,8 @@ Last updated: 2026-04-04
 ## Build Status
 
 - [x] `npm run build` — **PASSING** (19 routes, zero errors)
-- [ ] `npm run lint` — not yet run
-- [ ] `npx tsc --noEmit` — runs as part of build (passing)
+- [x] `npm run lint` — **PASSING** (0 errors, 0 warnings)
+- [x] `npx tsc --noEmit` — runs as part of build (passing)
 
 ## Key Decisions Made
 
@@ -75,9 +75,10 @@ Last updated: 2026-04-04
 
 ## Remaining Phase 1 Work
 
-- [ ] Run lint and fix any warnings
-- [ ] Commit all changes to git
-- [ ] Deploy frontend to Vercel
+- [x] Run lint and fix all warnings (0 errors, 0 warnings achieved)
+- [x] Add missing `path-and-permissions.mdx` (Windows path now has all 6 lessons)
+- [x] Commit all changes to git
+- [ ] Deploy frontend to Vercel (needs user: Supabase + Stripe + Anthropic keys)
 - [ ] Deploy backend to Railway/Fly.io
 - [ ] Register Stripe webhook endpoint
 - [ ] Ship first lesson content review

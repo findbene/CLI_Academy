@@ -1,6 +1,6 @@
 # Design Tokens
 
-This directory contains the starter visual foundation for Zero to Claude.
+This directory contains the starter visual foundation for CLI Academy.
 
 ## Canonical Files
 

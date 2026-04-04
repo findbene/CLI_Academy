@@ -1,4 +1,4 @@
-0001`t[] AgentOps Academy
+0001`t[] CLI Academy
 0002`t[] MASTER BLUEPRINT  v2.0
 0003`t[] The Complete SaaS Platform Blueprint for the World's Most Practical
 0004`t[] AI Tools Education & Deployment Platform
@@ -7,9 +7,9 @@
 0008`t[Heading1] Table of Contents
 0013`t[Heading1] 1. Executive Summary
 0015`t[] The Core Opportunity
-0016`t[] AgentOps Academy is the definitive SaaS platform for teaching non-developers, operators, marketers, analysts, founders, and teams how to install, configure, secure, troubleshoot, update, and productively use Claude Code, Claude Cowork, OpenClaw-family runtimes, and AI workflow automation tools. It bridges the single largest gap in today's AI adoption cycle: the chasm between interest and confident real-world use.
+0016`t[] CLI Academy is the definitive SaaS platform for teaching non-developers, operators, marketers, analysts, founders, and teams how to install, configure, secure, troubleshoot, update, and productively use Claude Code, Claude Cowork, OpenClaw-family runtimes, and AI workflow automation tools. It bridges the single largest gap in today's AI adoption cycle: the chasm between interest and confident real-world use.
 0018`t[Heading2] What We Are Building
-0019`t[] AgentOps Academy is not a generic course site. It is an interactive, guided, safety-first AI operations learning and deployment platform that combines:
+0019`t[] CLI Academy is not a generic course site. It is an interactive, guided, safety-first AI operations learning and deployment platform that combines:
 0020`t[ListParagraph] Structured, role-based learning paths from beginner to power-user
 0021`t[ListParagraph] Embedded AI tutor and troubleshooting agent (contextual, cost-controlled, LangGraph-powered)
 0022`t[ListParagraph] Hands-on verified labs with proof-of-completion — not checkbox theater
@@ -58,7 +58,7 @@
 0067`t[] Direct audience
 0069`t[Heading2] Product Positioning
 0070`t[] Single Sentence Positioning
-0071`t[] AgentOps Academy is the safest, most guided, most beginner-friendly path from zero to confident, productive operation of Claude Code, Claude Cowork, OpenClaw, and AI workflow automation — across every major platform, for every major professional role.
+0071`t[] CLI Academy is the safest, most guided, most beginner-friendly path from zero to confident, productive operation of Claude Code, Claude Cowork, OpenClaw, and AI workflow automation — across every major platform, for every major professional role.
 0073`t[Heading2] Revenue Potential
 0074`t[] Horizon
 0075`t[] Target
@@ -75,10 +75,10 @@
 0086`t[] Month 36
 0087`t[] $250K–$600K MRR
 0088`t[] Enterprise contracts, marketplace, agents
-0090`t[] These targets are realistic, not aspirational. DataCamp generates ~$200K revenue per employee; Replit grew from $2.8M to $150M ARR in under a year. AgentOps Academy can reach meaningful revenue by focusing on depth before breadth and real outcomes before vanity metrics.
+0090`t[] These targets are realistic, not aspirational. DataCamp generates ~$200K revenue per employee; Replit grew from $2.8M to $150M ARR in under a year. CLI Academy can reach meaningful revenue by focusing on depth before breadth and real outcomes before vanity metrics.
 0092`t[Heading1] 2. Product Identity & Unique Value
-0094`t[Heading2] 2.1  What Makes AgentOps Academy Unique
-0095`t[] Most AI tutorials are either too shallow ("just type this command"), too theoretical, or dangerously incomplete about security. AgentOps Academy is differentiated by five compounding advantages:
+0094`t[Heading2] 2.1  What Makes CLI Academy Unique
+0095`t[] Most AI tutorials are either too shallow ("just type this command"), too theoretical, or dangerously incomplete about security. CLI Academy is differentiated by five compounding advantages:
 0097`t[] Advantage
 0098`t[] Description
 0099`t[] Why It Wins
@@ -98,7 +98,7 @@
 0113`t[] Users must prove each step, not just click through; labs validate outcomes with expected-output checks
 0114`t[] Real skill acquisition, not illusion
 0116`t[Heading2] 2.2  Brand Naming Options
-0117`t[] The working name 'AgentOps Academy' is competent but sounds more internal than consumer-ready. Recommended alternatives researched against domain and trademark availability:
+0117`t[] The working name 'CLI Academy' is competent but sounds more internal than consumer-ready. Recommended alternatives researched against domain and trademark availability:
 0119`t[] Name
 0120`t[] Why It Works
 0121`t[] ToolPilot AI
@@ -113,10 +113,10 @@
 0130`t[] Memorable, distinctive for setup/deployment positioning
 0131`t[] OpsMentor AI
 0132`t[] Trust-heavy; good for B2B, less consumer
-0133`t[] AgentOps Academy
+0133`t[] CLI Academy
 0134`t[] Clear and professional; strong internal working name
 0136`t[] Recommended Brand Direction
-0137`t[] ToolPilot AI or SafeStack AI for broad consumer appeal. AgentOps Academy remains the strong working name and suits B2B/enterprise contexts well. Final choice should be validated with domain availability and trademark clearance before committing.
+0137`t[] ToolPilot AI or SafeStack AI for broad consumer appeal. CLI Academy remains the strong working name and suits B2B/enterprise contexts well. Final choice should be validated with domain availability and trademark clearance before committing.
 0139`t[Heading2] 2.3  Core Value Propositions by Segment
 0140`t[] Segment
 0141`t[] Their Problem
@@ -495,7 +495,7 @@
 0554`t[] Crisp or Intercom — in-app support chat, help center integration
 0556`t[Heading2] 5.2  Repository Structure (Monorepo Placement)
 0558`t[] Monorepo Placement
-0559`t[] AgentOps Academy lives at apps/agentops-academy/ inside the Citadel AI Automation monorepo. It shares Supabase, Stripe, FastAPI, and LLM infrastructure but remains a distinct product surface with its own app folder, routing, content, and data concerns.
+0559`t[] CLI Academy lives at apps/agentops-academy/ inside the Citadel AI Automation monorepo. It shares Supabase, Stripe, FastAPI, and LLM infrastructure but remains a distinct product surface with its own app folder, routing, content, and data concerns.
 0561`t[] apps/agentops-academy/
 0562`t[] Root of the Next.js academy app
 0563`t[]   app/(marketing)/
@@ -578,7 +578,7 @@
 0645`t[] academy_org_members
 0646`t[] id, org_id, user_id, role (owner/admin/member), joined_at — Phase 3 only
 0648`t[Heading2] 6.2  Content Freshness Schema (Critical)
-0649`t[] Because AgentOps Academy teaches rapidly evolving tools, content freshness is a product feature, not a metadata nicety. Every lesson and path MUST carry:
+0649`t[] Because CLI Academy teaches rapidly evolving tools, content freshness is a product feature, not a metadata nicety. Every lesson and path MUST carry:
 0651`t[] Field
 0652`t[] Type & Meaning
 0653`t[] version_label
@@ -660,7 +660,7 @@
 0737`t[ListParagraph] Customer Success Agent — monitors engagement signals, triggers re-engagement nudges
 0739`t[Heading1] 8. Learning Design Framework
 0741`t[Heading2] 8.1  The 8-Step Learning Loop
-0742`t[] Every lesson in AgentOps Academy follows this evidence-based sequence. Passive completion is not allowed — users must prove understanding at each gate.
+0742`t[] Every lesson in CLI Academy follows this evidence-based sequence. Passive completion is not allowed — users must prove understanding at each gate.
 0744`t[] Step
 0745`t[] What Happens & Why It Matters
 0746`t[] 1. See
@@ -957,7 +957,7 @@
 1070`t[] $250K–600K MRR
 1071`t[] Enterprise contracts, partner ecosystem, hosted agents, category leadership
 1073`t[] Category Leader Definition
-1074`t[] AgentOps Academy wins when: (1) setting up Claude Code safely without us feels risky, (2) onboarding new employees to AI tools defaults to our platform, (3) certifications from us are recognized in job postings, (4) content freshness makes us the only source professionals trust for fast-moving tool guidance.
+1074`t[] CLI Academy wins when: (1) setting up Claude Code safely without us feels risky, (2) onboarding new employees to AI tools defaults to our platform, (3) certifications from us are recognized in job postings, (4) content freshness makes us the only source professionals trust for fast-moving tool guidance.
 1076`t[Heading1] 12. Documentation & Project Operations
 1078`t[Heading2] 12.1  Required Documentation Suite
 1080`t[] Document
@@ -1123,7 +1123,7 @@
 1256`t[ListParagraph] Apply to Anthropic partner program with metrics in hand
 1258`t[Heading1] 16. Competitive Intelligence & Gap Map
 1260`t[] Competitive Reality
-1261`t[] The AI education market is expanding fast, but no player has claimed the 'safe, practical, role-based AI ops training' niche. Most competitors either teach generic programming or cover AI tools at a surface level. AgentOps Academy's gap is real — and closeable before copycats arrive.
+1261`t[] The AI education market is expanding fast, but no player has claimed the 'safe, practical, role-based AI ops training' niche. Most competitors either teach generic programming or cover AI tools at a surface level. CLI Academy's gap is real — and closeable before copycats arrive.
 1263`t[Heading2] 16.1  Named Competitor Matrix
 1265`t[] Platform
 1266`t[] Focus & Price
@@ -1176,7 +1176,7 @@ $0
 1304`t[] No curriculum, no safety guidance, inconsistent advice, no retention mechanics
 1306`t[Heading2] 16.2  Our Definitive Differentiation Matrix
 1308`t[] Differentiator
-1309`t[] AgentOps Academy
+1309`t[] CLI Academy
 1310`t[] Best Competitor Equivalent
 1311`t[] Gap Size
 1312`t[] Claude Code / Cowork training
@@ -1232,7 +1232,7 @@ $0
 1364`t[] Community lock-in
 1365`t[] Troubleshoot Challenge community. Completion badge sharing. Discord cohort bonds. Peer accountability drives retention.
 1366`t[] Credential recognition
-1367`t[] Verifiable, LinkedIn-shareable badges. Get job postings to mention AgentOps Academy certification. This takes 18+ months — start early.
+1367`t[] Verifiable, LinkedIn-shareable badges. Get job postings to mention CLI Academy certification. This takes 18+ months — start early.
 1368`t[] Tutor quality gap
 1369`t[] Invest in tutor context: lesson-scoped, role-aware, error-pattern-trained. A tutor that solves your problem in 3 messages beats any competitor.
 1371`t[Heading1] 17. User Personas & Buyer Psychology
@@ -1485,11 +1485,11 @@ $0
 1646`t[] Month 3-6
 1647`t[] Apply to Anthropic's Build program / developer partner program. Submit your product. Share activation and retention metrics. Ask for nothing except a listing.
 1648`t[] Month 6-12
-1649`t[] Co-create content: Anthropic release notes become AgentOps Academy lesson updates. Position as the educational partner for new Claude Code feature releases.
+1649`t[] Co-create content: Anthropic release notes become CLI Academy lesson updates. Position as the educational partner for new Claude Code feature releases.
 1650`t[] Month 12+
 1651`t[] Co-marketing: mention in Anthropic newsletters, Claude Code documentation links, joint webinars on Claude Code for business teams.
 1652`t[] Enterprise Bridge
-1653`t[] Anthropic enterprise sales refers large customers who need team training. AgentOps Academy becomes the recommended onboarding partner.
+1653`t[] Anthropic enterprise sales refers large customers who need team training. CLI Academy becomes the recommended onboarding partner.
 1655`t[Heading2] 19.2  Creator & Influencer Partnership Tiers
 1657`t[] Tier
 1658`t[] Profile
@@ -1756,7 +1756,7 @@ source ~/.bashrc → reload shell config after nvm install
 1945`t[Heading1] 22. Investor & Partner Pitch Narrative
 1947`t[] This section is the tightly-written pitch for: (a) Anthropic partnership conversations, (b) angel investors, (c) accelerator applications, (d) any strategic partner considering co-marketing or distribution. It should be adaptable — the core narrative below is the foundation.
 1949`t[] THE ONE-PARAGRAPH PITCH
-1951`t[] AgentOps Academy is the world's most practical and safety-first training platform for deploying and operating Claude Code, Claude Cowork, and open-source AI agent runtimes. We serve the 80 million+ professionals who want to use today's most powerful AI tools but cannot safely install, configure, troubleshoot, or trust them. We deliver structured, role-based learning paths with verified labs, a contextual AI tutor, and a content freshness system that keeps guidance accurate as tools evolve — something no competitor does. We operate in a $9.58B AI education market growing at 31.2% annually. This is not a generic course site. It is the missing operations layer between tool release and confident, safe, productive use.
+1951`t[] CLI Academy is the world's most practical and safety-first training platform for deploying and operating Claude Code, Claude Cowork, and open-source AI agent runtimes. We serve the 80 million+ professionals who want to use today's most powerful AI tools but cannot safely install, configure, troubleshoot, or trust them. We deliver structured, role-based learning paths with verified labs, a contextual AI tutor, and a content freshness system that keeps guidance accurate as tools evolve — something no competitor does. We operate in a $9.58B AI education market growing at 31.2% annually. This is not a generic course site. It is the missing operations layer between tool release and confident, safe, productive use.
 1953`t[Heading2] 22.1  The Problem (Investor Framing)
 1954`t[ListParagraph] Anthropic has 40M+ registered Claude users and is adding millions monthly. Adoption is skyrocketing.
 1955`t[ListParagraph] Claude Code, Claude Cowork, and OpenClaw runtimes are among the most powerful productivity tools in history — but setup failure rates are enormous.
@@ -1764,7 +1764,7 @@ source ~/.bashrc → reload shell config after nvm install
 1957`t[ListParagraph] There is no high-quality, safety-first, role-specific education resource for these tools. YouTube tutorials are shallow and stale. Documentation is developer-only. Generic AI courses don't cover operations.
 1958`t[ListParagraph] The gap between 'I bought access' and 'I actually use this productively' costs enterprises millions in wasted licenses and unrealized productivity gains.
 1960`t[Heading2] 22.2  The Solution
-1961`t[ListParagraph] AgentOps Academy closes the gap with a structured, interactive learning platform built specifically for AI tool operators — not AI researchers.
+1961`t[ListParagraph] CLI Academy closes the gap with a structured, interactive learning platform built specifically for AI tool operators — not AI researchers.
 1962`t[ListParagraph] Our 5-domain curriculum (Claude Code, Claude Cowork, OpenClaw, AI Agents, Workflow Automation) maps to real professional pain points and outcomes.
 1963`t[ListParagraph] Our embedded AI tutor (LangGraph-powered) provides contextual teach and troubleshoot support — the equivalent of a senior Claude engineer sitting next to every learner.
 1964`t[ListParagraph] Our content freshness system (version labels, last-reviewed dates, Drift Sentinel agent) makes us the only source professionals can trust as tools evolve weekly.
@@ -1798,7 +1798,7 @@ source ~/.bashrc → reload shell config after nvm install
 1997`t[] Angel round ($100K–$300K)
 1998`t[] "We are raising a pre-seed to fund 12 months of content development, marketing growth, and team expansion. We are targeting $15K MRR by Month 12 and $60K MRR by Month 24, with a clear path to enterprise contracts and a $5M Series A."
 1999`t[] Accelerator application
-2000`t[] "AgentOps Academy is the infrastructure for AI tool adoption. As AI tools become default business infrastructure, the training layer becomes critical. We are building the Codecademy of the AI ops era — with safety and freshness baked in from day one."
+2000`t[] "CLI Academy is the infrastructure for AI tool adoption. As AI tools become default business infrastructure, the training layer becomes critical. We are building the Codecademy of the AI ops era — with safety and freshness baked in from day one."
 2001`t[] B2B partnership
 2002`t[] "We already train individuals who work at companies like yours. We want to structure a team onboarding package that gets your entire team — technical and non-technical — confidently using Claude Code and Cowork in 5 business days."
 2004`t[Heading2] 22.6  Competitive Moat Summary (Pitch-Ready)
@@ -1808,7 +1808,7 @@ source ~/.bashrc → reload shell config after nvm install
 2008`t[ListParagraph] Our safety doctrine is a deep content moat: every deployment lesson includes verified, security-reviewed guidance. Building this correctly takes 12–24 months. A fast follower cannot copy it overnight.
 2009`t[ListParagraph] Our AI tutor has lesson-scoped context and troubleshooting heuristics trained on real user errors. This compounds — the more users, the better the tutor context gets.
 2011`t[Heading1] Appendix A: shadcn/ui Component Manifest & UI Patterns
-2013`t[] The AgentOps Academy frontend is built entirely with shadcn/ui primitives + Tailwind CSS. No custom design system is needed. Every component below is available via 'npx shadcn-ui@latest add [component]'. This list is the complete component inventory for MVP.
+2013`t[] The CLI Academy frontend is built entirely with shadcn/ui primitives + Tailwind CSS. No custom design system is needed. Every component below is available via 'npx shadcn-ui@latest add [component]'. This list is the complete component inventory for MVP.
 2015`t[Heading2] A.1  Core Components by Page
 2017`t[] Component
 2018`t[] Used On
@@ -2067,4 +2067,4 @@ source ~/.bashrc → reload shell config after nvm install
 2290`t[] Railway — Upstash auth
 2292`t[] Security Rule
 2293`t[] Never put SUPABASE_SERVICE_ROLE_KEY or STRIPE_SECRET_KEY in any NEXT_PUBLIC_* variable or frontend bundle. These must only exist in server-side Railway/Fly.io environment variables. A single exposure of either key is a critical security incident.
-2297`t[] AgentOps Academy Master Blueprint  •  Version 2.0  •  April 2026   |   Confidential & Proprietary  |   Built for execution, not presentation.
+2297`t[] CLI Academy Master Blueprint  •  Version 2.0  •  April 2026   |   Confidential & Proprietary  |   Built for execution, not presentation.

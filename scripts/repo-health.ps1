@@ -54,7 +54,7 @@ Get-ChildItem -Recurse -File | Where-Object { $excludeNames -notcontains $_.Name
   }
 }
 
-Write-Host "Zero to Claude repo health"
+Write-Host "CLI Academy repo health"
 Write-Host ""
 
 if ($missing.Count -gt 0) {

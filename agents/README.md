@@ -1,6 +1,6 @@
 # agents/
 
-This directory will hold the internal agent system for Zero to Claude.
+This directory will hold the internal agent system for CLI Academy.
 
 Phase 1 priority agents:
 
