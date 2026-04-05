@@ -1,0 +1,214 @@
+---
+title: "Configuring MCP in Claude Code"
+description: "Master the settings.json MCP configuration format, project-level vs global servers, scoping rules, and validation techniques."
+slug: "configuring-in-claude-code"
+lesson_number: 5
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: false
+tags: ["mcp", "configuration", "settings", "claude-code"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to configure MCP servers at the global and project level, understand scoping and override rules, validate your configuration, and troubleshoot common configuration errors.
+
+## Why This Matters
+
+Claude Code has a layered configuration system — global settings, project settings, and session overrides. MCP servers can be declared at any level. Understanding which level to use for which server, and how conflicts are resolved, prevents the common problem of "this server works on my machine but not in CI" or "I added a server but it won't load."
+
+## Core Concepts
+
+### Configuration Levels
+
+MCP servers can be configured at three levels:
+
+**Global (`~/.claude/settings.json`):**
+Available in every Claude Code session, in every directory. Use for personal tools you want everywhere: your GitHub account, your personal database, your preferred search tool.
+
+**Project (`{project}/.claude/settings.json`):**
+Available only when Claude Code runs inside that project directory. Use for project-specific MCP servers: the project's database, the project's Slack channel, API keys specific to that service.
+
+**Session (`claude --mcp-server ...` flag):**
+Adds a server for a single session without persisting it. Use for one-off testing or CI pipeline configuration.
+
+### The Merge Rule
+
+When Claude Code starts in a project directory that has `.claude/settings.json`, it merges the project config with the global config. The merge is additive for `mcpServers` — all servers from both levels are available. If the same server name appears in both, the project-level config wins.
+
+```
+~/.claude/settings.json:        .claude/settings.json (project):
+  github (global PAT)             github (project-scoped PAT)  ← wins
+  search (global)                 postgres (project DB)
+
+Result in this project session:
+  github (project-scoped PAT)
+  search (global)
+  postgres (project DB)
+```
+
+This allows you to have a global GitHub server with broad access and override it with a project-specific GitHub server that has narrower permissions.
+
+### Full settings.json MCP Reference
+
+```json
+{
+  "mcpServers": {
+    "server-name": {
+      // Required: how to start the server
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+
+      // Optional: environment variables for the server process
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}",
+        "GITHUB_OWNER": "myorg"
+      },
+
+      // Optional: working directory for the server process
+      "cwd": "/path/to/working/dir",
+
+      // Optional: timeout for individual tool calls (milliseconds)
+      "timeout": 30000,
+
+      // Optional: restart policy if server crashes
+      "restartOnFailure": true,
+      "maxRestarts": 3
+    },
+
+    // SSE server (remote, not local process)
+    "remote-server": {
+      "url": "https://mcp.yourcompany.com/server",
+      "headers": {
+        "Authorization": "Bearer ${MCP_SERVER_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+### Project-Level Configuration Pattern
+
+For a project that uses a specific database and Slack workspace:
+
+`.claude/settings.json` in the project root:
+
+```json
+{
+  "mcpServers": {
+    "db": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${DATABASE_URL}"
+      ]
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_TOKEN}",
+        "SLACK_TEAM_ID": "T0123456"
+      }
+    }
+  }
+}
+```
+
+The project's `.env` file (not committed to git) or CI environment variables supply `DATABASE_URL` and `SLACK_TOKEN`.
+
+**Commit the project settings.json but not credentials:**
+
+```bash
+# .gitignore
+.env
+.env.*
+
+# .claude/settings.json is safe to commit — no credentials in it
+git add .claude/settings.json
+```
+
+### Disabling a Global Server in a Specific Project
+
+Sometimes you want a global server to be unavailable in a particular project — for example, you do not want filesystem access in a sensitive project:
+
+```json
+// In the project's .claude/settings.json
+{
+  "mcpServers": {
+    "filesystem": {
+      "disabled": true
+    }
+  }
+}
+```
+
+Setting `disabled: true` on a server overrides the global definition and prevents it from loading in this project.
+
+### Validating Your Configuration
+
+```bash
+# Check that settings.json is valid JSON
+claude config validate
+
+# List what servers are configured (without starting Claude)
+claude mcp list
+
+# Start Claude with verbose MCP logging to debug server startup
+claude --mcp-debug
+
+# In-session validation
+/mcp
+```
+
+### Common Configuration Errors
+
+**`command not found: npx`**
+Node.js is not installed or not in the PATH that Claude Code uses. Fix: install Node.js and ensure it is in your system PATH, not just your interactive shell PATH.
+
+**`Module not found: @modelcontextprotocol/server-github`**
+The npm package is not installed and `-y` auto-install is failing. Fix: run `npm install -g @modelcontextprotocol/server-github` to install globally, then remove the `-y` flag.
+
+**Server shows as connected but tools are empty**
+The server started but returned an empty tools list. Usually means the server started with wrong credentials and silently disabled its tools. Check the server's documentation for what happens with invalid credentials.
+
+**`${GITHUB_TOKEN}` resolving to empty string**
+The environment variable is not set in the environment where Claude Code runs. On macOS with a GUI launcher, GUI apps do not inherit shell environment variables. Fix: set the variable in `~/.zprofile` (read by login shells used by GUI apps) rather than `~/.zshrc` (read by interactive shells).
+
+**Project settings.json overriding global, but not taking effect**
+Ensure the project `.claude/settings.json` is in the root of the directory where you run Claude Code. If you run `claude` from a subdirectory, it looks for `.claude/settings.json` relative to that directory, not the project root.
+
+### Testing a Newly Configured Server
+
+After configuring a new server, test it with a simple task before using it in a real workflow:
+
+```bash
+# Start Claude in the relevant directory
+claude
+
+# In the session:
+/mcp
+# Confirm the server shows as connected with tools listed
+
+# Test a specific tool
+# "Using the db MCP server, show me the tables in the database"
+# "Using github, list the last 5 issues in this repo"
+```
+
+## Key Takeaways
+
+- Three configuration levels: global (`~/.claude/settings.json`), project (`.claude/settings.json`), session (`--mcp-server` flag).
+- Project configs merge with global; same-name servers at project level override global.
+- Use `disabled: true` to suppress a global server in a specific project.
+- Credentials go in environment variables, not settings.json — but settings.json is safe to commit.
+- On macOS, GUI-launched Claude Code may not inherit shell environment variables — use `~/.zprofile`.
+
+## What's Next
+
+The next lesson covers building your first custom MCP server — when community servers do not exist for what you need.

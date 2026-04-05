@@ -1,0 +1,325 @@
+---
+title: "Defining Automation Tasks"
+description: "The complete AutoClaw task definition format — prompts, context, permissions, outputs, and multi-step workflow composition."
+slug: "autoclaw-task-definition"
+lesson_number: 4
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "autoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  autoclaw: "latest"
+has_safety_warning: false
+tags: ["autoclaw", "tasks", "yaml", "workflow"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to write a complete AutoClaw task definition for a real-world automation workflow — including prompt engineering for headless agents, context injection, permission declarations, output schemas, and multi-step composition.
+
+## Why This Matters
+
+The task definition is the entire specification for an AutoClaw job. Unlike interactive Claude Code where you can course-correct mid-session, an AutoClaw task runs autonomously from start to finish. A well-written task definition is the difference between a reliable automation and one that produces inconsistent outputs or fails unexpectedly.
+
+## Core Concepts
+
+### The Full Task Definition Schema
+
+```yaml
+# .autoclaw/my-task.yml
+
+# ─── Task metadata ─────────────────────────────────────────────────────────
+name: "PR Code Review"
+description: "Automated code review on pull request diffs"
+version: "1.0"
+tags: ["code-review", "ci"]
+
+# ─── Execution settings ────────────────────────────────────────────────────
+execution:
+  model: claude-sonnet-4-6          # Override default model for this task
+  task_timeout_minutes: 20          # Hard timeout
+  working_directory: "."            # Relative to --workdir or CWD
+
+# ─── Input variables ───────────────────────────────────────────────────────
+inputs:
+  PR_NUMBER:
+    type: string
+    required: true
+    description: "GitHub PR number"
+  BRANCH:
+    type: string
+    required: true
+  BASE_BRANCH:
+    type: string
+    default: "main"
+
+# ─── Context ───────────────────────────────────────────────────────────────
+context:
+  # Files to read and include in the agent's context
+  files:
+    - path: "CLAUDE.md"
+      label: "project_guidelines"
+    - path: ".eslintrc.json"
+      label: "lint_config"
+      optional: true               # Task continues if file does not exist
+
+  # Shell commands whose output is injected as context
+  shell:
+    - command: "git diff origin/{{ .BASE_BRANCH }}...HEAD"
+      label: "pr_diff"
+      max_output_chars: 50000      # Truncate very large diffs
+
+  # Environment variables to expose to the agent
+  env:
+    - PR_NUMBER
+    - BRANCH
+
+# ─── Permissions ───────────────────────────────────────────────────────────
+permissions:
+  filesystem:
+    read:
+      - "src/**/*.ts"
+      - "src/**/*.tsx"
+      - "tests/**"
+      - "package.json"
+    write:
+      - ".autoclaw/cache/review-{{ .PR_NUMBER }}.json"
+    denied:
+      - ".env*"
+      - "**/*.key"
+
+  shell:
+    allowed_commands:
+      - "git log --oneline -20"
+      - "npm test -- --passWithNoTests"
+
+  network:
+    allowed_hosts: []               # No network access for the agent
+
+# ─── Prompt ────────────────────────────────────────────────────────────────
+prompt: |
+  You are performing an automated code review for PR #{{ .PR_NUMBER }} on branch {{ .BRANCH }}.
+
+  Review the diff provided in context. Focus on:
+  1. Logic errors or bugs
+  2. Security vulnerabilities (injection, auth bypass, secret exposure)
+  3. Performance issues (N+1 queries, unnecessary re-renders, large allocations)
+  4. Violations of the project guidelines in CLAUDE.md
+
+  Be specific — cite exact file names and line numbers.
+  Be terse — this review will be posted as a PR comment.
+  Do not comment on formatting or style that ESLint already catches.
+
+  Produce output matching the required JSON schema.
+
+# ─── Output ────────────────────────────────────────────────────────────────
+output:
+  format: json
+  schema:
+    type: object
+    required: ["status", "summary", "findings"]
+    properties:
+      status:
+        type: string
+        enum: ["pass", "needs_changes", "blocking"]
+      summary:
+        type: string
+        maxLength: 500
+      findings:
+        type: array
+        items:
+          type: object
+          required: ["file", "line", "severity", "message"]
+          properties:
+            file:
+              type: string
+            line:
+              type: integer
+            severity:
+              type: string
+              enum: ["info", "warning", "error", "critical"]
+            message:
+              type: string
+
+  destinations:
+    - type: file
+      path: ".autoclaw/cache/review-{{ .PR_NUMBER }}.json"
+    - type: exit_code
+      pass_statuses: ["pass"]
+      fail_statuses: ["blocking"]
+      # "needs_changes" exits 0 — informational but not blocking
+```
+
+### Prompt Engineering for Headless Agents
+
+Writing prompts for AutoClaw is different from interactive prompting. The agent must:
+- Understand the task completely from the prompt alone
+- Know exactly what output format to produce
+- Not ask clarifying questions (there is no one to answer)
+
+**Include the output schema description in the prompt.** Do not rely on the YAML schema alone — the agent needs to understand what it is producing:
+
+```yaml
+prompt: |
+  [task description]
+
+  You MUST produce a JSON object with this exact structure:
+  {
+    "status": "pass" | "needs_changes" | "blocking",
+    "summary": "one paragraph summary under 500 characters",
+    "findings": [
+      {
+        "file": "relative/path/to/file.ts",
+        "line": 42,
+        "severity": "info" | "warning" | "error" | "critical",
+        "message": "description of the issue"
+      }
+    ]
+  }
+
+  If you find no issues, return status "pass" with an empty findings array.
+  Do not wrap the JSON in markdown code blocks.
+  Do not include any text outside the JSON object.
+```
+
+**Be explicit about what "done" looks like.** Headless agents can loop or over-analyze without a human to signal when to stop:
+
+```yaml
+prompt: |
+  Review the diff. When you have identified all issues, produce the JSON output.
+  Do not make changes to any files. Do not run tests. Only analyze and report.
+  Stop after producing the JSON — do not ask follow-up questions.
+```
+
+### Context Injection Best Practices
+
+Context injection is how you give the agent the information it needs without making it guess.
+
+**Order context from most to least important:**
+
+```yaml
+context:
+  files:
+    - path: "CLAUDE.md"           # Project guidelines — read first
+      label: "guidelines"
+    - path: "src/auth/index.ts"   # The file under review — read second
+      label: "auth_module"
+  shell:
+    - command: "git diff HEAD~1 -- src/auth/"
+      label: "recent_changes"     # What changed — read last
+```
+
+**Use labels to give context items meaningful names:**
+
+The label becomes the heading in the agent's context. `"pr_diff"` is better than `"shell_output_1"`.
+
+**Truncate large context with `max_output_chars`:**
+
+Shell command output (especially git diffs on large PRs) can exceed the model's context window. Set `max_output_chars` to keep the context manageable:
+
+```yaml
+shell:
+  - command: "git diff origin/main"
+    label: "diff"
+    max_output_chars: 40000    # ~10k tokens, leaves room for the response
+```
+
+### Multi-Step Task Composition
+
+For workflows that need multiple sequential agent calls — each building on the previous — use `steps`:
+
+```yaml
+steps:
+  - name: "analyze"
+    prompt: |
+      Analyze the test failures in the provided log.
+      Produce a JSON list of failing tests with their error messages.
+    output:
+      format: json
+      schema:
+        type: array
+        items:
+          type: object
+          required: ["test_name", "error"]
+
+  - name: "diagnose"
+    depends_on: ["analyze"]
+    prompt: |
+      Given these test failures: {{ .steps.analyze.output | json }}
+      Identify the root cause. Is this a code change, a flaky test, or an environment issue?
+      Produce a JSON diagnosis.
+    context:
+      files:
+        - path: "src/**/*.ts"
+          label: "source"
+    output:
+      format: json
+
+  - name: "report"
+    depends_on: ["diagnose"]
+    prompt: |
+      Write a Slack message summarizing: {{ .steps.diagnose.output | json }}
+      Be concise. Include the test names and the recommended fix.
+    output:
+      format: text
+      destinations:
+        - type: webhook
+          url: ${SLACK_WEBHOOK}
+```
+
+Each step receives the outputs of its dependencies via `{{ .steps.STEP_NAME.output }}`. The final step's output is the task's output.
+
+### Template Variables
+
+Task definitions support Go template syntax for dynamic values:
+
+```yaml
+# Reference input variables
+prompt: "Review PR #{{ .PR_NUMBER }} on branch {{ .BRANCH }}"
+
+# Reference step outputs
+prompt: "Based on these findings: {{ .steps.analyze.output | json }}"
+
+# Reference environment variables
+context:
+  env:
+    - name: GITHUB_TOKEN
+      from_env: GH_TOKEN    # Maps env var GH_TOKEN to GITHUB_TOKEN
+
+# Conditional context (only include file if it exists)
+context:
+  files:
+    - path: "CLAUDE.md"
+      optional: true
+      label: "guidelines"
+```
+
+### Validating a Task Definition
+
+```bash
+# Validate YAML syntax and schema
+autoclaw validate --task .autoclaw/review.yml
+
+# Dry run — shows what the agent would receive but does not execute
+autoclaw run --task .autoclaw/review.yml --dry-run
+
+# Preview the rendered prompt with actual variable values
+autoclaw run --task .autoclaw/review.yml \
+  --var PR_NUMBER=123 \
+  --dry-run --show-prompt
+```
+
+Always validate before committing a task to CI.
+
+## Key Takeaways
+
+- The task definition is the complete specification: model, permissions, context, prompt, output schema, and delivery.
+- Prompt engineering for headless agents requires explicit output format instructions and a clear "done" signal.
+- Context injection with labels and truncation limits keeps the agent focused and within context window limits.
+- Multi-step tasks chain agent calls using `steps` with dependency-based execution order.
+- Use `autoclaw validate` and `--dry-run` to catch errors before the task runs in CI.
+
+## What's Next
+
+The next lesson covers scheduling and event triggers — how to run AutoClaw tasks on cron schedules and in response to webhook events.

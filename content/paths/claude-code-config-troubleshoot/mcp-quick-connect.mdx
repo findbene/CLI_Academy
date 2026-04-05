@@ -1,0 +1,142 @@
+---
+title: "Connecting Your First MCP Server"
+description: "Add an MCP server to Claude Code in one command and verify it works — without breaking your existing setup."
+slug: "mcp-quick-connect"
+lesson_number: 8
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: true
+tags: ["mcp", "integrations", "getting-started"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have connected your first MCP server to Claude Code, verified it works with `/mcp`, and understand the security rules that keep MCP connections safe.
+
+## Why This Matters
+
+MCP (Model Context Protocol) is how you extend Claude Code with real tools — file system access beyond the project, GitHub repositories, databases, Slack, and more. This lesson gives you the minimal path to a working MCP connection and the security rules you need before connecting anything else.
+
+## Core Concepts
+
+### What MCP Servers Do
+
+An MCP server is a small process that sits between Claude Code and an external resource. When you ask Claude to do something that requires that resource — "show me my open GitHub issues" — Claude routes the request through the MCP server rather than making the API call directly.
+
+This separation is intentional: you control exactly which servers Claude can access, and each server handles only its own domain.
+
+### The `claude mcp add` Command
+
+Adding an MCP server requires two things: the server's npm package name and any configuration it needs (like an API token).
+
+**The filesystem MCP server** (safe first example — no external API):
+```bash
+claude mcp add filesystem-server npx @modelcontextprotocol/server-filesystem ~/Documents
+```
+
+This allows Claude to read and write files in `~/Documents`. It runs entirely locally with no external connections.
+
+**The GitHub MCP server:**
+```bash
+claude mcp add github-server npx @modelcontextprotocol/server-github
+```
+
+Then set your GitHub token:
+```bash
+export GITHUB_TOKEN=ghp_your_token_here
+```
+
+### Verifying the Connection
+
+After adding a server, run `/mcp` inside a Claude Code session to see the status:
+
+```
+/mcp
+```
+
+Output:
+```
+Connected MCP servers:
+  filesystem-server  ✓  Running  (tools: read_file, write_file, list_directory)
+  github-server      ✓  Running  (tools: get_issues, create_pr, search_code)
+```
+
+If a server shows `✗ Error`, check the server's output for the error message:
+```bash
+claude mcp list
+claude mcp logs github-server
+```
+
+### Where MCP Config Is Stored
+
+MCP server configuration lives in `~/.claude/claude_desktop_config.json` (shared with Claude Desktop app) or in project-level `.claude/mcp.json`. You can also view and edit it with:
+
+```bash
+claude mcp list      # see all configured servers
+claude mcp remove <name>  # remove a server
+```
+
+### The Three Security Rules
+
+<WarnBlock>MCP servers run as processes on your machine and can access whatever resources you grant them. Before connecting any server, apply these three rules.</WarnBlock>
+
+**Rule 1: Only connect servers you trust.**
+Community MCP servers are not reviewed by Anthropic. Read the server's source code or use only servers from organizations you trust (Anthropic's official servers, large open-source projects with active maintenance).
+
+**Rule 2: Scope permissions to the minimum.**
+When the filesystem server asks which directories to expose, give it only what you need — not `/` or `~`. Give GitHub servers read-only tokens unless write access is required.
+
+**Rule 3: Review what tools the server exposes.**
+After connecting, run `/mcp` and read the tool list. If a server exposes tools like `execute_code` or `run_shell_command`, understand exactly what that means before using it.
+
+### Safe Servers to Start With
+
+These are well-maintained, widely used, and conservative in scope:
+
+| Server | What it does | Install command |
+|--------|-------------|----------------|
+| `@modelcontextprotocol/server-filesystem` | Local file read/write | `claude mcp add fs npx @modelcontextprotocol/server-filesystem ~/projects` |
+| `@modelcontextprotocol/server-github` | GitHub API access | `claude mcp add github npx @modelcontextprotocol/server-github` |
+| `@modelcontextprotocol/server-slack` | Slack messages (read) | `claude mcp add slack npx @modelcontextprotocol/server-slack` |
+| `@modelcontextprotocol/server-postgres` | PostgreSQL queries | `claude mcp add postgres npx @modelcontextprotocol/server-postgres postgresql://...` |
+
+### Using an MCP Tool in Session
+
+Once connected, Claude can use the MCP server's tools automatically. You do not need special syntax:
+
+```
+Show me the 5 most recent open issues in my repository.
+```
+
+Claude routes this to the GitHub MCP server, fetches the issues, and returns them.
+
+Or explicitly:
+```
+Use the filesystem server to read ~/projects/config.json
+```
+
+### Common Connection Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Server failed to start` | npm package not found or not installed | Run `npx @modelcontextprotocol/server-github` standalone to check |
+| `Authentication failed` | API token not set or expired | Set the correct env variable and verify it |
+| `Tool not found` | Server does not expose that tool | Run `/mcp` to see the actual tool list |
+| `Connection refused` | Server crashed | Check logs with `claude mcp logs <name>` |
+
+## Key Takeaways
+
+- MCP servers extend Claude Code with access to external resources — files, GitHub, databases, Slack.
+- Add a server with `claude mcp add <name> npx <package>`.
+- Verify the connection with `/mcp` inside a session.
+- Only connect trusted servers with minimum required permissions.
+- The filesystem server is the safest starting point — no external API, fully local.
+
+## What's Next
+
+You have completed the Claude Code Setup, Config & Troubleshooting path. From here, explore the MCP Server Mastery path for a deep dive into building and deploying your own MCP servers, or move to the OpenClaw Ecosystem paths to learn about self-hosted deployment.

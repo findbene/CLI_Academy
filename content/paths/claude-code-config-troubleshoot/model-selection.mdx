@@ -1,0 +1,126 @@
+---
+title: "Choosing Your Model: Haiku, Sonnet, and Opus"
+description: "Understand the three Claude model tiers, what each is best for, and how to set the model in Claude Code."
+slug: "model-selection"
+lesson_number: 3
+estimated_minutes: 8
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["models", "configuration", "cost"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know the tradeoffs between Claude's three model tiers, which model to use for which task, and how to set the model in Claude Code via environment variable or flag.
+
+## Why This Matters
+
+Every API call costs money and takes time. Using Opus for a simple file rename wastes both. Using Haiku for a complex architectural refactor produces worse output. Model selection is a practical skill that directly affects your productivity and your bill.
+
+## Core Concepts
+
+### The Three Tiers
+
+| Model | Speed | Cost | Best For |
+|-------|-------|------|---------|
+| **claude-haiku-4-5** | Fastest | Lowest | Automation, simple edits, high-volume tasks |
+| **claude-sonnet-4-6** | Balanced | Moderate | Most coding tasks, the daily driver |
+| **claude-opus-4-6** | Slowest | Highest | Complex reasoning, architecture, hard bugs |
+
+The default model in Claude Code (when you don't specify one) is typically **claude-sonnet-4-6**. It is the right choice for most interactive sessions.
+
+### When to Use Haiku
+
+Haiku is fast and cheap. Use it when:
+- You are running automated scripts with many small tasks
+- The task is simple: renaming variables, formatting, translating comments
+- You are iterating fast and want quick feedback before a slower pass
+- You are running Claude Code in a CI pipeline where cost matters
+
+```bash
+# Use Haiku for a quick automated task
+ANTHROPIC_MODEL=claude-haiku-4-5 claude --print "fix the linting errors in src/"
+```
+
+### When to Use Sonnet
+
+Sonnet is the daily driver. Use it for:
+- Interactive coding sessions
+- Feature implementation
+- Code review and refactoring
+- Writing tests
+- Debugging most problems
+
+You do not need to set anything — Sonnet is the default. Just run `claude`.
+
+### When to Use Opus
+
+Opus is slower and more expensive, but handles harder problems better. Use it when:
+- You need to reason through a complex architecture decision
+- You are debugging a subtle, non-obvious bug
+- You need the model to hold a large context and reason across many files
+- The stakes are high and you want the best possible output
+
+```bash
+# Switch to Opus for a complex architectural task
+claude --model claude-opus-4-6
+```
+
+<TipBlock>A good workflow: start with Sonnet for the session. If Claude is giving you mediocre outputs on a hard problem, try switching to Opus for that specific task. Do not use Opus as the default — it costs 5-10x more per token.</TipBlock>
+
+### How to Set the Model
+
+**Option 1: Environment variable (session-wide)**
+```bash
+export ANTHROPIC_MODEL=claude-opus-4-6
+claude
+```
+
+**Option 2: `--model` flag (one-off override)**
+```bash
+claude --model claude-haiku-4-5 --print "summarize this file"
+```
+
+**Option 3: In CLAUDE.md (project default)**
+```markdown
+# CLAUDE.md
+Default model: claude-sonnet-4-6
+For complex tasks, the agent may suggest switching to Opus.
+```
+
+Note: CLAUDE.md cannot programmatically set the model — this is just documentation for yourself and for context. The actual model is set via environment variable or flag.
+
+### Current Model IDs
+
+Use these exact strings in your `ANTHROPIC_MODEL` variable or `--model` flag:
+
+```
+claude-haiku-4-5-20251001    (or: claude-haiku-4-5)
+claude-sonnet-4-6             (latest Sonnet)
+claude-opus-4-6               (latest Opus)
+```
+
+<WarnBlock>Model IDs change as Anthropic releases new versions. If you hardcode a specific version string (like `claude-sonnet-4-5-20241020`), check periodically that it is still supported. Deprecated model IDs return an error.</WarnBlock>
+
+### Cost Awareness
+
+At typical usage, an interactive Claude Code session with Sonnet costs $0.05–0.50 per session depending on how many files it reads and how long the conversation is. Opus sessions can run $0.50–5.00 for heavy use.
+
+You can check your spending at console.anthropic.com → Usage. Set up a billing alert if you are running automated scripts — loops with many API calls can accumulate quickly.
+
+## Key Takeaways
+
+- **Haiku**: fast and cheap, use for automation and simple tasks.
+- **Sonnet**: balanced, the default daily driver for interactive coding.
+- **Opus**: slow and expensive, use for hard reasoning and complex architecture.
+- Set the model via `ANTHROPIC_MODEL` environment variable or `--model` flag.
+- Check console.anthropic.com for current model IDs and pricing — they change.
+
+## What's Next
+
+In the next lesson, you will learn about Claude Code's permission modes — what each one allows, when to use strict vs. permissive modes, and which settings are safe for beginners versus CI pipelines.

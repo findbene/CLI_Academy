@@ -1,0 +1,136 @@
+---
+title: "Effective Prompting for Knowledge Work Outcomes"
+description: "The prompting patterns that make CoWork produce reliable results and how to course-correct when it goes off-track."
+slug: "cowork-best-practices"
+lesson_number: 6
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-cowork@preview"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-cowork: "preview"
+has_safety_warning: false
+tags: ["cowork", "prompting", "best-practices"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have the core prompting framework for CoWork, understand what makes a task well-specified versus vague, know when to redirect versus restart, and recognize the "draft and review" mindset that produces better results than expecting perfect first outputs.
+
+## Why This Matters
+
+The difference between a useful CoWork output and a frustrating one is almost always in how the task was given. CoWork does not read minds. It executes on what you specify — and fills gaps with plausible-sounding content when you leave them open. This lesson gives you the framework to eliminate those gaps.
+
+## Core Concepts
+
+### Why CoWork Needs Outcome-Oriented Prompts
+
+Chatbots respond to open-ended questions because they are designed for conversation. CoWork is an agent — it executes tasks. When you give it an open-ended question, it has to invent the parameters (Who is this for? How long? What format? What decision does this support?) rather than being told them.
+
+Invented parameters produce inconsistent outputs. Specified parameters produce reliable ones.
+
+### The OGRR Framework
+
+Every significant CoWork task should answer four questions:
+
+**O — Objective:** What is this output for? What decision or action does it support?
+
+**G — Given (context):** What do I already know? What documents, data, or constraints are relevant?
+
+**R — Required format:** What should the output look like? Length, structure, sections, tone.
+
+**R — Review criteria:** How will I evaluate this output? What makes it good or bad?
+
+**Example (weak prompt):**
+> "Write a competitor analysis."
+
+**Example (OGRR prompt):**
+> "**O:** Our VP of Sales needs a 2-page briefing before a call with a prospect who just came from our competitor. Goal: help the rep handle objections about our product gaps.  
+> **G:** Our main competitor is [Company X]. Their recent pricing page and G2 reviews are attached.  
+> **R:** Format: 2 pages max. Sections: what we do better, what they do better (honest), best objection responses for each gap.  
+> **R:** Good output = the rep could use this before a call without any editing."
+
+The OGRR prompt produces a usable first draft. The weak prompt produces a generic article.
+
+### Breaking Large Tasks Into CoWork-Sized Chunks
+
+CoWork works better on focused tasks than sprawling ones. If your output needs to be 20 pages, do not ask for it all at once.
+
+**Instead:**
+1. Ask for the outline first (approve or adjust it)
+2. Ask CoWork to write Section 1 with specific parameters
+3. Review Section 1, then continue to Section 2
+4. Compile the full document at the end
+
+This workflow gives you quality control at each step and prevents CoWork from going far in the wrong direction.
+
+### How Much Context to Give
+
+More relevant context produces better outputs. The context does not need to be long — it needs to be specific.
+
+**Context that helps:**
+- Your role and your audience's role
+- The decision the output supports
+- Constraints (budget, timeline, word limit, audience knowledge level)
+- Examples of good output ("similar to a McKinsey executive brief")
+- Existing documents to reference or build on
+
+**Context that does not help:**
+- Long explanations of company history unrelated to the task
+- Instructions about what not to include (specify what to include instead)
+- Vague quality descriptors ("make it really good")
+
+### When CoWork Goes Off-Track
+
+CoWork will sometimes produce output that misses the mark — wrong tone, wrong structure, wrong focus. There are two ways to handle this:
+
+**Redirect (when the structure is mostly right):**
+> "The outline is good but the tone is too casual. Rewrite it for a board audience — more formal, data-forward, less narrative."
+
+> "The first section is too long. Condense it to 3 bullet points. Keep the rest as-is."
+
+Redirecting works when CoWork understood the task but got a parameter wrong.
+
+**Restart (when the direction is fundamentally wrong):**
+If CoWork produced something that misunderstands the fundamental goal, it is often faster to start over with a better brief than to patch the output through redirects.
+
+> "Let's start over. Here's a cleaner brief: [revised OGRR]"
+
+The signal to restart: you have made 3+ redirect requests and the output is still not right.
+
+### The Draft-and-Review Mental Model
+
+The most common mistake professionals make with CoWork: expecting it to produce a final output on the first try.
+
+CoWork produces **drafts**. Your job is to review and refine them. This is not a failure of the tool — it is how knowledge work with AI actually operates.
+
+The right mental model:
+- **First pass:** CoWork produces a structured draft in 30 seconds
+- **Your review:** 5-10 minutes to read, verify facts, adjust tone, correct structure
+- **Second pass (optional):** CoWork implements your revisions
+- **Final:** You make the last editorial decisions
+
+This is still dramatically faster than writing from scratch. The professionals who get the most value from CoWork are the ones who expect a fast first draft to refine, not a perfect final product to send.
+
+<TipBlock>Set up a simple checklist for reviewing CoWork outputs: (1) Does it answer the actual question? (2) Are facts/numbers accurate? (3) Is the tone right for the audience? (4) Would I be comfortable putting my name on this? Four questions, two minutes.</TipBlock>
+
+### Using CoWork to Accelerate Your Thinking
+
+One of the most underrated uses of CoWork: give it your half-formed idea and ask it to structure it.
+
+> "I have a vague sense that we should restructure our pricing. Here's what I'm thinking: [paragraph of rough thoughts]. Help me organize this into a logical argument I could present to my CFO."
+
+CoWork does not replace your thinking — it helps you externalize and structure it faster. You bring the knowledge and judgment; CoWork provides the structure and language.
+
+## Key Takeaways
+
+- Use the OGRR framework: Objective, Given, Required format, Review criteria.
+- Break large outputs into chunks — outline first, then section by section.
+- Specific context (role, audience, decision, constraints) produces better outputs than vague context.
+- Redirect when the structure is mostly right; restart when the direction is wrong.
+- Expect drafts to refine, not finals to send. CoWork accelerates your process, not replaces it.
+
+## What's Next
+
+In the final lesson, you will learn what to trust, what to verify, and what never to outsource to CoWork — the three-category framework for using AI-generated outputs responsibly.

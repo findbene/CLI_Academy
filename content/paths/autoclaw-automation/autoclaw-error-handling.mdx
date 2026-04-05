@@ -1,0 +1,232 @@
+---
+title: "Fault Tolerance and Retry Logic"
+description: "Configure retries, fallback handlers, circuit breakers, and alerting to make AutoClaw tasks reliable in production."
+slug: "autoclaw-error-handling"
+lesson_number: 6
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "autoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  autoclaw: "latest"
+has_safety_warning: false
+tags: ["autoclaw", "reliability", "retry", "fault-tolerance"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to configure retry logic, failure callbacks, and output validation fallbacks that make AutoClaw tasks resilient to transient API failures, malformed agent output, and timeout conditions.
+
+## Why This Matters
+
+Production automation runs in an imperfect world. The Anthropic API has occasional 5xx errors. The agent sometimes produces output that does not match the expected schema on the first try. A task times out because a git diff was larger than expected. Without structured error handling, these events either silently fail or bring down your CI pipeline. With it, they are recoverable conditions that your automation handles gracefully.
+
+## Core Concepts
+
+### Failure Categories
+
+AutoClaw distinguishes four failure categories, each with different recovery strategies:
+
+**1. Transient API errors** — 5xx responses from Anthropic, network timeouts, rate limit hits. Recoverable with retries.
+
+**2. Schema validation failures** — The agent produced output that does not match the declared schema. Often recoverable by re-running with a more explicit prompt.
+
+**3. Permission violations** — The agent attempted an action outside its declared permissions. Not recoverable by retrying — the task definition is the problem.
+
+**4. Timeout** — The task exceeded `task_timeout_minutes`. May be recoverable with a longer timeout or narrower scope; may indicate an infinite loop in the agent.
+
+### Retry Configuration
+
+```yaml
+# In task definition
+retry:
+  max_attempts: 3              # Total attempts including the first
+  retry_on:
+    - transient_api_error      # 5xx, network timeout
+    - schema_validation_error  # Agent produced invalid output
+  delay_seconds: 10            # Wait between attempts
+  backoff: exponential         # "fixed" or "exponential"
+  backoff_multiplier: 2        # For exponential: 10s, 20s, 40s
+
+  # Do not retry on these (fail immediately)
+  no_retry_on:
+    - permission_violation
+    - task_definition_error
+    - timeout                  # Retrying a timeout rarely helps
+```
+
+**Schema validation retries with prompt augmentation:**
+
+When a task fails with `schema_validation_error`, AutoClaw can automatically augment the prompt with the validation error before retrying:
+
+```yaml
+retry:
+  max_attempts: 3
+  retry_on:
+    - schema_validation_error
+  on_schema_error:
+    augment_prompt: |
+      Your previous response was invalid. The error was:
+      {{ .error.message }}
+
+      Specifically, the issue was: {{ .error.details }}
+
+      Please produce valid JSON matching the required schema exactly.
+      Do not include any text outside the JSON object.
+```
+
+This is one of the most effective reliability improvements for AutoClaw tasks — the agent often corrects itself when told exactly what was wrong.
+
+### Failure Callbacks
+
+When a task exhausts all retries and still fails, you want to know about it. Configure failure callbacks:
+
+```yaml
+on_failure:
+  # Notify a Slack channel
+  - type: webhook
+    url: ${SLACK_ALERTS_WEBHOOK}
+    payload: |
+      {
+        "text": "*AutoClaw task failed*\nTask: {{ .task.name }}\nError: {{ .error.type }}: {{ .error.message }}\nAttempts: {{ .attempt }} of {{ .retry.max_attempts }}"
+      }
+
+  # Open a GitHub issue
+  - type: github_issue
+    repo: ${GITHUB_REPO}
+    token: ${GITHUB_TOKEN}
+    title: "AutoClaw: {{ .task.name }} failed"
+    body: |
+      ## Failure Report
+      - **Task:** {{ .task.name }}
+      - **Error type:** {{ .error.type }}
+      - **Error message:** {{ .error.message }}
+      - **Attempts:** {{ .attempt }}
+      - **Timestamp:** {{ .timestamp }}
+
+      Logs: {{ .run.log_url }}
+
+  # For CI integrations: write a failure summary artifact
+  - type: file
+    path: ".autoclaw/failure-{{ .run.id }}.json"
+    content: |
+      {{ . | json }}
+```
+
+### Fallback Tasks
+
+For some automation workflows, a total failure is better handled by a simpler fallback than by alerting humans:
+
+```yaml
+on_failure:
+  fallback_task: .autoclaw/simple-diff-summary.yml
+  # If the full PR review fails, run a simpler diff summary instead
+  # Only triggers after all retries are exhausted
+```
+
+The fallback task runs with the same input variables as the original task. If the fallback also fails, the failure callbacks fire.
+
+### Circuit Breaker
+
+If a task fails repeatedly over a time window, a circuit breaker prevents AutoClaw from hammering the Anthropic API or your downstream systems with failing requests:
+
+```yaml
+circuit_breaker:
+  enabled: true
+  failure_threshold: 5          # Open circuit after 5 failures in the window
+  window_minutes: 60            # Rolling 60-minute window
+  recovery_timeout_minutes: 30  # Try again after 30 minutes
+  on_open:
+    - type: webhook
+      url: ${SLACK_ALERTS_WEBHOOK}
+      payload: '{"text": "AutoClaw circuit breaker opened for {{ .task.name }}"}'
+```
+
+When the circuit is open, AutoClaw immediately fails new runs of that task with `circuit_open` error instead of attempting the task. This protects downstream systems from a task that is fundamentally broken.
+
+### Output Validation Beyond Schema
+
+Schema validation catches structural errors. For business logic validation — "the status field must be 'pass' if the findings array is empty" — use `output_validation`:
+
+```yaml
+output:
+  format: json
+  schema:
+    # ... JSON schema here
+
+  validation:
+    # Custom rules evaluated after schema validation passes
+    rules:
+      - name: "consistent_status"
+        condition: |
+          {{ if eq .output.status "pass" }}
+            {{ eq (len .output.findings) 0 }}
+          {{ else }}
+            true
+          {{ end }}
+        error: "status is 'pass' but findings array is not empty"
+
+      - name: "no_critical_without_blocking"
+        condition: |
+          {{ $hasCritical := false }}
+          {{ range .output.findings }}
+            {{ if eq .severity "critical" }}{{ $hasCritical = true }}{{ end }}
+          {{ end }}
+          {{ if $hasCritical }}
+            {{ eq .output.status "blocking" }}
+          {{ else }}
+            true
+          {{ end }}
+        error: "critical findings require status 'blocking'"
+```
+
+Validation rules that fail are treated the same as schema validation failures — they trigger retries if configured.
+
+### Logging Failed Runs
+
+Every AutoClaw run produces a run record with full execution details:
+
+```bash
+# View recent runs
+autoclaw runs list --limit 20
+
+# Show details of a specific run
+autoclaw runs show RUN_ID
+
+# Show the agent's full reasoning trace for a failed run
+autoclaw runs show RUN_ID --trace
+
+# Export a run record for debugging
+autoclaw runs export RUN_ID > /tmp/run-debug.json
+```
+
+The `--trace` flag shows every step the agent took: which files it read, which commands it ran, what it was "thinking" at each step, and where it went wrong. This is the primary debugging tool for tasks that fail in unexpected ways.
+
+### Testing Error Handling
+
+Test your retry and failure logic without waiting for real failures:
+
+```bash
+# Force a specific failure type for testing
+autoclaw run --task .autoclaw/review.yml \
+  --inject-failure transient_api_error \
+  --inject-on-attempt 1    # Fail on the first attempt, succeed on retry
+
+# Test circuit breaker behavior
+autoclaw run --task .autoclaw/review.yml \
+  --inject-failure transient_api_error \
+  --inject-on-all-attempts  # Always fail (tests circuit breaker)
+```
+
+## Key Takeaways
+
+- AutoClaw distinguishes four failure types: transient API errors, schema validation failures, permission violations, and timeouts. Only the first two are worth retrying automatically.
+- Schema validation retries with prompt augmentation fix a large fraction of "agent produced wrong format" failures.
+- Failure callbacks route notifications to Slack, GitHub Issues, or files — configure them before deploying any task to CI.
+- Circuit breakers prevent a broken task from generating hundreds of failing runs before someone notices.
+- Use `autoclaw runs show RUN_ID --trace` to diagnose unexpected failures.
+
+## What's Next
+
+The final lesson covers desktop app context integration — how AutoClaw accesses context from GUI applications for workflows that bridge automation and interactive tooling.

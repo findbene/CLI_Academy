@@ -1,0 +1,204 @@
+---
+title: "System Requirements and Prerequisites"
+description: "Audit your infrastructure against the hardware, OS, and networking requirements for a production-grade OpenClaw deployment."
+slug: "openclaw-system-requirements"
+lesson_number: 2
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "setup", "infrastructure"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know the minimum and recommended hardware specs for OpenClaw, which operating systems are supported, what network access the server requires, and which prerequisites to install before running the OpenClaw installer.
+
+## Why This Matters
+
+The most common cause of failed OpenClaw deployments is not bad configuration — it is skipping the prerequisites audit. Developers assume their VPS is "big enough" without checking, discover mid-install that they are missing a dependency, or find that their firewall blocks a required outbound port. This lesson lets you find those gaps before they become problems.
+
+## Core Concepts
+
+### Hardware Requirements
+
+OpenClaw's resource usage scales with the number of concurrent sessions and the size of context windows being processed. Use these tiers to match your team size.
+
+**Minimum (1–5 developers, development environment):**
+
+| Resource | Minimum |
+|----------|---------|
+| CPU | 2 vCPUs |
+| RAM | 4 GB |
+| Disk | 20 GB SSD |
+| Network | 100 Mbps outbound |
+
+**Recommended (5–25 developers, production environment):**
+
+| Resource | Recommended |
+|----------|-------------|
+| CPU | 4 vCPUs |
+| RAM | 8 GB |
+| Disk | 50 GB SSD |
+| Network | 1 Gbps outbound |
+
+**Large team (25–100 developers):**
+
+| Resource | Large team |
+|----------|-----------|
+| CPU | 8+ vCPUs |
+| RAM | 16–32 GB |
+| Disk | 100 GB SSD |
+| Network | 1 Gbps outbound, low latency |
+
+OpenClaw itself is not compute-intensive — it is a routing and session management layer. The CPU and RAM requirements are driven by session state, logging, and the number of simultaneous developer connections, not by AI inference (that runs on Anthropic's side).
+
+**Disk sizing note:** The 20–100 GB figures account for the OS, OpenClaw binary, logs, session cache, and a generous operational buffer. Session logs are the primary disk consumer at scale — plan for log rotation from day one.
+
+### Supported Operating Systems
+
+OpenClaw officially supports:
+
+| OS | Minimum version | Notes |
+|----|----------------|-------|
+| Ubuntu | 22.04 LTS | Recommended for first deployments |
+| Debian | 12 (Bookworm) | Fully supported |
+| RHEL / Rocky Linux | 9.x | Supported, SELinux config required |
+| Amazon Linux | 2023 | Supported on AWS |
+| macOS | 13+ | Supported for local/dev deployments only |
+
+**Not supported for production:** Windows Server (use WSL2 for local testing only), Alpine Linux (musl libc incompatibility), any OS on end-of-life support.
+
+The examples in this path use **Ubuntu 22.04 LTS**. If you are using a different OS, the commands will differ for package management and service management.
+
+### Network Requirements
+
+OpenClaw requires two categories of network access:
+
+**Outbound (your server → internet):**
+
+| Destination | Port | Protocol | Purpose |
+|-------------|------|----------|---------|
+| `api.anthropic.com` | 443 | HTTPS | Model API calls |
+| `cdn.anthropic.com` | 443 | HTTPS | Binary updates |
+| Any NTP server | 123 | UDP | Time synchronization (required for auth token validation) |
+
+**Inbound (developers → your server):**
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 443 | HTTPS | Claude CLI connections (recommended) |
+| 8080 | HTTP | Admin dashboard (restrict to internal network only) |
+| 22 | SSH | Server administration (restrict to known IPs) |
+
+<WarnBlock>Port 8080 (admin dashboard) must never be exposed to the public internet. Use a firewall rule to restrict it to your internal network or VPN range. The admin dashboard has no rate limiting by default and would allow anyone to view session logs and API usage stats if left open.</WarnBlock>
+
+**DNS requirement:** Your OpenClaw server needs a stable, resolvable hostname that developer machines can reach. Either a private DNS entry (for internal deployments) or a public DNS A record (for remote teams). OpenClaw does not support IP-only connections in production — TLS certificate generation requires a hostname.
+
+### Software Prerequisites
+
+Before running the OpenClaw installer, the following must be present on your server:
+
+**Required:**
+
+```bash
+# Verify these exist before proceeding
+docker --version          # Docker Engine 24+
+docker compose version    # Docker Compose v2.20+
+openssl version           # OpenSSL 3.0+
+curl --version            # curl 7.68+
+git --version             # git 2.30+
+```
+
+**If using Docker deployment (recommended):**
+- Docker Engine 24.0 or later
+- Docker Compose plugin v2.20 or later
+- User running OpenClaw must be in the `docker` group
+
+**If using bare-metal deployment:**
+- Python 3.11+
+- Node.js 20 LTS (for admin dashboard)
+- systemd (for service management)
+
+### Installing Docker on Ubuntu 22.04
+
+If Docker is not yet installed, use the official install method — not the `apt` package, which ships an outdated version:
+
+```bash
+# Remove any old docker packages
+sudo apt remove docker docker-engine docker.io containerd runc
+
+# Install prerequisites
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release
+
+# Add Docker's official GPG key
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add the repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker Engine and Compose plugin
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Add your user to the docker group
+sudo usermod -aG docker $USER
+
+# Log out and back in, then verify
+docker run hello-world
+```
+
+### Pre-Deployment Checklist
+
+Run through this before proceeding to install:
+
+- [ ] Server meets minimum hardware requirements for my team size
+- [ ] OS is Ubuntu 22.04 LTS (or another supported OS)
+- [ ] Outbound HTTPS to `api.anthropic.com` is allowed (test: `curl https://api.anthropic.com/health`)
+- [ ] Server has a stable hostname (not just an IP)
+- [ ] Docker Engine 24+ is installed and running
+- [ ] Docker Compose v2 plugin is installed (`docker compose version`)
+- [ ] Port 443 is open inbound for developer connections
+- [ ] Port 8080 is restricted to internal network only
+- [ ] I have a Pro or Team Anthropic API key ready
+- [ ] I have SSH access with sudo on the server
+- [ ] Disk has at least 20 GB free (check with `df -h`)
+- [ ] Time is synchronized (check with `timedatectl status`)
+
+### Testing Outbound Connectivity
+
+Before you install anything, verify that your server can reach Anthropic:
+
+```bash
+# Test basic connectivity
+curl -v https://api.anthropic.com/health
+
+# Expected: HTTP 200 with a JSON body like {"status":"ok"}
+# If you get a connection timeout, your firewall or proxy is blocking the request
+```
+
+If this fails, resolve the network issue before continuing. OpenClaw cannot function without outbound access to `api.anthropic.com`.
+
+## Key Takeaways
+
+- Match hardware specs to your team size — 4 vCPUs / 8 GB RAM handles most teams up to 25 developers.
+- Ubuntu 22.04 LTS is the recommended OS; Windows Server is not supported for production.
+- Outbound HTTPS to `api.anthropic.com:443` is required — verify it before installing.
+- Port 8080 (admin dashboard) must be firewall-restricted to internal networks.
+- Complete the pre-deployment checklist before proceeding to the installation lessons.
+
+## What's Next
+
+With prerequisites confirmed, the next lesson covers the recommended installation path: deploying OpenClaw using Docker Compose on your server.

@@ -1,0 +1,164 @@
+---
+title: "NemoClaw vs OpenClaw: When to Use Each"
+description: "A structured comparison of NemoClaw and OpenClaw — architectural tradeoffs, cost, complexity, and a decision framework for choosing between them."
+slug: "nemoclaw-vs-openclaw"
+lesson_number: 5
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "nemoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  nemoclaw: "latest"
+has_safety_warning: false
+tags: ["nemoclaw", "comparison", "openclaw", "decision"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have a clear framework for deciding between NemoClaw and OpenClaw — covering infrastructure cost, compliance requirements, operational complexity, and team size.
+
+## Why This Matters
+
+Organizations sometimes choose NemoClaw because it sounds more advanced, not because it solves a specific problem they have. That leads to unnecessary complexity. NemoClaw is right for specific situations. OpenClaw is right for most. This lesson gives you the criteria to make the right call.
+
+## Core Concepts
+
+### The Fundamental Question
+
+NemoClaw adds three things over OpenClaw:
+1. **GPU context slicing** — VRAM-isolated session contexts
+2. **OpenShell policy enforcement** — hardware-level syscall filtering and resource isolation
+3. **NVIDIA ecosystem integration** — unified telemetry, RBAC, NIM model compatibility
+
+If none of those three things address a real problem your organization has, OpenClaw is the right choice.
+
+### Full Comparison
+
+| Dimension | OpenClaw | NemoClaw |
+|-----------|---------|---------|
+| **GPU hardware required** | No | Yes (Ampere+ with 8GB+ VRAM) |
+| **NVIDIA license required** | No | For enterprise edition (community is free) |
+| **Setup complexity** | Medium | High |
+| **Setup time** | 2–4 hours | 1–2 days |
+| **Infrastructure cost** | Low (any Linux VPS) | High (NVIDIA GPU server) |
+| **Session isolation** | Linux namespace isolation | GPU context + Linux namespace |
+| **Syscall enforcement** | Application-layer blocklist | OpenShell hardware enforcement |
+| **Telemetry** | Token usage, session counts | Token usage + GPU memory, compute time |
+| **RBAC integration** | OpenClaw built-in roles | NVIDIA AI Enterprise RBAC |
+| **NIM model support** | No | Yes |
+| **Developer experience** | Identical | Identical |
+| **Maintenance burden** | Low | Medium-high (driver updates, NGC syncs) |
+
+### Scenario Analysis
+
+**Scenario 1: A 15-person engineering team at a startup**
+
+They want self-hosted Claude Code for centralized billing and to avoid distributing API keys to developers.
+
+**Choice: OpenClaw**
+
+Why: No compliance requirements beyond centralized billing. Standard Linux isolation is sufficient. The cost of NemoClaw hardware and complexity is not justified.
+
+---
+
+**Scenario 2: An ML research lab at a university**
+
+They run NVIDIA DGX stations for model training. They want Claude Code integrated into the same infrastructure for code review and analysis work, with unified GPU resource management across both ML workloads and developer tooling.
+
+**Choice: NemoClaw**
+
+Why: They already have NVIDIA infrastructure. Unified GPU resource management via OpenShell makes NemoClaw the natural fit. The GPU hardware is already paid for.
+
+---
+
+**Scenario 3: A financial services company with strict data residency and code confidentiality requirements**
+
+They need to ensure developer code context cannot be accessed by other sessions, cannot be exfiltrated via network from sessions, and must be logged for compliance audit.
+
+**Choice: NemoClaw (strict mode) if they have GPU hardware; OpenClaw (hardened) otherwise**
+
+Why: NemoClaw's strict mode provides hardware-level isolation and network isolation that OpenClaw's Linux namespace model cannot match. But if they do not have NVIDIA infrastructure, a hardened OpenClaw deployment with strict UFW rules and audit logging satisfies most of the same requirements at lower cost.
+
+---
+
+**Scenario 4: A DevOps team running CI/CD pipelines that use Claude Code for automated code review**
+
+They want headless automation with cost controls and no interactive use.
+
+**Choice: AutoClaw** (covered in the AutoClaw path — neither OpenClaw nor NemoClaw is the right tool for pure headless automation)
+
+---
+
+**Scenario 5: An enterprise with an existing NVIDIA AI Enterprise contract and a security team that requires all AI workloads to run on NVIDIA-certified runtimes**
+
+**Choice: NemoClaw**
+
+Why: The certification requirement determines the answer. OpenClaw is not on an NVIDIA-certified runtime.
+
+### The Decision Tree
+
+```
+Do you have NVIDIA Ampere+ GPU hardware?
+  └── No → OpenClaw
+
+Does your security policy require AI workloads on NVIDIA-certified runtimes?
+  └── Yes → NemoClaw
+
+Do you already run NVIDIA AI Enterprise and want unified GPU resource management?
+  └── Yes → NemoClaw
+
+Do you need hardware-level (not just OS-level) session isolation?
+  └── Yes → NemoClaw (strict mode)
+
+Otherwise → OpenClaw
+```
+
+### Migration Path: OpenClaw to NemoClaw
+
+If you start with OpenClaw and later determine you need NemoClaw, the migration is straightforward because the configuration formats are nearly identical:
+
+1. Deploy NemoClaw on the GPU-equipped server
+2. Export OpenClaw's PostgreSQL database and import into NemoClaw's database
+3. Copy `openclaw.yml` to `nemoclaw.yml` — the structure is the same, with additional `nvidia:` section
+4. Redirect your DNS entry from the OpenClaw server to the NemoClaw server
+5. Developer machines require no reconfiguration
+
+NemoClaw can import OpenClaw tokens and sessions, so developers do not need to re-authenticate.
+
+### Migration Path: NemoClaw to OpenClaw
+
+The reverse migration is also supported — useful if your NVIDIA hardware is decommissioned or you want to reduce infrastructure cost:
+
+1. Deploy OpenClaw on a standard Linux server
+2. Export the database and import into OpenClaw
+3. Copy `nemoclaw.yml` to `openclaw.yml` and remove the `nvidia:` section
+4. Redirect DNS
+
+OpenShell-specific policy settings (syscall filters, GPU context limits) are ignored by OpenClaw — they do not cause errors, they just have no effect.
+
+### Cost Reality Check
+
+A production NemoClaw server running a small team:
+- NVIDIA A10 or equivalent: ~$3,000–5,000/month on cloud (or $15,000–25,000 one-time on bare metal)
+- NVIDIA AI Enterprise license: varies by org size (enterprise pricing)
+- Engineering time to set up and maintain: 2–4 days initially, ongoing GPU driver maintenance
+
+A production OpenClaw server running the same team:
+- 4 vCPU / 8 GB RAM VPS: ~$50–100/month
+- No additional licenses
+- Engineering time to set up: 4–8 hours
+
+NemoClaw is not a cost optimization. It is an infrastructure integration and compliance decision.
+
+## Key Takeaways
+
+- NemoClaw adds GPU context isolation, OpenShell policy enforcement, and NVIDIA ecosystem integration over OpenClaw.
+- Most teams should use OpenClaw. NemoClaw is for specific infrastructure or compliance situations.
+- If you do not have NVIDIA GPU hardware, you cannot run NemoClaw — full stop.
+- The developer experience is identical between the two. This is a server-side infrastructure decision.
+- Migration between OpenClaw and NemoClaw is designed to be straightforward — you are not locked in to either choice.
+
+## What's Next
+
+The final lesson covers production deployment patterns for NemoClaw — high availability, multi-GPU configurations, and integration with NVIDIA's management tooling.

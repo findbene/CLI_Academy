@@ -1,0 +1,215 @@
+---
+title: "Installation and Setup"
+description: "Install AutoClaw and connect it to either the Anthropic API directly or an existing OpenClaw server."
+slug: "autoclaw-install"
+lesson_number: 2
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "autoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  autoclaw: "latest"
+has_safety_warning: true
+tags: ["autoclaw", "installation", "ci-cd"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have AutoClaw installed, configured, and able to run a test task against either the Anthropic API directly or your OpenClaw server.
+
+## Why This Matters
+
+AutoClaw installs differently depending on where it runs. On a developer machine for local testing, it is a single binary. In a CI/CD pipeline, it is a container image or a step action. In a cron environment, it is a service. This lesson covers all three installation contexts so you can pick the one that matches your use case.
+
+## Core Concepts
+
+### Installation Context 1: Local / Developer Machine
+
+Install the AutoClaw binary for local task development and testing:
+
+```bash
+# Download the AutoClaw binary
+LATEST=$(curl -s https://api.github.com/repos/openclaw/autoclaw/releases/latest \
+  | jq -r '.tag_name')
+
+ARCH=$(uname -m)
+[ "$ARCH" = "x86_64" ] && ARCH="amd64"
+[ "$ARCH" = "aarch64" ] && ARCH="arm64"
+
+curl -L "https://github.com/openclaw/autoclaw/releases/download/${LATEST}/autoclaw-$(uname -s | tr '[:upper:]' '[:lower:]')-${ARCH}" \
+  -o /usr/local/bin/autoclaw
+
+chmod +x /usr/local/bin/autoclaw
+autoclaw --version
+```
+
+### Installation Context 2: CI/CD Pipeline
+
+AutoClaw ships as a Docker image for use in containerized CI environments.
+
+**GitHub Actions:**
+
+```yaml
+# .github/workflows/code-review.yml
+name: AutoClaw Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run AutoClaw Review
+        uses: openclaw/autoclaw-action@v1
+        with:
+          task: .autoclaw/pr-review.yml
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Or use OpenClaw:
+          # openclaw-server: ${{ secrets.OPENCLAW_SERVER_URL }}
+          # openclaw-token: ${{ secrets.OPENCLAW_TOKEN }}
+```
+
+**GitLab CI:**
+
+```yaml
+autoclaw-review:
+  image: ghcr.io/openclaw/autoclaw:latest
+  stage: review
+  variables:
+    ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
+  script:
+    - autoclaw run --task .autoclaw/pr-review.yml
+  only:
+    - merge_requests
+```
+
+**Docker directly:**
+
+```bash
+docker run --rm \
+  -e ANTHROPIC_API_KEY=your-key \
+  -v $(pwd):/workspace \
+  ghcr.io/openclaw/autoclaw:latest \
+  autoclaw run --task /workspace/.autoclaw/my-task.yml
+```
+
+### Installation Context 3: Scheduled Server Job
+
+For recurring cron-driven automation, install AutoClaw as a systemd service:
+
+```bash
+# Install the binary
+sudo cp autoclaw /usr/local/bin/autoclaw
+
+# Create working directory
+sudo mkdir -p /opt/autoclaw/{tasks,logs,config}
+sudo chown autoclaw:autoclaw /opt/autoclaw  # create service user first
+
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin autoclaw
+```
+
+Crontab for the autoclaw user:
+
+```bash
+sudo -u autoclaw crontab -e
+# Add:
+# 0 8 * * 1-5 autoclaw run --task /opt/autoclaw/tasks/daily-report.yml >> /opt/autoclaw/logs/daily.log 2>&1
+```
+
+### Connecting to Anthropic API Directly
+
+The simplest setup — AutoClaw calls Anthropic directly using your API key:
+
+```bash
+# Set the API key (use a secret manager in production, not env export)
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Test the connection
+autoclaw diagnose
+
+# Expected output:
+# ✓ Anthropic API: reachable (claude-sonnet-4-6)
+# ✓ AutoClaw: v1.x.x
+# ✗ OpenClaw: not configured (standalone mode)
+```
+
+Create a minimal config file at `/etc/autoclaw/config.yml` or `~/.autoclaw/config.yml`:
+
+```yaml
+api:
+  mode: direct                           # Use Anthropic API directly
+  anthropic_api_key: ${ANTHROPIC_API_KEY}
+  default_model: claude-sonnet-4-6
+
+defaults:
+  task_timeout_minutes: 30
+  max_retries: 2
+
+logging:
+  path: /var/log/autoclaw/autoclaw.log
+  level: info
+```
+
+### Connecting to an OpenClaw Server
+
+If you already run OpenClaw, point AutoClaw at it instead of using an API key directly:
+
+```yaml
+# ~/.autoclaw/config.yml
+api:
+  mode: openclaw
+  server: https://openclaw.yourdomain.com
+  token: ${OPENCLAW_AUTOMATION_TOKEN}    # A dedicated token for automation, not a developer token
+  model: claude-sonnet-4-6
+
+defaults:
+  task_timeout_minutes: 30
+  max_retries: 2
+```
+
+<WarnBlock>Create a dedicated OpenClaw token for AutoClaw automation — do not reuse a developer's personal token. This lets you set automation-specific policies (higher token limits for batch jobs, no shell blocklist) and revoke automation access independently of developer access.</WarnBlock>
+
+Generate the dedicated automation token in OpenClaw's admin dashboard or via CLI:
+
+```bash
+# On your OpenClaw server
+openclaw token create \
+  --label "autoclaw-automation" \
+  --expiry never \              # Long-lived token for automation
+  --policy automation           # Separate policy group for automation
+```
+
+### Verify the Setup
+
+```bash
+# Run a built-in smoke test
+autoclaw smoke-test
+
+# Expected:
+# ✓ Config loaded
+# ✓ API connection: ok
+# ✓ Task runner: ok
+# ✓ Smoke test task: completed in 3.2s
+# AutoClaw is ready.
+```
+
+If the smoke test fails, the most common causes are:
+- `ANTHROPIC_API_KEY` not set or invalid
+- OpenClaw server unreachable (check hostname and port)
+- Token expired or revoked
+
+## Key Takeaways
+
+- AutoClaw installs as a binary (local/cron), Docker image (CI/CD), or systemd service (scheduled server).
+- Two API modes: `direct` (your API key) or `openclaw` (proxied through your OpenClaw server).
+- Use a dedicated OpenClaw token for automation — not a developer token.
+- Verify with `autoclaw smoke-test` before writing any task definitions.
+
+## What's Next
+
+The next lesson covers headless mode — how AutoClaw runs Claude agents without any interactive UI and what that changes about how you structure tasks.

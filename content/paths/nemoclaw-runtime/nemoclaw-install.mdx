@@ -1,0 +1,290 @@
+---
+title: "Installing NemoClaw"
+description: "Step-by-step NemoClaw installation inside NVIDIA OpenShell — from pulling the image to your first verified developer session."
+slug: "nemoclaw-install"
+lesson_number: 3
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "nemoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  nemoclaw: "latest"
+has_safety_warning: true
+tags: ["nemoclaw", "installation", "openShell"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have NemoClaw running inside NVIDIA OpenShell, the admin dashboard accessible, and a developer connection verified end-to-end.
+
+## Why This Matters
+
+NemoClaw installation is more layered than OpenClaw's because it involves both the NemoClaw application and the OpenShell runtime that hosts it. Getting the layer ordering right — OpenShell first, NemoClaw inside it — is the key to a clean install.
+
+## Core Concepts
+
+### The Installation Model
+
+NemoClaw does not run as a standalone Docker container. It runs as an application inside an OpenShell environment. The Docker Compose file for NemoClaw uses OpenShell as the base runtime and mounts NemoClaw on top of it:
+
+```
+Docker Compose
+  └── OpenShell container (NVIDIA runtime)
+        └── NemoClaw server process
+        └── NemoClaw admin dashboard
+  └── PostgreSQL container
+  └── Redis container
+```
+
+PostgreSQL and Redis run as standard containers alongside OpenShell — they do not need GPU access.
+
+### Step 1: Create the NemoClaw Directory
+
+```bash
+sudo mkdir -p /opt/nemoclaw/{config,certs,logs,data/postgres,data/redis}
+sudo chown -R $USER:$USER /opt/nemoclaw
+cd /opt/nemoclaw
+```
+
+### Step 2: Create the Docker Compose File
+
+`/opt/nemoclaw/docker-compose.yml`:
+
+```yaml
+version: "3.9"
+
+services:
+  nemoclaw:
+    image: nvcr.io/nvidia/nemoclaw:latest
+    runtime: nvidia
+    restart: unless-stopped
+    ports:
+      - "443:8443"
+      - "8080:8080"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - NEMOCLAW_DB_URL=postgresql://nemoclaw:${POSTGRES_PASSWORD}@postgres:5432/nemoclaw
+      - NEMOCLAW_REDIS_URL=redis://redis:6379
+      - NEMOCLAW_ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NEMOCLAW_NGC_API_KEY=${NGC_API_KEY}
+      - NEMOCLAW_TLS_CERT=/certs/server.crt
+      - NEMOCLAW_TLS_KEY=/certs/server.key
+      - NEMOCLAW_ADMIN_SECRET=${ADMIN_SECRET}
+      - NEMOCLAW_HOSTNAME=${NEMOCLAW_HOSTNAME}
+      - OPENSHIFT_POLICY_MODE=${OPENSHIFT_POLICY_MODE:-standard}
+    volumes:
+      - ./certs:/certs:ro
+      - ./config:/config:ro
+      - ./logs:/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nemoclaw-net
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=nemoclaw
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=nemoclaw
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nemoclaw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nemoclaw-net
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nemoclaw-net
+
+networks:
+  nemoclaw-net:
+    driver: bridge
+```
+
+The critical difference from OpenClaw's compose file is `runtime: nvidia` and the `NVIDIA_VISIBLE_DEVICES` / `NVIDIA_DRIVER_CAPABILITIES` environment variables. These tell Docker to use the NVIDIA runtime for the NemoClaw container, giving it access to GPU hardware.
+
+### Step 3: Create the Environment File
+
+<WarnBlock>The `.env` file contains both your Anthropic API key and your NGC API key. Both are high-value secrets. Apply the same protections you would to any credential file: 600 permissions, not in version control, backed up in a secrets manager.</WarnBlock>
+
+```bash
+POSTGRES_PASSWORD=$(openssl rand -base64 32)
+ADMIN_SECRET=$(openssl rand -base64 32)
+
+cat > /opt/nemoclaw/.env << 'ENVEOF'
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+NGC_API_KEY=your-ngc-api-key-here
+POSTGRES_PASSWORD=REPLACE_WITH_GENERATED
+ADMIN_SECRET=REPLACE_WITH_GENERATED
+NEMOCLAW_HOSTNAME=nemoclaw.yourdomain.com
+OPENSHIFT_POLICY_MODE=standard
+ENVEOF
+
+chmod 600 /opt/nemoclaw/.env
+```
+
+Replace the placeholder values with your actual keys and hostname. The generated passwords for `POSTGRES_PASSWORD` and `ADMIN_SECRET` should be pasted in from the variables above.
+
+`OPENSHIFT_POLICY_MODE` accepts `standard`, `strict`, or `permissive` — this is covered in the sandboxing lesson. Use `standard` for the initial install.
+
+### Step 4: Authenticate with NGC and Pull the NemoClaw Image
+
+```bash
+# Authenticate Docker with NGC
+echo "$NGC_API_KEY" | docker login nvcr.io -u '$oauthtoken' --password-stdin
+
+# Pull NemoClaw
+docker pull nvcr.io/nvidia/nemoclaw:latest
+
+# Verify the image
+docker inspect nvcr.io/nvidia/nemoclaw:latest | jq '.[0].Config.Labels'
+```
+
+### Step 5: Generate TLS Certificates
+
+Same process as OpenClaw. Let's Encrypt for public servers:
+
+```bash
+sudo apt install -y certbot
+sudo certbot certonly --standalone -d nemoclaw.yourdomain.com
+sudo cp /etc/letsencrypt/live/nemoclaw.yourdomain.com/fullchain.pem /opt/nemoclaw/certs/server.crt
+sudo cp /etc/letsencrypt/live/nemoclaw.yourdomain.com/privkey.pem /opt/nemoclaw/certs/server.key
+sudo chown $USER:$USER /opt/nemoclaw/certs/*
+chmod 600 /opt/nemoclaw/certs/server.key
+```
+
+Or self-signed for internal deployments:
+
+```bash
+cd /opt/nemoclaw/certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout server.key -out server.crt \
+  -subj "/CN=nemoclaw.internal" \
+  -addext "subjectAltName=DNS:nemoclaw.internal"
+chmod 600 server.key
+```
+
+### Step 6: Create the Configuration File
+
+`/opt/nemoclaw/config/nemoclaw.yml`:
+
+```yaml
+server:
+  hostname: ${NEMOCLAW_HOSTNAME}
+  tls: true
+  session_timeout_minutes: 480
+
+auth:
+  mode: token
+  token_expiry_hours: 24
+
+api:
+  anthropic:
+    default_model: claude-sonnet-4-6
+    allowed_models:
+      - claude-haiku-4-5-20251001
+      - claude-sonnet-4-6
+      - claude-opus-4-6
+
+nvidia:
+  openShell:
+    policy_mode: ${OPENSHIFT_POLICY_MODE}
+    gpu_context_per_session: 512MB    # GPU memory reserved per active session
+    max_gpu_sessions: 20              # Max sessions using GPU context slices
+
+policies:
+  default_daily_token_limit: 500000
+  allow_file_uploads: true
+  allow_shell_execution: true
+
+admin:
+  listen_port: 8080
+  require_auth: true
+
+logging:
+  level: info
+  path: /logs/nemoclaw.log
+  rotation: daily
+  retention_days: 30
+  nvidia_telemetry: true              # Enable GPU-level telemetry in logs
+```
+
+### Step 7: Start NemoClaw
+
+```bash
+cd /opt/nemoclaw
+docker compose pull
+docker compose up -d
+docker compose logs -f nemoclaw
+```
+
+Successful startup output:
+
+```
+nemoclaw-1  | [INFO] NemoClaw v1.x.x starting
+nemoclaw-1  | [INFO] NVIDIA runtime detected: NVIDIA Driver 535.x, CUDA 12.x
+nemoclaw-1  | [INFO] OpenShell policy mode: standard
+nemoclaw-1  | [INFO] GPU context slicing: enabled (512MB per session)
+nemoclaw-1  | [INFO] Database connected and migrations applied
+nemoclaw-1  | [INFO] Redis connected
+nemoclaw-1  | [INFO] TLS certificate loaded
+nemoclaw-1  | [INFO] Server listening on :8443 (TLS)
+nemoclaw-1  | [INFO] Admin dashboard listening on :8080
+nemoclaw-1  | [INFO] Ready to accept connections
+```
+
+If you see `NVIDIA runtime not detected`, the NVIDIA Container Toolkit is not correctly configured for Docker — revisit the prerequisites lesson.
+
+### Step 8: Verify GPU Access
+
+```bash
+# Confirm NemoClaw can see the GPU
+docker compose exec nemoclaw nvidia-smi
+
+# Check GPU context slicing is active
+docker compose exec nemoclaw nemoclaw diagnostics gpu
+```
+
+### Step 9: First Developer Connection
+
+Identical to OpenClaw — developers configure their Claude CLI to point to your NemoClaw server:
+
+```bash
+# On a developer's machine
+claude config set openclaw.server https://nemoclaw.yourdomain.com
+claude auth login --server https://nemoclaw.yourdomain.com
+```
+
+From the developer's perspective, NemoClaw behaves identically to OpenClaw. The GPU isolation is transparent.
+
+## Key Takeaways
+
+- NemoClaw runs inside an OpenShell container — the `runtime: nvidia` directive in Docker Compose is what connects it to the GPU.
+- The `.env` file contains both Anthropic and NGC API keys — both need protection.
+- `OPENSHIFT_POLICY_MODE` controls the sandboxing level — use `standard` initially.
+- Successful startup explicitly logs GPU detection and context slicing status.
+- Developer connection is identical to OpenClaw — they don't know which runtime they're on.
+
+## What's Next
+
+The next lesson covers sandboxing and policy controls — how to tune OpenShell's isolation model for your security requirements.

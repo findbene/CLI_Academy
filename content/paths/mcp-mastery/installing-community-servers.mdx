@@ -1,0 +1,197 @@
+---
+title: "Installing Community MCP Servers"
+description: "Find, evaluate, and install community MCP servers — from the official Anthropic registry to trusted third-party servers for GitHub, databases, Slack, and more."
+slug: "installing-community-servers"
+lesson_number: 3
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: true
+tags: ["mcp", "installation", "community", "registry"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know where to find MCP servers, how to evaluate a server before installing it, how to install using the `claude mcp add` command, and how to verify a successful installation.
+
+## Why This Matters
+
+The MCP ecosystem has grown quickly and not all servers are equal. Some are well-maintained and widely used. Others are abandoned or poorly scoped. Installing a server without evaluation means granting unknown code access to whatever credentials you configure it with. This lesson gives you the evaluation framework to make safe decisions quickly.
+
+## Core Concepts
+
+### Where to Find MCP Servers
+
+**The Claude MCP registry (official):**
+Anthropic maintains a curated list of verified MCP servers at `claude.ai/mcp` (also accessible via `claude mcp search`). Servers in this registry have been reviewed for basic security and functionality.
+
+**MCP Hub (community):**
+A community-maintained catalog at `mcphub.io` lists hundreds of servers across categories. Quality varies widely.
+
+**GitHub:**
+Search `topic:mcp-server` on GitHub. Most open-source MCP servers publish there. Check stars, recent commits, and issues before installing.
+
+**Official vendor servers:**
+Several major platforms publish official MCP servers:
+- GitHub: `@modelcontextprotocol/server-github`
+- Slack: `@modelcontextprotocol/server-slack`
+- Google Drive: `@modelcontextprotocol/server-gdrive`
+- PostgreSQL: `@modelcontextprotocol/server-postgres`
+- Filesystem: `@modelcontextprotocol/server-filesystem`
+- Brave Search: `@modelcontextprotocol/server-brave-search`
+
+These are the safest starting point — published by Anthropic or the platform itself.
+
+### Evaluating a Server Before Installing
+
+Before installing any MCP server, answer these five questions:
+
+**1. Who published it?**
+Official vendor or Anthropic = high trust. Reputable open-source maintainer with a track record = medium trust. Anonymous GitHub repo with one commit = do not install.
+
+**2. What permissions does it need?**
+Read what credentials and permissions the server requires. A GitHub server that needs `repo:write` scope has write access to your repositories. A database server with admin credentials can drop tables. Scope credentials to the minimum the server actually needs.
+
+**3. What does the source code do?**
+For any server you are serious about using, read the source. MCP servers are small — most are under 1000 lines. Look for: does it send data anywhere unexpected? Does it log credentials? Does it have dependencies with known vulnerabilities?
+
+**4. Is it maintained?**
+Check the last commit date and open issues. An MCP server with security issues filed 6 months ago and no response is not production-ready.
+
+**5. Can I scope the credentials?**
+Always use the minimum-permission credential. A GitHub personal access token scoped to `repo:read` for a read-only server is much better than a token scoped to everything.
+
+### Installing with `claude mcp add`
+
+The `claude mcp add` command is the standard installation method. It adds the server to your `~/.claude/settings.json` automatically:
+
+```bash
+# Install from npm (most common)
+claude mcp add github -- npx -y @modelcontextprotocol/server-github
+
+# Install with environment variables
+claude mcp add postgres -- npx -y @modelcontextprotocol/server-postgres \
+  postgresql://user:password@localhost/mydb
+
+# Install a server from a local path
+claude mcp add my-server -- node /path/to/my-server/index.js
+
+# Install with a custom name
+claude mcp add gh-work -- npx -y @modelcontextprotocol/server-github
+```
+
+The format is: `claude mcp add <name> -- <command> [args...]`
+
+Everything after `--` is the command Claude Code will run to start the server process.
+
+### Manual Configuration in settings.json
+
+For more control, edit `~/.claude/settings.json` directly:
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_your_token_here"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://user:password@localhost:5432/mydb"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/user/projects",   // Only this directory is accessible
+        "/home/user/docs"
+      ]
+    }
+  }
+}
+```
+
+<WarnBlock>Never put credentials directly in settings.json if that file might be shared, committed, or synced. Use environment variables referenced as `${VAR_NAME}` in the env block, or use a secrets manager to inject them at runtime. The settings.json file is stored in your home directory — it does not belong in version control.</WarnBlock>
+
+### Using Environment Variables for Credentials
+
+Reference environment variables in the `env` block:
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+Set the actual value in your shell profile (`~/.zshrc` or `~/.bashrc`):
+
+```bash
+export GITHUB_TOKEN="ghp_your_token_here"
+```
+
+This way, your settings.json is safe to share (it contains no secrets), and you manage credentials in your shell environment.
+
+### Verifying a Successful Installation
+
+```bash
+# List all configured MCP servers and their status
+claude mcp list
+
+# In a Claude Code session, verify the server is connected
+/mcp
+# Expected output:
+# ✓ github (connected) — 15 tools available
+# ✓ postgres (connected) — 4 tools available
+# ✗ slack (error) — connection refused
+
+# Test a specific tool
+claude "Using the github MCP server, list the open issues in my current repo"
+```
+
+If a server shows as `error`, the most common causes are:
+- Command not found (npx package name wrong or not installed)
+- Missing or invalid credentials (environment variable not set)
+- Server process crashes on startup (check `--mcp-debug` for the error)
+
+### Quick-Install Reference for Popular Servers
+
+| Server | Install command | Credentials needed |
+|--------|---------------|-------------------|
+| GitHub | `claude mcp add github -- npx -y @modelcontextprotocol/server-github` | `GITHUB_PERSONAL_ACCESS_TOKEN` |
+| PostgreSQL | `claude mcp add postgres -- npx -y @modelcontextprotocol/server-postgres postgresql://...` | Connection string |
+| Filesystem | `claude mcp add files -- npx -y @modelcontextprotocol/server-filesystem /path/to/dir` | None |
+| Brave Search | `claude mcp add search -- npx -y @modelcontextprotocol/server-brave-search` | `BRAVE_API_KEY` |
+| Slack | `claude mcp add slack -- npx -y @modelcontextprotocol/server-slack` | `SLACK_BOT_TOKEN` |
+| Google Drive | `claude mcp add gdrive -- npx -y @modelcontextprotocol/server-gdrive` | OAuth token |
+
+## Key Takeaways
+
+- Start with official vendor servers (Anthropic-published or platform-published) — they have the highest trust baseline.
+- Evaluate every server on: publisher, required permissions, source code, maintenance status, and credential scope.
+- Use `claude mcp add` for simple installs; edit `~/.claude/settings.json` directly for fine-grained control.
+- Never put credentials directly in settings.json — use environment variable references.
+- Verify with `/mcp` inside a session and with a real tool call before trusting a server works.
+
+## What's Next
+
+The next lesson covers security considerations — the threat model for MCP servers and how to configure them defensively.

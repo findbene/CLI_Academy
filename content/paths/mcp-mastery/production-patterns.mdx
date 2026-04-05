@@ -1,0 +1,230 @@
+---
+title: "Production MCP Patterns"
+description: "Run MCP servers reliably in team environments — shared configuration, versioning, process supervision, and monitoring."
+slug: "production-patterns"
+lesson_number: 8
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: false
+tags: ["mcp", "production", "team", "operations"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have a production-grade pattern for deploying custom MCP servers in a team environment — shared configuration via version control, pinned dependency versions, process supervision, and health monitoring.
+
+## Why This Matters
+
+An MCP server that works on one developer's laptop is a prototype. An MCP server that works consistently for an entire team, survives dependency updates, and produces alertable signals when it fails is production infrastructure. The gap between those two is this lesson.
+
+## Core Concepts
+
+### Team Configuration: Shared Project Settings
+
+The cleanest pattern for team MCP servers: commit a project-level `.claude/settings.json` that every developer gets automatically when they clone the project. The settings file contains the server config (no credentials) and each developer provides credentials via their own environment.
+
+```json
+// .claude/settings.json (committed to git)
+{
+  "mcpServers": {
+    "internal-api": {
+      "command": "node",
+      "args": ["${PROJECT_ROOT}/tools/internal-api-mcp/dist/index.js"],
+      "env": {
+        "INTERNAL_API_URL": "${INTERNAL_API_URL}",
+        "INTERNAL_API_TOKEN": "${INTERNAL_API_TOKEN}"
+      }
+    },
+    "db": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres@1.2.3", "${DATABASE_URL}"]
+    }
+  }
+}
+```
+
+```bash
+# .env.example (committed — shows required variables, no values)
+INTERNAL_API_URL=https://api.yourcompany.internal
+INTERNAL_API_TOKEN=
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+```
+
+```bash
+# .env (not committed — each developer fills in their own values)
+INTERNAL_API_URL=https://api.yourcompany.internal
+INTERNAL_API_TOKEN=dev_tok_abc123
+DATABASE_URL=postgresql://alice:pass@localhost:5432/myapp_dev
+```
+
+Every developer who clones the project gets the same server configuration. They fill in their own credentials. The behavior is consistent.
+
+### Pinned Dependency Versions
+
+Unpinned versions (`npx -y @modelcontextprotocol/server-postgres`) pull the latest version on every startup. A breaking change in an MCP server package silently breaks every developer's workflow the next time they start Claude Code.
+
+Pin to specific versions:
+
+```json
+// settings.json — pinned
+"args": ["-y", "@modelcontextprotocol/server-postgres@1.2.3"]
+
+// Not pinned — risky in production
+"args": ["-y", "@modelcontextprotocol/server-postgres"]
+```
+
+Update versions deliberately, test the new version, then commit the version bump.
+
+For custom servers your team builds, use a package.json with locked dependencies:
+
+```json
+// tools/internal-api-mcp/package.json
+{
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.0.4",
+    "zod": "3.22.4"
+  }
+}
+```
+
+Commit `package-lock.json`. Every developer and CI runner gets identical package versions.
+
+### Remote MCP Servers for Team Sharing
+
+For servers that every developer needs and that require shared credentials (a company-wide internal API server, a shared knowledge base), deploy the server centrally and connect via SSE instead of running a local process per developer:
+
+```json
+// settings.json — SSE remote server
+{
+  "mcpServers": {
+    "company-api": {
+      "url": "https://mcp.yourcompany.internal/company-api",
+      "headers": {
+        "Authorization": "Bearer ${COMPANY_MCP_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+The remote server runs on your infrastructure. Developers connect via HTTPS. Benefits:
+- One deployment to update rather than per-developer installs
+- Centralized credential management (the server has the API key; developers authenticate to the server)
+- Server-side logging of all tool calls
+
+Drawbacks:
+- Network dependency (server must be reachable)
+- Single point of failure
+- Additional infrastructure to maintain
+
+For high-value internal tools with many users, the remote model is worth the infrastructure overhead.
+
+### Process Supervision for Self-Hosted Servers
+
+If you run MCP servers as persistent services (not per-session spawned processes), use systemd for supervision:
+
+```ini
+# /etc/systemd/system/company-mcp-server.service
+[Unit]
+Description=Company Internal API MCP Server
+After=network.target
+
+[Service]
+Type=simple
+User=mcp-server
+WorkingDirectory=/opt/company-mcp
+ExecStart=/usr/bin/node /opt/company-mcp/dist/index.js
+Environment=INTERNAL_API_URL=https://api.company.internal
+EnvironmentFile=/etc/company-mcp/credentials.env
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+With SSE transport, the server listens on an HTTP port rather than communicating via stdio. The SDK's `SSEServerTransport` handles this:
+
+```typescript
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import express from "express";
+
+const app = express();
+const transports: SSEServerTransport[] = [];
+
+app.get("/sse", (req, res) => {
+  const transport = new SSEServerTransport("/messages", res);
+  transports.push(transport);
+  server.connect(transport);
+});
+
+app.post("/messages", express.json(), (req, res) => {
+  // Route to the appropriate transport
+});
+
+app.listen(3000);
+```
+
+### Monitoring MCP Server Health
+
+For remote MCP servers, health monitoring is essential — a dead server silently breaks developer workflows.
+
+**Health endpoint:**
+
+Add a `/health` HTTP endpoint to any SSE server:
+
+```typescript
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    tools: toolList.length,
+    uptime: process.uptime(),
+  });
+});
+```
+
+**Monitor with a simple cron check:**
+
+```bash
+# Alert if the MCP server health endpoint is down
+*/5 * * * * curl -sf https://mcp.yourcompany.internal/health > /dev/null \
+  || curl -s -X POST "${SLACK_WEBHOOK}" \
+     -d '{"text":"MCP server is down"}'
+```
+
+**What to alert on:**
+- Health endpoint unreachable (server down)
+- Tool count drops to 0 (server started but credentials invalid)
+- Response time > 2s (server overloaded or upstream API slow)
+
+### Version Management for Custom Servers
+
+When updating a custom MCP server that a whole team uses, follow this procedure:
+
+1. **Tag the current version** before making changes: `git tag mcp-server-v1.2.0`
+2. **Deploy to a staging endpoint** and test with one developer
+3. **Update the version** in `package.json` and rebuild
+4. **Update the pinned version** in `.claude/settings.json`
+5. **Commit and push** — all developers get the update on their next `git pull`
+6. **Announce** the update to the team (what changed, what breaks, if anything)
+
+For breaking changes (removed tool, changed argument schema), communicate before deployment — developers who are mid-session with the old schema may have their workflows disrupted.
+
+## Key Takeaways
+
+- Commit `.claude/settings.json` to give the whole team consistent server configuration. Never commit credentials.
+- Pin MCP server dependency versions — unpinned versions break silently when packages update.
+- Remote SSE servers let you centralize deployment and credential management for high-value shared tools.
+- Use systemd to supervise persistent remote MCP server processes.
+- Monitor remote servers with a `/health` endpoint and alert on downtime or zero-tool conditions.
+
+## What's Next
+
+The final lesson covers advanced tool definitions — multi-step tools, streaming responses, image outputs, and resource exposure patterns.

@@ -1,0 +1,132 @@
+---
+title: "What Is OpenClaw?"
+description: "Understand what OpenClaw is, how it differs from hosted Claude Code, and when self-hosting gives your team a real advantage."
+slug: "what-is-openclaw"
+lesson_number: 1
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "introduction", "self-hosting"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand what OpenClaw is, how it differs from hosted Claude Code, which deployment model makes sense for your situation, and what the OpenClaw ecosystem (NemoClaw, ZeroClaw, AutoClaw) looks like at a high level.
+
+## Why This Matters
+
+Most developers use Claude Code through Anthropic's hosted service — you authenticate with an API key, Claude runs in Anthropic's infrastructure, and your code context goes to Anthropic's servers. For individual developers, this is the right default.
+
+For organizations, the picture changes. You may have strict data residency requirements, a security team that prohibits sending source code to third-party APIs, an air-gapped environment with no outbound internet, or a need to manage API costs and access control at the team level. OpenClaw is the answer to that class of problem.
+
+## Core Concepts
+
+### What OpenClaw Is
+
+OpenClaw is a self-hosted Claude Code runtime that your organization deploys and manages on its own infrastructure. It provides the same Claude Code experience — the same CLI interface, the same agent capabilities, the same hooks and MCP integrations — but the orchestration layer runs inside your network.
+
+When a developer on your team runs `claude` inside an OpenClaw deployment:
+- The Claude CLI connects to your OpenClaw server (not Anthropic directly)
+- Your OpenClaw server handles authentication, session management, and routing
+- API calls to Anthropic's model endpoints go from your server, not the developer's machine
+- Your organization controls what each developer can do, see, and spend
+
+The key insight: OpenClaw moves the control plane inside your boundary while Claude's actual intelligence still runs on Anthropic's model infrastructure. OpenClaw is not a self-hosted model — it is a self-hosted operational layer.
+
+### How OpenClaw Differs from Hosted Claude Code
+
+| Aspect | Hosted Claude Code | OpenClaw |
+|--------|-------------------|----------|
+| **Auth** | Developer authenticates directly with Anthropic API key | Developer authenticates with your internal identity provider |
+| **API keys** | Each developer manages their own | One org key, centrally managed |
+| **Data path** | Code context goes from dev machine to Anthropic | Code context goes from dev machine to your server, then to Anthropic |
+| **Access control** | Per-developer API limits | Team-level policies, per-project rules |
+| **Cost visibility** | Per-developer billing | Centralized billing with team breakdowns |
+| **Compliance** | Dependent on Anthropic's data handling | Your infrastructure, your compliance controls |
+| **Availability** | Anthropic SLA | Your SLA + Anthropic SLA |
+| **Setup time** | Minutes | Hours to days |
+
+### When Self-Hosting Is the Right Call
+
+Self-hosting is not always better. It is better for specific conditions:
+
+**Self-host if your organization:**
+- Has compliance requirements that prohibit sending source code to third-party services (HIPAA, PCI, government classification)
+- Operates in a private cloud or on-premises environment without unrestricted outbound internet
+- Needs centralized billing and cost attribution across engineering teams
+- Wants SSO integration with Okta, Active Directory, or another identity provider
+- Has a security review process that requires all API credentials to be vault-managed, not distributed to individuals
+
+**Use hosted Claude Code if:**
+- You are an individual developer or small team without compliance constraints
+- You want to move fast without operational overhead
+- You do not have dedicated infrastructure or DevOps resources
+- Your data handling requirements are met by Anthropic's standard terms
+
+### The OpenClaw Ecosystem
+
+OpenClaw is the foundation of a family of tools designed for different deployment scenarios:
+
+**OpenClaw** — The core self-hosted runtime. Full Claude Code capabilities on your infrastructure. This is what this learning path covers.
+
+**NemoClaw** — OpenClaw built on NVIDIA's NIM runtime for organizations running on NVIDIA-accelerated infrastructure. Adds GPU-optimized context handling and integrates with NVIDIA's enterprise AI stack. For teams already on NVIDIA's AI Enterprise platform.
+
+**ZeroClaw** — A fast-path variant optimized for latency-sensitive workflows. Strips non-essential middleware for environments where speed is the primary constraint. Trades some management features for sub-100ms routing.
+
+**AutoClaw** — A headless automation variant with no interactive UI. Designed for CI/CD pipelines, cron-driven code review, and autonomous agent workflows. The right tool when you do not need a human at the keyboard.
+
+You start with OpenClaw. Once it is running and your team is using it, you add the variants that match your specific needs.
+
+### OpenClaw Architecture: A Mental Model
+
+```
+┌─────────────────────────────────────────┐
+│           Your Network Boundary          │
+│                                         │
+│  Developer 1  ──┐                       │
+│  Developer 2  ──┤──▶  OpenClaw Server   │
+│  Developer 3  ──┘         │             │
+│  CI Pipeline  ──────────▶ │             │
+│                           │             │
+│                    Auth / Policy         │
+│                    Session Mgmt         │
+│                    Cost Tracking        │
+│                           │             │
+└───────────────────────────│─────────────┘
+                            │
+                     Outbound HTTPS
+                            │
+                    ┌───────▼────────┐
+                    │  Anthropic API  │
+                    │  (model layer)  │
+                    └────────────────┘
+```
+
+Everything inside the boundary is yours: compute, storage, certificates, identity. Everything outside is Anthropic's model infrastructure. OpenClaw bridges the two.
+
+### What You Need Before You Start
+
+This path assumes:
+- You have admin access to Linux infrastructure (a VPS, a bare metal server, or a container orchestration platform)
+- You have a Pro or Team Claude API key from Anthropic for use with OpenClaw
+- You understand basic Linux administration (systemd, file permissions, environment variables)
+- You have Docker installed or can install it — the Docker path is recommended for first deployments
+
+If you are missing any of these, work through the prerequisites before continuing.
+
+## Key Takeaways
+
+- OpenClaw is a self-hosted operational layer for Claude Code — not a self-hosted model.
+- It moves auth, session management, and routing inside your infrastructure while using Anthropic's model endpoints.
+- Self-hosting makes sense for compliance, data residency, centralized billing, and air-gapped environments.
+- The OpenClaw ecosystem extends to NemoClaw (GPU runtimes), ZeroClaw (latency optimization), and AutoClaw (headless automation).
+- This path covers OpenClaw core. The variants are covered in separate paths after you have the foundation running.
+
+## What's Next
+
+In the next lesson, you will audit your infrastructure against the hardware, OS, and networking requirements for a production OpenClaw deployment — and identify any gaps before you start installing anything.

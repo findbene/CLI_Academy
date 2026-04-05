@@ -1,0 +1,326 @@
+---
+title: "Building Your First MCP Server"
+description: "Build a working MCP server from scratch using the TypeScript SDK — a custom internal API wrapper in under 100 lines."
+slug: "building-your-first-server"
+lesson_number: 6
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: false
+tags: ["mcp", "development", "typescript", "sdk"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have built a working MCP server using the TypeScript SDK, understand the server structure, and be able to connect it to Claude Code.
+
+## Why This Matters
+
+Community servers cover common tools (GitHub, Slack, databases). They do not cover your internal systems — your company's REST API, your internal knowledge base, your proprietary data sources. Building a custom MCP server is how you give Claude Code access to systems only your organization knows about. The TypeScript SDK makes this straightforward.
+
+## Core Concepts
+
+### When to Build vs Install
+
+Build a custom MCP server when:
+- No community server exists for the tool you need
+- A community server exists but has too broad permissions for your security posture
+- Your internal API has a specific schema or auth mechanism that generic servers cannot handle
+- You want to wrap multiple internal tools into one server with a unified interface
+
+Install a community server when:
+- One exists for your tool, is well-maintained, and has the right permission model
+
+### Project Setup
+
+```bash
+mkdir my-internal-mcp
+cd my-internal-mcp
+npm init -y
+npm install @modelcontextprotocol/sdk zod
+npm install -D typescript @types/node tsx
+npx tsc --init
+```
+
+Update `tsconfig.json` for Node.js:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+Add to `package.json`:
+
+```json
+{
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  }
+}
+```
+
+### The Minimal Server
+
+`src/index.ts`:
+
+```typescript
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
+
+// ─── Server definition ──────────────────────────────────────────────────────
+
+const server = new Server(
+  {
+    name: "my-internal-api",
+    version: "1.0.0",
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
+  }
+);
+
+// ─── Tool: get_employee ──────────────────────────────────────────────────────
+
+const GetEmployeeSchema = z.object({
+  employee_id: z.string().describe("The employee ID to look up"),
+});
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      {
+        name: "get_employee",
+        description:
+          "Look up an employee by ID. Returns name, department, and manager. " +
+          "Use this when the user asks about a specific employee or needs to find " +
+          "someone's manager or department.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            employee_id: {
+              type: "string",
+              description: "The employee ID (format: EMP-XXXX)",
+            },
+          },
+          required: ["employee_id"],
+        },
+      },
+      {
+        name: "list_employees_by_department",
+        description:
+          "List all employees in a given department. " +
+          "Use when the user asks who is on a team or in a department.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            department: {
+              type: "string",
+              description: "Department name (e.g., 'Engineering', 'Marketing')",
+            },
+          },
+          required: ["department"],
+        },
+      },
+    ],
+  };
+});
+
+// ─── Tool handlers ───────────────────────────────────────────────────────────
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  try {
+    if (name === "get_employee") {
+      const { employee_id } = GetEmployeeSchema.parse(args);
+      const employee = await fetchEmployee(employee_id);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(employee, null, 2),
+          },
+        ],
+      };
+    }
+
+    if (name === "list_employees_by_department") {
+      const { department } = z
+        .object({ department: z.string() })
+        .parse(args);
+      const employees = await fetchDepartmentEmployees(department);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(employees, null, 2),
+          },
+        ],
+      };
+    }
+
+    // Unknown tool
+    return {
+      isError: true,
+      content: [{ type: "text", text: `Unknown tool: ${name}` }],
+    };
+  } catch (error) {
+    // Always return structured errors — never throw
+    return {
+      isError: true,
+      content: [
+        {
+          type: "text",
+          text: `Error calling ${name}: ${error instanceof Error ? error.message : String(error)}`,
+        },
+      ],
+    };
+  }
+});
+
+// ─── API functions ────────────────────────────────────────────────────────────
+
+async function fetchEmployee(id: string) {
+  const response = await fetch(`${process.env.INTERNAL_API_URL}/employees/${id}`, {
+    headers: {
+      Authorization: `Bearer ${process.env.INTERNAL_API_TOKEN}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`Employee ${id} not found`);
+    }
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+async function fetchDepartmentEmployees(department: string) {
+  const response = await fetch(
+    `${process.env.INTERNAL_API_URL}/employees?department=${encodeURIComponent(department)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.INTERNAL_API_TOKEN}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// ─── Start server ─────────────────────────────────────────────────────────────
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+### Key Patterns in This Server
+
+**1. Zod validation for all inputs.** Every tool call validates its arguments with Zod before doing anything. This catches malformed inputs early with clear error messages.
+
+**2. Never throw in the handler.** The `try/catch` wrapping every handler ensures the server always returns a structured response — either a result or `isError: true`. A thrown exception produces a protocol-level error that Claude Code logs as a system error, which is harder to diagnose.
+
+**3. Descriptive tool descriptions.** Each tool's description includes when to use it. This guides Claude's tool selection accurately.
+
+**4. Credentials via environment variables.** `INTERNAL_API_URL` and `INTERNAL_API_TOKEN` are read from the environment, not hardcoded.
+
+### Connecting to Claude Code
+
+Build the server and add it to your settings:
+
+```bash
+npm run build
+
+# Add to Claude Code
+claude mcp add internal-api -- node /path/to/my-internal-mcp/dist/index.js
+```
+
+Or in `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "internal-api": {
+      "command": "node",
+      "args": ["/path/to/my-internal-mcp/dist/index.js"],
+      "env": {
+        "INTERNAL_API_URL": "${INTERNAL_API_URL}",
+        "INTERNAL_API_TOKEN": "${INTERNAL_API_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+For development (without building first):
+
+```json
+{
+  "mcpServers": {
+    "internal-api-dev": {
+      "command": "npx",
+      "args": ["tsx", "/path/to/my-internal-mcp/src/index.ts"],
+      "env": {
+        "INTERNAL_API_URL": "${INTERNAL_API_URL}",
+        "INTERNAL_API_TOKEN": "${INTERNAL_API_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+### Testing the Server
+
+```bash
+# Verify it appears in Claude Code
+claude mcp list
+
+# Test in a session
+claude
+/mcp  # Should show your server as connected
+
+# Real test
+# "Using the internal API, look up employee EMP-1234"
+```
+
+## Key Takeaways
+
+- The TypeScript SDK handles protocol mechanics — you write tool schemas and handler functions.
+- Always validate inputs with Zod before using them.
+- Never throw in handlers — catch all errors and return `isError: true` with a helpful message.
+- Tool descriptions drive Claude's tool selection — invest in writing them clearly.
+- Use `tsx` for development iteration, build to `dist/` for production deployment.
+
+## What's Next
+
+The next lesson covers testing and debugging MCP servers — how to test them in isolation and diagnose issues in a live session.

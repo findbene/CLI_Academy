@@ -1,0 +1,304 @@
+---
+title: "Bare-Metal Installation"
+description: "Install OpenClaw directly on a Linux server without Docker — for environments with containerization restrictions."
+slug: "openclaw-bare-metal-install"
+lesson_number: 4
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: true
+tags: ["openclaw", "installation", "bare-metal", "systemd"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have OpenClaw installed as a systemd service on a Linux host, running as a non-root user, with PostgreSQL and Redis configured as system services.
+
+## Why This Matters
+
+Some environments cannot use Docker: hardened servers that prohibit container runtimes, systems managed by configuration management tools like Ansible or Puppet that require native service definitions, or compliance environments where container registries are not approved. Bare-metal installation gives you OpenClaw without the Docker dependency — at the cost of more manual setup and a less portable configuration.
+
+<WarnBlock>Bare-metal installation requires more careful dependency management than Docker. When you upgrade OpenClaw or its dependencies, you are responsible for ensuring version compatibility. If Docker is available in your environment, use it instead.</WarnBlock>
+
+## Core Concepts
+
+### Architecture Difference
+
+In a bare-metal deployment, each OpenClaw component (the server process, PostgreSQL, Redis) runs as a separate systemd service on the host OS. There is no container layer. Your firewall rules, service user, and file permissions matter more here than in Docker, because there is no container isolation between components.
+
+### Step 1: Create a Dedicated Service User
+
+Never run OpenClaw as root. Create a non-privileged user:
+
+```bash
+# Create a system user with no login shell
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin openclaw
+
+# Create the OpenClaw home directory
+sudo mkdir -p /opt/openclaw/{bin,config,certs,logs,data}
+sudo chown -R openclaw:openclaw /opt/openclaw
+sudo chmod 750 /opt/openclaw
+```
+
+### Step 2: Install System Dependencies
+
+```bash
+sudo apt update
+sudo apt install -y \
+  postgresql \
+  postgresql-client \
+  redis-server \
+  openssl \
+  curl \
+  jq
+
+# Python dependencies (for admin CLI tools)
+sudo apt install -y python3.11 python3.11-venv python3-pip
+
+# Node.js 20 LTS (for admin dashboard)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+### Step 3: Configure PostgreSQL
+
+```bash
+# Switch to postgres user and create the OpenClaw database
+sudo -u postgres psql << 'SQL'
+CREATE USER openclaw WITH PASSWORD 'CHANGE_ME_USE_STRONG_PASSWORD';
+CREATE DATABASE openclaw OWNER openclaw;
+GRANT ALL PRIVILEGES ON DATABASE openclaw TO openclaw;
+SQL
+```
+
+Replace `CHANGE_ME_USE_STRONG_PASSWORD` with a strong random password. Store it securely — you will need it in the environment file.
+
+Verify the connection:
+
+```bash
+psql -U openclaw -d openclaw -h localhost -c "SELECT version();"
+# Enter the password when prompted
+```
+
+### Step 4: Configure Redis
+
+By default, Redis on Ubuntu binds to localhost and has no password. For a single-server OpenClaw deployment this is acceptable. To add a password:
+
+```bash
+# Edit /etc/redis/redis.conf
+sudo sed -i 's/# requirepass foobared/requirepass CHANGE_ME_REDIS_PASSWORD/' /etc/redis/redis.conf
+sudo systemctl restart redis-server
+```
+
+If you set a Redis password, update your OpenClaw config accordingly (covered below).
+
+### Step 5: Download the OpenClaw Binary
+
+```bash
+# Get the latest release URL
+LATEST=$(curl -s https://api.github.com/repos/openclaw/openclaw/releases/latest \
+  | jq -r '.tag_name')
+
+# Download the binary for your architecture
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then ARCH="amd64"; fi
+if [ "$ARCH" = "aarch64" ]; then ARCH="arm64"; fi
+
+curl -L "https://github.com/openclaw/openclaw/releases/download/${LATEST}/openclaw-linux-${ARCH}" \
+  -o /tmp/openclaw
+
+# Install and set permissions
+sudo mv /tmp/openclaw /opt/openclaw/bin/openclaw
+sudo chown openclaw:openclaw /opt/openclaw/bin/openclaw
+sudo chmod 750 /opt/openclaw/bin/openclaw
+
+# Verify
+sudo -u openclaw /opt/openclaw/bin/openclaw --version
+```
+
+### Step 6: Create the Environment File
+
+```bash
+sudo -u openclaw tee /opt/openclaw/config/.env > /dev/null << 'ENVEOF'
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+OPENCLAW_DB_URL=postgresql://openclaw:CHANGE_ME@localhost:5432/openclaw
+OPENCLAW_REDIS_URL=redis://:CHANGE_ME_REDIS@localhost:6379
+OPENCLAW_ADMIN_SECRET=CHANGE_ME_ADMIN_SECRET
+OPENCLAW_HOSTNAME=openclaw.yourdomain.com
+OPENCLAW_TLS_CERT=/opt/openclaw/certs/server.crt
+OPENCLAW_TLS_KEY=/opt/openclaw/certs/server.key
+ENVEOF
+
+sudo chmod 600 /opt/openclaw/config/.env
+sudo chown openclaw:openclaw /opt/openclaw/config/.env
+```
+
+Edit the file and replace all `CHANGE_ME` values with the actual credentials you set in earlier steps.
+
+### Step 7: Generate TLS Certificates
+
+For a bare-metal deployment, the certificate setup is the same as Docker. Use Let's Encrypt for public servers:
+
+```bash
+sudo certbot certonly --standalone -d openclaw.yourdomain.com
+
+# Copy and set ownership for the openclaw user
+sudo cp /etc/letsencrypt/live/openclaw.yourdomain.com/fullchain.pem /opt/openclaw/certs/server.crt
+sudo cp /etc/letsencrypt/live/openclaw.yourdomain.com/privkey.pem /opt/openclaw/certs/server.key
+sudo chown openclaw:openclaw /opt/openclaw/certs/*
+sudo chmod 600 /opt/openclaw/certs/server.key
+```
+
+Or self-signed for internal deployments:
+
+```bash
+sudo -u openclaw openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /opt/openclaw/certs/server.key \
+  -out /opt/openclaw/certs/server.crt \
+  -subj "/CN=openclaw.internal" \
+  -addext "subjectAltName=DNS:openclaw.internal"
+```
+
+### Step 8: Create the Configuration File
+
+```bash
+sudo -u openclaw tee /opt/openclaw/config/openclaw.yml > /dev/null << 'EOF'
+server:
+  hostname: ${OPENCLAW_HOSTNAME}
+  tls: true
+  session_timeout_minutes: 480
+
+auth:
+  mode: token
+  token_expiry_hours: 24
+
+api:
+  anthropic:
+    default_model: claude-sonnet-4-6
+    allowed_models:
+      - claude-haiku-4-5-20251001
+      - claude-sonnet-4-6
+      - claude-opus-4-6
+
+policies:
+  default_daily_token_limit: 500000
+  allow_file_uploads: true
+  allow_shell_execution: true
+
+admin:
+  listen_port: 8080
+  require_auth: true
+
+logging:
+  level: info
+  path: /opt/openclaw/logs/openclaw.log
+  rotation: daily
+  retention_days: 30
+EOF
+```
+
+### Step 9: Create the systemd Service
+
+```bash
+sudo tee /etc/systemd/system/openclaw.service > /dev/null << 'EOF'
+[Unit]
+Description=OpenClaw Server
+Documentation=https://docs.openclaw.dev
+After=network.target postgresql.service redis-server.service
+Requires=postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/openclaw
+EnvironmentFile=/opt/openclaw/config/.env
+ExecStart=/opt/openclaw/bin/openclaw server \
+  --config /opt/openclaw/config/openclaw.yml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+ReadWritePaths=/opt/openclaw/logs
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+### Step 10: Enable and Start
+
+```bash
+# Reload systemd and enable the service
+sudo systemctl daemon-reload
+sudo systemctl enable openclaw
+sudo systemctl start openclaw
+
+# Check status
+sudo systemctl status openclaw
+
+# Follow logs
+sudo journalctl -u openclaw -f
+```
+
+A successful start shows:
+
+```
+openclaw[12345]: [INFO] OpenClaw v1.x.x starting
+openclaw[12345]: [INFO] Database connected and migrations applied
+openclaw[12345]: [INFO] Redis connected
+openclaw[12345]: [INFO] Server listening on :8443 (TLS)
+openclaw[12345]: [INFO] Ready to accept connections
+```
+
+### Verifying the Installation
+
+```bash
+# Check process is running
+systemctl is-active openclaw
+
+# Test the health endpoint
+curl -k https://localhost:443/health
+# Expected: {"status":"ok","version":"1.x.x"}
+
+# Check log file
+tail -f /opt/openclaw/logs/openclaw.log
+```
+
+### Firewall Configuration (UFW)
+
+```bash
+# Allow HTTPS for developer connections
+sudo ufw allow 443/tcp
+
+# Allow admin dashboard from internal network only (replace 10.0.0.0/8 with your range)
+sudo ufw allow from 10.0.0.0/8 to any port 8080
+
+# Deny all other inbound
+sudo ufw enable
+sudo ufw status
+```
+
+## Key Takeaways
+
+- Bare-metal deployment runs OpenClaw, PostgreSQL, and Redis as separate systemd services.
+- Use a dedicated non-root user (`openclaw`) for all service processes.
+- The `.env` file must be mode 600 and owned by the service user — it contains your API key.
+- Systemd service security options (`NoNewPrivileges`, `PrivateTmp`, `ProtectSystem`) reduce the blast radius of any compromise.
+- Use UFW or iptables to restrict port 8080 to internal networks before going live.
+
+## What's Next
+
+Whether you used Docker or bare-metal, the next lesson covers the full configuration reference — all settings, authentication modes, policy options, and how to tune OpenClaw for your team's workflow.

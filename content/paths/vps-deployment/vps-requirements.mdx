@@ -1,0 +1,95 @@
+---
+title: "VPS Requirements and Provider Selection"
+description: "Choose the right VPS provider and specs for running Claude Code headlessly — what matters and what doesn't."
+slug: "vps-requirements"
+lesson_number: 1
+estimated_minutes: 10
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: false
+tags: ["vps", "setup", "infrastructure"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to choose a VPS provider, what specifications matter for running Claude Code headlessly, and what to look for and avoid.
+
+## Why This Matters
+
+Running Claude Code on a VPS gives you an always-on agent that works while you sleep, processes background tasks, and provides a consistent environment for automated workflows — without tying up your laptop. Picking the wrong server or provider creates problems that are harder to fix later than to avoid now.
+
+## Core Concepts
+
+### What "Claude Code on a VPS" Means
+
+A VPS-hosted Claude Code setup is not OpenClaw or a multi-user server. It is a single Claude Code installation running headlessly on a remote Linux machine — connected to your Anthropic API key — that you interact with via SSH or automate with scripts and cron jobs.
+
+Use cases:
+- Long-running agent tasks that would time out on a laptop
+- Scheduled automation (nightly code reviews, daily reports)
+- A consistent environment for CI-adjacent AI workflows
+- Testing agent workflows without risking your local machine
+
+### Minimum Specs
+
+Claude Code itself is lightweight. The VPS requirements are driven by what Claude Code does — if it runs build tools, spins up Docker containers, or processes large files, spec accordingly.
+
+**For agent workflows and scripting:**
+
+| Resource | Minimum |
+|----------|---------|
+| CPU | 1 vCPU |
+| RAM | 2 GB |
+| Disk | 20 GB SSD |
+| OS | Ubuntu 22.04 LTS |
+| Network | Any, outbound HTTPS to api.anthropic.com |
+
+**For build-and-test workflows (Claude Code running npm/python/docker):**
+
+| Resource | Recommended |
+|----------|-------------|
+| CPU | 2–4 vCPU |
+| RAM | 4–8 GB |
+| Disk | 40 GB SSD |
+
+### Provider Recommendations
+
+Any major VPS provider works. The practical differences are pricing, datacenter locations (latency to Anthropic's API is not a material factor — it is HTTPS), and support quality.
+
+Commonly used options:
+- **DigitalOcean** — simple UI, predictable pricing, good documentation. $6–12/mo for 1–2 vCPU/2 GB RAM.
+- **Hetzner** — best price/performance ratio for European developers. €4–6/mo for 2 vCPU/4 GB RAM.
+- **Vultr** or **Linode/Akamai** — similar to DigitalOcean in positioning.
+- **AWS EC2** or **GCP Compute** — more complex but appropriate if the rest of your infrastructure lives there.
+
+Avoid providers with unreliable network connectivity or slow disks — Claude Code's shell execution and file operations benefit from fast I/O.
+
+### What NOT to Host On
+
+- **Shared hosting** — no root access, cannot install Node.js, wrong tool entirely.
+- **Free tier cloud instances** — CPU throttling and network limits make them unreliable for agent workflows.
+- **Raspberry Pi / ARM boards for production** — Claude Code runs fine on ARM but micro-SD card I/O is too slow for sustained use.
+
+### OS Choice
+
+Ubuntu 22.04 LTS is the recommended choice for this path:
+- Five-year LTS support window
+- Excellent package availability
+- Most community documentation is written for Ubuntu
+
+Debian 12 and RHEL/Rocky 9 are also fine if you are more comfortable with them.
+
+## Key Takeaways
+
+- 1 vCPU / 2 GB RAM is sufficient for pure agent workflows; 4 vCPU / 8 GB for build-heavy use.
+- Any major VPS provider works — prioritize network reliability and fast SSD.
+- Ubuntu 22.04 LTS is the recommended OS for this path.
+- This path covers a personal headless installation, not a multi-user server (that is OpenClaw).
+
+## What's Next
+
+The next lesson covers SSH key setup — the secure authentication foundation for everything that follows.

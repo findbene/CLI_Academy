@@ -1,0 +1,111 @@
+---
+title: "What Is the Model Context Protocol?"
+description: "Understand MCP from first principles — what it is, why Anthropic created it, and how it changes what Claude Code can do in your environment."
+slug: "what-is-mcp"
+lesson_number: 1
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: false
+tags: ["mcp", "introduction", "protocol"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand what MCP is, why it exists, the three resource types it exposes, and how it changes the capability boundary of Claude Code in your environment.
+
+## Why This Matters
+
+Out of the box, Claude Code can read files, run shell commands, and call the Anthropic API. That is a powerful starting point but a limited one. MCP is the mechanism that extends Claude Code's capabilities beyond those defaults — connecting it to databases, internal APIs, external services, and organizational knowledge stores. Understanding MCP from first principles means you can evaluate any MCP server confidently, rather than copying configurations you do not fully understand.
+
+## Core Concepts
+
+### The Problem MCP Solves
+
+Before MCP, connecting Claude to an external tool required either:
+- Writing a custom tool integration inside the Claude API layer (complex, not reusable)
+- Describing the tool in the prompt and hoping Claude could figure out how to use it (unreliable)
+- Giving Claude shell access and letting it figure out CLI tools (powerful but uncontrolled)
+
+Each of these approaches required a different integration pattern per tool, per model, per use case. MCP standardizes the integration: any tool that implements the MCP server protocol can be connected to any MCP client (Claude Code, other Claude interfaces) using the same connection mechanism.
+
+### What MCP Is
+
+MCP (Model Context Protocol) is an open protocol published by Anthropic that defines a standard interface for AI models to interact with external tools and data sources.
+
+It has three parts:
+
+**1. A server spec** — defines what an MCP server must implement to be a valid MCP server
+
+**2. A client spec** — defines how an MCP client (Claude Code) discovers, connects to, and uses MCP servers
+
+**3. Three resource types** — the things an MCP server can expose to the client
+
+### The Three Resource Types
+
+Every MCP server exposes some combination of three types:
+
+**Tools** — Functions the model can call. A database MCP server might expose a `query_database` tool. A GitHub MCP server might expose `create_pull_request`, `list_issues`, `get_file_contents`. Tools take structured inputs and return structured outputs.
+
+**Resources** — Read-only data sources the model can access. A documentation MCP server might expose your internal wiki as a resource. A file-system MCP server might expose a directory tree. Resources are things the model reads, not actions it takes.
+
+**Prompts** — Pre-written prompt templates stored on the server that the user can invoke. Less common but useful for teams that want to standardize how Claude handles certain task types.
+
+Most MCP servers you will encounter expose primarily tools, sometimes resources, rarely prompts.
+
+### How MCP Changes Claude Code's Capabilities
+
+Without MCP, Claude Code operates within the boundary of your local machine: files, shell commands, and the Anthropic API.
+
+With MCP servers configured:
+
+```
+Without MCP:                    With MCP:
+─────────────────               ─────────────────────────────────────
+Claude Code                     Claude Code
+  ├── Read files                  ├── Read files
+  ├── Run shell commands          ├── Run shell commands
+  └── Anthropic API               ├── Anthropic API
+                                  ├── [postgres-mcp] Query database
+                                  ├── [github-mcp] Create PR, list issues
+                                  ├── [slack-mcp] Post messages, read channels
+                                  ├── [notion-mcp] Read/write pages
+                                  └── [custom-mcp] Your internal APIs
+```
+
+The developer experience is seamless — Claude Code discovers what tools are available from each connected MCP server and uses them naturally in conversation. "Create a GitHub issue for this bug" becomes a real action, not a suggestion.
+
+### The MCP Connection Model
+
+MCP servers run as separate processes. Claude Code connects to them via:
+
+- **stdio** — the server runs as a child process, communicating over stdin/stdout. Used for local servers.
+- **SSE (Server-Sent Events)** — the server runs as an HTTP server and Claude connects over HTTP. Used for remote servers.
+
+When you configure an MCP server in `~/.claude/settings.json`, you are telling Claude Code how to start (stdio) or connect to (SSE) the server process. Claude Code handles the rest: discovery of available tools, calling them when needed, returning results to the conversation.
+
+### MCP Is Not a Security Boundary
+
+This is the most important thing to understand about MCP before installing any server:
+
+**An MCP server runs with the same permissions as the process that started it.** If you configure a GitHub MCP server with a personal access token that has write access to your repositories, Claude Code can create, modify, and delete repository content. If you configure a database MCP server with full read/write access, Claude Code can modify your database.
+
+MCP gives Claude Code real, consequential access to real systems. The configuration you write determines the blast radius of anything that goes wrong — whether from a hallucination, a miscommunication, or a malicious prompt injection in data the model reads.
+
+This is covered in depth in the Security Considerations lesson. Hold it in mind as you proceed.
+
+## Key Takeaways
+
+- MCP is a standard protocol for connecting AI models to external tools and data sources.
+- It defines three resource types: tools (callable functions), resources (read-only data), and prompts (templates).
+- MCP servers run as separate processes; Claude Code connects via stdio (local) or SSE (remote).
+- MCP is not a security sandbox — servers run with the permissions you grant them.
+- Understanding MCP from first principles lets you evaluate any server rather than blindly copying configs.
+
+## What's Next
+
+The next lesson covers how MCP servers work internally — the request/response lifecycle, how Claude decides which tool to call, and what happens when a tool fails.

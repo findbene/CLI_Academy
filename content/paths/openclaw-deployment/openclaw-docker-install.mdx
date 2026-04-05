@@ -1,0 +1,320 @@
+---
+title: "Docker Deployment (Recommended)"
+description: "Install and run OpenClaw using Docker Compose — the fastest path to a working, upgradeable deployment."
+slug: "openclaw-docker-install"
+lesson_number: 3
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: true
+tags: ["openclaw", "docker", "installation"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have OpenClaw running in Docker on your server, the admin dashboard accessible at port 8080, and the first developer connection verified end-to-end.
+
+## Why This Matters
+
+Docker deployment is the recommended installation path for OpenClaw because it is reproducible, upgradeable with a single command, and isolates OpenClaw from your host OS. If something goes wrong, you can destroy and recreate the container without touching the host. The alternative (bare-metal install) is covered in the next lesson for environments that cannot use Docker.
+
+## Core Concepts
+
+### What Docker Deployment Gives You
+
+When you deploy OpenClaw via Docker Compose, you get:
+- A container that runs the OpenClaw server process
+- A separate container for the PostgreSQL session database
+- A separate container for the Redis session cache
+- A shared Docker network linking the three containers
+- Volume mounts for persistent data (database, logs, TLS certificates)
+- A single `docker compose up -d` command to start or restart everything
+
+The Docker Compose file defines all of this as code. You commit it to your infrastructure repo, and every deployment of OpenClaw across your environments uses the same configuration.
+
+### Step 1: Create the OpenClaw Directory
+
+All OpenClaw configuration and data lives in a single directory. Create it now:
+
+```bash
+sudo mkdir -p /opt/openclaw
+sudo chown $USER:$USER /opt/openclaw
+cd /opt/openclaw
+```
+
+Create the subdirectory structure:
+
+```bash
+mkdir -p config certs logs data/postgres data/redis
+```
+
+### Step 2: Create the Docker Compose File
+
+Create `/opt/openclaw/docker-compose.yml`:
+
+```yaml
+version: "3.9"
+
+services:
+  openclaw:
+    image: ghcr.io/openclaw/openclaw-server:latest
+    restart: unless-stopped
+    ports:
+      - "443:8443"
+      - "8080:8080"
+    environment:
+      - OPENCLAW_DB_URL=postgresql://openclaw:${POSTGRES_PASSWORD}@postgres:5432/openclaw
+      - OPENCLAW_REDIS_URL=redis://redis:6379
+      - OPENCLAW_ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENCLAW_TLS_CERT=/certs/server.crt
+      - OPENCLAW_TLS_KEY=/certs/server.key
+      - OPENCLAW_ADMIN_SECRET=${ADMIN_SECRET}
+      - OPENCLAW_HOSTNAME=${OPENCLAW_HOSTNAME}
+    volumes:
+      - ./certs:/certs:ro
+      - ./config:/config:ro
+      - ./logs:/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - openclaw-net
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=openclaw
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=openclaw
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openclaw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-net
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-net
+
+networks:
+  openclaw-net:
+    driver: bridge
+```
+
+### Step 3: Create the Environment File
+
+<WarnBlock>The `.env` file contains your Anthropic API key and admin secret. Never commit this file to version control. Add it to your `.gitignore` immediately. If this file is exposed, rotate your API key and admin secret before doing anything else.</WarnBlock>
+
+Create `/opt/openclaw/.env`:
+
+```bash
+# Generate a secure random password for PostgreSQL
+POSTGRES_PASSWORD=$(openssl rand -base64 32)
+
+# Generate a secure admin secret
+ADMIN_SECRET=$(openssl rand -base64 32)
+
+# Write the .env file
+cat > /opt/openclaw/.env << 'ENVEOF'
+# Anthropic API key — keep this secret
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+
+# PostgreSQL password — auto-generated, replace with the generated value
+POSTGRES_PASSWORD=REPLACE_WITH_GENERATED
+
+# Admin dashboard secret — auto-generated, replace with the generated value
+ADMIN_SECRET=REPLACE_WITH_GENERATED
+
+# Your OpenClaw server's hostname
+OPENCLAW_HOSTNAME=openclaw.yourdomain.com
+ENVEOF
+
+# Restrict permissions — only the current user can read
+chmod 600 /opt/openclaw/.env
+```
+
+Then edit the file to replace the placeholder values with your actual API key, generated passwords, and hostname.
+
+### Step 4: Generate TLS Certificates
+
+OpenClaw requires HTTPS. You have two options:
+
+**Option A: Let's Encrypt (for publicly accessible servers with a real domain):**
+
+```bash
+# Install certbot
+sudo apt install -y certbot
+
+# Generate certificates (server must be reachable on port 80 for ACME challenge)
+sudo certbot certonly --standalone -d openclaw.yourdomain.com
+
+# Copy certs to the OpenClaw certs directory
+sudo cp /etc/letsencrypt/live/openclaw.yourdomain.com/fullchain.pem /opt/openclaw/certs/server.crt
+sudo cp /etc/letsencrypt/live/openclaw.yourdomain.com/privkey.pem /opt/openclaw/certs/server.key
+sudo chown $USER:$USER /opt/openclaw/certs/*
+chmod 600 /opt/openclaw/certs/server.key
+```
+
+**Option B: Self-signed certificate (for internal or private deployments):**
+
+```bash
+cd /opt/openclaw/certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout server.key \
+  -out server.crt \
+  -subj "/C=US/ST=State/L=City/O=YourOrg/CN=openclaw.internal" \
+  -addext "subjectAltName=DNS:openclaw.internal,DNS:localhost"
+chmod 600 server.key
+```
+
+If using a self-signed certificate, developers must configure their Claude CLI to trust it — covered in the Configuration lesson.
+
+### Step 5: Create the OpenClaw Configuration File
+
+Create `/opt/openclaw/config/openclaw.yml`:
+
+```yaml
+server:
+  hostname: ${OPENCLAW_HOSTNAME}
+  tls: true
+  session_timeout_minutes: 480  # 8 hours
+
+auth:
+  mode: token                    # or "oidc" for SSO integration
+  token_expiry_hours: 24
+
+api:
+  anthropic:
+    default_model: claude-sonnet-4-6
+    allowed_models:
+      - claude-haiku-4-5-20251001
+      - claude-sonnet-4-6
+      - claude-opus-4-6
+
+policies:
+  default_daily_token_limit: 500000    # per developer, per day
+  allow_file_uploads: true
+  allow_shell_execution: true
+
+admin:
+  listen_port: 8080
+  require_auth: true
+
+logging:
+  level: info
+  path: /logs/openclaw.log
+  rotation: daily
+  retention_days: 30
+```
+
+### Step 6: Start OpenClaw
+
+```bash
+cd /opt/openclaw
+
+# Pull the latest images
+docker compose pull
+
+# Start in detached mode
+docker compose up -d
+
+# Watch the logs to confirm startup
+docker compose logs -f openclaw
+```
+
+A successful startup looks like:
+
+```
+openclaw-1  | [INFO] OpenClaw v1.x.x starting
+openclaw-1  | [INFO] Connecting to database...
+openclaw-1  | [INFO] Database connected and migrations applied
+openclaw-1  | [INFO] Redis connected
+openclaw-1  | [INFO] TLS certificate loaded: openclaw.yourdomain.com
+openclaw-1  | [INFO] Server listening on :8443 (TLS)
+openclaw-1  | [INFO] Admin dashboard listening on :8080
+openclaw-1  | [INFO] Ready to accept connections
+```
+
+If you see errors, the most common causes are:
+- `.env` not found or malformed — run `docker compose config` to validate
+- TLS certificate path wrong — check that `certs/server.crt` and `certs/server.key` exist
+- Database failed to start — run `docker compose logs postgres` to check
+
+### Step 7: Verify the Deployment
+
+```bash
+# Check all containers are running
+docker compose ps
+
+# Expected output shows all three services as "Up"
+
+# Test the HTTPS endpoint
+curl -k https://localhost:443/health
+# Expected: {"status":"ok","version":"1.x.x"}
+
+# Access the admin dashboard
+# Open http://YOUR_SERVER_IP:8080 in a browser
+# Login with the ADMIN_SECRET from your .env file
+```
+
+### Step 8: First Developer Connection
+
+On a developer's machine, connect their Claude CLI to your OpenClaw server:
+
+```bash
+# On the developer's machine (not the server)
+claude config set openclaw.server https://openclaw.yourdomain.com
+
+# Generate a developer token in the admin dashboard first, then:
+claude auth login --server https://openclaw.yourdomain.com
+
+# Verify the connection
+claude --version
+```
+
+If using a self-signed certificate, developers need one additional step:
+
+```bash
+# Trust the self-signed cert (replace with your cert file path)
+claude config set openclaw.tls_ca_cert /path/to/server.crt
+```
+
+### Enabling Auto-Start on Boot
+
+Docker's `restart: unless-stopped` policy handles container restarts automatically. To ensure Docker itself starts on boot:
+
+```bash
+sudo systemctl enable docker
+```
+
+## Key Takeaways
+
+- Docker Compose deployment uses three containers: openclaw-server, postgres, redis.
+- All configuration lives in `/opt/openclaw/` — commit the compose file and config, but never the `.env` file.
+- TLS is required. Use Let's Encrypt for public servers, self-signed for internal deployments.
+- The admin dashboard runs on port 8080 — restrict it to internal network access only.
+- Verify the deployment with `docker compose ps` and `curl -k https://localhost:443/health` before connecting any developers.
+
+## What's Next
+
+If your environment cannot use Docker, the next lesson covers bare-metal installation. If you are already running, skip ahead to the Configuration lesson.

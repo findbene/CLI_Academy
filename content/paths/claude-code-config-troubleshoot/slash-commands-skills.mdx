@@ -1,0 +1,151 @@
+---
+title: "Slash Commands and Skills: Extending Claude Code"
+description: "Master built-in slash commands, create your own /commands, and understand how skills extend Claude Code with specialized knowledge."
+slug: "slash-commands-skills"
+lesson_number: 6
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["slash-commands", "skills", "customization"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know all the built-in slash commands, how to create a custom `/commit` command in under 5 minutes, and how skills differ from commands and when to use each.
+
+## Why This Matters
+
+Slash commands let you invoke complex, repeatable workflows with a single typed command. Instead of re-explaining your commit message format every session, you write it once in a command file and type `/commit`. Skills let you package domain knowledge — architecture decisions, code conventions, project history — and load them into the session on demand.
+
+## Core Concepts
+
+### Built-In Slash Commands
+
+These commands are always available in any Claude Code session:
+
+| Command | What it does |
+|---------|-------------|
+| `/help` | Show all available commands |
+| `/clear` | Clear the conversation history (new session context) |
+| `/compact` | Compress old messages to save context space |
+| `/cost` | Show token usage and cost for the current session |
+| `/status` | Show session info: model, context used, working directory |
+| `/doctor` | Diagnose common configuration issues |
+| `/login` | Authenticate or re-authenticate with your API key |
+| `/logout` | Remove stored credentials |
+| `/fast` | Toggle fast mode (same model, faster streaming) |
+
+Use `/compact` liberally during long sessions. As the context window fills up, Claude's output quality degrades. Compacting removes old messages while preserving the essential context.
+
+### Creating Custom Commands
+
+Custom commands live as Markdown files in `~/.claude/commands/`. The filename (without `.md`) becomes the slash command name.
+
+**Step 1: Create the commands directory**
+```bash
+mkdir -p ~/.claude/commands
+```
+
+**Step 2: Write a command file**
+
+Create `~/.claude/commands/commit.md`:
+
+```markdown
+Review all staged and unstaged changes with `git diff` and `git status`.
+
+Then write a conventional commit message following this format:
+- First line: `type(scope): description` (max 72 chars)
+- Types: feat, fix, refactor, test, docs, chore, style, perf
+- Body (optional): explain WHY the change was made, not what
+- No emojis. No "as per", "leveraged", or "utilized".
+
+After writing the message, run `git add -A` and then commit with that message.
+Show me the final commit message before running it and ask for approval.
+```
+
+**Step 3: Use it**
+```
+/commit
+```
+
+Claude reads your instructions and executes the commit workflow.
+
+### More Command Examples
+
+**`~/.claude/commands/review.md`** — code review:
+```markdown
+Review the changes since the last commit (`git diff HEAD~1`).
+
+Check for:
+1. Security vulnerabilities (injections, exposed secrets, missing auth)
+2. TypeScript type safety (no `any`, proper nullability)
+3. Error handling at API boundaries
+4. Missing tests for new logic
+
+Report findings organized by severity: Critical, High, Medium, Low.
+```
+
+**`~/.claude/commands/debug.md`** — systematic debugging:
+```markdown
+We have a bug. Let's diagnose it systematically:
+
+1. Reproduce: confirm the exact error message and when it occurs
+2. Isolate: narrow down which file/function is responsible
+3. Diagnose: trace the root cause through the code
+4. Fix: make the minimal change that addresses the root cause
+
+Start by asking me to describe the bug if I haven't already.
+```
+
+### What Are Skills?
+
+Skills are different from commands. A command is an executable prompt — it tells Claude *what to do*. A skill is a knowledge package — it tells Claude *what to know*.
+
+Skills live in `~/.claude/skills/<skill-name>/SKILL.md`. They contain:
+- Domain knowledge (architecture patterns, framework conventions)
+- Decision records (why you made certain choices)
+- Reference material (API contracts, data models)
+
+You invoke a skill by asking Claude to load it:
+```
+Please read and apply the skill at ~/.claude/skills/nextjs-patterns/SKILL.md
+```
+
+Or in a CLAUDE.md:
+```markdown
+@~/.claude/skills/nextjs-patterns/SKILL.md
+```
+
+### Commands vs Skills: When to Use Each
+
+| Use a **command** when... | Use a **skill** when... |
+|--------------------------|------------------------|
+| You want Claude to *do* something repeatable | You want Claude to *know* something contextual |
+| The workflow has clear steps | The content is reference material |
+| You invoke it occasionally | You load it at session start |
+| Example: `/commit`, `/review`, `/deploy` | Example: architecture docs, naming conventions, API contracts |
+
+<TipBlock>Create a `/status` command that runs your full project health check — lint, typecheck, tests, build — and reports the results. It becomes the final step of every session before committing.</TipBlock>
+
+### Command Files Are Just Markdown
+
+There is no special syntax. Claude reads the file as a prompt. You can use any Markdown formatting — headers, lists, code blocks — to structure your instructions clearly.
+
+The command file is evaluated at invocation time, not at startup. So the instructions can reference things Claude already knows about from the current session.
+
+## Key Takeaways
+
+- Built-in slash commands: `/clear`, `/compact`, `/cost`, `/status`, `/doctor` are the most useful day-to-day.
+- Custom commands live in `~/.claude/commands/<name>.md` and are invoked with `/<name>`.
+- Commands are executable prompts — they tell Claude what to do.
+- Skills are knowledge packages — they tell Claude what to know, loaded via `@` import or explicit request.
+- `/compact` is your friend during long sessions — use it before the context gets saturated.
+
+## What's Next
+
+In the next lesson, you will see the 20 most common Claude Code errors, with exact error messages, root causes, and step-by-step fixes.

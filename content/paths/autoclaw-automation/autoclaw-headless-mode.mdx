@@ -1,0 +1,193 @@
+---
+title: "Running Agents Without a UI"
+description: "How AutoClaw's headless mode works, what permissions model it uses, and how to capture structured output from agent runs."
+slug: "autoclaw-headless-mode"
+lesson_number: 3
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "autoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  autoclaw: "latest"
+has_safety_warning: true
+tags: ["autoclaw", "headless", "permissions", "output"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand AutoClaw's headless execution model, how the pre-declared permissions system works, how to capture and use structured output from agent runs, and what the safety constraints are.
+
+## Why This Matters
+
+Headless mode is not just "Claude Code without a terminal." It is a fundamentally different execution contract. Without a human to review and approve actions, the safety model shifts entirely to the task definition: what is declared is allowed, what is not declared is denied. Understanding this model is the prerequisite for writing safe, reliable automation.
+
+## Core Concepts
+
+### How Headless Execution Works
+
+When you run `autoclaw run --task my-task.yml`, the following sequence happens:
+
+```
+1. AutoClaw loads and validates the task definition
+2. AutoClaw creates a sandboxed Claude agent with:
+   - The permissions declared in the task
+   - The prompt from the task definition
+   - The input context (files, environment variables, prior run state)
+3. The agent runs to completion (or timeout)
+4. AutoClaw captures the agent's output
+5. AutoClaw validates the output against the task's output schema
+6. AutoClaw reports success/failure and delivers the output
+```
+
+At no point does AutoClaw prompt a human. If the agent needs a permission it does not have, it receives a `permission_denied` response and must work within its constraints or fail with a structured error.
+
+### The Pre-Declared Permissions Model
+
+Interactive Claude Code asks for permissions as needed. AutoClaw requires all permissions to be declared before the task runs. This is the core safety guarantee: an automation task cannot acquire permissions beyond what was declared, even if Claude's reasoning suggests it should.
+
+Permissions are declared in the task definition's `permissions` block:
+
+```yaml
+# In your task definition
+permissions:
+  filesystem:
+    read:
+      - "src/**/*.ts"          # Can read all TypeScript files
+      - "package.json"
+      - "tsconfig.json"
+    write:
+      - "reports/output.json"  # Can only write to this one file
+    denied:
+      - ".env"                 # Explicitly blocked (belt-and-suspenders)
+      - "**/*.key"
+      - "**/*.pem"
+
+  shell:
+    allowed_commands:
+      - "npm test"             # Exact command strings only
+      - "npm run lint"
+      - "git diff HEAD~1"
+    # Any other shell command is denied
+
+  network:
+    allowed_hosts: []          # Default: no network access from agent
+    # To allow specific hosts:
+    # allowed_hosts:
+    #   - "api.github.com"
+```
+
+**Glob patterns in filesystem permissions** follow the same syntax as `.gitignore`. Be specific — `src/**/*.ts` allows reading any TypeScript file under `src/`, but `**/*.ts` would allow reading TypeScript files anywhere in the working directory, including `node_modules`.
+
+<WarnBlock>The `shell.allowed_commands` list matches exact strings, not substrings. `"npm test"` does not permit `"npm test -- --coverage"`. If you need both, list both. This prevents a task from running a permitted command with injected dangerous flags.</WarnBlock>
+
+### Running a Task
+
+```bash
+# Basic run
+autoclaw run --task .autoclaw/my-task.yml
+
+# With explicit working directory
+autoclaw run --task .autoclaw/my-task.yml --workdir /path/to/project
+
+# With input variables
+autoclaw run --task .autoclaw/my-task.yml \
+  --var PR_NUMBER=123 \
+  --var BRANCH=feature/new-auth
+
+# Dry run — validate task definition without executing
+autoclaw run --task .autoclaw/my-task.yml --dry-run
+
+# Verbose output (shows agent reasoning, useful for debugging)
+autoclaw run --task .autoclaw/my-task.yml --verbose
+```
+
+### Capturing Structured Output
+
+Interactive Claude Code produces prose. AutoClaw tasks should produce structured output. Define the expected output format in the task:
+
+```yaml
+output:
+  format: json
+  schema:
+    type: object
+    required: ["status", "findings"]
+    properties:
+      status:
+        type: string
+        enum: ["pass", "fail", "warning"]
+      findings:
+        type: array
+        items:
+          type: object
+          required: ["file", "line", "message", "severity"]
+```
+
+AutoClaw validates the agent's output against this schema. If the output does not match, the task fails with a schema validation error — not with whatever the agent actually produced.
+
+Accessing the output after a run:
+
+```bash
+# Output is written to stdout as JSON
+autoclaw run --task .autoclaw/review.yml | jq '.findings[] | select(.severity == "high")'
+
+# Or captured to a file
+autoclaw run --task .autoclaw/review.yml --output /tmp/review-result.json
+```
+
+### Output Delivery
+
+AutoClaw can deliver output to multiple destinations without additional scripting:
+
+```yaml
+output:
+  format: json
+  destinations:
+    - type: file
+      path: reports/latest.json
+
+    - type: webhook
+      url: ${SLACK_WEBHOOK_URL}
+      template: |
+        {
+          "text": "Review complete: {{ .status }} — {{ len .findings }} findings"
+        }
+
+    - type: github_comment
+      repo: ${GITHUB_REPO}
+      pr: ${PR_NUMBER}
+      token: ${GITHUB_TOKEN}
+      template_file: .autoclaw/templates/review-comment.md
+
+    - type: exit_code
+      pass_value: 0
+      fail_value: 1
+      # Makes the process exit with 1 if status == "fail"
+      # This is what CI systems use to fail the pipeline step
+```
+
+The `exit_code` destination is what integrates AutoClaw into CI/CD pass/fail gates — if the agent's structured output indicates failure, the process exits non-zero and the CI step fails.
+
+### Safety Constraints Built Into Headless Mode
+
+AutoClaw enforces several constraints that cannot be overridden in task definitions:
+
+**Timeout enforcement:** Every task has a maximum execution time. If the agent has not completed within `task_timeout_minutes`, the task is terminated with a `timeout` error. There is no "ignore timeout" option.
+
+**No interactive prompts:** AutoClaw intercepts any attempt by the Claude agent to emit interactive prompts (waiting for user input). If detected, the task fails immediately with `interactive_prompt_detected`. This prevents an automation task from hanging indefinitely.
+
+**No permission escalation:** The agent cannot acquire permissions beyond what was declared in `permissions`. If it tries (for example, by attempting to write to a file not in the `write` allowlist), it receives an error and must work around it within its declared permission set.
+
+**Working directory scoping:** The agent's filesystem access is scoped to the task's working directory. It cannot traverse above the working directory root, even with paths like `../../etc/passwd`.
+
+## Key Takeaways
+
+- Headless mode enforces a pre-declared permissions contract — the agent cannot acquire permissions it was not given upfront.
+- Shell `allowed_commands` are exact string matches — be explicit about every variant you need.
+- Define an output schema — tasks that do not produce validated structured output are hard to integrate reliably.
+- Use the `exit_code` output destination to integrate AutoClaw into CI/CD pass/fail gates.
+- Four built-in safety constraints cannot be overridden: timeout, no interactive prompts, no permission escalation, working directory scoping.
+
+## What's Next
+
+The next lesson covers the full task definition format — how to write well-structured AutoClaw tasks for complex multi-step workflows.

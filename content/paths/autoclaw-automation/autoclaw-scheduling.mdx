@@ -1,0 +1,247 @@
+---
+title: "Scheduling and Event Triggers"
+description: "Run AutoClaw tasks on cron schedules, respond to webhook events, and integrate with GitHub Actions, GitLab CI, and other event sources."
+slug: "autoclaw-scheduling"
+lesson_number: 5
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "autoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  autoclaw: "latest"
+has_safety_warning: false
+tags: ["autoclaw", "scheduling", "cron", "webhooks", "ci-cd"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to run AutoClaw tasks on cron schedules, trigger them from webhooks, integrate them into GitHub Actions and GitLab CI, and pass event-specific data into task execution.
+
+## Why This Matters
+
+AutoClaw tasks are only as useful as the triggers that run them. A well-written task that nobody runs is worthless. This lesson connects your task definitions to the events that matter: a PR opens, a daily digest is due, a test suite fails, a tag is pushed.
+
+## Core Concepts
+
+### Method 1: Cron Scheduling
+
+The simplest trigger: run a task on a schedule.
+
+**Using AutoClaw's built-in scheduler:**
+
+AutoClaw can manage its own cron schedule without external tooling. Define schedules in a schedule file:
+
+```yaml
+# /opt/autoclaw/schedules.yml
+
+schedules:
+  - name: "daily-code-health"
+    cron: "0 8 * * 1-5"          # Weekdays at 8am
+    task: /opt/autoclaw/tasks/code-health.yml
+    workdir: /opt/repos/main-app
+    env:
+      REPORT_CHANNEL: "C0123456789"
+
+  - name: "weekly-dep-audit"
+    cron: "0 9 * * 1"            # Mondays at 9am
+    task: /opt/autoclaw/tasks/dep-audit.yml
+    workdir: /opt/repos/main-app
+
+  - name: "monthly-docs-review"
+    cron: "0 10 1 * *"           # First day of each month at 10am
+    task: /opt/autoclaw/tasks/docs-freshness.yml
+    workdir: /opt/repos/main-app
+```
+
+Start the scheduler:
+
+```bash
+autoclaw scheduler start --config /opt/autoclaw/schedules.yml
+
+# As a systemd service
+sudo systemctl start autoclaw-scheduler
+sudo systemctl enable autoclaw-scheduler
+```
+
+**Using system cron directly:**
+
+```bash
+# crontab -e
+0 8 * * 1-5 autoclaw run \
+  --task /opt/autoclaw/tasks/daily-report.yml \
+  --workdir /opt/repos/main-app \
+  --var DATE=$(date +%Y-%m-%d) \
+  >> /var/log/autoclaw/daily.log 2>&1
+```
+
+### Method 2: Webhook Triggers
+
+AutoClaw includes a lightweight webhook server for event-driven triggers:
+
+```yaml
+# /etc/autoclaw/webhook-config.yml
+
+webhooks:
+  listen_port: 9000
+  secret: ${AUTOCLAW_WEBHOOK_SECRET}
+
+  routes:
+    - path: /github/pr
+      task: /opt/autoclaw/tasks/pr-review.yml
+      method: POST
+      # Extract variables from the webhook payload (Go template syntax)
+      vars:
+        PR_NUMBER: "{{ .payload.number }}"
+        BRANCH: "{{ .payload.head.ref }}"
+        BASE_BRANCH: "{{ .payload.base.ref }}"
+        REPO: "{{ .payload.repository.full_name }}"
+      # Filter: only trigger for specific events
+      filter: "{{ eq .headers.X-GitHub-Event \"pull_request\" }}"
+      filter_body: "{{ eq .payload.action \"opened\" }}"
+
+    - path: /ci/test-failure
+      task: /opt/autoclaw/tasks/test-failure-analysis.yml
+      method: POST
+      vars:
+        BUILD_ID: "{{ .payload.build_id }}"
+        FAILED_TESTS: "{{ .payload.failed_tests | json }}"
+```
+
+Start the webhook server:
+
+```bash
+autoclaw webhook serve --config /etc/autoclaw/webhook-config.yml
+```
+
+Configure GitHub to send PR events to `https://your-server:9000/github/pr`.
+
+**Verifying GitHub webhook signatures:**
+
+AutoClaw verifies GitHub's `X-Hub-Signature-256` header automatically when `secret` is set. If the signature does not match, the request is rejected with 401. Always set the webhook secret.
+
+### Method 3: GitHub Actions Integration
+
+For teams using GitHub Actions, the `autoclaw-action` handles triggering cleanly:
+
+```yaml
+# .github/workflows/pr-review.yml
+name: AutoClaw PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  autoclaw-review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write    # Needed to post review comment
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # AutoClaw needs full git history for diffs
+
+      - name: AutoClaw Review
+        uses: openclaw/autoclaw-action@v1
+        with:
+          task: .autoclaw/pr-review.yml
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+```
+
+**For scheduled workflows in GitHub Actions:**
+
+```yaml
+# .github/workflows/weekly-audit.yml
+on:
+  schedule:
+    - cron: '0 9 * * 1'    # Mondays at 9am UTC
+  workflow_dispatch:         # Also allow manual trigger
+
+jobs:
+  dep-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: openclaw/autoclaw-action@v1
+        with:
+          task: .autoclaw/dep-audit.yml
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+### Method 4: GitLab CI Integration
+
+```yaml
+# .gitlab-ci.yml
+autoclaw-review:
+  image: ghcr.io/openclaw/autoclaw:latest
+  stage: review
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
+    PR_NUMBER: $CI_MERGE_REQUEST_IID
+    BRANCH: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    BASE_BRANCH: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+  script:
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - autoclaw run --task .autoclaw/pr-review.yml
+  allow_failure: false    # Fail the pipeline if AutoClaw returns non-zero
+```
+
+### Passing Event Context to Tasks
+
+Each trigger method passes event-specific data to the task as input variables. The task then uses these variables in its prompt and context:
+
+```yaml
+# In the task definition
+inputs:
+  PR_NUMBER:
+    type: string
+    required: true
+  BRANCH:
+    type: string
+    required: true
+
+context:
+  shell:
+    - command: "git diff origin/{{ .BASE_BRANCH }}...{{ .BRANCH }}"
+      label: "diff"
+
+prompt: |
+  Review PR #{{ .PR_NUMBER }} from branch {{ .BRANCH }}.
+  [rest of prompt]
+```
+
+### Preventing Concurrent Runs
+
+For tasks that should not run simultaneously (like those that write to the same cache files), use locking:
+
+```yaml
+execution:
+  concurrency:
+    lock: "pr-review-{{ .PR_NUMBER }}"    # One run per PR number at a time
+    lock_timeout_minutes: 30
+    on_conflict: "queue"                  # "queue", "skip", or "fail"
+```
+
+`on_conflict: "skip"` is useful for cron tasks that might overlap if a previous run is still executing — skip the new run instead of queuing.
+
+## Key Takeaways
+
+- Four trigger methods: AutoClaw's built-in scheduler, webhook server, GitHub Actions, GitLab CI.
+- The webhook server verifies GitHub signatures automatically when a secret is configured.
+- GitHub Actions integration uses `openclaw/autoclaw-action@v1` — requires `fetch-depth: 0` for git diff access.
+- Pass event-specific data to tasks as input variables — the task uses these in its prompt and context.
+- Use concurrency locking to prevent parallel runs of the same task on the same resource.
+
+## What's Next
+
+The next lesson covers fault tolerance and retry logic — how to make AutoClaw tasks reliable when Anthropic API calls fail or the agent produces unexpected output.

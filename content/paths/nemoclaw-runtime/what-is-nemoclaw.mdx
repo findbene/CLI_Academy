@@ -1,0 +1,117 @@
+---
+title: "What Is NemoClaw?"
+description: "Understand what NemoClaw is, how it extends OpenClaw with NVIDIA's runtime, and when GPU-sandboxed AI workflows justify the added infrastructure."
+slug: "what-is-nemoclaw"
+lesson_number: 1
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "nemoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  nemoclaw: "latest"
+has_safety_warning: false
+tags: ["nemoclaw", "introduction", "nvidia", "gpu"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand what NemoClaw is, how it is architecturally different from OpenClaw, what NVIDIA OpenShell provides that plain containers do not, and which organizations benefit from NemoClaw over OpenClaw.
+
+## Why This Matters
+
+If you completed the OpenClaw Deployment path, you know how to run a self-hosted Claude Code operational layer on standard Linux infrastructure. NemoClaw answers a different question: what does that layer look like when it runs inside NVIDIA's AI Enterprise stack, with GPU-accelerated context processing, NVIDIA-managed isolation, and integration with NVIDIA NIM inference microservices?
+
+For most organizations, OpenClaw is the right answer. For organizations already running NVIDIA AI Enterprise — ML teams, research labs, computational groups, financial modeling desks — NemoClaw integrates Claude Code into infrastructure they already manage and trust.
+
+## Core Concepts
+
+### NemoClaw in One Sentence
+
+NemoClaw is OpenClaw running inside NVIDIA's OpenShell runtime, with GPU-accelerated context processing and policy enforcement provided by NVIDIA's AI Enterprise security model instead of generic Linux containers.
+
+### What NVIDIA OpenShell Provides
+
+NVIDIA OpenShell is NVIDIA's hardened execution environment for AI workloads. It is not a general-purpose container runtime — it is purpose-built for AI applications that need:
+
+**GPU context isolation:** Each NemoClaw session can be assigned a dedicated GPU context slice. If one developer's agent workload becomes context-heavy (large codebases, multi-file operations), it does not compete with other sessions for processing capacity in the way it would on a CPU-only OpenClaw deployment.
+
+**Hardware-level security:** OpenShell enforces policies at the hardware-abstraction level, not just OS-level Linux namespaces. A compromised NemoClaw session cannot access GPU memory from adjacent sessions, even if it escalates privileges within the container.
+
+**NIM compatibility:** NVIDIA Inference Microservices (NIM) is NVIDIA's packaging format for deploying models. NemoClaw is designed to work alongside NIM-hosted models — relevant for organizations running hybrid AI stacks with both proprietary local models and Anthropic-provided intelligence.
+
+**Unified telemetry:** NVIDIA AI Enterprise includes GPU-level telemetry that OpenShell surfaces into NemoClaw's monitoring layer. You see not just session counts and token usage, but GPU memory utilization and compute time attributed per session.
+
+### The Architectural Difference
+
+```
+OpenClaw on standard Linux:
+┌─────────────────────────────┐
+│     Linux Container         │
+│   ┌─────────────────────┐   │
+│   │  OpenClaw Process   │   │
+│   └─────────────────────┘   │
+│   Isolation: Linux namespaces│
+└─────────────────────────────┘
+
+NemoClaw on NVIDIA OpenShell:
+┌─────────────────────────────────────┐
+│         NVIDIA OpenShell            │
+│   ┌─────────────────────────────┐   │
+│   │      NemoClaw Process       │   │
+│   │  (GPU context slice assigned)│  │
+│   └─────────────────────────────┘   │
+│   Isolation: NVIDIA hardware model  │
+│   + Linux namespaces                │
+│   Telemetry: GPU-level per session  │
+│   Policy: NVIDIA AI Enterprise RBAC │
+└─────────────────────────────────────┘
+          │
+   NVIDIA GPU Hardware
+```
+
+The operational difference is invisible to developers — they still run `claude` and it works identically. The difference is in isolation depth, observability, and integration with your NVIDIA AI stack.
+
+### What NemoClaw Does NOT Change
+
+- **Claude's intelligence is still Anthropic's.** NemoClaw routes API calls to Anthropic's model endpoints, just like OpenClaw. It does not run a local model.
+- **The developer experience is identical.** Developers use the same `claude` CLI. They do not know whether the server is OpenClaw or NemoClaw.
+- **All OpenClaw concepts carry over.** Configuration files, authentication modes, developer policies, MCP integrations, hooks — everything from the OpenClaw path applies unchanged.
+
+### Who Uses NemoClaw
+
+NemoClaw makes sense for organizations that:
+- Already run NVIDIA AI Enterprise and want Claude Code integrated into that environment
+- Have compliance requirements for GPU-level workload isolation (beyond container isolation)
+- Run ML workloads alongside developer tooling on shared NVIDIA infrastructure
+- Want unified telemetry across AI workloads — not separate monitoring for LLM tooling vs. model training
+- Are under NVIDIA AI Enterprise support contracts requiring all AI workloads on certified NVIDIA runtimes
+
+NemoClaw does not make sense for organizations that:
+- Do not have NVIDIA GPUs in their infrastructure
+- Want self-hosting primarily to reduce cost (OpenClaw on a basic VPS is cheaper)
+- Need to get started quickly — NemoClaw has a more complex prerequisites story
+
+### The Path Ahead
+
+This path assumes you have completed OpenClaw Deployment. NemoClaw is an extension, not a replacement — only the differences are covered here.
+
+The six lessons:
+1. What NemoClaw is (this lesson)
+2. GPU and OpenShell prerequisites
+3. Installing NemoClaw inside OpenShell
+4. Sandboxing and policy controls
+5. NemoClaw vs OpenClaw — choosing the right tool
+6. Production deployment patterns
+
+## Key Takeaways
+
+- NemoClaw is OpenClaw inside NVIDIA's OpenShell runtime — same developer experience, deeper isolation.
+- OpenShell adds GPU context slicing, hardware-level security, NVIDIA RBAC, and unified telemetry.
+- Claude's intelligence is still Anthropic's — NemoClaw does not run a local model.
+- NemoClaw is the right choice if you already run NVIDIA AI Enterprise.
+- Complete the OpenClaw Deployment path first — NemoClaw builds directly on it.
+
+## What's Next
+
+The next lesson covers the hardware, driver, and software prerequisites for a NemoClaw deployment.

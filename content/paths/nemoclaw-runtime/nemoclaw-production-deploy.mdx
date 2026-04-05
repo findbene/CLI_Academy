@@ -1,0 +1,273 @@
+---
+title: "Production Deployment Patterns"
+description: "Hardened production patterns for NemoClaw — high availability, multi-GPU configurations, monitoring integration, and NVIDIA management tooling."
+slug: "nemoclaw-production-deploy"
+lesson_number: 6
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "nemoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  nemoclaw: "latest"
+has_safety_warning: true
+tags: ["nemoclaw", "production", "high-availability", "multi-gpu"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand how to deploy NemoClaw in a high-availability configuration, configure multi-GPU setups for larger teams, integrate with NVIDIA's management stack, and apply production hardening on top of the standard install.
+
+## Why This Matters
+
+The install lesson gets NemoClaw running. This lesson gets it production-ready — meaning it can handle your team without downtime, recovers gracefully from failures, and integrates with the GPU management infrastructure your organization already runs.
+
+## Core Concepts
+
+### Single-Server Production Hardening
+
+Before thinking about multi-server, harden your single-server deployment.
+
+The OpenClaw security hardening principles apply in full — firewall rules, TLS configuration, secrets management, audit logging. NemoClaw adds two additional hardening steps:
+
+**1. Restrict GPU device access to only what NemoClaw needs:**
+
+By default, `NVIDIA_VISIBLE_DEVICES=all` exposes all GPUs to the NemoClaw container. If your server has multiple GPUs and some are reserved for other workloads (ML training, inference), restrict NemoClaw to specific GPU indices:
+
+```yaml
+# In docker-compose.yml
+environment:
+  - NVIDIA_VISIBLE_DEVICES=0,1    # Only GPUs 0 and 1 (not GPU 2 reserved for training)
+```
+
+**2. Enable NVIDIA's container security profile:**
+
+```yaml
+# In docker-compose.yml
+security_opt:
+  - seccomp=/opt/nemoclaw/config/nvidia-ai-enterprise.json
+```
+
+Download the NVIDIA AI Enterprise seccomp profile from NGC:
+
+```bash
+curl -H "Authorization: Bearer ${NGC_API_KEY}" \
+  https://api.ngc.nvidia.com/v2/resources/nvidia/seccomp-profiles/nvidia-ai-enterprise.json \
+  -o /opt/nemoclaw/config/nvidia-ai-enterprise.json
+```
+
+This seccomp profile is NVIDIA's curated syscall allowlist for AI workloads — tighter than the Docker default but permissive enough for NemoClaw's runtime requirements.
+
+### Multi-GPU Configuration
+
+As your team grows beyond 30–40 developers, a single GPU's context slice budget becomes the bottleneck. NemoClaw supports multi-GPU configurations where sessions are distributed across multiple GPUs.
+
+In `nemoclaw.yml`:
+
+```yaml
+nvidia:
+  openShell:
+    multi_gpu:
+      enabled: true
+      strategy: "least_loaded"      # "round_robin" or "least_loaded"
+      devices: [0, 1, 2, 3]         # All four GPUs available for sessions
+    gpu_context_per_session: 512MB
+    max_gpu_sessions: 80            # 20 per GPU × 4 GPUs
+```
+
+**Session affinity:** Once a developer's session is assigned to a GPU, it stays on that GPU for the session duration. This prevents context migration overhead. The `least_loaded` strategy assigns new sessions to the GPU with the most available context budget.
+
+**GPU failure handling:**
+
+```yaml
+nvidia:
+  openShell:
+    multi_gpu:
+      enabled: true
+      strategy: "least_loaded"
+      devices: [0, 1, 2, 3]
+      failover: true                # If a GPU fails, migrate sessions to remaining GPUs
+      failover_action: "migrate"    # "migrate" or "terminate"
+```
+
+`failover: true` with `migrate` allows NemoClaw to move active sessions to a healthy GPU if one fails — sessions experience a brief interruption rather than termination.
+
+### High Availability: Active-Passive
+
+For teams that need guaranteed uptime, deploy NemoClaw in an active-passive pair:
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│   Primary        │     │   Standby        │
+│   NemoClaw       │     │   NemoClaw       │
+│   (active)       │     │   (passive)      │
+└────────┬────────┘     └────────┬────────┘
+         │                        │
+         └──────────┬─────────────┘
+                    │
+           Shared PostgreSQL
+           (or streaming replica)
+                    │
+           ┌────────┴────────┐
+           │   Load Balancer  │
+           │   (or Keepalived)│
+           └────────┬────────┘
+                    │
+              Developer connections
+```
+
+**Shared database configuration:**
+
+Both NemoClaw instances point at the same PostgreSQL instance (or a primary-replica pair):
+
+```bash
+# Primary .env
+NEMOCLAW_DB_URL=postgresql://nemoclaw:PASSWORD@db.internal:5432/nemoclaw
+
+# Standby .env — same database URL
+NEMOCLAW_DB_URL=postgresql://nemoclaw:PASSWORD@db.internal:5432/nemoclaw
+```
+
+**Keepalived for VIP failover:**
+
+```bash
+# Install on both servers
+sudo apt install keepalived
+
+# /etc/keepalived/keepalived.conf on primary
+vrrp_script check_nemoclaw {
+    script "curl -sf https://localhost:443/health"
+    interval 5
+    fall 2
+    rise 1
+}
+
+vrrp_instance NemoClaw_VIP {
+    state MASTER
+    interface eth0
+    virtual_router_id 51
+    priority 100
+    virtual_ipaddress {
+        10.0.0.100/24    # Virtual IP that DNS points to
+    }
+    track_script {
+        check_nemoclaw
+    }
+}
+```
+
+When the primary NemoClaw health check fails, Keepalived moves the VIP to the standby server within 10 seconds. Developer connections resume automatically.
+
+### NVIDIA GPU Operator Integration
+
+For organizations running Kubernetes, the NVIDIA GPU Operator manages GPU drivers, device plugins, and runtime configuration across the cluster. NemoClaw is compatible with GPU Operator deployments.
+
+```yaml
+# NemoClaw Kubernetes deployment (excerpt)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nemoclaw
+spec:
+  replicas: 2
+  template:
+    spec:
+      runtimeClassName: nvidia    # Uses NVIDIA runtime installed by GPU Operator
+      containers:
+        - name: nemoclaw
+          image: nvcr.io/nvidia/nemoclaw:latest
+          resources:
+            limits:
+              nvidia.com/gpu: 1   # 1 GPU per NemoClaw pod
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "all"
+```
+
+### NVIDIA DCGM Monitoring Integration
+
+DCGM (Data Center GPU Manager) is NVIDIA's GPU health monitoring tool. If your organization runs DCGM, NemoClaw integrates its GPU telemetry:
+
+```yaml
+# In nemoclaw.yml
+nvidia:
+  dcgm:
+    enabled: true
+    dcgm_exporter_endpoint: "http://dcgm-exporter:9400/metrics"
+    expose_per_session_metrics: true
+```
+
+This adds NemoClaw-specific labels to DCGM metrics, allowing you to attribute GPU memory and compute utilization to individual developers or sessions in your existing DCGM dashboards.
+
+### Production Health Checks
+
+NemoClaw extends the standard `/health` endpoint with GPU-specific fields:
+
+```json
+{
+  "status": "ok",
+  "version": "1.x.x",
+  "database": "connected",
+  "redis": "connected",
+  "anthropic_api": "reachable",
+  "nvidia": {
+    "driver_version": "535.x",
+    "cuda_version": "12.x",
+    "gpus": [
+      {"id": 0, "name": "NVIDIA A100", "memory_free_mb": 61440, "sessions": 8},
+      {"id": 1, "name": "NVIDIA A100", "memory_free_mb": 68608, "sessions": 5}
+    ],
+    "openShell_policy_mode": "standard"
+  },
+  "active_sessions": 13,
+  "daily_token_usage": 1840000
+}
+```
+
+Use the GPU memory fields to alert before sessions start failing due to VRAM exhaustion:
+
+```bash
+# Alert if any GPU has less than 20% free memory
+curl -sk https://nemoclaw.yourdomain.com/health | \
+  jq '.nvidia.gpus[] | select(.memory_free_mb < 16384) | "GPU \(.id) low memory: \(.memory_free_mb)MB free"'
+```
+
+### Updates and Rollback
+
+Same procedure as OpenClaw (covered in the OpenClaw updates lesson) with one addition: after pulling a new NemoClaw image, verify GPU access before cutover:
+
+```bash
+# Test new image GPU access before stopping the current one
+docker run --rm --gpus all --env-file /opt/nemoclaw/.env \
+  nvcr.io/nvidia/nemoclaw:NEW_VERSION \
+  nemoclaw diagnostics gpu
+
+# Only proceed with the swap if diagnostics pass
+docker compose up -d --no-deps nemoclaw
+```
+
+## Production Deployment Checklist
+
+- [ ] GPU devices restricted to only what NemoClaw needs (`NVIDIA_VISIBLE_DEVICES`)
+- [ ] NVIDIA AI Enterprise seccomp profile applied
+- [ ] Multi-GPU configured if team size exceeds 30 developers
+- [ ] Session failover enabled for multi-GPU deployments
+- [ ] HA pair configured with Keepalived or load balancer (if uptime SLA required)
+- [ ] DCGM integration enabled if DCGM is in your monitoring stack
+- [ ] GPU memory alert configured (warn before VRAM exhaustion)
+- [ ] Pre-cutover GPU diagnostics in the update procedure
+- [ ] All OpenClaw production hardening checks from the OpenClaw security lesson
+
+## Key Takeaways
+
+- Restrict `NVIDIA_VISIBLE_DEVICES` to prevent NemoClaw from consuming GPUs reserved for other workloads.
+- Multi-GPU deployments use `least_loaded` session assignment and can failover sessions from a failed GPU.
+- Active-passive HA with a shared PostgreSQL database and Keepalived VIP handles primary server failure within 10 seconds.
+- DCGM integration provides GPU-attributed metrics in your existing monitoring infrastructure.
+- Always run GPU diagnostics on the new image before cutting over during updates.
+
+## You've Completed the Path
+
+You now understand NemoClaw from architecture to production deployment. The developer experience is the same as OpenClaw — the infrastructure is purpose-built for organizations running NVIDIA AI Enterprise.
+
+From here, explore the **ZeroClaw** path for latency-optimized deployments, or the **AutoClaw** path for headless CI/CD automation workflows.

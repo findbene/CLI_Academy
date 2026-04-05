@@ -1,0 +1,299 @@
+---
+title: "The 20 Most Common Claude Code Errors and How to Fix Them"
+description: "Exact error messages, root causes, and step-by-step fixes for the errors you will actually hit."
+slug: "common-errors-fixes"
+lesson_number: 7
+estimated_minutes: 15
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["troubleshooting", "errors", "reference"]
+---
+
+## What You'll See
+
+A reference guide: 20 common Claude Code errors, each with the exact message, the root cause, and how to fix it. Bookmark this page.
+
+## Why This Matters
+
+When things break, you want answers fast. This lesson is not a tutorial — it is a lookup table. Find your error, read the fix, move on.
+
+## The 20 Errors
+
+### 1. `Error: ANTHROPIC_API_KEY environment variable is not set`
+
+**Cause:** Claude Code cannot find your API key.
+
+**Fix:**
+```bash
+export ANTHROPIC_API_KEY="sk-ant-api03-..."
+# Or run:
+claude auth
+```
+
+Add the export to `~/.zshrc` or `~/.bashrc` so it persists across sessions.
+
+---
+
+### 2. `Error: context_length_exceeded` / "This model's maximum context length is..."
+
+**Cause:** Your session has accumulated too much context. The conversation history plus all the files Claude has read exceed the model's token limit.
+
+**Fix:**
+```
+/compact
+```
+Or start a fresh session. For large codebases, be selective about what you ask Claude to read.
+
+---
+
+### 3. `Error: EACCES: permission denied, open '/path/to/file'`
+
+**Cause:** Claude Code tried to write a file it does not have OS permission to write.
+
+**Fix:**
+```bash
+# Check the file's permissions
+ls -la /path/to/file
+
+# Fix ownership (replace $USER with your username)
+sudo chown $USER /path/to/file
+
+# Or fix permissions
+chmod 644 /path/to/file
+```
+
+Never run Claude Code with `sudo` to work around permission errors — fix the underlying permissions instead.
+
+---
+
+### 4. `Cannot find module '@/components/...'` after Claude edits
+
+**Cause:** Claude created or moved a file but the TypeScript path alias does not resolve correctly.
+
+**Fix:**
+```bash
+# Check tsconfig.json paths
+cat tsconfig.json | grep -A 10 '"paths"'
+
+# Restart the TypeScript server in your editor
+# In VS Code: Cmd+Shift+P → TypeScript: Restart TS Server
+```
+
+---
+
+### 5. `Error: 529 - Overloaded`
+
+**Cause:** Anthropic's API is under heavy load. This is a server-side rate limit.
+
+**Fix:** Wait 30-60 seconds and retry. If it persists, switch to Haiku temporarily (which has more capacity):
+```bash
+claude --model claude-haiku-4-5
+```
+
+---
+
+### 6. `Error: Session not found`
+
+**Cause:** You tried to resume a session that has expired or been cleared.
+
+**Fix:** Start a new session. Claude Code sessions are ephemeral — they do not persist across restarts unless you have a Stop hook that saves state. Ensure your CLAUDE.md captures enough context that a new session can pick up where you left off.
+
+---
+
+### 7. `Error: 429 - Too Many Requests`
+
+**Cause:** You have exceeded the API rate limit for your account tier.
+
+**Fix:** Check your tier limits at console.anthropic.com. For automated scripts, add delay between requests:
+```bash
+sleep 2 && claude --print "task"
+```
+
+---
+
+### 8. Claude ignores CLAUDE.md instructions
+
+**Cause:** Either Claude Code cannot find the file, or the instructions conflict with a global CLAUDE.md.
+
+**Fix:**
+```bash
+# Confirm the file exists and Claude Code can read it
+cat CLAUDE.md
+
+# Check if you're running Claude from the right directory
+pwd
+
+# Check for conflicting global instructions
+cat ~/.claude/CLAUDE.md
+```
+
+---
+
+### 9. `Error: Build failed` (after Claude edits)
+
+**Cause:** Claude introduced a syntax error or type error.
+
+**Fix:**
+```
+Show me the full error output and fix the build.
+```
+Paste the error directly into the session. Claude Code can read compiler output and fix the issue. Never debug build errors manually — let Claude read the output.
+
+---
+
+### 10. `Error: Git hook failed` / pre-commit hook blocking commit
+
+**Cause:** A pre-commit hook ran and returned exit code 1.
+
+**Fix:**
+```bash
+# See which hook ran and what it output
+git commit 2>&1
+
+# Run the hook manually to see the error
+./.git/hooks/pre-commit
+```
+
+Fix whatever the hook is catching (lint errors, secret patterns, test failures) before retrying.
+
+---
+
+### 11. Hook script timed out
+
+**Cause:** A Stop hook or other hook is running a long command (like a full test suite) that exceeds Claude Code's hook timeout.
+
+**Fix:** Move long operations out of hooks. Hooks should be fast — commit, lint, quick checks. For test suites, run them separately.
+
+---
+
+### 12. `Error: Path traversal detected`
+
+**Cause:** Claude Code's sandbox blocked an attempt to write a file outside the current working directory.
+
+**Fix:** Run Claude Code from the project root. All file operations are relative to the directory where you launched Claude. If you need to write files elsewhere, move them after the session.
+
+---
+
+### 13. Pre-push hook blocking with "untracked source files exist"
+
+**Cause:** The project's pre-push hook checks for untracked `.ts/.tsx/.py` files and found some.
+
+**Fix:**
+```bash
+git status
+# Review the untracked files
+git add path/to/file.ts
+git commit -m "feat: add missing file"
+git push
+```
+
+---
+
+### 14. `Error: Cannot write outside cwd`
+
+**Cause:** Claude tried to create a file outside the sandbox. This is a safety boundary.
+
+**Fix:** Ask Claude to write the file to a relative path within the project, then move it:
+```
+Write the config file to ./tmp/output.json instead, and I'll move it to the right place.
+```
+
+---
+
+### 15. TypeScript `any` errors in Claude-generated code
+
+**Cause:** Claude defaulted to `any` instead of a proper type, which `strict: true` rejects.
+
+**Fix:** Add to your CLAUDE.md:
+```markdown
+Never use `any` in TypeScript. Use `unknown` with a type guard, or derive the proper type from the codebase.
+```
+
+Then ask Claude to fix the specific file:
+```
+Fix the TypeScript strict errors in src/api/handler.ts without using `any`.
+```
+
+---
+
+### 16. `Error: Tool result too large`
+
+**Cause:** Claude tried to read a file or command output that is too large to fit in the context.
+
+**Fix:**
+```
+Instead of reading the whole file, just read lines 1-100 of large-file.json.
+```
+
+Or split the task:
+```
+Summarize the schema in database/schema.sql without reading the whole file — just look at the table definitions.
+```
+
+---
+
+### 17. API key billing issue: `Error: 402 - Payment Required`
+
+**Cause:** Your Anthropic account has no credits or the billing method failed.
+
+**Fix:** Log in to console.anthropic.com → Billing → Add credits or update payment method.
+
+---
+
+### 18. Claude Code is very slow to respond
+
+**Cause:** Usually one of: (a) using Opus which is inherently slower, (b) large context from many files read, (c) Anthropic API is under load.
+
+**Fix:**
+- Switch to Sonnet: `claude --model claude-sonnet-4-6`
+- Use `/compact` to reduce context
+- Check Anthropic status at status.anthropic.com
+
+---
+
+### 19. Claude confidently edits the wrong file (hallucinated path)
+
+**Cause:** Claude assumed a file path without reading the actual directory structure.
+
+**Fix:** Always ground Claude with a real file listing before asking it to edit:
+```
+Before making any changes, run `find src -name "*.ts" | head -30` and show me the structure.
+```
+
+Or add to CLAUDE.md:
+```markdown
+Before editing any file, confirm it exists by reading its current contents first.
+```
+
+---
+
+### 20. Session history is gone after `/clear`
+
+**Cause:** `/clear` wipes the current conversation. This is intentional — it starts a fresh context.
+
+**Fix for recovery:** Your files are unchanged. The code Claude wrote is still on disk. Run `git log --oneline` to see the auto-commit history. You can re-read the changed files:
+```
+Read src/app.ts and tell me what you changed in the last session.
+```
+
+**Prevention:** Before running `/clear`, ask Claude to summarize what was done:
+```
+Before we clear the context, summarize the key changes made and any unresolved tasks.
+```
+
+## Key Takeaways
+
+- Auth errors: set `ANTHROPIC_API_KEY` in your shell profile.
+- Context errors: use `/compact` early and often.
+- Permission errors: fix OS file permissions, never use `sudo` with Claude.
+- Build errors: paste the full error output to Claude and let it fix the issue.
+- Hook errors: run the hook manually to see what it's catching.
+
+## What's Next
+
+In the final lesson, you will learn how to connect your first MCP server to Claude Code — what MCP is, the one-command install, and how to verify the connection works.

@@ -1,0 +1,255 @@
+---
+title: "Safe Updates and Rollback"
+description: "Upgrade OpenClaw without downtime, verify the new version is healthy, and roll back in under 5 minutes if something breaks."
+slug: "openclaw-updates-rollback"
+lesson_number: 8
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: true
+tags: ["openclaw", "operations", "updates", "rollback"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to upgrade OpenClaw with a tested procedure that minimizes downtime, verify the new version before traffic hits it, and roll back to the previous version within 5 minutes if something goes wrong.
+
+## Why This Matters
+
+OpenClaw updates ship regularly — bug fixes, Anthropic API changes, new features, and security patches. Teams that skip updates accumulate technical debt and eventually hit a breaking change without a clear upgrade path. Teams that update carelessly break their developers' workflow. The answer is a repeatable, documented update procedure that you run the same way every time.
+
+## Core Concepts
+
+### Update Strategy by Deployment Type
+
+**Docker deployment:** The safest update path. Docker's image layer caching means you can pull the new image, test it, and cut over in under 2 minutes. Rollback is trivial — just re-tag and restart.
+
+**Bare-metal deployment:** Requires more care. You are replacing a binary and potentially running database migrations. A backup before every update is not optional.
+
+### Pre-Update Checklist
+
+Before any OpenClaw update:
+
+- [ ] Read the changelog for the new version (check for breaking changes)
+- [ ] Take a database backup (below)
+- [ ] Check current active session count — pick a low-traffic window
+- [ ] Notify developers if downtime is expected (updates usually take under 2 minutes)
+- [ ] Verify the health endpoint is green before starting: `curl -sk https://openclaw.yourdomain.com/health | jq .status`
+
+### Taking a Database Backup
+
+**Docker:**
+
+```bash
+cd /opt/openclaw
+
+# Backup PostgreSQL
+docker compose exec postgres pg_dump -U openclaw openclaw \
+  | gzip > /opt/openclaw/backups/openclaw-$(date +%Y%m%d-%H%M).sql.gz
+
+# Verify the backup
+zcat /opt/openclaw/backups/openclaw-$(date +%Y%m%d)*.sql.gz | head -20
+```
+
+**Bare-metal:**
+
+```bash
+sudo -u postgres pg_dump openclaw \
+  | gzip > /opt/openclaw/backups/openclaw-$(date +%Y%m%d-%H%M).sql.gz
+```
+
+Create the backup directory if it does not exist:
+
+```bash
+mkdir -p /opt/openclaw/backups
+```
+
+Keep at least the last 5 backups. The pre-update backup is your safety net.
+
+### Updating: Docker Deployment
+
+```bash
+cd /opt/openclaw
+
+# 1. Pull the new image without stopping the current one
+docker compose pull openclaw
+
+# 2. Check what version you are about to deploy
+docker image inspect ghcr.io/openclaw/openclaw-server:latest \
+  | jq '.[0].Config.Labels["org.opencontainers.image.version"]'
+
+# 3. Stop the current container and start the new one
+docker compose up -d --no-deps openclaw
+
+# 4. Watch the startup logs
+docker compose logs -f --tail=50 openclaw
+
+# 5. Verify health after startup
+sleep 10
+curl -sk https://localhost:443/health | jq .
+
+# 6. If all is well, the update is complete
+```
+
+The `--no-deps` flag restarts only the `openclaw` container without touching `postgres` and `redis`. Database migrations run automatically on startup.
+
+**Zero-downtime update (blue-green for teams with multiple replicas):**
+
+For teams running multiple OpenClaw instances behind a load balancer, use rolling updates:
+
+```bash
+# Update one instance at a time, health-check between each
+for instance in openclaw-1 openclaw-2 openclaw-3; do
+  echo "Updating ${instance}..."
+  docker stop "${instance}"
+  docker pull ghcr.io/openclaw/openclaw-server:latest
+  docker start "${instance}"
+  sleep 15
+  STATUS=$(curl -sk https://localhost:443/health | jq -r '.status')
+  if [ "$STATUS" != "ok" ]; then
+    echo "Health check failed after updating ${instance}. Rolling back."
+    # Rollback procedure below
+    exit 1
+  fi
+  echo "${instance} updated and healthy."
+done
+```
+
+### Updating: Bare-Metal Deployment
+
+```bash
+# 1. Determine the new version
+LATEST=$(curl -s https://api.github.com/repos/openclaw/openclaw/releases/latest \
+  | jq -r '.tag_name')
+
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then ARCH="amd64"; fi
+if [ "$ARCH" = "aarch64" ]; then ARCH="arm64"; fi
+
+# 2. Download the new binary (do not overwrite the current one yet)
+curl -L "https://github.com/openclaw/openclaw/releases/download/${LATEST}/openclaw-linux-${ARCH}" \
+  -o /tmp/openclaw-new
+
+# 3. Back up the current binary
+sudo cp /opt/openclaw/bin/openclaw /opt/openclaw/bin/openclaw.prev
+
+# 4. Stop the service, swap the binary, start
+sudo systemctl stop openclaw
+sudo mv /tmp/openclaw-new /opt/openclaw/bin/openclaw
+sudo chown openclaw:openclaw /opt/openclaw/bin/openclaw
+sudo chmod 750 /opt/openclaw/bin/openclaw
+sudo systemctl start openclaw
+
+# 5. Wait for startup and check health
+sleep 10
+sudo systemctl status openclaw
+curl -sk https://localhost:443/health | jq .
+```
+
+### Rollback: Docker Deployment
+
+If the new version has a problem, rolling back takes under 2 minutes:
+
+```bash
+cd /opt/openclaw
+
+# Option A: Roll back to the previous tag (if you know it)
+# First, find the previous image digest
+docker image ls ghcr.io/openclaw/openclaw-server --digests
+
+# Then pin to a specific version in docker-compose.yml and restart
+# Change: image: ghcr.io/openclaw/openclaw-server:latest
+# To:     image: ghcr.io/openclaw/openclaw-server:1.2.3
+docker compose up -d --no-deps openclaw
+
+# Option B: If Docker has the previous image layer cached
+docker tag ghcr.io/openclaw/openclaw-server:1.2.3 ghcr.io/openclaw/openclaw-server:latest
+docker compose up -d --no-deps openclaw
+```
+
+**Pin versions for production:** Replace `latest` with a specific version tag in your `docker-compose.yml`. Update the tag deliberately as part of the update procedure. This prevents unexpected updates when `docker compose pull` runs.
+
+```yaml
+# Before (floating tag — do not use in production):
+image: ghcr.io/openclaw/openclaw-server:latest
+
+# After (pinned — recommended for production):
+image: ghcr.io/openclaw/openclaw-server:1.3.0
+```
+
+### Rollback: Bare-Metal Deployment
+
+```bash
+# 1. Stop OpenClaw
+sudo systemctl stop openclaw
+
+# 2. Restore the previous binary
+sudo mv /opt/openclaw/bin/openclaw.prev /opt/openclaw/bin/openclaw
+
+# 3. Restore the database if the new version ran migrations
+# Only needed if the update ran database migrations
+zcat /opt/openclaw/backups/openclaw-YYYYMMDD-HHMM.sql.gz \
+  | sudo -u postgres psql openclaw
+
+# 4. Restart with the old binary
+sudo systemctl start openclaw
+
+# 5. Verify
+curl -sk https://localhost:443/health | jq .
+```
+
+### Handling Database Migrations
+
+OpenClaw runs database migrations automatically on startup. Migrations are forward-only by design — if you roll back the binary, the database schema may be ahead of what the old binary expects.
+
+**Safe approach:** Check the changelog before updating. If it mentions database schema changes, plan for a maintenance window and test the rollback procedure in staging before applying to production.
+
+**If you must roll back after a migration:**
+
+The database backup you took before the update is your rollback path. Restoring it brings the schema back to the pre-update state:
+
+```bash
+# Docker: restore database from backup
+docker compose exec -T postgres psql -U openclaw openclaw < \
+  <(zcat /opt/openclaw/backups/openclaw-YYYYMMDD-HHMM.sql.gz)
+```
+
+### Automating Update Checks
+
+Do not manually check for updates — automate the notification:
+
+```bash
+# Add to /opt/openclaw/scripts/check-updates.sh
+#!/bin/bash
+CURRENT=$(curl -sk https://localhost:443/health | jq -r '.version')
+LATEST=$(curl -s https://api.github.com/repos/openclaw/openclaw/releases/latest \
+  | jq -r '.tag_name' | tr -d 'v')
+
+if [ "$CURRENT" != "$LATEST" ]; then
+  # Use your send_alert function from the monitoring lesson
+  echo "OpenClaw update available: v${CURRENT} → v${LATEST}. Review changelog before updating."
+fi
+```
+
+```bash
+# Run weekly via cron (Monday at 9am)
+(crontab -l 2>/dev/null; echo "0 9 * * 1 /opt/openclaw/scripts/check-updates.sh") | crontab -
+```
+
+## Key Takeaways
+
+- Always take a database backup before updating — it is your only rollback path after a migration.
+- Use pinned version tags in `docker-compose.yml` instead of `latest` — it makes rollbacks reliable.
+- The Docker update procedure (pull, up, health-check) takes under 2 minutes and rarely causes perceptible downtime.
+- Check the changelog for schema migration notices before applying any update.
+- Automate update notifications so you are aware of new releases without manually checking.
+
+## You've Completed the Path
+
+You now have a production-grade OpenClaw deployment: installed on either Docker or bare-metal, secured against the most common attack vectors, monitored so you catch problems early, and with a tested update/rollback procedure. Your team can use Claude Code through infrastructure you control.
+
+From here, explore the **NemoClaw** path if your organization runs on NVIDIA infrastructure, or the **ZeroClaw** path if latency is a primary concern.

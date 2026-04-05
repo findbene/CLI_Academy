@@ -1,0 +1,214 @@
+---
+title: "Migrating from ZeroClaw to OpenClaw"
+description: "Move from ZeroClaw to full OpenClaw without losing your tokens, developer access, or configuration — a step-by-step migration with zero developer disruption."
+slug: "zeroclaw-to-openclaw-migration"
+lesson_number: 5
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "zeroclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  zeroclaw: "latest"
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["zeroclaw", "migration", "openclaw"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have a concrete plan for migrating from ZeroClaw to OpenClaw, understand what transfers automatically and what requires manual steps, and know how to execute the cutover with zero developer reconfiguration.
+
+## Why This Matters
+
+ZeroClaw is designed to be a starting point. The migration to OpenClaw is documented, supported, and intended. This is not a migration you should fear or delay — the entire ZeroClaw-to-OpenClaw path is structured to make it straightforward.
+
+## Core Concepts
+
+### What Transfers Automatically
+
+ZeroClaw tokens can be imported directly into OpenClaw. Developers keep their existing tokens — no reauthentication required after migration. This is the single most important migration feature: your team will not notice the cutover at the CLI level.
+
+What transfers:
+- Developer tokens (all tokens are importable)
+- The `config.yml` core settings (server, API, auth sections)
+- TLS certificates (same files work in OpenClaw)
+
+What does NOT transfer:
+- Session state — sessions are in-memory in ZeroClaw and do not exist after migration
+- Usage history — ZeroClaw's async logs are not importable into OpenClaw's database (but log files remain)
+
+### The Migration in Overview
+
+1. Deploy OpenClaw on the same server (or a new one)
+2. Convert your ZeroClaw config to OpenClaw format
+3. Import ZeroClaw tokens into OpenClaw
+4. Run both servers simultaneously for a brief overlap period
+5. Move DNS (or server port) from ZeroClaw to OpenClaw
+6. Verify, then shut down ZeroClaw
+
+Developer machines require no changes — they keep pointing at the same hostname.
+
+### Step 1: Deploy OpenClaw
+
+Follow the OpenClaw Deployment path. The key decision here is whether to run OpenClaw on the same server or a new one:
+
+**Same server (simplest):** Run OpenClaw on a different port during testing (e.g., 8444), then swap to 443 at cutover.
+
+**New server (cleaner):** Deploy OpenClaw fully, test it, then move the DNS record.
+
+For most migrations, same-server is fine unless the ZeroClaw server is at capacity.
+
+### Step 2: Convert Your Configuration
+
+ZeroClaw's `config.yml` maps to OpenClaw's `openclaw.yml` almost directly:
+
+| ZeroClaw key | OpenClaw equivalent |
+|-------------|---------------------|
+| `server.hostname` | `server.hostname` |
+| `server.port` | `server.listen_port` |
+| `server.tls_cert` | `server.tls_cert` (env var) |
+| `api.anthropic_api_key` | `ANTHROPIC_API_KEY` env var |
+| `api.default_model` | `api.anthropic.default_model` |
+| `api.allowed_models` | `api.anthropic.allowed_models` |
+| `auth.token_expiry_hours` | `auth.token_expiry_hours` |
+| `sessions.max_concurrent` | `server.max_concurrent_sessions` |
+| `sessions.idle_timeout_minutes` | `server.session_timeout_minutes` |
+| `logging.path` | `logging.path` |
+| `logging.level` | `logging.level` |
+| `logging.retention_days` | `logging.retention_days` |
+
+New sections you need to add in OpenClaw that do not exist in ZeroClaw:
+- `auth.mode: token` (explicitly set)
+- `admin.listen_port: 8080`
+- `admin.require_auth: true`
+- `admin.allowed_ip_ranges` (restrict the admin dashboard)
+
+### Step 3: Export ZeroClaw Tokens
+
+```bash
+# Export all active tokens from ZeroClaw
+zeroclaw token export --format json > /tmp/zeroclaw-tokens.json
+
+# Preview what will be exported
+cat /tmp/zeroclaw-tokens.json
+# Output:
+# [
+#   {"label": "alice", "token": "zc_tok_abc123", "expires_at": "2026-05-05T00:00:00Z"},
+#   {"label": "bob-ci", "token": "zc_tok_def456", "expires_at": "2026-06-01T00:00:00Z"}
+# ]
+```
+
+### Step 4: Import Tokens into OpenClaw
+
+```bash
+# Start OpenClaw first (on a different port during testing)
+# Then import tokens
+openclaw token import --file /tmp/zeroclaw-tokens.json
+
+# Verify all tokens were imported
+openclaw token list
+```
+
+ZeroClaw tokens use a different prefix (`zc_tok_`) than OpenClaw's native tokens (`oc_tok_`). OpenClaw accepts both formats during an import period — developers using `zc_tok_` prefixed tokens will continue to work.
+
+### Step 5: Test OpenClaw Before Cutover
+
+Run OpenClaw on port 8444 while ZeroClaw continues serving 443:
+
+```bash
+# In openclaw's docker-compose.yml, temporarily map:
+ports:
+  - "8444:8443"    # Test port, not 443
+
+docker compose up -d
+```
+
+Test with a developer token:
+
+```bash
+# On a developer machine (temporarily override server for testing)
+claude config set openclaw.server https://zeroclaw.yourdomain.com:8444
+claude --version
+# Should show the OpenClaw server info
+
+# Run a real task to confirm routing works
+claude "echo hello"
+```
+
+### Step 6: Cut Over
+
+**Option A: DNS cutover (new server)**
+
+```bash
+# Update your DNS A record to point to the OpenClaw server IP
+# Wait for TTL to propagate (set TTL to 60s before the migration window)
+
+# In OpenClaw's compose, change the port mapping back to 443
+ports:
+  - "443:8443"
+
+docker compose up -d
+```
+
+**Option B: Port swap (same server)**
+
+```bash
+# Stop ZeroClaw
+sudo systemctl stop zeroclaw
+
+# Update OpenClaw's docker-compose.yml to use port 443
+# Then restart OpenClaw
+cd /opt/openclaw
+docker compose up -d
+```
+
+Developers will experience a brief interruption (their active session terminates when ZeroClaw stops). New sessions start immediately on OpenClaw with the same tokens.
+
+### Step 7: Verify and Clean Up
+
+```bash
+# Confirm OpenClaw is serving developer traffic
+curl -sk https://zeroclaw.yourdomain.com/health | jq .
+# Status field should now show OpenClaw version
+
+# Monitor for authentication errors in the first 15 minutes
+docker compose logs -f openclaw | grep -i "auth_failure\|error"
+
+# After 24 hours with no issues, remove ZeroClaw
+sudo systemctl disable zeroclaw
+sudo rm /usr/local/bin/zeroclaw
+# Keep the config and logs for reference
+```
+
+### Post-Migration: New Features Available
+
+Once on OpenClaw, you can now configure everything that ZeroClaw did not support:
+
+```bash
+# Add SSO if your org uses it
+# Edit openclaw.yml auth section to use oidc mode
+
+# Add per-developer token limits
+# Edit policies section in openclaw.yml
+
+# Access the admin dashboard
+open http://YOUR_SERVER:8080
+
+# Set up audit logging
+# Edit logging section to add audit_log_path
+```
+
+Do not configure everything at once. Give the team 48 hours on basic OpenClaw, then add features incrementally.
+
+## Key Takeaways
+
+- Developer tokens transfer from ZeroClaw to OpenClaw — no developer reauthentication required.
+- Configuration maps almost 1:1 — the conversion is a straightforward rename, not a rewrite.
+- Run OpenClaw on a test port before cutting over — verify with real developer traffic first.
+- The cutover causes a brief session interruption (seconds) that developers reconnect from immediately.
+- After migration, enable OpenClaw features incrementally — SSO, per-developer limits, audit logging.
+
+## You've Completed the Path
+
+You now understand ZeroClaw from initial deployment through the migration path to OpenClaw. Start with ZeroClaw when speed of setup matters, run it as long as its limitations do not constrain you, and migrate to OpenClaw when your team grows past what ZeroClaw can manage.

@@ -1,0 +1,115 @@
+---
+title: "The CLAUDE.md File: Hierarchy, Inheritance, and Power"
+description: "Understand how CLAUDE.md scopes instructions to Claude Code, how global and project files interact, and what to put where."
+slug: "claude-md-deep-dive"
+lesson_number: 1
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["configuration", "claude-md", "foundation"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know exactly what CLAUDE.md does, how multiple CLAUDE.md files interact across your filesystem, what the `@file.md` import syntax does, and what instructions belong in each scope.
+
+## Why This Matters
+
+CLAUDE.md is the single most powerful configuration lever in Claude Code. It shapes how the agent thinks about your project — what rules to follow, what context to assume, what shortcuts to use. Getting it wrong means Claude ignores your conventions or brings global rules into projects where they don't belong. Getting it right means the agent behaves consistently and predictably from the first message.
+
+## Core Concepts
+
+### What CLAUDE.md Does
+
+CLAUDE.md is a plain text file that Claude Code reads at the start of every session. It is not code. It is not executed. It is a set of standing instructions — context and conventions that Claude carries into every prompt without you having to repeat them.
+
+When you run `claude` in a project, Claude reads the CLAUDE.md at the project root (if one exists) and treats its contents as background context. Think of it as the briefing you give a contractor before they start work.
+
+```
+# Example CLAUDE.md
+This is a Next.js 14 app with TypeScript strict mode.
+Always use the App Router — never pages/.
+Use Zod for all API input validation.
+Never use `any` in TypeScript.
+Tests use Vitest, not Jest.
+```
+
+Claude will follow these conventions across all tasks in the session.
+
+### The Three Scopes
+
+Claude Code reads CLAUDE.md from three places, each with different reach:
+
+**1. Global: `~/.claude/CLAUDE.md`**
+Applies to every project, every session. Use this for personal preferences that should never change — your preferred coding style, how you like commits formatted, tools you always use.
+
+**2. Project root: `./CLAUDE.md`**
+Applies to all work within the project. Use this for project-specific conventions — the tech stack, naming patterns, test framework, deployment notes. Commit this to version control so the whole team benefits.
+
+**3. Sub-directory: `./src/components/CLAUDE.md`**
+Applies only when Claude is working inside that directory. Use this for module-specific rules — component conventions, domain-specific patterns, local gotchas.
+
+### How Inheritance Works
+
+When Claude opens a file in `src/components/`, it reads:
+1. `~/.claude/CLAUDE.md` (global)
+2. `./CLAUDE.md` (project root)
+3. `./src/components/CLAUDE.md` (local, if it exists)
+
+Later files can add to or override earlier rules. If your global CLAUDE.md says "always use tabs" but your project CLAUDE.md says "use 2-space indentation," the project rule wins.
+
+<TipBlock>Keep the global CLAUDE.md short. Long global files slow down every session and dilute the most important instructions. Reserve it for your five most important personal conventions.</TipBlock>
+
+### The `@file.md` Import Syntax
+
+You can import another file into CLAUDE.md using `@path/to/file.md`. Claude reads the imported file as part of the instructions.
+
+```markdown
+# CLAUDE.md
+@docs/ARCHITECTURE.md
+@docs/STYLE_GUIDE.md
+
+Only modify files within src/. Never touch generated files in dist/.
+```
+
+This keeps your CLAUDE.md clean while pulling in detailed reference documents. Use it for architecture docs, API contracts, or lengthy style guides you don't want to repeat inline.
+
+<WarnBlock>Do not import files containing secrets, API keys, or passwords into CLAUDE.md. Claude Code reads these files into the session context where they could appear in outputs.</WarnBlock>
+
+### What to Put Where
+
+| Content | Where it belongs |
+|---------|-----------------|
+| Personal coding preferences | Global `~/.claude/CLAUDE.md` |
+| Commit message format | Global `~/.claude/CLAUDE.md` |
+| Tech stack and framework versions | Project root `CLAUDE.md` |
+| Test framework and naming conventions | Project root `CLAUDE.md` |
+| Deploy and environment notes | Project root `CLAUDE.md` |
+| Component library rules | Sub-directory `CLAUDE.md` |
+| Domain-specific patterns | Sub-directory `CLAUDE.md` |
+| Architecture docs | Import with `@docs/ARCHITECTURE.md` |
+
+### Common Mistakes
+
+**Too much in global:** If your global CLAUDE.md is 300 lines covering your current project's stack, Claude brings all of that into your other projects — including ones with different stacks. Split it: personal preferences go global, project specifics go local.
+
+**Contradictory rules:** If global says "use camelCase" and project says "use snake_case for Python," Claude may get confused. Be explicit: "For Python files, use snake_case. For TypeScript files, use camelCase."
+
+**Missing the project root:** If you run `claude` from a subdirectory (`src/components`), Claude looks for CLAUDE.md starting from that directory, not the project root. Run Claude from the project root so it finds the right file.
+
+## Key Takeaways
+
+- CLAUDE.md is a plain-text instruction file, not code. Claude reads it at session start.
+- Three scopes: global (~/.claude/), project root, and sub-directory. Later scopes override earlier ones.
+- Use `@file.md` to import long reference documents without cluttering CLAUDE.md.
+- Global CLAUDE.md should be short and personal. Project CLAUDE.md should be project-specific and committed to version control.
+- Never import files containing secrets into CLAUDE.md.
+
+## What's Next
+
+In the next lesson, you will learn how API keys and authentication work in Claude Code — where the key is read from, how to set it safely, and what to do when authentication breaks.

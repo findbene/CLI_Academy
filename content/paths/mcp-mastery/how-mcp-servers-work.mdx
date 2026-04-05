@@ -1,0 +1,198 @@
+---
+title: "How MCP Servers Work"
+description: "The request/response lifecycle, tool discovery, how Claude decides which tool to call, and what happens when servers fail."
+slug: "how-mcp-servers-work"
+lesson_number: 2
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: false
+tags: ["mcp", "protocol", "internals", "lifecycle"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand the full MCP request/response lifecycle, how Claude Code discovers and caches tool schemas, how the model decides when and which tool to call, and what failure modes to expect.
+
+## Why This Matters
+
+You do not need to understand TCP/IP to use the internet, but you do need to understand it to debug network problems. The same principle applies to MCP. Understanding the protocol lifecycle helps you diagnose configuration issues, interpret cryptic errors, and write better tool definitions when you build your own servers.
+
+## Core Concepts
+
+### The Startup Sequence
+
+When Claude Code starts with MCP servers configured, it runs this sequence for each server:
+
+```
+1. Claude Code starts the MCP server process (stdio) or connects to it (SSE)
+2. Claude Code sends: initialize request
+   → includes: protocol version, client capabilities
+3. Server responds: initialize result
+   → includes: server name, version, its capabilities
+4. Claude Code sends: initialized notification
+5. Claude Code sends: tools/list request
+6. Server responds: tools/list result
+   → includes: full schema for every tool the server exposes
+7. Claude Code caches the tool schemas
+8. Server is ready to receive tool calls
+```
+
+This handshake happens once per session. Claude Code caches the tool list until the session ends or the server restarts. This is why adding a new tool to a running MCP server requires restarting Claude Code to pick it up.
+
+### Tool Schema Structure
+
+Every tool in an MCP server has a schema that tells Claude Code what the tool does and what arguments it accepts. This schema is what Claude reads to decide if a tool is relevant to a task.
+
+A well-structured tool schema:
+
+```json
+{
+  "name": "query_database",
+  "description": "Execute a read-only SQL query against the production database and return the results as a JSON array. Use this to look up data when the user asks questions about database contents. Do NOT use for write operations — this tool only allows SELECT statements.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "sql": {
+        "type": "string",
+        "description": "A valid SELECT SQL statement. Must not contain INSERT, UPDATE, DELETE, DROP, or other write operations."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Maximum number of rows to return. Default 100, maximum 1000.",
+        "default": 100,
+        "maximum": 1000
+      }
+    },
+    "required": ["sql"]
+  }
+}
+```
+
+The `description` field is the most important part for Claude's decision-making. It is the instruction Claude reads to understand when and how to use the tool. A vague description produces unpredictable tool usage.
+
+### How Claude Decides to Call a Tool
+
+Claude does not have a deterministic rule for when to use tools. It is a reasoning process. When the model processes a developer's message, it considers:
+
+1. What tools are available (from the cached schemas)
+2. What the user seems to want
+3. Whether any available tool would help accomplish that goal
+4. Whether using the tool is necessary or if it can answer from its own knowledge
+
+The model's reasoning is influenced heavily by tool descriptions. A description that says "Use this to look up current user data" makes the tool more likely to be called when the user says "what are the current users?" A description that says "Execute a SQL query" is vaguer and may not trigger the tool in the same situation.
+
+### The Tool Call Lifecycle
+
+When Claude decides to use a tool:
+
+```
+1. Model generates: tool call request
+   → includes: tool name, arguments (validated against schema)
+
+2. Claude Code receives the tool call
+   → validates arguments against the tool schema
+   → if invalid: returns error to model without calling server
+
+3. Claude Code forwards call to MCP server
+
+4. MCP server executes the tool
+   → runs the actual operation (database query, API call, etc.)
+
+5. MCP server returns: tool result
+   → includes: content array (text, images, or other types)
+   → or: isError: true with error message
+
+6. Claude Code returns result to model
+
+7. Model incorporates result into its response
+```
+
+The entire sequence happens transparently — the developer sees only the conversation output, not the tool call mechanics (unless they have verbose mode enabled).
+
+### What Happens When Tools Fail
+
+MCP defines two failure modes:
+
+**Protocol-level failure:** The server process crashes, becomes unreachable, or returns a malformed response. Claude Code catches this and reports it to the model as a system error. The model typically informs the developer that the tool is unavailable and suggests alternatives.
+
+**Tool-level failure:** The server returns `isError: true` with an error message. The model receives the error message as the tool result and incorporates it into its reasoning. A well-implemented MCP server always returns structured errors rather than crashing.
+
+A good MCP server error response:
+
+```json
+{
+  "isError": true,
+  "content": [
+    {
+      "type": "text",
+      "text": "Query failed: relation 'users_tbl' does not exist. Did you mean 'users'? Available tables: users, orders, products."
+    }
+  ]
+}
+```
+
+A helpful error message gives the model enough information to self-correct — in this case, it might retry with the correct table name.
+
+### Tool Call Permissions
+
+By default, Claude Code prompts for confirmation before calling any MCP tool that could have side effects. The developer sees:
+
+```
+Claude wants to call create_github_issue:
+  title: "Fix null pointer exception in auth module"
+  body: "..."
+  labels: ["bug", "auth"]
+
+[Allow] [Allow Always] [Deny]
+```
+
+"Allow Always" adds the tool to the session's auto-approved list. You can pre-approve specific tools in `~/.claude/settings.json` to skip the prompt entirely:
+
+```json
+{
+  "mcpServers": {
+    "github": { ... }
+  },
+  "permissions": {
+    "allow": [
+      "mcp__github__get_file_contents",
+      "mcp__github__list_issues"
+    ]
+  }
+}
+```
+
+Read-only tools (get, list, read) are generally safe to auto-approve. Write tools (create, update, delete) warrant the confirmation prompt.
+
+### Inspecting Live Tool Calls
+
+Enable verbose mode to see every tool call and its result:
+
+```bash
+claude --mcp-debug
+```
+
+Or use the `/mcp` slash command inside a session:
+
+```
+/mcp
+```
+
+This lists all connected MCP servers, their status (connected/error), and the tools each exposes. It is the first command to run when an MCP server is not behaving as expected.
+
+## Key Takeaways
+
+- MCP servers perform a handshake on startup — Claude Code caches tool schemas until the session ends.
+- Tool descriptions drive Claude's decisions about when to use a tool — write them carefully.
+- Two failure modes: protocol-level (server crash) and tool-level (`isError: true`). Both are handled gracefully.
+- Read-only tools are safe to auto-approve; write tools should require per-call confirmation.
+- Use `--mcp-debug` or `/mcp` to inspect live server state and tool availability.
+
+## What's Next
+
+The next lesson covers installing community MCP servers — the fastest way to extend Claude Code with pre-built integrations.

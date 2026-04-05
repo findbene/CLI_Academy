@@ -1,0 +1,227 @@
+---
+title: "Desktop App Context Integration"
+description: "How AutoClaw accesses context from GUI applications, browser sessions, and desktop tools to bridge automation workflows with interactive tooling."
+slug: "autoclaw-desktop-context"
+lesson_number: 7
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "autoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  autoclaw: "latest"
+has_safety_warning: true
+tags: ["autoclaw", "desktop", "integration", "context"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand how AutoClaw's desktop context integration works, what sources it can read from (browser, desktop apps, clipboard), how to use it safely, and when to use it versus structured data inputs.
+
+## Why This Matters
+
+Most AutoClaw automation operates on files and shell output — clean, structured inputs that are easy to pass into task definitions. But some real-world workflows involve data that lives in GUI applications: a Jira board, a Figma design, a browser-based dashboard, a team's Notion workspace. Desktop context integration is how AutoClaw accesses that data without requiring you to manually export and re-import it.
+
+## Core Concepts
+
+### What Desktop Context Integration Does
+
+AutoClaw's desktop context module can read from three sources on the machine where AutoClaw runs:
+
+**Browser content:** AutoClaw can read the visible text content of browser tabs via a lightweight browser extension or OS accessibility APIs. This gives you the page text, not the DOM — clean readable content without HTML markup.
+
+**Clipboard:** Read the system clipboard at task start time. Useful for "act on what I just copied" workflows.
+
+**Application accessibility trees:** On macOS and Windows, AutoClaw can read text content from desktop applications that expose accessibility APIs (most Electron apps, native apps with accessibility enabled).
+
+<WarnBlock>Desktop context integration requires AutoClaw to run on a desktop machine (or a CI runner with a display), not a headless server. This is a local-machine feature, not a server feature. Use it for developer-workstation automation and local workflows — not for server-side CI pipelines where there is no desktop.</WarnBlock>
+
+### Enabling Desktop Context
+
+Desktop context is disabled by default. Enable it in the AutoClaw config:
+
+```yaml
+# ~/.autoclaw/config.yml
+desktop_context:
+  enabled: true
+  browser_integration: true    # Requires browser extension or OS accessibility
+  clipboard_access: true
+  app_accessibility: true
+
+  # Security: only allow specific apps to be read
+  allowed_apps:
+    - "Google Chrome"
+    - "Figma"
+    - "Notion"
+    - "Linear"
+  blocked_apps:
+    - "1Password"            # Never read from password managers
+    - "Keychain Access"
+    - "Bitwarden"
+```
+
+### Reading Browser Content
+
+**With the AutoClaw browser extension** (Chrome/Firefox):
+
+Install the extension from the Chrome Web Store or Firefox Add-ons. The extension registers a local WebSocket that AutoClaw reads from:
+
+```yaml
+# In task definition
+context:
+  desktop:
+    - source: browser
+      target: active_tab        # Current active browser tab
+      label: "page_content"
+      format: text              # "text" or "markdown"
+
+    - source: browser
+      target: tab_by_title
+      title_contains: "Jira"    # Read from a tab containing "Jira" in the title
+      label: "jira_board"
+```
+
+**Example task: summarize the current browser tab and send to Slack:**
+
+```yaml
+name: "Summarize Page"
+inputs: {}
+
+context:
+  desktop:
+    - source: browser
+      target: active_tab
+      label: "page"
+
+prompt: |
+  Summarize the content of the web page provided in context.
+  Produce a 3-5 sentence summary suitable for sharing in Slack.
+  Focus on the key facts and decisions, not the navigation or ads.
+
+output:
+  format: text
+  destinations:
+    - type: webhook
+      url: ${SLACK_WEBHOOK}
+      payload: '{"text": "{{ .output }}"}'
+```
+
+Run this from a keyboard shortcut or Alfred/Raycast workflow when you are on a page you want to share.
+
+### Reading Clipboard Content
+
+```yaml
+context:
+  desktop:
+    - source: clipboard
+      label: "clipboard_content"
+      max_chars: 10000          # Truncate if clipboard is very large
+```
+
+**Example task: explain what I just copied:**
+
+```yaml
+name: "Explain Clipboard"
+context:
+  desktop:
+    - source: clipboard
+      label: "code"
+
+prompt: |
+  Explain the following content in plain English.
+  If it is code, explain what it does and note any issues.
+  If it is text, summarize it.
+
+  Content:
+  {{ .context.code }}
+
+output:
+  format: text
+  destinations:
+    - type: clipboard     # Write explanation back to clipboard
+    - type: notification  # Show macOS/Windows notification
+      title: "AutoClaw"
+      message: "Explanation ready — paste to see it"
+```
+
+### Reading from Desktop Applications
+
+AutoClaw reads application content via OS accessibility APIs. This works for most Electron apps (Notion, Linear, Slack, VS Code) and native apps with accessibility enabled:
+
+```yaml
+context:
+  desktop:
+    - source: app
+      app_name: "Notion"
+      target: focused_window    # Read focused Notion window
+      label: "notion_page"
+
+    - source: app
+      app_name: "Linear"
+      target: focused_window
+      label: "linear_issue"
+```
+
+**What "reading from an app" means:** AutoClaw reads the accessibility tree text content of the focused window — the same text that screen readers access. It gets the visible text, not the underlying data model.
+
+**Limitations:**
+- Password manager fields and secure text inputs are inaccessible by design (even to accessibility APIs)
+- Canvas-rendered content (Figma designs, some dashboards) may return empty or minimal text
+- Not all applications expose rich accessibility trees
+
+### Privacy and Security Considerations
+
+Desktop context integration has significant privacy implications. Follow these rules:
+
+**Rule 1: Never run desktop context tasks as background services.**
+Desktop context tasks should be explicitly triggered (keyboard shortcut, menu item, manual run) — not scheduled cron jobs. A cron job reading your browser tabs while you work is surveillance, not automation.
+
+**Rule 2: The `allowed_apps` list is required in production.**
+Without it, any app on your desktop can be read. Configure an explicit allowlist.
+
+**Rule 3: Review what is sent to Anthropic.**
+Desktop context content goes to Anthropic's API as part of the prompt. Do not use desktop context integration for content you cannot share externally (passwords, private communications, confidential documents).
+
+**Rule 4: Use `--dry-run` to see what context will be captured before running.**
+
+```bash
+# Preview the context without executing
+autoclaw run --task .autoclaw/summarize-page.yml --dry-run --show-context
+```
+
+### Practical Desktop Automation Patterns
+
+**Pattern: one-shot research summary**
+
+Trigger: keyboard shortcut while on a research page.
+AutoClaw reads the current browser tab, summarizes it, and adds it to your notes file.
+
+**Pattern: Jira ticket → PR description**
+
+Trigger: run from terminal after creating a branch.
+AutoClaw reads the focused Jira ticket from the browser, generates a PR description draft, and writes it to the clipboard ready to paste.
+
+**Pattern: meeting note cleanup**
+
+Trigger: run after a meeting ends.
+AutoClaw reads the focused Notion page (raw meeting notes), restructures them into action items and decisions, and replaces the clipboard content.
+
+These patterns work well because they are:
+- Explicitly triggered by the developer
+- Reading from content the developer is actively working with
+- Completing a task in seconds
+- Producing output the developer reviews before using
+
+## Key Takeaways
+
+- Desktop context integration reads from browsers, clipboard, and desktop apps via OS accessibility APIs.
+- It requires a desktop environment — not for headless servers or CI pipelines.
+- The `allowed_apps` allowlist is required before using in any workflow involving sensitive applications.
+- Never schedule desktop context tasks as background cron jobs — they should always be explicitly triggered.
+- Use `--dry-run --show-context` to verify what content AutoClaw will capture before sending to Anthropic.
+
+## You've Completed the Path
+
+You now have a complete picture of AutoClaw from installation through headless execution, task definition, scheduling, fault tolerance, and desktop integration. AutoClaw is the part of the OpenClaw ecosystem that brings Claude's reasoning into your automation stack — not as a developer tool, but as a programmable automation agent.
+
+From here, explore the **AI Workflow Automation** path for patterns that combine AutoClaw with external APIs and multi-agent orchestration, or jump to the **Professional Tracks** to see how these tools apply to specific roles.

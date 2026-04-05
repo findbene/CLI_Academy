@@ -1,0 +1,280 @@
+---
+title: "Advanced Tool Definitions"
+description: "Multi-step tools, streaming responses, image outputs, resource exposure, and tool composition patterns for production MCP servers."
+slug: "advanced-tool-definitions"
+lesson_number: 9
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: false
+tags: ["mcp", "advanced", "tools", "resources", "streaming"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to build MCP tools that return images, expose data as resources, compose tools into higher-level operations, and write tool descriptions that guide Claude's tool selection accurately in complex scenarios.
+
+## Why This Matters
+
+The building-your-first-server lesson covered the basics: text-returning tools with simple inputs. Real-world MCP servers need more: tools that return structured data and images, servers that expose read-only knowledge as resources, and tool descriptions precise enough to work reliably when a server has 20+ tools. This lesson closes those gaps.
+
+## Core Concepts
+
+### Returning Images from Tools
+
+MCP supports multiple content types in tool responses. Return an image alongside text:
+
+```typescript
+import * as fs from "fs";
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name === "get_dashboard_screenshot") {
+    const { dashboard_id } = request.params.arguments as { dashboard_id: string };
+
+    // Generate or fetch the screenshot
+    const screenshotBuffer = await captureGrafanaDashboard(dashboard_id);
+    const base64Image = screenshotBuffer.toString("base64");
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Dashboard ${dashboard_id} screenshot captured at ${new Date().toISOString()}`,
+        },
+        {
+          type: "image",
+          data: base64Image,
+          mimeType: "image/png",
+        },
+      ],
+    };
+  }
+});
+```
+
+Claude Code renders inline images in the terminal if the terminal supports it (iTerm2, Warp, etc.) and describes the image content otherwise. Useful for: chart screenshots, diagram exports, visual diffs, UI screenshots.
+
+### Returning Structured Data
+
+For tool results that will be used by Claude as input to further reasoning, return clean JSON rather than prose:
+
+```typescript
+// Less useful — Claude has to parse this prose
+return {
+  content: [{
+    type: "text",
+    text: "Found 3 open issues: Issue 42 (bug, high priority), Issue 51 (feature), Issue 67 (bug, medium priority)",
+  }],
+};
+
+// More useful — Claude can reason over structured data
+return {
+  content: [{
+    type: "text",
+    text: JSON.stringify({
+      total: 3,
+      issues: [
+        { id: 42, type: "bug", priority: "high", title: "Null pointer in auth" },
+        { id: 51, type: "feature", priority: "medium", title: "Dark mode" },
+        { id: 67, type: "bug", priority: "medium", title: "Slow query" },
+      ],
+    }, null, 2),
+  }],
+};
+```
+
+The model processes both, but structured JSON enables more reliable downstream tool calls — "create a PR for issue 42" is more accurate when the model has the ID directly than when it has to extract it from prose.
+
+### Exposing Resources
+
+Resources are read-only data the model can access without calling a tool — think of them as documents the model can read on demand.
+
+```typescript
+import {
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+
+const server = new Server(
+  { name: "docs-server", version: "1.0.0" },
+  { capabilities: { tools: {}, resources: {} } }  // declare resources capability
+);
+
+// List available resources
+server.setRequestHandler(ListResourcesRequestSchema, async () => {
+  const docs = await listInternalDocs();
+
+  return {
+    resources: docs.map((doc) => ({
+      uri: `docs://${doc.id}`,
+      name: doc.title,
+      description: doc.summary,
+      mimeType: "text/markdown",
+    })),
+  };
+});
+
+// Read a specific resource
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const docId = request.params.uri.replace("docs://", "");
+  const content = await fetchDocContent(docId);
+
+  return {
+    contents: [
+      {
+        uri: request.params.uri,
+        mimeType: "text/markdown",
+        text: content,
+      },
+    ],
+  };
+});
+```
+
+Resources appear in Claude Code's context window as documents the model can cite and reference. Unlike tools (which are called when needed), resources are available passively — Claude can reference them without a tool call.
+
+Good resource use cases: internal documentation, runbooks, architecture diagrams, reference data that changes infrequently.
+
+### Writing Descriptions for Large Tool Sets
+
+When a server has many tools, Claude's tool selection accuracy depends heavily on precise descriptions. Three patterns help:
+
+**Pattern 1: Include explicit "use this when" language:**
+
+```typescript
+{
+  name: "search_codebase",
+  description:
+    "Search the entire codebase by keyword or pattern. " +
+    "Use this when the user wants to find where something is defined, " +
+    "used, or referenced across the project. " +
+    "Do NOT use for reading a specific known file — use read_file instead.",
+}
+```
+
+**Pattern 2: Specify what the tool does NOT do:**
+
+```typescript
+{
+  name: "query_database",
+  description:
+    "Execute a read-only SQL SELECT query. " +
+    "Returns results as a JSON array. " +
+    "This tool CANNOT modify data. For writes, use execute_database_mutation.",
+}
+```
+
+**Pattern 3: Include example inputs in the description:**
+
+```typescript
+{
+  name: "get_metric",
+  description:
+    "Fetch a time-series metric from the monitoring system. " +
+    "Metrics are identified by their dotted path, e.g.: " +
+    "'api.response_time.p95', 'db.query_count', 'users.active'. " +
+    "Returns the last 24 hours of data by default.",
+}
+```
+
+### Tool Composition: Higher-Level Tools
+
+Some workflows require multiple low-level tool calls. Rather than relying on Claude to chain them correctly, expose a higher-level tool that does the composition internally:
+
+```typescript
+// Low-level tools (also exposed individually)
+//   get_pr_diff(pr_number) → diff text
+//   list_pr_reviewers(pr_number) → [reviewer names]
+//   get_pr_comments(pr_number) → [comment objects]
+
+// High-level composite tool
+{
+  name: "get_pr_context",
+  description:
+    "Get all context needed for reviewing a PR: the diff, reviewer list, and existing comments. " +
+    "Use this instead of calling get_pr_diff, list_pr_reviewers, and get_pr_comments separately " +
+    "when you need a complete picture of a PR.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      pr_number: { type: "integer", description: "GitHub PR number" },
+    },
+    required: ["pr_number"],
+  },
+}
+```
+
+Handler:
+
+```typescript
+if (name === "get_pr_context") {
+  const { pr_number } = args;
+
+  // Call the three underlying functions in parallel
+  const [diff, reviewers, comments] = await Promise.all([
+    getPrDiff(pr_number),
+    listPrReviewers(pr_number),
+    getPrComments(pr_number),
+  ]);
+
+  return {
+    content: [{
+      type: "text",
+      text: JSON.stringify({ diff, reviewers, comments }, null, 2),
+    }],
+  };
+}
+```
+
+Composite tools are faster (parallel fetches) and more reliable (Claude makes one tool call instead of three sequential ones that could go wrong at any step).
+
+### Handling Large Outputs
+
+Some tools produce more data than fits usefully in a conversation context. Handle this with pagination:
+
+```typescript
+{
+  name: "list_logs",
+  description: "List recent application logs. Returns up to 100 entries per page.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      page: { type: "integer", default: 1 },
+      filter: { type: "string", description: "Optional keyword filter" },
+    },
+  },
+}
+
+// Handler returns:
+return {
+  content: [{
+    type: "text",
+    text: JSON.stringify({
+      entries: logs,          // Max 100
+      page: page,
+      total_pages: totalPages,
+      has_more: page < totalPages,
+    }),
+  }],
+};
+```
+
+The model will use `has_more` and `page` to fetch subsequent pages if needed, rather than receiving a 10MB log dump in a single tool result.
+
+## Key Takeaways
+
+- MCP supports image content type — return screenshots, charts, and diagrams alongside text.
+- Return structured JSON for data that Claude will reason over or use in subsequent tool calls.
+- Resources expose read-only knowledge the model can reference without tool calls — good for docs and reference data.
+- Precise tool descriptions ("use this when", "do NOT use for", examples) are the primary lever for accurate tool selection in large tool sets.
+- Composite tools wrap multiple low-level calls — faster, more reliable, simpler for the model.
+
+## You've Completed the Path
+
+You now understand MCP from protocol internals to production deployment. The path from installing community servers to building, testing, and running custom servers in a team environment is a progression that compounds: each server you build makes Claude Code more capable in your specific environment.
+
+The next step is to identify the one internal system your team uses most that has no MCP server yet, and build it.

@@ -186,6 +186,37 @@ Stripe and Anthropic SDK clients are initialized inside request handlers, not at
 Reason:
 Module-level `new Stripe(key)` and `new Anthropic({apiKey})` throw at build time when environment variables are not set. Lazy initialization allows the build to succeed without credentials configured.
 
+## D-016: Full Curriculum Architecture — 6-Section Ladder
+
+Status: accepted
+
+Decision:
+Expand the curriculum from 3 free paths to a full 6-section, 17-path ladder:
+
+- **Foundations** (free): Beginners, Windows, macOS, Setup/Config/Troubleshoot, Claude CoWork
+- **Agent Infrastructure** (pro): MCP Server Mastery
+- **Self-Hosting** (pro): Claude Code on a VPS
+- **OpenClaw Ecosystem** (pro): OpenClaw Deployment, NemoClaw Runtime, ZeroClaw Quickstart, AutoClaw Automation
+- **Workflows** (pro): AI Workflow Automation
+- **Professional Tracks** (pro/free): Marketers, Founders, Sales, Analysts, Students
+
+Paths are marked `status: "available"` or `"coming-soon"` in PathMeta. The paths catalog renders all sections with grouped path cards and clear coming-soon states. The dashboard dims coming-soon cards and disables their links.
+
+Reason:
+The original AgentOps-Academy foundation included OpenClaw, NemoClaw, ZeroClaw, AutoClaw, and Claude CoWork as first-class product areas. The product also needed role-based professional tracks from the start. This architecture defines the full ladder so every page and navigation element reflects the intended scope.
+
+Source: AgentOps-Academy codebase audit (2026-04-05) + owner direction.
+
+## D-017: PathMeta `status` Field
+
+Status: accepted
+
+Decision:
+`PathMeta` carries an optional `status?: "available" | "coming-soon"` field. Omitting it is treated as "available" (backwards compatible). Content writers set this to "available" when all lesson MDX files are written and reviewed.
+
+Reason:
+Prevents sending learners to empty lesson pages while still surfacing the full curriculum scope on the paths page and dashboard.
+
 ## D-015: Route Group Architecture
 
 Status: accepted

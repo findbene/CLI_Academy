@@ -1,0 +1,102 @@
+---
+title: "What Is ZeroClaw?"
+description: "Understand ZeroClaw's fast-path design, what it trades away from OpenClaw for speed, and which deployment scenarios it is built for."
+slug: "what-is-zeroclaw"
+lesson_number: 1
+estimated_minutes: 10
+tier_required: "pro"
+version_label: "zeroclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  zeroclaw: "latest"
+has_safety_warning: false
+tags: ["zeroclaw", "introduction", "latency"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand what ZeroClaw is, what the fast-path architecture means in practice, and the documented tradeoffs versus OpenClaw that you need to know before deploying it.
+
+## Why This Matters
+
+OpenClaw is the right general-purpose self-hosted runtime. But OpenClaw's architecture includes session state management, token usage tracking, policy enforcement middleware, and admin tooling — all of which add latency to every request. For some workflows, that latency matters. ZeroClaw is the answer to that problem.
+
+## Core Concepts
+
+### The Core Idea
+
+ZeroClaw is a stripped-down variant of OpenClaw that removes all non-essential middleware from the request path. Every OpenClaw component that is not strictly necessary for routing a developer's `claude` command to the Anthropic API has been removed or made asynchronous.
+
+The result is measurably lower routing latency — typically sub-100ms from developer CLI to Anthropic API versus 150–300ms for a loaded OpenClaw server.
+
+### What "Fast-Path" Means Architecturally
+
+In OpenClaw, a developer's request travels through:
+
+```
+Developer CLI → TLS termination → Auth check → Policy enforcement
+→ Token usage accounting → Rate limiter → Anthropic API
+→ Response logging → Response → Developer CLI
+```
+
+In ZeroClaw, synchronous middleware is stripped to the minimum:
+
+```
+Developer CLI → TLS termination → Token validation → Anthropic API
+→ Developer CLI
+
+(Usage accounting happens asynchronously in the background — not in the request path)
+```
+
+The difference is not dramatic for a single request. It becomes significant under high concurrency, when many developers are making requests simultaneously and each millisecond of middleware overhead multiplies.
+
+### What ZeroClaw Trades Away
+
+ZeroClaw achieves its speed by removing features. These are the documented gaps versus OpenClaw:
+
+| Feature | OpenClaw | ZeroClaw |
+|---------|---------|---------|
+| Real-time token usage tracking | Yes | Async (slight delay) |
+| Per-request policy enforcement | Yes | Session-level only |
+| Admin dashboard | Full | Read-only, no session management |
+| OIDC / SSO auth | Yes | Token auth only |
+| MCP server proxying | Yes | Direct (unproxied) |
+| Audit log | Synchronous | Async batch |
+| Developer isolation policies | Per-request | Per-session |
+| Multi-tenant rate limiting | Per-developer | Global only |
+
+None of these gaps are fatal for most use cases. For teams where they matter, OpenClaw is the right choice.
+
+### When ZeroClaw Is the Right Tool
+
+ZeroClaw solves a specific problem: high-concurrency, latency-sensitive developer workflows.
+
+**Good fits:**
+- Large engineering teams (50+ developers) where peak concurrency causes OpenClaw to add perceptible latency
+- Development environments where the team wants faster response starts and is comfortable with async usage accounting
+- Teams already self-hosting who want to reduce the infrastructure complexity of managing OpenClaw's full stack
+- Prototype or proof-of-concept deployments where getting Claude Code running in minutes matters more than full management features
+
+**Poor fits:**
+- Compliance environments that require synchronous per-request audit logging
+- Organizations that need SSO/OIDC — ZeroClaw supports token auth only
+- Teams that need the admin dashboard's session management and policy controls
+- Any workflow where per-developer rate limiting is a requirement
+
+### ZeroClaw's Relationship to OpenClaw
+
+ZeroClaw is not a replacement for OpenClaw. It is an alternative entry point — fast to deploy, lower maintenance, but functionally limited compared to the full product.
+
+The migration path from ZeroClaw to OpenClaw is well-defined and covered in this path's final lesson. Many teams start with ZeroClaw to validate self-hosting quickly, then migrate to OpenClaw when they need the features.
+
+## Key Takeaways
+
+- ZeroClaw removes synchronous middleware from the request path, achieving sub-100ms routing latency.
+- This trades away real-time usage accounting, SSO, per-request policy enforcement, and session management.
+- Right for high-concurrency teams and fast prototyping. Wrong for compliance environments.
+- Migration to OpenClaw is a documented, supported path — you are not locked in.
+
+## What's Next
+
+The next lesson installs ZeroClaw in under 10 minutes.

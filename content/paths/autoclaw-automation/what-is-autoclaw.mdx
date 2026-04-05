@@ -1,0 +1,110 @@
+---
+title: "What Is AutoClaw?"
+description: "Understand AutoClaw's headless automation model, how it differs from interactive Claude Code, and the workflows it is purpose-built for."
+slug: "what-is-autoclaw"
+lesson_number: 1
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "autoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  autoclaw: "latest"
+has_safety_warning: false
+tags: ["autoclaw", "introduction", "headless", "automation"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand what AutoClaw is, how it differs architecturally from interactive Claude Code and OpenClaw, which workflows it is designed for, and what you need before starting this path.
+
+## Why This Matters
+
+Claude Code is designed for interactive use — a developer at a keyboard, reading output, steering the agent toward a goal. Most of the OpenClaw ecosystem is built around that model. AutoClaw is the exception. It assumes there is no human at the keyboard: no one to approve a file write, no one to read an intermediate output, no one to catch a wrong turn. That constraint changes everything about how you design, deploy, and operate AI-driven workflows.
+
+## Core Concepts
+
+### AutoClaw in One Sentence
+
+AutoClaw is a headless automation runtime built on Claude Code — designed to run AI-driven tasks in CI/CD pipelines, cron jobs, and event-driven systems without any interactive user session.
+
+### The Architectural Difference
+
+Interactive Claude Code (including OpenClaw and NemoClaw) assumes a human session:
+
+```
+Human → types prompt → Claude Code → asks clarifying question → Human responds
+                                   → requests file permission → Human approves
+                                   → produces output → Human reviews
+```
+
+AutoClaw assumes no human in the loop:
+
+```
+Trigger (cron, webhook, CI event)
+  → AutoClaw task runner
+    → loads task definition
+    → runs Claude agent with pre-approved permissions
+    → executes to completion or fails with structured output
+    → reports result to webhook / log / downstream system
+```
+
+This changes three fundamental things:
+
+**1. Permissions are pre-declared, not interactive.** AutoClaw tasks specify upfront which file paths can be read/written, which shell commands are permitted, and which external APIs can be called. The agent cannot request permissions that were not declared in the task definition. If it tries, the task fails with a `permission_denied` error — not a prompt asking the human.
+
+**2. Outputs are structured, not prose.** Interactive Claude Code can produce any text. AutoClaw tasks define expected output schemas. The agent must produce JSON (or another structured format) matching the schema, or the task fails.
+
+**3. Failures are handled programmatically.** Interactive sessions fail with an error message the human reads. AutoClaw failures trigger retry logic, fallback handlers, or webhook notifications — all configured in the task definition.
+
+### What AutoClaw Is For
+
+AutoClaw is the right tool when:
+
+- **No human is available to respond.** CI pipelines, overnight batch jobs, webhook-triggered tasks.
+- **The same task runs repeatedly.** Weekly code quality reports, daily documentation freshness checks, PR review summaries on every merge.
+- **The output needs to integrate with another system.** AutoClaw can post results to Slack, open GitHub issues, update Notion databases, or trigger downstream pipelines.
+- **You want Claude's intelligence in your automation stack**, not just in developer tooling.
+
+Common AutoClaw use cases:
+
+| Use case | Trigger | Output |
+|----------|---------|--------|
+| PR code review summary | GitHub webhook on PR open | Comment on PR |
+| Daily test failure analysis | Cron at 8am | Slack message with root cause |
+| Documentation freshness check | Weekly cron | GitHub issue if stale |
+| Security scan triage | CI pipeline step | Pass/fail with structured findings |
+| Release notes draft | Tag push | Draft PR description |
+| Dependency audit | Monthly cron | Report + upgrade PR |
+
+### What AutoClaw Is NOT For
+
+- **Interactive development.** If a human will be reading responses and iterating, use Claude Code directly.
+- **Real-time user-facing features.** AutoClaw is not an API you call from a web app. It is a batch/event runner.
+- **Workloads requiring human judgment mid-task.** If the task involves a decision that requires human input, AutoClaw is the wrong tool. Structure the workflow so the human decision happens before AutoClaw runs.
+
+### The OpenClaw Relationship
+
+AutoClaw can run standalone (directly against the Anthropic API) or connected to an OpenClaw server. The OpenClaw connection gives you:
+- Centralized API key management (no key on each CI runner)
+- Usage tracking for automation jobs (separate from interactive developer usage)
+- Policy controls scoped specifically to automation (often more permissive than interactive sessions — no shell blocklist needed when the allowed commands are pre-declared)
+
+If you already run OpenClaw, connecting AutoClaw to it is the recommended path. If you do not, AutoClaw standalone works fine.
+
+### This Path's Prerequisites
+
+- Comfortable with YAML and basic shell scripting
+- Familiar with at least one CI/CD system (GitHub Actions, GitLab CI, Jenkins)
+- Familiarity with the OpenClaw Deployment path is helpful but not required
+
+## Key Takeaways
+
+- AutoClaw is a headless automation runtime — no interactive session, no human in the loop.
+- Permissions are pre-declared, outputs are structured, failures are handled programmatically.
+- Right for CI pipelines, cron jobs, webhook triggers, and recurring automation tasks.
+- Can run standalone or connected to an OpenClaw server for centralized key/policy management.
+
+## What's Next
+
+The next lesson installs AutoClaw and connects it to either the Anthropic API directly or an existing OpenClaw deployment.

@@ -37,9 +37,20 @@ This file tracks the build plan for CLI Academy.
 - [x] Implement Stripe checkout and webhooks (`/api/stripe/checkout`, `/api/stripe/webhook`)
 - [x] Implement telemetry events (`/api/events`)
 - [x] Ship first free flagship path (beginners: 8 lessons, windows: 6 lessons, macos: 5 lessons)
+- [x] Ship Claude Code Setup/Config/Troubleshoot path (8 lessons — config, errors, hooks, MCP)
+- [x] Ship Claude CoWork: Agentic Knowledge Work path (7 lessons — research preview product)
+- [x] Define full 6-section curriculum architecture (17 paths, PathMeta status field, section grouping)
+- [x] Rewrite paths catalog page with section-grouped display and coming-soon handling
+- [x] Scaffold OpenClaw Ecosystem paths (openclaw-deployment, nemoclaw-runtime, zeroclaw-quickstart, autoclaw-automation)
+- [x] Scaffold Professional Track paths (marketers, founders, sales, analysts, students)
 - [x] Configure and deploy (Supabase credentials, Stripe products, Vercel, Railway)
-- [ ] Ship first paid flagship path
-- [ ] Ship first secure deployment path
+- [ ] Write full content for MCP Server Mastery (9 lessons)
+- [ ] Write full content for VPS Deployment (10 lessons)
+- [ ] Write full content for OpenClaw Deployment (8 lessons)
+- [ ] Write full content for NemoClaw Runtime (6 lessons)
+- [ ] Write full content for ZeroClaw Quickstart (5 lessons)
+- [ ] Write full content for AutoClaw Automation (7 lessons)
+- [ ] Write full content for Workflow Automation (7 lessons)
 
 ## Phase 2 - Monetization and Trust Depth
 
@@ -54,10 +65,12 @@ This file tracks the build plan for CLI Academy.
 
 ## Phase 3 - Retention and Role Expansion
 
-- [ ] Launch role-based path routing
-- [ ] Launch marketer path
-- [ ] Launch analyst path
-- [ ] Launch founder path
+- [x] Define Professional Tracks section in curriculum architecture (5 paths scaffolded)
+- [ ] Write full content for Claude Code for Marketers (7 lessons)
+- [ ] Write full content for Claude Code for Founders (7 lessons)
+- [ ] Write full content for Claude Code for Sales (7 lessons)
+- [ ] Write full content for Claude Code for Analysts (7 lessons)
+- [ ] Write full content for Claude Code for Students (6 lessons)
 - [ ] Add badges and completion status
 - [ ] Add certificate system
 - [ ] Add community layer

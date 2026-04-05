@@ -1,0 +1,187 @@
+---
+title: "GPU and OpenShell Prerequisites"
+description: "Verify your NVIDIA hardware, driver stack, and OpenShell environment before installing NemoClaw."
+slug: "nemoclaw-prerequisites"
+lesson_number: 2
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "nemoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  nemoclaw: "latest"
+has_safety_warning: false
+tags: ["nemoclaw", "gpu", "prerequisites", "nvidia"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have verified your NVIDIA hardware and driver stack, installed the NVIDIA Container Toolkit, set up NVIDIA OpenShell, and confirmed the environment is ready for NemoClaw installation.
+
+## Why This Matters
+
+NemoClaw's prerequisites span hardware (GPU), firmware (driver stack), and NVIDIA's software layer (Container Toolkit, OpenShell). A missing or outdated component anywhere in the stack produces cryptic errors at install time. This lesson gets every prerequisite verified and in place so the installation in the next lesson is straightforward.
+
+## Core Concepts
+
+### Hardware Requirements
+
+NemoClaw requires NVIDIA GPU hardware. The GPU is not used for inference (that runs on Anthropic's servers), but OpenShell requires it for context slice management and hardware-level isolation.
+
+**Minimum:**
+
+| Spec | Minimum |
+|------|---------|
+| GPU Family | NVIDIA Ampere (A-series, RTX 3000) or newer |
+| GPU Memory | 8 GB VRAM |
+| CUDA Compute Capability | 8.0+ |
+| System RAM | 16 GB |
+
+**Recommended for production:**
+
+| Spec | Recommended |
+|------|-------------|
+| GPU | NVIDIA A10, A30, A100, or L40 |
+| GPU Memory | 24 GB+ VRAM |
+| System RAM | 32 GB |
+| CPU | 8+ cores |
+
+**Check your GPU:**
+
+```bash
+nvidia-smi
+
+# Check compute capability (must be 8.0+)
+nvidia-smi --query-gpu=compute_cap --format=csv,noheader
+```
+
+If `nvidia-smi` is not found, the NVIDIA driver is not installed.
+
+### NVIDIA Driver Requirements
+
+NemoClaw requires NVIDIA Driver **535+** and CUDA **12.1+**.
+
+**Check current versions:**
+
+```bash
+nvidia-smi | grep "Driver Version"
+nvcc --version
+```
+
+**Install or update on Ubuntu 22.04:**
+
+```bash
+sudo ubuntu-drivers autoinstall
+# Reboot required
+sudo reboot
+
+# After reboot
+nvidia-smi
+```
+
+**Install CUDA 12.x if missing:**
+
+```bash
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt update
+sudo apt install cuda-12-3
+```
+
+### NVIDIA Container Toolkit
+
+The Container Toolkit enables Docker containers to access GPU resources — required for NemoClaw's containerized components.
+
+**Install:**
+
+```bash
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | \
+  sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+  sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo apt update
+sudo apt install nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+
+**Verify:**
+
+```bash
+docker run --rm --gpus all nvidia/cuda:12.3-base-ubuntu22.04 nvidia-smi
+# Expected: GPU details printed from inside a container
+```
+
+### NVIDIA OpenShell
+
+OpenShell is the hardened execution environment NemoClaw runs inside. It is distributed through NVIDIA's NGC registry.
+
+**Enterprise edition (requires NVIDIA AI Enterprise license):**
+
+```bash
+# Authenticate with NGC
+docker login nvcr.io
+# Username: $oauthtoken
+# Password: YOUR_NGC_API_KEY
+
+docker pull nvcr.io/nvidia/openShell:latest
+docker run --rm --gpus all nvcr.io/nvidia/openShell:latest openShell --version
+```
+
+**Community edition (development/evaluation, no license required):**
+
+```bash
+docker pull nvcr.io/nvidia/openShell-community:latest
+docker run --rm --gpus all nvcr.io/nvidia/openShell-community:latest openShell --version
+```
+
+The community edition has the same API as the enterprise edition but excludes audit logging integration and NVIDIA's support SLA.
+
+### NGC API Key
+
+NemoClaw uses your NGC API key for update checks and policy verification.
+
+1. Sign in at ngc.nvidia.com
+2. Go to **Account → Setup → Generate API Key**
+3. Store it securely — you will need it during NemoClaw installation
+
+```bash
+# Test NGC access
+curl -s -H "Authorization: Bearer YOUR_NGC_API_KEY" \
+  https://api.ngc.nvidia.com/v2/user | jq .username
+```
+
+### Pre-Installation Checklist
+
+- [ ] `nvidia-smi` runs and shows NVIDIA Ampere+ GPU
+- [ ] Driver version is 535+ (`nvidia-smi | grep "Driver Version"`)
+- [ ] CUDA version is 12.1+ (`nvcc --version`)
+- [ ] Docker can access GPU: `docker run --rm --gpus all nvidia/cuda:12.3-base-ubuntu22.04 nvidia-smi`
+- [ ] OpenShell image pulled and verified: `docker run --rm --gpus all nvcr.io/nvidia/openShell:latest openShell --version`
+- [ ] NGC API key generated and tested
+- [ ] Outbound HTTPS to `api.anthropic.com` and `api.ngc.nvidia.com` allowed
+- [ ] OpenClaw Deployment path completed
+
+### Common Troubleshooting
+
+**`nvidia-smi: command not found`** — Driver not installed. Run `sudo ubuntu-drivers autoinstall` and reboot.
+
+**`could not select device driver "" with capabilities: [[gpu]]`** — Container Toolkit not configured. Run `sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker`.
+
+**`Driver/library version mismatch`** — Driver updated without reboot. Reboot the server.
+
+**`unauthorized` from nvcr.io** — NGC API key wrong or expired. Regenerate at ngc.nvidia.com.
+
+## Key Takeaways
+
+- NemoClaw requires NVIDIA Ampere+, Driver 535+, CUDA 12.1+, and NVIDIA Container Toolkit.
+- The GPU enables session isolation — not AI inference (that remains at Anthropic).
+- OpenShell is the runtime NemoClaw lives inside — verify it runs before proceeding.
+- Complete the checklist before moving to the install lesson.
+
+## What's Next
+
+With prerequisites confirmed, the next lesson installs NemoClaw inside your OpenShell environment.

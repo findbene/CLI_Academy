@@ -1,0 +1,202 @@
+---
+title: "Sandboxing and Policy Controls"
+description: "Configure OpenShell's sandboxing levels, GPU context limits, execution policies, and access controls for your security posture."
+slug: "nemoclaw-policy-controls"
+lesson_number: 4
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "nemoclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  nemoclaw: "latest"
+has_safety_warning: false
+tags: ["nemoclaw", "security", "sandboxing", "policy"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to configure OpenShell's three policy modes, set per-session GPU context limits, control what developer sessions are allowed to execute, and apply NVIDIA's RBAC model for team-level access control.
+
+## Why This Matters
+
+The entire point of NemoClaw over OpenClaw is stronger isolation and policy enforcement. A default install with `OPENSHIFT_POLICY_MODE=standard` is a reasonable starting point, but production environments require deliberate policy decisions: how much GPU memory per developer, what shell commands are allowed, which NVIDIA resources are accessible. This lesson walks through every policy lever.
+
+## Core Concepts
+
+### OpenShell Policy Modes
+
+OpenShell has three top-level policy modes that control the default security posture for all NemoClaw sessions:
+
+**`permissive`** — Minimal restrictions. Sessions have broad access to system resources. Use only in trusted development environments where isolation is not a concern.
+
+**`standard`** (default) — Balanced for most teams. Session resource limits are enforced, dangerous system calls are filtered, GPU contexts are isolated per session. Recommended for most production deployments.
+
+**`strict`** — Maximum restrictions. Sessions are fully isolated: no shared filesystem access, no network access beyond the Anthropic API, restricted system call set. Recommended for compliance environments or when code context is highly sensitive.
+
+Set the mode in your `.env`:
+
+```
+OPENSHIFT_POLICY_MODE=standard
+```
+
+Or override per-session in `nemoclaw.yml` (detailed below).
+
+### GPU Context Limits
+
+GPU context slicing determines how much VRAM each NemoClaw session can use for context buffering. This is distinct from inference (which runs at Anthropic) — it affects local context caching for large codebases.
+
+In `nemoclaw.yml`:
+
+```yaml
+nvidia:
+  openShell:
+    policy_mode: standard
+    gpu_context_per_session: 512MB    # VRAM reserved per active session
+    max_gpu_sessions: 20              # Max sessions using GPU slices simultaneously
+    gpu_context_overflow: "cpu"       # "cpu" or "error" when VRAM limit is hit
+```
+
+**Sizing guidance:**
+
+| Team size | gpu_context_per_session | max_gpu_sessions | Required VRAM |
+|-----------|------------------------|-----------------|---------------|
+| Small (1–5) | 1GB | 5 | 5 GB |
+| Medium (5–20) | 512MB | 20 | 10 GB |
+| Large (20–50) | 256MB | 50 | 13 GB |
+
+`gpu_context_overflow: "cpu"` means sessions that exceed the GPU context limit fall back to CPU memory instead of erroring. This is the safer default — developers continue working at lower performance rather than getting a hard failure.
+
+### Shell Execution Policy
+
+NemoClaw inherits OpenClaw's shell execution controls and adds OpenShell enforcement on top:
+
+```yaml
+policies:
+  allow_shell_execution: true
+  require_project_dir_for_shell: true
+
+  # OpenShell-level syscall filtering (applied by OpenShell, not just NemoClaw config)
+  openShell_syscall_filter:
+    preset: "standard"               # Uses NVIDIA's standard AI workload syscall allowlist
+    # Custom additions (extend, not replace, the preset)
+    additional_allow:
+      - "io_uring_enter"             # Allow if your devs use async I/O tools
+    additional_deny:
+      - "ptrace"                     # Deny process tracing (extra caution)
+
+  shell_blocklist:
+    - "rm -rf /"
+    - "dd if=/dev/zero"
+    - "chmod 777 /"
+```
+
+The `openShell_syscall_filter` is enforced at the OpenShell layer, not just in NemoClaw's application logic. Even if a developer finds a way to bypass NemoClaw's own shell blocklist, the OpenShell syscall filter provides a second enforcement layer.
+
+### NVIDIA RBAC
+
+NemoClaw integrates with NVIDIA AI Enterprise's role-based access control. You can assign GPU resource quotas by team or role:
+
+```yaml
+nvidia:
+  rbac:
+    enabled: true
+    groups:
+      - name: ml-engineers
+        gpu_context_per_session: 1GB          # More VRAM for ML teams
+        max_daily_token_limit: 2000000
+        allowed_models:
+          - claude-opus-4-6                   # Can use Opus
+          - claude-sonnet-4-6
+
+      - name: developers
+        gpu_context_per_session: 512MB
+        max_daily_token_limit: 500000
+        allowed_models:
+          - claude-sonnet-4-6                 # Sonnet only
+          - claude-haiku-4-5-20251001
+
+      - name: ci-automation
+        gpu_context_per_session: 256MB
+        max_daily_token_limit: 1000000
+        allowed_models:
+          - claude-haiku-4-5-20251001         # Haiku only for CI cost control
+        allow_shell_execution: false          # CI doesn't need shell
+```
+
+For RBAC to work, your auth mode must be `oidc` with a groups claim. Token-mode auth does not carry group membership information.
+
+### Network Isolation Policy
+
+In `strict` mode, NemoClaw sessions have restricted network access. Configure what is allowed:
+
+```yaml
+nvidia:
+  openShell:
+    network_policy:
+      mode: "restricted"                     # "open", "restricted", or "isolated"
+      allowed_outbound:
+        - host: "api.anthropic.com"
+          port: 443
+        - host: "*.internal.yourdomain.com"
+          port: 443
+      block_outbound_by_default: true
+```
+
+`isolated` mode (strictest) blocks all network access from developer sessions — NemoClaw itself makes the Anthropic API call on their behalf, and the session process has no network access at all. Use this when you need to ensure developer sessions cannot exfiltrate data over the network.
+
+### Audit Policy
+
+NemoClaw's OpenShell integration adds GPU-level audit events alongside the standard OpenClaw audit log:
+
+```yaml
+logging:
+  audit_log_path: /logs/audit.log
+  nvidia_telemetry: true
+  audit_events:
+    - auth_success
+    - auth_failure
+    - policy_violation
+    - gpu_context_allocated
+    - gpu_context_released
+    - gpu_context_overflow        # When a session exceeds VRAM limit and falls back
+    - openShell_syscall_blocked   # When OpenShell blocks a syscall
+    - openShell_policy_violation
+```
+
+### Validating Your Policy Configuration
+
+```bash
+# Validate the nemoclaw.yml syntax and policy coherence
+docker compose exec nemoclaw nemoclaw validate --config /config/nemoclaw.yml
+
+# Test policy enforcement interactively
+docker compose exec nemoclaw nemoclaw policy test \
+  --group developers \
+  --action shell_execute \
+  --command "ls -la"
+# Expected: ALLOWED or DENIED with the policy rule that applied
+```
+
+### Policy Mode Reference
+
+| Feature | permissive | standard | strict |
+|---------|-----------|---------|--------|
+| GPU context isolation | No | Yes | Yes |
+| Syscall filtering | No | NVIDIA preset | Restricted preset |
+| Network isolation | No | Partial | Full |
+| Filesystem access | Unrestricted | Project dir only | Project dir only |
+| ptrace | Allowed | Blocked | Blocked |
+| Shell execution | Allowed | Configurable | Disabled by default |
+
+## Key Takeaways
+
+- Three policy modes: `permissive` (dev only), `standard` (most production), `strict` (compliance environments).
+- GPU context limits control per-session VRAM allocation — size to your team size and GPU capacity.
+- OpenShell syscall filtering is a second enforcement layer below NemoClaw's own shell blocklist.
+- NVIDIA RBAC enables per-team GPU quotas and model access — requires OIDC auth with groups claim.
+- `isolated` network mode prevents session-level data exfiltration — strongest setting for sensitive codebases.
+
+## What's Next
+
+The next lesson compares NemoClaw and OpenClaw side-by-side and gives you a framework for choosing between them.

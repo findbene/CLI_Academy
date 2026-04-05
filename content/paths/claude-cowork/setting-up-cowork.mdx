@@ -1,0 +1,118 @@
+---
+title: "Getting Started with Claude CoWork"
+description: "Get access, complete first-run setup, and run your first task to confirm everything is working."
+slug: "setting-up-cowork"
+lesson_number: 2
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-cowork@preview"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-cowork: "preview"
+has_safety_warning: false
+tags: ["cowork", "setup", "getting-started"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have access to Claude CoWork, completed the first-run setup, configured the key settings, and run a simple first task to confirm it is working correctly.
+
+## Why This Matters
+
+CoWork is a research preview product with a specific access path. Skipping setup steps — particularly around workspace permissions and project organization — leads to confusing behavior later. A clean first run sets the foundation for reliable work.
+
+## Core Concepts
+
+### Getting Access
+
+Claude CoWork is available to Claude.ai Pro subscribers as part of the research preview. Access path:
+
+1. Log in to claude.ai with a Pro account
+2. Look for "CoWork" in the product switcher or navigation
+3. If you do not see it, check the Anthropic announcement page for the current waitlist or rollout status
+
+<TipBlock>As of early 2026, CoWork is in research preview and availability may be limited or rolling out progressively. If you do not yet have access, you can follow the path content now and apply it when access opens.</TipBlock>
+
+### Interface Options
+
+CoWork currently offers two interface options:
+
+**Browser interface** — Available at claude.ai when CoWork is enabled for your account. Works in any modern browser. Suitable for most knowledge work tasks.
+
+**Desktop client** — A dedicated desktop application (available for macOS and Windows). Provides tighter integration with your local files and system. Recommended for heavy document work where you need to import and export files frequently.
+
+For most users starting out, the browser interface is fine. Install the desktop client if you find yourself frequently uploading and downloading files.
+
+### First-Run Setup
+
+When you first open CoWork, you will be guided through a short setup:
+
+**1. Account connection**
+CoWork connects to your Claude.ai Pro account. If you are already logged in, this happens automatically.
+
+**2. Workspace permissions**
+CoWork may request permission to access specific directories on your computer (if using the desktop client) or your browser's file access (browser version). Grant access only to directories you want CoWork to be able to read:
+
+- For document work: grant access to your Documents or a dedicated Work folder
+- Do not grant access to directories containing sensitive data, passwords, or credentials
+
+**3. Initial preferences**
+Set your preferred output format (Markdown, Word, plain text) and language. These become defaults for all tasks.
+
+### The Projects Concept
+
+CoWork organizes work into **projects**. A project groups related tasks, context, and output documents together. Think of it like a folder for a work initiative.
+
+Create a project for each distinct work area:
+- "Q2 Marketing Strategy" — a project containing research tasks, draft documents, and final deliverables
+- "Competitor Analysis" — a project with research outputs and comparison documents
+- "Onboarding Materials" — SOPs, guides, and checklists for a new process
+
+Creating a new project before starting a significant task keeps your work organized and gives CoWork persistent context about what you are trying to accomplish.
+
+### Settings Worth Configuring
+
+Before your first real task, set these:
+
+**Output format:** Choose Markdown for maximum portability, Word/DOCX if you work primarily in Microsoft Office, or plain text for maximum simplicity.
+
+**Review mode:** Enable "require confirmation before each step" if you want to understand CoWork's process. Disable it for faster execution once you trust the outputs.
+
+**Memory:** CoWork can retain context about you across sessions (your role, your organization, your preferences). Review what is stored and remove anything you do not want kept.
+
+### Your First Task: A Sanity Check
+
+Run this simple task to confirm everything is working:
+
+> "Write a one-paragraph executive summary of what Claude CoWork is and who it is designed for."
+
+A working setup will produce a well-written paragraph about the product. If CoWork produces something generic, incoherent, or asks you to complete the task yourself, there is a configuration issue.
+
+Expected output:
+- One paragraph, 3-5 sentences
+- Written in third person, as a description of the product
+- Factually accurate based on Anthropic's published description
+
+If the output looks right, you are set up correctly.
+
+### Common First-Run Issues
+
+| Problem | Likely cause | Fix |
+|---------|-------------|-----|
+| CoWork not visible in Claude.ai | No access yet | Check waitlist status or Pro subscription |
+| File access not working | Browser permissions | Re-grant file access in browser settings |
+| Tasks fail immediately | Account not properly connected | Log out and log back in |
+| Output is very generic | No project context set | Create a project and describe your work context |
+
+## Key Takeaways
+
+- CoWork access requires a Claude.ai Pro subscription; availability is in rolling research preview.
+- Browser interface works for most tasks; desktop client is better for heavy document workflows.
+- Create a project for each work area before starting tasks — this gives CoWork persistent context.
+- Grant file access only to directories you intentionally want CoWork to read.
+- Run a simple sanity-check task to confirm your setup works before starting real work.
+
+## What's Next
+
+In the next lesson, you will learn how to use CoWork for document creation and editing — from giving a brief to iterating on sections to exporting the final output.

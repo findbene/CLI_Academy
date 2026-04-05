@@ -1,0 +1,128 @@
+---
+title: "Multi-Step Research Workflows"
+description: "Use CoWork to execute structured research tasks — setting goals, managing sources, and getting outputs you can actually use."
+slug: "cowork-for-research"
+lesson_number: 4
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-cowork@preview"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-cowork: "preview"
+has_safety_warning: false
+tags: ["cowork", "research", "knowledge-work"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to give CoWork a research goal that produces useful outputs, how to provide source documents versus asking CoWork to research from training data, and how to check for hallucinated citations before using CoWork research outputs.
+
+## Why This Matters
+
+Research is where CoWork's multi-step execution shines — and where its biggest risks appear. CoWork can break a research question into steps, synthesize findings, and produce structured outputs much faster than manual research. But it can also fabricate citations and present made-up data with complete confidence. Knowing how to use it safely is not optional — it is the skill.
+
+## Core Concepts
+
+### Research Goal vs. Research Question
+
+There is a meaningful difference between giving CoWork a research goal and a research question.
+
+**A research question:** "What are the best practices for B2B SaaS pricing?"
+
+**A research goal:** "I need to prepare a 2-page briefing for our pricing committee on B2B SaaS pricing models. The goal is to help the committee decide whether to switch from per-seat to usage-based pricing. Include: common pricing models with pros/cons, examples from relevant SaaS categories (productivity tools, analytics platforms), and a recommended decision framework."
+
+The goal tells CoWork who needs the output, what decision it supports, what to include, and what format to use. The question is open-ended and CoWork will fill in the blanks with whatever seems plausible.
+
+Always give goals, not questions.
+
+### Two Research Modes: Provided Sources vs. Training Data
+
+CoWork can research in two fundamentally different ways, and the trust level for each is different:
+
+**Mode 1: Synthesizing from sources you provide**
+
+You upload documents, paste in text, or link to specific sources. CoWork reads those materials and synthesizes them.
+
+> "Here are the annual reports for Salesforce, HubSpot, and Monday.com [uploaded]. Summarize their go-to-market strategies and identify the three biggest strategic differences."
+
+This mode is reliable. CoWork is summarizing and comparing material you have provided. The output's accuracy is limited by the quality of your source materials, not CoWork's knowledge.
+
+**Mode 2: Researching from training data**
+
+You ask CoWork to research a topic without providing sources. CoWork draws on its training data — which has a knowledge cutoff and may not reflect current events.
+
+> "Research the current state of AI adoption in healthcare insurance."
+
+This mode is less reliable. CoWork will produce plausible, well-structured outputs that may contain outdated information, imprecise statistics, or invented citations. Use it for orientation and background, not for facts you need to cite.
+
+<WarnBlock>When CoWork cites a specific study, report, or article in Mode 2, verify that citation exists before using it. CoWork can produce citations that look real but are fabricated. This is the most dangerous output to use without checking.</WarnBlock>
+
+### The Research Brief Pattern
+
+Structure research requests as briefs, the same way you structure document briefs:
+
+```
+RESEARCH BRIEF
+
+Goal: [What decision or document this research supports]
+Audience: [Who will use the research output]
+Topic: [The specific domain to research]
+Required coverage: [Key questions to answer, specific companies/concepts to include]
+Format: [Bullet summary, structured report, comparison table, etc.]
+Sources: [Uploaded documents, if any]
+Constraints: [Time period, geography, industry segment, etc.]
+```
+
+**Example:**
+```
+RESEARCH BRIEF
+
+Goal: Prepare our team for a sales conversation with a manufacturing company considering ERP adoption
+Audience: Account executives, non-technical
+Topic: ERP implementation challenges in mid-market manufacturing
+Required coverage: Common reasons ERP projects fail, typical timelines and costs, key vendor comparison (SAP vs. Oracle vs. Microsoft Dynamics), most common objections
+Format: 1-page briefing document with a short vendor comparison table
+Sources: None — use general knowledge
+Constraints: Mid-market companies (100-500 employees), manufacturing sector
+```
+
+### Managing Scope
+
+CoWork can rabbit-hole. A vague research goal will produce a wide, shallow output. A narrow research goal produces something useful.
+
+**Too broad:** "Research AI in business"
+
+**Better:** "Research how mid-size professional services firms (accounting, law, consulting) are adopting AI for internal operations, focusing on back-office and admin tasks. I need this for a 30-minute executive presentation."
+
+If CoWork's output is too broad, refine it:
+> "That covered too much ground. Focus only on accounting firms with 50-200 employees. Remove the sections on large enterprise."
+
+### The Brief → Outline → Draft Workflow
+
+For significant research outputs, use this three-step workflow:
+
+**Step 1: Brief → Outline**
+> "Based on this brief, give me an outline of the research output before you write it. I want to approve the structure first."
+
+Review the outline. If the structure is wrong, correct it before CoWork writes.
+
+**Step 2: Outline → Draft**
+> "The outline looks good. Write the full draft now."
+
+**Step 3: Draft → Review**
+Read the draft. Verify all factual claims. Ask for revisions on specific sections.
+
+This workflow catches structural problems before CoWork has written 10 pages in the wrong direction.
+
+## Key Takeaways
+
+- Give CoWork research goals, not research questions — include audience, decision to be made, and required coverage.
+- Research from provided sources (Mode 1) is reliable; research from training data (Mode 2) requires fact-checking.
+- Always verify specific citations, statistics, and data points before using them.
+- Use the Brief → Outline → Draft workflow for significant research to catch structural issues early.
+- Narrow scope before starting: a focused brief produces a useful output; a broad one produces something you cannot use.
+
+## What's Next
+
+In the next lesson, you will learn how to use CoWork for business data analysis — reading structured data files, framing analysis tasks, and combining CoWork's output with your own judgment.

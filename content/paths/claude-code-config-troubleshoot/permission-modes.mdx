@@ -1,0 +1,133 @@
+---
+title: "Permission Modes: How Claude Code Asks and Acts"
+description: "Understand Claude Code's permission modes, what each one allows, and which is right for your use case."
+slug: "permission-modes"
+lesson_number: 4
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: true
+tags: ["permissions", "safety", "configuration"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand each Claude Code permission mode, what each one blocks or permits, and the right mode to use for interactive work versus automated pipelines.
+
+## Why This Matters
+
+Permission modes control what Claude Code can do without asking you first. The wrong mode in the wrong context is either too slow (asking permission for every trivial edit) or too risky (running destructive commands without review). Understanding these modes is fundamental to working safely and efficiently.
+
+## Core Concepts
+
+### The Default Mode
+
+By default, Claude Code asks your approval before making any file change or running any shell command. You see a prompt like:
+
+```
+Edit file: src/app.ts
+  + Added login button
+  - Removed old form handler
+
+Apply this change? [y/n]
+```
+
+This is the safest mode. Use it when you are learning, when the stakes are high, or when you want to understand exactly what Claude is doing.
+
+### The Permission Modes
+
+Claude Code supports several permission modes you can set via the `--permission` flag or via settings:
+
+**`default`** — Ask before every file edit and shell command. Best for: interactive sessions, learning, high-stakes changes.
+
+**`acceptEdits`** — Auto-accept file edits without prompting, but still ask before running shell commands. Best for: when you trust the code changes but want oversight on commands.
+
+**`autoApprove`** — Auto-accept both file edits and shell commands matching a configured allowlist. Best for: well-defined automated tasks where you have reviewed the task spec carefully.
+
+**`bypassPermissions`** — Skip all permission checks entirely. Best for: never, unless you are an expert running a contained, reversible, fully understood automation.
+
+**`plan`** — Claude describes the plan and waits for your approval before doing anything. Best for: complex tasks where you want to review the approach before execution begins.
+
+<WarnBlock>`bypassPermissions` is the most dangerous mode. Claude will run any shell command — including `rm -rf`, `git reset --hard`, or curl piped to bash — without asking. Never use this mode on a machine with important data unless you have read and understood every step of the task spec.</WarnBlock>
+
+### Setting the Mode
+
+**Via flag:**
+```bash
+claude --permission acceptEdits
+claude --permission plan
+```
+
+**Via settings.json** (`~/.claude/settings.json`):
+```json
+{
+  "defaultPermission": "acceptEdits"
+}
+```
+
+**Via CLAUDE.md** (documentation only — cannot programmatically set the mode):
+```markdown
+# CLAUDE.md
+For CI runs: use --permission autoApprove with the approved task list.
+For interactive sessions: use default mode.
+```
+
+### The `--dangerously-skip-permissions` Flag
+
+This flag bypasses all permission checks and is equivalent to `bypassPermissions`. It also disables the human-readable approval prompts.
+
+```bash
+# DANGEROUS: only use in fully controlled, reversible automation
+claude --dangerously-skip-permissions --print "refactor all files"
+```
+
+The flag name is intentionally alarming. If you find yourself using it regularly, reconsider your workflow design.
+
+### Right Mode for the Right Situation
+
+| Situation | Recommended mode |
+|-----------|-----------------|
+| Learning Claude Code for the first time | `default` |
+| Interactive coding session | `default` |
+| Reviewing a complex refactor | `plan` first, then `default` |
+| Writing tests alongside a feature | `acceptEdits` |
+| Automated CI script with pre-reviewed task | `autoApprove` with allowlist |
+| Bulk file rename on a fresh branch | `acceptEdits` after reviewing the plan |
+| Production automation | `autoApprove` + git snapshot first |
+
+### The Safe Pattern for Automation
+
+When you need to automate tasks with reduced prompting, follow this sequence:
+
+1. Run the task in `plan` mode first to review what Claude intends to do
+2. If the plan looks right, run with `acceptEdits` on a new git branch
+3. Review the diff before merging
+4. Only move to `autoApprove` for well-understood, repeatedly-run tasks
+
+```bash
+# Step 1: Review the plan
+claude --permission plan "refactor all API routes to use async/await"
+
+# Step 2: Execute with file edit auto-approval
+git checkout -b refactor/async-routes
+claude --permission acceptEdits "refactor all API routes to use async/await"
+
+# Step 3: Review and merge
+git diff HEAD~1
+```
+
+## Key Takeaways
+
+- `default` mode asks before every change. Use it for interactive work and learning.
+- `acceptEdits` auto-approves file edits but still asks for shell commands. A good middle ground.
+- `plan` mode shows you the entire plan before anything executes. Use it before complex tasks.
+- `bypassPermissions` and `--dangerously-skip-permissions` are dangerous and should be used with extreme care.
+- For automation, always test the plan first and run on a new git branch.
+
+## What's Next
+
+In the next lesson, you will learn about Claude Code hooks — shell scripts that run automatically on events like session end, pre-commit, and pre-push. Hooks are how you automate things like auto-committing, blocking secret leaks, and running tests on save.

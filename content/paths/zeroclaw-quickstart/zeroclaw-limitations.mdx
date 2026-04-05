@@ -1,0 +1,120 @@
+---
+title: "Compatibility Gaps and Limitations"
+description: "The complete list of what ZeroClaw cannot do versus OpenClaw, and the signals that tell you it's time to migrate."
+slug: "zeroclaw-limitations"
+lesson_number: 4
+estimated_minutes: 10
+tier_required: "pro"
+version_label: "zeroclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  zeroclaw: "latest"
+has_safety_warning: false
+tags: ["zeroclaw", "limitations", "reference"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have a complete picture of what ZeroClaw cannot do, which limitations matter for which team types, and the observable signals that indicate you need to migrate to full OpenClaw.
+
+## Why This Matters
+
+Limitations are not failures — they are intentional design decisions. ZeroClaw trades features for speed. Knowing exactly what was traded lets you make an informed decision about whether ZeroClaw is sustainable for your team long-term, or whether you should plan a migration timeline from day one.
+
+## Core Concepts
+
+### Complete Limitations Reference
+
+#### Authentication
+
+**No OIDC / SSO support.** ZeroClaw supports token auth only. If your organization requires developers to authenticate with their corporate identity (Okta, Azure AD, Google Workspace), you need OpenClaw.
+
+**No automatic token rotation policies.** OpenClaw can be configured to automatically rotate tokens after N uses or on a schedule. ZeroClaw requires manual rotation via `zeroclaw token rotate`.
+
+**No token scope restrictions.** All ZeroClaw tokens have identical access. OpenClaw allows tokens with restricted model access or read-only status. ZeroClaw does not.
+
+#### Policies and Access Control
+
+**No per-developer rate limits.** ZeroClaw enforces a single global rate limit across all sessions. One developer can consume the entire request budget. OpenClaw enforces per-developer daily/monthly token limits.
+
+**No per-request policy enforcement.** ZeroClaw evaluates policies at session creation, not per-request. This means a developer who hit their usage limit will be blocked at the next session start, not mid-session.
+
+**No content filtering / block patterns.** OpenClaw's `block_patterns` feature (regex-based prompt content filtering) does not exist in ZeroClaw.
+
+**No per-project policies.** OpenClaw allows different usage limits for different projects or teams. ZeroClaw applies one policy to everyone.
+
+#### Session and State Management
+
+**In-memory sessions only.** Sessions are lost on restart. A ZeroClaw process restart terminates all active developer sessions immediately. Developers reconnect and continue — no data is lost from a code perspective — but it is disruptive.
+
+**No session persistence or export.** OpenClaw's session database can be backed up, exported, and migrated. ZeroClaw's in-memory sessions cannot.
+
+**No session management in the admin interface.** You cannot view or terminate active sessions through a ZeroClaw admin interface. The only way to terminate a session is to revoke the developer's token.
+
+#### Admin and Observability
+
+**No admin dashboard with session management.** ZeroClaw's health endpoint and log file are the only observability surfaces. No web UI.
+
+**Async audit logging.** Events are batched and written asynchronously. In a crash scenario, the last few seconds of events may not be written to disk. OpenClaw writes audit events synchronously.
+
+**No GPU telemetry.** Relevant only if comparing to NemoClaw.
+
+**No real-time usage dashboard.** Token usage is tracked asynchronously and queryable only through log analysis, not a live dashboard.
+
+#### MCP Integration
+
+**Unproxied MCP server connections.** OpenClaw proxies MCP server connections through the server, giving you visibility and control over which MCP servers developers are connecting to. ZeroClaw passes MCP configuration through to the developer's Claude CLI without proxying — ZeroClaw has no visibility into MCP server usage.
+
+### Signals That You Have Outgrown ZeroClaw
+
+These are the observable events that indicate it is time to plan a migration to OpenClaw:
+
+**Signal 1: A developer consumed the entire global rate limit**
+If one developer's automation job saturated `global_requests_per_minute` and other developers experienced slowdowns, you need OpenClaw's per-developer rate limiting.
+
+**Signal 2: Your security team asks for per-request audit logs**
+ZeroClaw's async batch logging does not meet synchronous audit requirements. Once this question comes up from compliance, plan the migration.
+
+**Signal 3: You need SSO**
+Your company is rolling out mandatory SSO for all tooling. ZeroClaw cannot participate. Begin migration planning.
+
+**Signal 4: A process restart caused developer disruption**
+If ZeroClaw restarted (OS update, deployment, crash) and developers complained about session loss, and this is not acceptable in your team's workflow, OpenClaw's persistent session model is the answer.
+
+**Signal 5: You need per-project or per-team usage limits**
+Finance team gets Opus access; everyone else gets Sonnet only. ZeroClaw cannot do this.
+
+**Signal 6: Team size exceeds 50 developers**
+The global rate limit model becomes harder to tune fairly at larger team sizes. OpenClaw's per-developer limits scale more predictably.
+
+### The Limitations That Almost Never Matter
+
+These limitations are technically real but rarely encountered in practice:
+
+- **No token scope restrictions** — most teams are fine with uniform access
+- **No session export** — sessions are short-lived; losing them on restart is a minor inconvenience
+- **Unproxied MCP** — relevant only if you actively audit MCP server usage
+
+### Summary Table
+
+| Feature | OpenClaw | ZeroClaw | When it matters |
+|---------|---------|---------|----------------|
+| OIDC / SSO | Yes | No | Mandatory SSO environments |
+| Per-developer rate limits | Yes | No | Large teams, automation heavy |
+| Content filtering | Yes | No | Compliance, sensitive code |
+| Synchronous audit log | Yes | No | Compliance, incident response |
+| Session persistence | Yes | No | Long-running agent workflows |
+| Admin dashboard | Full | None | Teams needing session management |
+| MCP proxying | Yes | No | Security auditing of MCP usage |
+
+## Key Takeaways
+
+- ZeroClaw's gaps are intentional: no OIDC, no per-developer limits, no synchronous audit, in-memory sessions only.
+- Most small teams (under 30 developers, no compliance requirements) never hit these limitations.
+- The six signals are observable: rate limit exhaustion, compliance questions, SSO requirements, restart disruption, per-project limits, large team growth.
+- ZeroClaw is designed to be migrated from — the next lesson covers exactly how.
+
+## What's Next
+
+The final lesson walks through the migration from ZeroClaw to OpenClaw without losing your configuration.

@@ -1,0 +1,118 @@
+---
+title: "Document Creation and Editing Workflows"
+description: "Use CoWork to create long-form documents from a brief, iterate on sections, and export polished outputs."
+slug: "cowork-for-documents"
+lesson_number: 3
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-cowork@preview"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-cowork: "preview"
+has_safety_warning: false
+tags: ["cowork", "documents", "writing"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to give CoWork a structured document brief, iterate on specific sections without losing the whole document, import existing documents for editing, and export your output in a usable format.
+
+## Why This Matters
+
+The difference between Claude CoWork and a chatbot for document work is that CoWork maintains the whole document as a working artifact, not a chat response. You can iterate on Section 3 without rewriting Sections 1 and 2. You can import a draft you wrote last month and ask CoWork to restructure it. This changes what is possible — and how long it takes.
+
+## Core Concepts
+
+### Giving CoWork a Document Brief (Not a Prompt)
+
+When you ask Claude.ai to write a report, you get one response — and then you start over if you want changes. CoWork works differently. You give it a **brief**: a structured description of what you need, who it is for, and what it should accomplish.
+
+A good document brief answers four questions:
+
+1. **What is this document?** (Type: proposal, SOP, report, analysis)
+2. **Who is the audience?** (Board, customers, new employees, your team)
+3. **What is the desired outcome?** (Approve budget, understand process, make a decision)
+4. **What should it cover?** (Key topics, data points to include, sections required)
+
+**Example brief:**
+> "Create a 4-page executive proposal for our board requesting budget approval for a new customer support tooling platform. Audience: non-technical board members. Outcome: approve $85,000 budget. Sections needed: problem statement, proposed solution, cost breakdown, ROI projection, implementation timeline. Tone: professional and data-driven."
+
+This brief produces a structured, audience-appropriate document on the first pass — not a draft you have to reshape from scratch.
+
+### Iterating on Sections
+
+Once CoWork has produced a document, you can ask it to revise specific sections without touching the rest:
+
+> "Rewrite the problem statement to be more urgent — it reads too neutral. Keep the rest unchanged."
+
+> "Expand the ROI projection section. Add a 3-year model showing cumulative savings. Keep the rest of the document as-is."
+
+> "The implementation timeline is too optimistic. Revise it to assume a 3-month procurement delay."
+
+CoWork treats the document as a persistent artifact. Each revision builds on the previous version rather than starting fresh.
+
+<TipBlock>Name each section clearly in your document. When you say "revise the problem statement," CoWork needs to find that section. Clear section headers (using ## in Markdown) make iteration much more reliable.</TipBlock>
+
+### Importing Existing Documents
+
+You can give CoWork a document you have already written and ask it to improve, restructure, or expand it:
+
+**In the browser interface:** Upload the file using the attachment button. Supported formats: PDF, Word (.docx), Markdown (.md), plain text (.txt).
+
+**In the desktop client:** Use the file browser to select documents directly from your computer.
+
+Once imported, you can ask:
+> "Restructure this proposal to lead with the ROI section instead of the problem statement. Keep all content."
+
+> "This SOP is 12 pages. Condense it to 4 pages while keeping all critical steps."
+
+> "Improve the writing quality throughout — make it more direct and remove filler phrases."
+
+### Exporting Outputs
+
+CoWork can export documents in several formats:
+
+| Format | Best for |
+|--------|---------|
+| Markdown (.md) | Portability, version control, developer tools |
+| Word (.docx) | Microsoft Office users, clients who need .docx |
+| PDF | Final delivery, sharing with stakeholders |
+| Plain text (.txt) | Pasting into other tools |
+
+To export, look for the download or export button in the CoWork interface. If exporting is not available, copy the content manually — Markdown copies cleanly into most editors.
+
+### Common Document Tasks and How to Brief Them
+
+**Standard Operating Procedure (SOP):**
+> "Write an SOP for onboarding a new account manager. Audience: HR and the new hire. Format: numbered steps with substeps. Include: pre-arrival checklist, day 1 schedule, first-week milestones, 30/60/90 day goals."
+
+**Project proposal:**
+> "Write a project proposal requesting approval to migrate our data warehouse from on-premise to Snowflake. Decision-makers: CTO and CFO. Include: current pain points, proposed solution, costs (one-time + recurring), risks, timeline."
+
+**Meeting summary:**
+> "Summarize the following meeting notes into an executive summary for stakeholders who were not present. Format: 3-sentence overview, decisions made, action items with owners."
+
+### The Review-Before-Sending Rule
+
+Every document CoWork produces should be reviewed by a human before it goes anywhere. CoWork can produce plausible-sounding but factually incorrect content — especially for numbers, names, and specific details.
+
+After CoWork produces a draft:
+1. Read the full document once for sense and tone
+2. Verify any numbers, dates, or named facts
+3. Check that the document matches the brief (right sections, right length, right audience)
+4. Make any final edits manually before sending
+
+Do not send a CoWork document directly without review. The review step is your professional quality check.
+
+## Key Takeaways
+
+- Give CoWork a structured brief (what, who, outcome, sections) rather than a vague prompt.
+- CoWork maintains the document as an artifact — iterate on sections without rewriting everything.
+- Import existing documents for restructuring, condensing, or quality improvements.
+- Export to Markdown, Word, or PDF depending on your workflow.
+- Always review CoWork documents before sending — verify all facts, numbers, and names.
+
+## What's Next
+
+In the next lesson, you will learn how to use CoWork for multi-step research workflows — giving CoWork a research goal, managing sources, and getting reliable outputs you can cite.

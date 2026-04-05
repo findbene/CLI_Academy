@@ -1,0 +1,305 @@
+---
+title: "Monitoring and Health Checks"
+description: "Set up logging, health endpoints, uptime alerts, and usage dashboards so you know when OpenClaw is struggling before your developers do."
+slug: "openclaw-monitoring"
+lesson_number: 7
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "monitoring", "operations", "observability"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have OpenClaw's health endpoint monitored, logs structured and queryable, usage metrics visible, and an alert configured to notify you of downtime before your team reports it.
+
+## Why This Matters
+
+OpenClaw is infrastructure. When it goes down, every developer on your team loses access to their AI workflow. The difference between "OpenClaw is down" and "OpenClaw went down 5 minutes ago and here is why" is the difference between a blind outage and a quick recovery. This lesson builds that visibility.
+
+## Core Concepts
+
+### The Health Endpoint
+
+OpenClaw exposes a health check endpoint you can poll from any monitoring system:
+
+```
+GET /health
+```
+
+Example response:
+
+```json
+{
+  "status": "ok",
+  "version": "1.x.x",
+  "uptime_seconds": 86400,
+  "database": "connected",
+  "redis": "connected",
+  "anthropic_api": "reachable",
+  "active_sessions": 12,
+  "daily_token_usage": 234500,
+  "daily_token_limit": 10000000
+}
+```
+
+If any dependency is unhealthy, the `status` field becomes `"degraded"` or `"unhealthy"` and the affected component shows its error state.
+
+**Test the health endpoint:**
+
+```bash
+# From any machine that can reach your server
+curl -sk https://openclaw.yourdomain.com/health | jq .
+
+# For quick uptime checks (exit code 0 = healthy, non-zero = problem)
+curl -sf https://openclaw.yourdomain.com/health > /dev/null && echo "UP" || echo "DOWN"
+```
+
+### Simple Uptime Monitoring with a Cron Job
+
+For teams without a dedicated monitoring stack, a cron job with email/Slack alerting is sufficient:
+
+Create `/opt/openclaw/scripts/health-check.sh`:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+OPENCLAW_URL="https://openclaw.yourdomain.com"
+SLACK_WEBHOOK="${SLACK_WEBHOOK_URL:-}"
+EMAIL_TO="${ALERT_EMAIL:-}"
+STATUS_FILE="/tmp/openclaw-last-status"
+
+check_health() {
+  local response
+  response=$(curl -sf --max-time 10 "${OPENCLAW_URL}/health" 2>/dev/null) || {
+    echo "DOWN"
+    return
+  }
+  echo "$response" | jq -r '.status' 2>/dev/null || echo "DOWN"
+}
+
+send_alert() {
+  local message="$1"
+
+  if [ -n "$SLACK_WEBHOOK" ]; then
+    curl -s -X POST "$SLACK_WEBHOOK" \
+      -H 'Content-type: application/json' \
+      --data "{\"text\": \"*OpenClaw Alert*: ${message}\"}" > /dev/null
+  fi
+
+  if [ -n "$EMAIL_TO" ]; then
+    echo "$message" | mail -s "OpenClaw Alert" "$EMAIL_TO"
+  fi
+}
+
+STATUS=$(check_health)
+LAST_STATUS=$(cat "$STATUS_FILE" 2>/dev/null || echo "unknown")
+
+if [ "$STATUS" != "ok" ] && [ "$LAST_STATUS" = "ok" ]; then
+  send_alert "OpenClaw is DOWN or degraded. Status: ${STATUS}"
+elif [ "$STATUS" = "ok" ] && [ "$LAST_STATUS" != "ok" ] && [ "$LAST_STATUS" != "unknown" ]; then
+  send_alert "OpenClaw has recovered. Status: ${STATUS}"
+fi
+
+echo "$STATUS" > "$STATUS_FILE"
+```
+
+```bash
+chmod +x /opt/openclaw/scripts/health-check.sh
+
+# Add to cron (check every 5 minutes)
+(crontab -l 2>/dev/null; echo "*/5 * * * * SLACK_WEBHOOK_URL=https://hooks.slack.com/YOUR_WEBHOOK /opt/openclaw/scripts/health-check.sh") | crontab -
+```
+
+### Structured Logging
+
+OpenClaw writes structured JSON logs by default. This makes them queryable with standard tools.
+
+**Viewing logs in real time:**
+
+```bash
+# Docker
+docker compose logs -f openclaw | jq .
+
+# Bare-metal
+sudo journalctl -u openclaw -f | jq .
+# Or: tail -f /opt/openclaw/logs/openclaw.log | jq .
+```
+
+**Querying logs for errors:**
+
+```bash
+# Find all errors in the last hour
+docker compose logs --since 1h openclaw | jq 'select(.level == "error")'
+
+# Find authentication failures
+tail -n 10000 /opt/openclaw/logs/audit.log | jq 'select(.event == "auth_failure")'
+
+# Find sessions consuming the most tokens
+tail -n 10000 /opt/openclaw/logs/openclaw.log \
+  | jq 'select(.event == "session_end") | {developer: .developer_id, tokens: .tokens_used}' \
+  | jq -s 'sort_by(.tokens) | reverse | .[0:10]'
+```
+
+### Usage Metrics: The Admin Dashboard
+
+The admin dashboard at `:8080` provides a real-time view of:
+
+- **Active sessions:** Who is connected right now
+- **Token usage:** Daily and monthly usage by developer and team
+- **Model distribution:** Which models are being used
+- **Error rate:** Failed requests to Anthropic's API
+- **Request latency:** P50 and P95 latency for developer interactions
+
+For routine operations, the admin dashboard is sufficient. For teams with existing monitoring infrastructure, OpenClaw exposes metrics in Prometheus format.
+
+### Prometheus Metrics
+
+Enable the Prometheus metrics endpoint in `openclaw.yml`:
+
+```yaml
+metrics:
+  enabled: true
+  endpoint: /metrics
+  port: 9090                     # Separate port from admin dashboard
+  allowed_ip_ranges:
+    - "10.0.0.0/8"               # Only your Prometheus server
+```
+
+Key metrics exposed:
+
+```
+# Active sessions
+openclaw_active_sessions_total
+
+# Requests to Anthropic API
+openclaw_anthropic_requests_total{model="claude-sonnet-4-6", status="success"}
+openclaw_anthropic_requests_total{model="claude-sonnet-4-6", status="error"}
+
+# Token usage
+openclaw_tokens_used_total{developer="alice", model="claude-sonnet-4-6"}
+
+# Request latency (seconds)
+openclaw_request_duration_seconds{quantile="0.5"}
+openclaw_request_duration_seconds{quantile="0.95"}
+openclaw_request_duration_seconds{quantile="0.99"}
+
+# Database and cache health
+openclaw_db_connections_active
+openclaw_redis_connections_active
+
+# Error rates
+openclaw_errors_total{type="auth_failure"}
+openclaw_errors_total{type="rate_limit"}
+openclaw_errors_total{type="policy_violation"}
+```
+
+**Prometheus scrape config:**
+
+```yaml
+# In your prometheus.yml
+scrape_configs:
+  - job_name: 'openclaw'
+    static_configs:
+      - targets: ['openclaw.yourdomain.com:9090']
+    scheme: http
+    tls_config:
+      insecure_skip_verify: false
+```
+
+### Grafana Dashboard
+
+If you run Grafana, import the OpenClaw community dashboard (ID: available on the OpenClaw GitHub releases page). It provides:
+
+- Session count over time
+- Token consumption by developer
+- Anthropic API error rate
+- Request latency percentiles
+- Daily budget burn rate
+
+### Log Rotation
+
+Without log rotation, OpenClaw logs grow unbounded. Configure rotation for both the application log and the audit log:
+
+```bash
+# Create /etc/logrotate.d/openclaw
+sudo tee /etc/logrotate.d/openclaw > /dev/null << 'EOF'
+/opt/openclaw/logs/openclaw.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    postrotate
+        systemctl kill -s USR1 openclaw.service || true
+    endscript
+}
+
+/opt/openclaw/logs/audit.log {
+    daily
+    rotate 90
+    compress
+    delaycompress
+    missingok
+    notifempty
+    # Audit logs: never truncate, only rotate
+    copytruncate
+}
+EOF
+
+# Test rotation config
+sudo logrotate -d /etc/logrotate.d/openclaw
+```
+
+The audit log uses `copytruncate` to preserve the audit trail — it copies the file then truncates the original, ensuring no audit events are lost during rotation.
+
+### Disk Space Monitoring
+
+Log files are the primary disk consumer in a production OpenClaw deployment. Monitor disk usage:
+
+```bash
+# Add to cron — alert if disk usage exceeds 80%
+cat >> /opt/openclaw/scripts/health-check.sh << 'DISKEOF'
+
+# Check disk usage for OpenClaw data directory
+DISK_USAGE=$(df /opt/openclaw | awk 'NR==2 {print $5}' | tr -d '%')
+if [ "$DISK_USAGE" -gt 80 ]; then
+  send_alert "OpenClaw disk usage at ${DISK_USAGE}%. Check /opt/openclaw/logs."
+fi
+DISKEOF
+```
+
+### Alerting on Token Budget Exhaustion
+
+If a developer hits their daily token limit, their Claude sessions fail silently. Set up alerts before the limit is reached:
+
+```yaml
+# In openclaw.yml
+alerts:
+  token_budget_warning_threshold: 0.8    # Alert at 80% of daily limit
+  webhook_url: ${OPENCLAW_ALERT_WEBHOOK}
+  alert_events:
+    - token_budget_warning
+    - token_budget_exhausted
+    - api_error_rate_high     # Anthropic API error rate > 5% over 5 min
+    - session_count_high      # Active sessions > 90% of max_concurrent_sessions
+```
+
+## Key Takeaways
+
+- The `/health` endpoint is the single source of truth for OpenClaw's operational state — poll it every 5 minutes.
+- Structured JSON logs make troubleshooting fast: pipe to `jq` and filter by event type.
+- The admin dashboard covers most monitoring needs; Prometheus + Grafana is for teams with existing monitoring infrastructure.
+- Configure log rotation for both `openclaw.log` (30 days) and `audit.log` (90 days minimum).
+- Alert on token budget exhaustion before developers hit the wall — silent failures are confusing.
+
+## What's Next
+
+The final lesson covers updates and rollbacks — how to upgrade OpenClaw safely and recover quickly when an update goes wrong.

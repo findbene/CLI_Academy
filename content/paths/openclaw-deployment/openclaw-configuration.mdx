@@ -1,0 +1,247 @@
+---
+title: "Configuration and Environment Variables"
+description: "Master the full OpenClaw configuration reference — server settings, authentication modes, usage policies, and model selection."
+slug: "openclaw-configuration"
+lesson_number: 5
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "configuration", "environment-variables"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand every major configuration option in OpenClaw — the `openclaw.yml` file structure, all supported environment variables, authentication modes, developer policies, and how to configure developer machines to connect to your server.
+
+## Why This Matters
+
+A working install is not the same as a well-configured one. The defaults get OpenClaw running, but production deployment requires decisions about authentication (tokens vs SSO), usage limits, which models developers can access, log retention, and how developer machines authenticate. This lesson is the reference you come back to when you need to change any of these settings.
+
+## Core Concepts
+
+### Configuration File vs Environment Variables
+
+OpenClaw uses two configuration mechanisms:
+
+**`openclaw.yml`** — Structural configuration: server behavior, auth mode, API settings, policies, logging. This file is safe to version control (it contains no secrets).
+
+**`.env` / environment variables** — Secrets and machine-specific values: API keys, passwords, hostnames, certificate paths. Never version control this.
+
+The rule: anything that differs between environments (dev, staging, prod) or contains a secret goes in environment variables. Everything else goes in `openclaw.yml`.
+
+### Full Configuration Reference
+
+#### Server Section
+
+```yaml
+server:
+  hostname: ${OPENCLAW_HOSTNAME}     # Required. Your server's FQDN
+  tls: true                          # Required in production. Always true
+  listen_port: 8443                  # Internal port (Docker maps this to 443)
+  session_timeout_minutes: 480       # How long idle sessions persist (8 hours default)
+  max_concurrent_sessions: 100       # Limit simultaneous active sessions
+  request_timeout_seconds: 300       # Max time for a single API request (5 min)
+  cors_allowed_origins: []           # Leave empty; browser access is not supported
+```
+
+**session_timeout_minutes:** This is the inactivity timeout, not the total session limit. A developer actively using Claude Code will have their session extended. Set this to match your team's working day length. 480 (8 hours) is the production default.
+
+**max_concurrent_sessions:** Prevents runaway automation jobs from consuming all server resources. Set this to roughly 2x your team size (two sessions per developer for people who keep a terminal open all day).
+
+#### Authentication Section
+
+OpenClaw supports two authentication modes:
+
+**Token mode** (default, simpler):
+
+```yaml
+auth:
+  mode: token
+  token_expiry_hours: 24           # Developer tokens expire daily
+  token_rotation: true             # Auto-rotate tokens on use
+  allow_long_lived_tokens: false   # Disable permanent tokens (safer)
+```
+
+In token mode, you create developer tokens in the admin dashboard and distribute them. Developers use `claude auth login --server YOUR_SERVER` and paste the token.
+
+**OIDC mode** (for teams with SSO):
+
+```yaml
+auth:
+  mode: oidc
+  oidc:
+    issuer: https://accounts.google.com          # Or your Okta/Azure issuer URL
+    client_id: ${OIDC_CLIENT_ID}                 # From your identity provider
+    client_secret: ${OIDC_CLIENT_SECRET}         # From your identity provider
+    redirect_uri: https://openclaw.yourdomain.com/auth/callback
+    scopes: ["openid", "email", "profile"]
+    groups_claim: groups                         # Which OIDC claim carries group membership
+```
+
+OIDC mode is recommended for teams already using Okta, Google Workspace, Azure AD, or any other OIDC provider. Developers authenticate with their company credentials — no separate token management.
+
+For OIDC, add these environment variables to your `.env`:
+```
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
+```
+
+#### API Section
+
+```yaml
+api:
+  anthropic:
+    default_model: claude-sonnet-4-6    # Model used when no --model flag is passed
+    allowed_models:                      # Models developers can request
+      - claude-haiku-4-5-20251001        # Fastest, cheapest
+      - claude-sonnet-4-6                # Balanced (recommended default)
+      - claude-opus-4-6                  # Highest capability, highest cost
+    request_timeout_seconds: 180         # Timeout for individual Anthropic API calls
+    retry_attempts: 3                    # Retries on 5xx errors from Anthropic
+    retry_delay_ms: 1000                 # Delay between retries
+```
+
+**Controlling model access:** If you want to prevent developers from accidentally using Opus (which costs 5x more than Sonnet), remove it from `allowed_models`. Developers who try to use a disallowed model will get an error explaining the restriction.
+
+#### Policies Section
+
+Policies define what developers are allowed to do, and at what scale:
+
+```yaml
+policies:
+  # Token usage limits
+  default_daily_token_limit: 500000          # Tokens per developer per day
+  default_monthly_token_limit: 10000000      # Tokens per developer per month
+
+  # Per-project overrides (team leads can set these in the dashboard)
+  per_project_limits_enabled: true
+
+  # Feature flags
+  allow_file_uploads: true           # Permit developers to upload files to context
+  allow_shell_execution: true        # Permit --dangerously-skip-permissions mode
+  allow_mcp_servers: true            # Permit MCP server connections
+  allow_hooks: true                  # Permit custom hooks in developer config
+
+  # Sensitive data controls
+  block_patterns:                    # Refuse any prompt containing these patterns
+    - regex: "password\\s*[:=]\\s*\\S+"
+      action: "redact"               # "block" or "redact"
+    - regex: "sk-[a-zA-Z0-9]{40,}"   # Anthropic API key pattern
+      action: "block"
+```
+
+**block_patterns** is a powerful feature for compliance environments. You can define regex patterns that, if found in a developer's prompt, are either redacted before sending to Anthropic or blocked entirely with an error.
+
+#### Logging Section
+
+```yaml
+logging:
+  level: info                        # debug | info | warn | error
+  path: /logs/openclaw.log           # Log file path (Docker: /logs, bare-metal: absolute path)
+  rotation: daily                    # daily | size | none
+  max_size_mb: 100                   # For size-based rotation
+  retention_days: 30                 # Delete logs older than this
+  include_prompt_snippets: false     # NEVER enable in compliance environments
+  audit_log_path: /logs/audit.log    # Separate audit log for auth events
+```
+
+**include_prompt_snippets:** This option logs the first 100 characters of each developer prompt for debugging purposes. Never enable it in production — it means developer code context is written to your log files.
+
+#### Admin Section
+
+```yaml
+admin:
+  listen_port: 8080
+  require_auth: true
+  session_timeout_minutes: 60
+  allowed_ip_ranges:                 # Restrict admin access by IP
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.0.0/16"
+```
+
+### Complete Environment Variable Reference
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ANTHROPIC_API_KEY` | Yes | Your Anthropic API key |
+| `OPENCLAW_HOSTNAME` | Yes | Your server's fully qualified domain name |
+| `OPENCLAW_DB_URL` | Yes | PostgreSQL connection string |
+| `OPENCLAW_REDIS_URL` | Yes | Redis connection string |
+| `OPENCLAW_ADMIN_SECRET` | Yes | Admin dashboard password |
+| `OPENCLAW_TLS_CERT` | Yes | Path to TLS certificate |
+| `OPENCLAW_TLS_KEY` | Yes | Path to TLS private key |
+| `OIDC_CLIENT_ID` | Only for OIDC auth | OIDC provider client ID |
+| `OIDC_CLIENT_SECRET` | Only for OIDC auth | OIDC provider client secret |
+| `OPENCLAW_LOG_LEVEL` | No | Override log level (default: info) |
+| `OPENCLAW_CONFIG_PATH` | No | Path to openclaw.yml (default: ./config/openclaw.yml) |
+
+### Developer Machine Configuration
+
+Every developer who connects to your OpenClaw server needs to configure their Claude CLI. Distribute this setup script to your team:
+
+```bash
+# Step 1: Point Claude CLI at your server
+claude config set openclaw.server https://openclaw.yourdomain.com
+
+# Step 2: If using a self-signed certificate, trust it
+# (Skip for Let's Encrypt certs)
+claude config set openclaw.tls_ca_cert /path/to/server.crt
+
+# Step 3: Authenticate
+claude auth login --server https://openclaw.yourdomain.com
+# Enter the token from the admin dashboard when prompted
+
+# Step 4: Verify
+claude --version
+# Should show your server's hostname in the output
+```
+
+For teams using SSO (OIDC mode), step 3 opens a browser window for the SSO login flow instead of prompting for a token.
+
+### Reloading Configuration Without Restart
+
+Most configuration changes take effect after a reload (not a full restart):
+
+```bash
+# Docker deployment
+docker compose exec openclaw openclaw reload
+
+# Bare-metal (systemd)
+sudo systemctl reload openclaw
+# Or: sudo kill -HUP $(systemctl show -p MainPID openclaw | cut -d= -f2)
+```
+
+Changes to `auth.mode`, `server.listen_port`, and TLS certificate paths require a full restart because they affect the listening socket.
+
+### Validating Your Configuration
+
+Before restarting, validate the config file:
+
+```bash
+# Docker
+docker compose exec openclaw openclaw validate --config /config/openclaw.yml
+
+# Bare-metal
+/opt/openclaw/bin/openclaw validate --config /opt/openclaw/config/openclaw.yml
+```
+
+Any YAML syntax errors or invalid values are printed with the line number.
+
+## Key Takeaways
+
+- `openclaw.yml` holds structural config (safe to commit); `.env` holds secrets (never commit).
+- Two auth modes: `token` (simple, good for small teams) and `oidc` (SSO, recommended for larger orgs).
+- Use `allowed_models` to control cost by restricting access to expensive models like Opus.
+- `block_patterns` lets you redact or block sensitive content in prompts — useful for compliance.
+- Never enable `include_prompt_snippets` in production — it logs developer code context to disk.
+- Validate config with `openclaw validate` before any restart to catch syntax errors early.
+
+## What's Next
+
+With OpenClaw running and configured, the next lesson covers security hardening — the steps that take you from a working deployment to a defensible one.

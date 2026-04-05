@@ -1,0 +1,164 @@
+---
+title: "Hooks: Automating Actions Around Claude Code Sessions"
+description: "Learn to configure hooks that run shell commands on Claude Code events like session end, pre-commit, and pre-push."
+slug: "hooks-and-automation"
+lesson_number: 5
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["hooks", "automation", "git"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to configure hooks in Claude Code's settings.json, write a Stop hook that auto-commits your session work, and set up a pre-push hook that blocks accidental secret commits.
+
+## Why This Matters
+
+Hooks turn Claude Code from a tool you run manually into a workflow that runs itself. The most common use case is the Stop hook: every time a Claude Code session ends, the hook automatically stages and commits the changes. This is how you ensure no work is ever lost, no matter how a session ends.
+
+## Core Concepts
+
+### What Hooks Are
+
+Hooks are shell commands configured in `~/.claude/settings.json`. Claude Code runs them automatically when specific events occur. They are not Claude Code features — they are plain shell scripts that run before or after Claude Code events using your system's shell.
+
+### Hook Events
+
+| Event | When it fires |
+|-------|--------------|
+| `Stop` | After a Claude Code session ends (user exits or session completes) |
+| `PreToolUse` | Before Claude runs a tool (file edit, shell command, etc.) |
+| `PostToolUse` | After Claude runs a tool |
+| `Notification` | When Claude Code sends a notification |
+
+The `Stop` hook is the most commonly used. It is how the auto-commit pattern works.
+
+### Configuring Hooks in settings.json
+
+Hooks live in `~/.claude/settings.json`. If the file does not exist, create it:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && git add -A && git diff --cached --quiet || git commit -m 'chore: wip — auto-commit session end $(date +%Y-%m-%d_%H:%M)'"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+This hook runs after every session. It stages all changes and commits them with a timestamped WIP message — but only if there are staged changes (the `git diff --cached --quiet ||` guard prevents empty commits).
+
+### The Auto-Commit Stop Hook (Full Pattern)
+
+Here is a production-ready Stop hook with better safety:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && git status --porcelain | grep -q . && git add -A && git commit -m 'chore: wip — auto-commit session end $(date +%Y-%m-%d_%H:%M)' || true"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The `git status --porcelain | grep -q .` check confirms there are actually changes before trying to commit. The `|| true` at the end ensures the hook never fails loudly (which would block Claude Code from exiting cleanly).
+
+### Git Pre-Commit Hook: Block Secret Leaks
+
+This is a `.git/hooks/pre-commit` script (not a Claude Code hook — a Git hook), but Claude Code respects it:
+
+```bash
+#!/bin/bash
+# Block commits that contain common secret patterns
+
+SECRETS_PATTERN='(ANTHROPIC_API_KEY|sk-ant-api|ghp_|AKIA|password\s*=|secret\s*=)'
+
+if git diff --cached --name-only | xargs grep -qEi "$SECRETS_PATTERN" 2>/dev/null; then
+  echo "ERROR: Possible secret detected in staged files. Aborting commit."
+  echo "Check your staged changes for API keys, passwords, or tokens."
+  exit 1
+fi
+```
+
+Install it:
+```bash
+cp pre-commit-script.sh .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+<TipBlock>Add this pre-commit hook to every project that touches Claude Code sessions. The Stop hook may auto-commit files you haven't reviewed — the pre-commit hook is your last line of defense before secrets reach your git history.</TipBlock>
+
+### Pre-Push Hook: Block Pushes with Uncommitted Changes
+
+The CLI Academy project itself uses this pattern:
+
+```bash
+#!/bin/bash
+# Block push if there are uncommitted changes or untracked source files
+
+if ! git diff --quiet HEAD; then
+  echo "ERROR: You have uncommitted changes. Commit or stash them before pushing."
+  exit 1
+fi
+
+if git status --porcelain | grep -q "^??.*\.\(ts\|tsx\|py\|js\)"; then
+  echo "ERROR: Untracked source files exist. Review and stage them before pushing."
+  exit 1
+fi
+```
+
+### Hook Environment Variables
+
+Claude Code provides these variables to hook scripts:
+
+| Variable | Value |
+|----------|-------|
+| `$CLAUDE_PROJECT_DIR` | Absolute path to the project root where Claude Code was launched |
+| `$CLAUDE_SESSION_ID` | Unique ID for the current session |
+
+### Global vs. Project Hooks
+
+Hooks in `~/.claude/settings.json` are global — they run for every project. If you need project-specific hooks, add a `.claude/settings.json` at the project root (same format). Project-level hooks run in addition to global hooks.
+
+### Debugging a Hook That Is Not Running
+
+1. Check that `settings.json` is valid JSON: `cat ~/.claude/settings.json | python3 -m json.tool`
+2. Test the hook command manually in your terminal to make sure it works
+3. Check that `$CLAUDE_PROJECT_DIR` is set: `echo $CLAUDE_PROJECT_DIR` inside a Claude session
+4. Look for any syntax errors in the command string — special characters need escaping
+
+## Key Takeaways
+
+- Hooks are shell commands configured in `~/.claude/settings.json` that run on Claude Code events.
+- The `Stop` hook is the most useful — use it to auto-commit session work.
+- Use `git diff --cached --quiet ||` guards to prevent empty commits.
+- Add a git pre-commit hook separately to block secret leaks before they reach history.
+- Debug hooks by running the command manually and checking for JSON syntax errors.
+
+## What's Next
+
+In the next lesson, you will learn about slash commands and skills — how to use the built-in slash commands, how to create your own custom `/commands`, and how skills extend Claude Code with specialized knowledge packages.

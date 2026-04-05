@@ -1,0 +1,258 @@
+---
+title: "Testing and Debugging MCP Servers"
+description: "Unit-test your MCP server in isolation, use the MCP inspector, and diagnose live session issues with debug logging."
+slug: "testing-and-debugging"
+lesson_number: 7
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "mcp@2025"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  mcp: "2025"
+has_safety_warning: false
+tags: ["mcp", "testing", "debugging", "inspector"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to test MCP server tool handlers in isolation without running Claude Code, use the MCP inspector for interactive debugging, and diagnose common live-session failures with debug logging.
+
+## Why This Matters
+
+An MCP server that only works when Claude Code is running is hard to develop and harder to debug. The tools in this lesson let you test your server independently, catch issues before they reach a live session, and diagnose problems when they do.
+
+## Core Concepts
+
+### Testing Tool Handlers in Isolation
+
+The most valuable test pattern: call your tool handler functions directly without the MCP protocol layer.
+
+If you structure your server code to separate the tool handler logic from the MCP scaffolding, you can write standard unit tests:
+
+```typescript
+// src/tools/employee.ts — business logic only
+export async function getEmployee(id: string, apiUrl: string, apiToken: string) {
+  const response = await fetch(`${apiUrl}/employees/${id}`, {
+    headers: { Authorization: `Bearer ${apiToken}` },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) throw new Error(`Employee ${id} not found`);
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// src/index.ts — MCP layer calls the business logic
+import { getEmployee } from "./tools/employee.js";
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name === "get_employee") {
+    try {
+      const { employee_id } = GetEmployeeSchema.parse(request.params.arguments);
+      const result = await getEmployee(
+        employee_id,
+        process.env.INTERNAL_API_URL!,
+        process.env.INTERNAL_API_TOKEN!
+      );
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    } catch (error) {
+      return { isError: true, content: [{ type: "text", text: String(error) }] };
+    }
+  }
+});
+```
+
+Unit tests for the business logic:
+
+```typescript
+// src/tools/employee.test.ts
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { getEmployee } from "./employee.js";
+
+// Use msw or fetch-mock for HTTP mocking
+describe("getEmployee", () => {
+  it("returns employee data for a valid ID", async () => {
+    const result = await getEmployee("EMP-1234", "http://mock-api", "test-token");
+    expect(result).toMatchObject({
+      id: "EMP-1234",
+      name: expect.any(String),
+    });
+  });
+
+  it("throws a helpful error for unknown employee IDs", async () => {
+    await expect(
+      getEmployee("EMP-XXXX", "http://mock-api", "test-token")
+    ).rejects.toThrow("Employee EMP-XXXX not found");
+  });
+});
+```
+
+This test pattern does not require Claude Code at all — you are testing pure TypeScript functions with standard test tools.
+
+### The MCP Inspector
+
+The MCP Inspector is Anthropic's official tool for interactively testing MCP servers:
+
+```bash
+# Install the inspector
+npm install -g @modelcontextprotocol/inspector
+
+# Start your server in inspector mode
+npx @modelcontextprotocol/inspector node dist/index.js
+```
+
+This opens a web UI (default: `http://localhost:5173`) where you can:
+- See all tools your server exposes with their full schemas
+- Call any tool with custom arguments and see the raw response
+- Inspect the JSON-RPC messages being exchanged
+- Test error handling by providing invalid inputs
+
+The inspector is the fastest way to verify that your tool schemas and handlers work correctly before connecting them to Claude Code.
+
+**Testing with the inspector:**
+
+1. Open the inspector UI
+2. Click the tool you want to test
+3. Fill in the arguments form
+4. Click "Call Tool"
+5. Inspect the response — especially `isError` cases
+
+### Debug Logging in Claude Code
+
+When a server is connected but behaving unexpectedly in a live session, enable MCP debug logging:
+
+```bash
+# Start Claude Code with MCP debug output
+claude --mcp-debug
+```
+
+This prints every MCP message to stderr:
+- Server startup and tool list
+- Every tool call with its arguments
+- Every tool response (truncated for large responses)
+- Connection errors and server crashes
+
+**Filtering debug output:**
+
+```bash
+# Save debug output to a file for analysis
+claude --mcp-debug 2>/tmp/mcp-debug.log
+
+# In another terminal, watch for specific server output
+tail -f /tmp/mcp-debug.log | grep "my-internal-api"
+```
+
+### In-Session Debugging Commands
+
+Inside a Claude Code session:
+
+```
+/mcp
+```
+
+Lists all configured servers with status:
+```
+MCP Servers:
+  ✓ github (connected) — 15 tools
+  ✓ internal-api (connected) — 2 tools
+  ✗ slack (error) — spawn ENOENT
+```
+
+For a server showing as error, the error message is the starting point for diagnosis.
+
+### Common Failures and Fixes
+
+**`spawn ENOENT`**
+The command in your server config does not exist. Check that `command` and `args` form a valid executable path.
+```json
+// Wrong
+"command": "node", "args": ["my-server/index.js"]
+// Right — use absolute path or ensure CWD is correct
+"command": "node", "args": ["/Users/alice/my-server/dist/index.js"]
+```
+
+**Server shows connected but `/mcp` shows 0 tools**
+The server started but returned an empty tool list. Usually a credentials issue — the server checks credentials on startup and silently disables tools if they are invalid. Add a startup credential check that logs clearly:
+
+```typescript
+// At server startup
+const apiUrl = process.env.INTERNAL_API_URL;
+const apiToken = process.env.INTERNAL_API_TOKEN;
+
+if (!apiUrl || !apiToken) {
+  // Write to stderr — this shows in --mcp-debug output
+  process.stderr.write(
+    "[my-internal-api] ERROR: INTERNAL_API_URL and INTERNAL_API_TOKEN must be set\n"
+  );
+  process.exit(1);
+}
+```
+
+**Tool call hangs and never returns**
+Your handler is awaiting a network call that never resolves. Add a timeout to all external calls:
+
+```typescript
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+try {
+  const response = await fetch(url, { signal: controller.signal });
+  // ...
+} finally {
+  clearTimeout(timeout);
+}
+```
+
+**`JSON parse error` in tool arguments**
+Claude is sending arguments that do not match your tool's input schema. Your schema description may be ambiguous. Review the tool's `inputSchema` and make field descriptions more specific.
+
+### Writing a Server Health Check
+
+Add a `ping` tool to every custom server — it verifies connectivity and credentials without doing anything consequential:
+
+```typescript
+// In ListToolsRequestSchema handler, add:
+{
+  name: "ping",
+  description: "Health check — verifies the server is running and credentials are valid. Use to test connectivity.",
+  inputSchema: { type: "object", properties: {} },
+}
+
+// In CallToolRequestSchema handler, add:
+if (name === "ping") {
+  try {
+    // Make a cheap API call to verify credentials
+    const response = await fetch(`${process.env.INTERNAL_API_URL}/health`, {
+      headers: { Authorization: `Bearer ${process.env.INTERNAL_API_TOKEN}` },
+    });
+    return {
+      content: [{
+        type: "text",
+        text: response.ok ? "OK" : `API returned ${response.status}`,
+      }],
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      content: [{ type: "text", text: `Connection failed: ${error}` }],
+    };
+  }
+}
+```
+
+When diagnosing a server issue: "Using the internal-api, call ping" tells you immediately whether the server can reach its backend.
+
+## Key Takeaways
+
+- Separate business logic from MCP scaffolding so you can unit-test handlers without Claude Code.
+- The MCP Inspector (`npx @modelcontextprotocol/inspector`) provides an interactive UI for testing any server.
+- `claude --mcp-debug` logs all MCP messages — essential for diagnosing live-session issues.
+- Add a `ping` tool to every custom server as a connectivity health check.
+- The most common failures: `spawn ENOENT` (command not found), 0 tools (credential check failed), hanging calls (missing timeouts).
+
+## What's Next
+
+The next lesson covers production patterns — running MCP servers reliably in team environments with monitoring, versioning, and shared configuration.

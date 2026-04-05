@@ -1,0 +1,129 @@
+---
+title: "Business Data Analysis Workflows"
+description: "Use CoWork to analyze spreadsheets, synthesize survey data, and generate data-driven business insights."
+slug: "cowork-for-analysis"
+lesson_number: 5
+estimated_minutes: 12
+tier_required: "free"
+version_label: "claude-cowork@preview"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-cowork: "preview"
+has_safety_warning: false
+tags: ["cowork", "analysis", "data"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to give CoWork structured data to analyze, how to frame analysis tasks so they produce useful outputs, how to interpret what CoWork produces reliably versus what you must validate, and how to use CoWork analysis to support decisions without outsourcing the decision itself.
+
+## Why This Matters
+
+Data analysis is often the bottleneck between having information and making decisions. CoWork can read a spreadsheet, identify patterns, and write an analysis memo faster than most analysts can open the file. But it is not a data scientist — it works with patterns in text, not statistical significance. Knowing what it is good at (synthesis, summarization, comparison) and what it is not (rigorous statistical inference, real-time data) determines whether you use it well or badly.
+
+## Core Concepts
+
+### What CoWork Can Analyze
+
+CoWork handles structured, text-readable data well:
+
+| Data type | What CoWork does well |
+|-----------|----------------------|
+| Spreadsheets (.csv, .xlsx) | Summarize columns, identify trends, compare rows, flag outliers |
+| Survey responses | Synthesize themes, count sentiment, identify top concerns |
+| Sales data exports | Summarize pipeline stages, compare periods, identify patterns |
+| Customer feedback (CSV) | Theme clustering, sentiment summary, top-issue identification |
+| Financial reports (text) | Extract key metrics, compare periods, identify variances |
+
+CoWork does not perform statistical significance testing, regression analysis, or forecasting. For rigorous quantitative analysis, you still need tools like Excel, Python, or a data analyst.
+
+### Framing an Analysis Task
+
+The most common mistake with analysis tasks is asking CoWork to "analyze this data" without telling it what decision the analysis should support.
+
+**Too vague:**
+> "Analyze this customer survey data."
+
+**Useful:**
+> "I need to present our Q1 customer satisfaction findings to the leadership team next week. The decision we need to make: should we invest in improving onboarding or improving support response time? Here is the survey data [uploaded]. Identify the top themes from open-ended responses, summarize the NPS distribution, and give me a 1-paragraph recommendation on which area to prioritize."
+
+The second version tells CoWork: the audience, the decision, the data, the format, and the output to produce. It gets an analysis memo you can actually use.
+
+### Uploading Data for Analysis
+
+**CSV files:** Upload directly. CoWork reads CSV well.
+
+**Excel files (.xlsx):** Export to CSV first if the analysis involves a single table. Complex multi-sheet Excel files may not parse perfectly.
+
+**Survey exports:** Most survey tools (Typeform, Google Forms, SurveyMonkey) can export as CSV. Use that export.
+
+**Text-based reports (PDFs):** Upload the PDF. CoWork reads PDF text but may struggle with complex tables or charts embedded as images.
+
+<TipBlock>For large datasets (thousands of rows), ask CoWork to analyze a representative sample first. This confirms it is reading the data correctly before you commit to a full analysis run.</TipBlock>
+
+### Asking Follow-Up Questions
+
+CoWork maintains context within a project. After an initial analysis, you can ask follow-ups without re-uploading the data:
+
+> "In the previous analysis, you said support response time was the top concern. Which customer segments mentioned it most? Break it down by company size if that data is in the spreadsheet."
+
+> "Rewrite the recommendation paragraph assuming we cannot invest in both areas and must choose one. Be more direct about the tradeoff."
+
+### What CoWork's Analysis Is and Is Not
+
+**CoWork analysis is:**
+- Pattern recognition in the data you provide
+- Synthesized summary of what the data says
+- A structured starting point for your own judgment
+- Faster than reading 500 survey responses manually
+
+**CoWork analysis is not:**
+- Statistically rigorous (no confidence intervals, no significance testing)
+- Real-time (it cannot access live data)
+- Independently verifiable (you cannot see its reasoning chain the way you can in a spreadsheet)
+- A replacement for domain expertise
+
+Always treat CoWork analysis as a first draft, not a final answer. The pattern recognition is usually right at a high level. The edge cases and nuances need human review.
+
+### The Analysis → Decision Firewall
+
+CoWork can support decisions. It should not make them.
+
+Even when CoWork produces a "recommendation," that recommendation reflects the patterns in the data and the framing of your task. It does not know:
+- Your company's strategic priorities
+- Budget constraints you have not mentioned
+- Political context in your organization
+- Risk tolerance at your leadership level
+- What happened last quarter that makes this data misleading
+
+Use CoWork to get to a position faster ("here is what the data suggests"), then apply your judgment to reach the actual decision ("here is what we should do given everything else we know").
+
+### A Sample Workflow: Customer Feedback Analysis
+
+```
+1. Export customer feedback from Zendesk/Intercom as CSV
+2. Upload to CoWork inside a new project: "Q1 Customer Analysis"
+3. Give this brief:
+   "Analyze 500 customer support tickets from Q1. I need to present top themes 
+   to the product team to inform Q2 priorities. Output: top 5 themes with 
+   representative quotes, estimated volume per theme, 1-paragraph 
+   recommendation on highest-impact area to fix."
+4. Review the output
+5. Validate 5-10 individual tickets against the themes CoWork identified
+6. Use the validated output in your presentation
+```
+
+Step 5 — spot-checking against the raw data — is not optional. It is how you catch the cases where CoWork's theme labeling is off.
+
+## Key Takeaways
+
+- CoWork analyzes CSV, survey exports, text-based reports, and structured data files well.
+- Frame analysis tasks with audience, decision to be supported, and required output format.
+- CoWork is strong at synthesis and pattern recognition; it is not a statistics tool.
+- Always ask follow-up questions within the project to deepen or redirect the analysis.
+- Never outsource the actual decision to CoWork — use its output to accelerate your judgment.
+
+## What's Next
+
+In the next lesson, you will learn the prompting patterns that make CoWork most reliable — how to structure tasks for consistent results and how to redirect when CoWork goes off-track.

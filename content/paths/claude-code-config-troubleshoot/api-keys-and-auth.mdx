@@ -1,0 +1,142 @@
+---
+title: "API Keys and Authentication"
+description: "How Claude Code reads your Anthropic API key, where to store it safely, and what to do when authentication breaks."
+slug: "api-keys-and-auth"
+lesson_number: 2
+estimated_minutes: 10
+tier_required: "free"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-05"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: true
+tags: ["authentication", "api-keys", "security"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know exactly how Claude Code reads your Anthropic API key, the three safe ways to provide it, how to rotate a key without breaking your workflow, and the most common auth errors with their fixes.
+
+## Why This Matters
+
+Your Anthropic API key is a credential with a billing account attached. If it leaks into a public repository or a log file, someone else runs up your bill and you have to scramble to rotate it. Most API key leaks are not caused by hacking — they are caused by developers not knowing the safe patterns. This lesson covers those patterns.
+
+## Core Concepts
+
+### Where Claude Code Looks for Your Key
+
+Claude Code reads your API key from the `ANTHROPIC_API_KEY` environment variable. That is the only place it looks automatically.
+
+```bash
+echo $ANTHROPIC_API_KEY
+# sk-ant-api03-...
+```
+
+If the variable is not set, Claude Code will prompt you to run `claude auth` to authenticate interactively.
+
+### Three Safe Ways to Set the Key
+
+**Option 1: Shell profile (persistent, personal)**
+
+Add the key to your shell's startup file. This sets it automatically for every session.
+
+For zsh (macOS default):
+```bash
+echo 'export ANTHROPIC_API_KEY="sk-ant-api03-..."' >> ~/.zshrc
+source ~/.zshrc
+```
+
+For bash:
+```bash
+echo 'export ANTHROPIC_API_KEY="sk-ant-api03-..."' >> ~/.bashrc
+source ~/.bashrc
+```
+
+<WarnBlock>Never paste your actual key into shell history. Use the `echo` + redirect approach, or open the file directly in a text editor to paste it in. Running `export ANTHROPIC_API_KEY=sk-ant-api03-...` directly in the terminal stores the key in your shell history.</WarnBlock>
+
+**Option 2: `.env` file (per-project, never committed)**
+
+Create a `.env` file at the project root:
+```
+ANTHROPIC_API_KEY=sk-ant-api03-...
+```
+
+Then load it before running Claude Code:
+```bash
+source .env && claude
+```
+
+Or use a tool like `direnv` to auto-load it when you enter the directory.
+
+**Critical:** add `.env` to `.gitignore` before anything else:
+```bash
+echo ".env" >> .gitignore
+git add .gitignore
+git commit -m "chore: ignore .env"
+```
+
+**Option 3: `claude auth` (interactive login)**
+
+Running `claude auth` opens an interactive login flow that stores a token in `~/.claude/`. This is the simplest option if you use a single machine.
+
+```bash
+claude auth
+# Opens browser / prompts for API key
+# Stores token securely in ~/.claude/
+```
+
+### How to Rotate Your Key Safely
+
+1. Go to console.anthropic.com → API Keys → Create new key
+2. Update your shell profile or `.env` file with the new key
+3. Test: `claude --version` (should work without auth errors)
+4. Delete the old key in the Anthropic console
+5. If you use CI/CD, update the secret there too
+
+### Headless Authentication (CI/CD)
+
+For automated pipelines where there is no browser, pass the key as an environment variable directly:
+
+```bash
+ANTHROPIC_API_KEY=$YOUR_SECRET claude --print "summarize this file" --no-interactive
+```
+
+Never hardcode the key in scripts. Always read it from the environment or a secrets manager.
+
+### Common Auth Errors and Fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `ANTHROPIC_API_KEY not set` | Variable not in environment | Add to shell profile and `source` it |
+| `Invalid API key` | Key is wrong or revoked | Verify in Anthropic console, re-paste key |
+| `Insufficient funds` | Account has no credits | Add credits at console.anthropic.com |
+| `Rate limit exceeded` | Too many requests | Wait and retry, or check your usage tier |
+| `Model not available` | Wrong model ID or no access | Check supported model IDs for your account |
+
+### Checking Your Key Is Set Correctly
+
+```bash
+# Check if the variable is set
+echo $ANTHROPIC_API_KEY
+
+# Verify Claude Code can auth
+claude --version
+
+# Test a real API call
+claude --print "say hello" --no-interactive
+```
+
+If `claude --version` works but `claude --print` fails with auth errors, your key is not reaching the environment. Double-check you sourced your profile after editing it.
+
+## Key Takeaways
+
+- Claude Code reads the `ANTHROPIC_API_KEY` environment variable. Nothing else.
+- Set it in your shell profile for personal machines, in `.env` for per-project use (never committed), or via `claude auth` for interactive login.
+- Never run `export ANTHROPIC_API_KEY=...` directly — it stores the key in shell history.
+- Always add `.env` to `.gitignore` before creating it.
+- Rotate keys immediately if you suspect a leak: create new, update config, delete old.
+
+## What's Next
+
+In the next lesson, you will learn how to choose between Claude's model tiers — Haiku, Sonnet, and Opus — and how to set the model in Claude Code based on your task and budget.
