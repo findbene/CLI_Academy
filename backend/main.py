@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 
@@ -31,6 +32,19 @@ def _parse_allowed_origins() -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Lifespan (replaces deprecated @app.on_event)
+# ---------------------------------------------------------------------------
+
+
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI):  # noqa: ARG001
+    origins = _parse_allowed_origins()
+    logger.info("CLI Academy backend starting. Allowed origins: %s", origins)
+    yield
+    logger.info("CLI Academy backend shutting down.")
+
+
+# ---------------------------------------------------------------------------
 # Application
 # ---------------------------------------------------------------------------
 
@@ -40,6 +54,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -56,18 +71,3 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(tutor.router)
-
-# ---------------------------------------------------------------------------
-# Startup / shutdown events
-# ---------------------------------------------------------------------------
-
-
-@app.on_event("startup")
-async def on_startup() -> None:
-    origins = _parse_allowed_origins()
-    logger.info("CLI Academy backend starting. Allowed origins: %s", origins)
-
-
-@app.on_event("shutdown")
-async def on_shutdown() -> None:
-    logger.info("CLI Academy backend shutting down.")
