@@ -5,9 +5,11 @@ from collections.abc import AsyncGenerator
 from typing import Literal
 
 import anthropic
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
+
+from auth import verify_supabase_jwt
 
 logger = logging.getLogger(__name__)
 
@@ -35,18 +37,6 @@ class LessonContext(BaseModel):
 class TutorStreamRequest(BaseModel):
     messages: list[ChatMessage] = Field(..., min_length=1)
     context: LessonContext = Field(default_factory=LessonContext)
-    user_id: str = Field(..., min_length=1)
-    limit_total: int = Field(..., ge=1)
-    limit_used: int = Field(..., ge=0)
-
-    @model_validator(mode="after")
-    def validate_limits(self) -> "TutorStreamRequest":
-        if self.limit_used >= self.limit_total:
-            raise ValueError(
-                f"Daily message limit reached ({self.limit_used}/{self.limit_total}). "
-                "Upgrade to Pro for more tutor messages."
-            )
-        return self
 
 
 # ---------------------------------------------------------------------------
@@ -103,7 +93,7 @@ def _sse_raw(value: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-async def _stream_tutor(request: TutorStreamRequest) -> AsyncGenerator[str, None]:
+async def _stream_tutor(request: TutorStreamRequest, user_id: str) -> AsyncGenerator[str, None]:
     model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
     system_prompt = _build_system_prompt(request.context)
 
@@ -130,7 +120,7 @@ async def _stream_tutor(request: TutorStreamRequest) -> AsyncGenerator[str, None
         yield _sse({"type": "error", "message": "API authentication failed. Contact support."})
 
     except anthropic.RateLimitError as exc:
-        logger.warning("Anthropic rate limit hit for user %s: %s", request.user_id, exc)
+        logger.warning("Anthropic rate limit hit for user %s: %s", user_id, exc)
         yield _sse(
             {
                 "type": "error",
@@ -142,7 +132,7 @@ async def _stream_tutor(request: TutorStreamRequest) -> AsyncGenerator[str, None
         logger.error(
             "Anthropic API status error %s for user %s: %s",
             exc.status_code,
-            request.user_id,
+            user_id,
             exc.message,
         )
         yield _sse(
@@ -153,7 +143,7 @@ async def _stream_tutor(request: TutorStreamRequest) -> AsyncGenerator[str, None
         )
 
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Unexpected error in tutor stream for user %s: %s", request.user_id, exc)
+        logger.exception("Unexpected error in tutor stream for user %s: %s", user_id, exc)
         yield _sse(
             {
                 "type": "error",
@@ -168,24 +158,25 @@ async def _stream_tutor(request: TutorStreamRequest) -> AsyncGenerator[str, None
 
 
 @router.post("/stream")
-async def tutor_stream(request: TutorStreamRequest) -> StreamingResponse:
+async def tutor_stream(
+    request: TutorStreamRequest,
+    user_id: str = Depends(verify_supabase_jwt),
+) -> StreamingResponse:
     """
     Stream a tutor response as Server-Sent Events.
 
-    Validates that the learner has not exceeded their daily message limit before
-    opening the Anthropic stream. Each SSE event is a JSON object with a `type`
-    field: `delta` (partial text), `done` (stream finished), or `error`.
+    Requires a valid Supabase JWT in the Authorization header. Each SSE event
+    is a JSON object with a `type` field: `delta` (partial text), `done`
+    (stream finished), or `error`.
     """
     logger.info(
-        "Tutor stream requested by user=%s lesson=%s used=%d/%d",
-        request.user_id,
+        "Tutor stream requested by user=%s lesson=%s",
+        user_id,
         request.context.lesson_slug or "general",
-        request.limit_used,
-        request.limit_total,
     )
 
     return StreamingResponse(
-        _stream_tutor(request),
+        _stream_tutor(request, user_id),
         media_type="text/event-stream",
         headers={
             # Prevent buffering in proxies / nginx.
