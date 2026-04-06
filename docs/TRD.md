@@ -17,7 +17,7 @@ CLI Academy is an independent monorepo intended to contain:
 
 Current snapshot reality:
 
-- `app/` needs rebuilding
+- `app/` now has a rebuilt recovery scaffold with the core route tree restored
 - `backend/` is a thin scaffold
 - `infrastructure/schema.sql` is a useful baseline
 - `content/` contains substantial lesson drafts

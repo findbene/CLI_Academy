@@ -51,18 +51,19 @@ This repo currently contains:
 - Strong product and curriculum planning documents
 - A real Supabase schema baseline
 - A thin FastAPI backend scaffold
+- A rebuilt Next.js recovery scaffold in `app/` with the core route tree restored
 - Strong beginner/setup lesson content plus advanced content drafts
 - AI-builder operating rules
 - Starter repository structure
 - Small validation scripts
 
-It does not yet contain the rebuilt learner frontend, mature trust/download systems, or the full production product implementation. The next build step is to rebuild the learner app around the setup-and-troubleshooting core documented in `docs/`.
+It does not yet contain the fully rewired production learner app, mature trust/download systems, or the full auth/data/billing integrations. The current frontend is a recovery scaffold that restores the route architecture and key surfaces so the product can be rebuilt on top of real structure again.
 
 ## Repo Map
 
 - `docs/` - blueprint and supporting product/technical/brand docs
 - `.agents/` - product marketing context for future marketing work
-- `app/` - planned Next.js frontend home; currently needs rebuilding
+- `app/` - rebuilt Next.js frontend recovery scaffold; still needs full data/auth/billing rewiring
 - `backend/` - thin FastAPI backend scaffold
 - `agents/` - planned internal agent system home
 - `content/` - planned curriculum, assets, and lesson source

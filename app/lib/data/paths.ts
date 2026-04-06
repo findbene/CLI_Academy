@@ -1,0 +1,207 @@
+export type PathTier = "free" | "pro";
+export type PathStatus = "available" | "coming-soon";
+
+export interface PathMeta {
+  slug: string;
+  title: string;
+  summary: string;
+  section: string;
+  tier: PathTier;
+  status: PathStatus;
+  lessonCount: number;
+  estimatedHours: string;
+}
+
+export const PATH_SECTIONS = [
+  "Foundations",
+  "Agent Infrastructure",
+  "Self-Hosting",
+  "OpenClaw Ecosystem",
+  "Workflows",
+  "Professional Tracks",
+] as const;
+
+export const PATHS: PathMeta[] = [
+  {
+    slug: "claude-code-beginners",
+    title: "Claude Code for Beginners",
+    summary: "The flagship zero-to-first-win path for learners who need a safe, step-by-step start.",
+    section: "Foundations",
+    tier: "free",
+    status: "available",
+    lessonCount: 8,
+    estimatedHours: "1-2 hours",
+  },
+  {
+    slug: "claude-code-windows",
+    title: "Claude Code on Windows",
+    summary: "Choose the right Windows environment, handle file quirks, and get your first real run working.",
+    section: "Foundations",
+    tier: "free",
+    status: "available",
+    lessonCount: 6,
+    estimatedHours: "1-2 hours",
+  },
+  {
+    slug: "claude-code-macos",
+    title: "Claude Code on macOS",
+    summary: "Set up Homebrew, Node, zsh, and Apple Silicon-friendly workflows without permission pain.",
+    section: "Foundations",
+    tier: "free",
+    status: "available",
+    lessonCount: 5,
+    estimatedHours: "1-2 hours",
+  },
+  {
+    slug: "claude-code-config-troubleshoot",
+    title: "Claude Code Setup, Config & Troubleshoot",
+    summary: "Solve auth, config, permission, model, hook, and MCP problems with calmer troubleshooting.",
+    section: "Foundations",
+    tier: "free",
+    status: "available",
+    lessonCount: 8,
+    estimatedHours: "2-3 hours",
+  },
+  {
+    slug: "claude-cowork",
+    title: "Claude CoWork: Agentic Knowledge Work",
+    summary: "Learn what CoWork is, how to get access, and how to use it productively for documents and research.",
+    section: "Foundations",
+    tier: "free",
+    status: "available",
+    lessonCount: 7,
+    estimatedHours: "1-2 hours",
+  },
+  {
+    slug: "mcp-mastery",
+    title: "MCP Server Mastery",
+    summary: "Understand MCP, connect servers safely, and build the right mental model before going deeper.",
+    section: "Agent Infrastructure",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 9,
+    estimatedHours: "3-4 hours",
+  },
+  {
+    slug: "vps-deployment",
+    title: "Claude Code on a VPS",
+    summary: "Learn when a VPS makes sense, how to secure it, and how to run headless agent workflows safely.",
+    section: "Self-Hosting",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 10,
+    estimatedHours: "4-5 hours",
+  },
+  {
+    slug: "openclaw-deployment",
+    title: "OpenClaw Deployment",
+    summary: "The advanced self-hosted runtime path for teams that need more operational control.",
+    section: "OpenClaw Ecosystem",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 8,
+    estimatedHours: "4-6 hours",
+  },
+  {
+    slug: "nemoclaw-runtime",
+    title: "NemoClaw Runtime",
+    summary: "Advanced deployment guidance for NVIDIA-oriented environments and runtime constraints.",
+    section: "OpenClaw Ecosystem",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 6,
+    estimatedHours: "3-4 hours",
+  },
+  {
+    slug: "zeroclaw-quickstart",
+    title: "ZeroClaw Quickstart",
+    summary: "A faster, lighter OpenClaw-adjacent path for latency-sensitive or constrained environments.",
+    section: "OpenClaw Ecosystem",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 5,
+    estimatedHours: "2-3 hours",
+  },
+  {
+    slug: "autoclaw-automation",
+    title: "AutoClaw Automation",
+    summary: "Headless automation patterns, task scheduling, and agentic runtime operations.",
+    section: "OpenClaw Ecosystem",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 7,
+    estimatedHours: "3-4 hours",
+  },
+  {
+    slug: "workflow-automation",
+    title: "AI Workflow Automation",
+    summary: "A practical bridge from one-off prompts to repeatable, safe automation systems.",
+    section: "Workflows",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 7,
+    estimatedHours: "3-4 hours",
+  },
+  {
+    slug: "claude-code-for-marketers",
+    title: "Claude Code for Marketers",
+    summary: "Content systems, reporting, SEO operations, and workflow support for modern marketing teams.",
+    section: "Professional Tracks",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 7,
+    estimatedHours: "2-3 hours",
+  },
+  {
+    slug: "claude-code-for-founders",
+    title: "Claude Code for Founders",
+    summary: "Use Claude Code for validation, internal tooling, ops, and faster decision-making.",
+    section: "Professional Tracks",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 7,
+    estimatedHours: "2-3 hours",
+  },
+  {
+    slug: "claude-code-for-sales",
+    title: "Claude Code for Sales",
+    summary: "Research, outreach support, CRM workflows, and repeatable sales operations.",
+    section: "Professional Tracks",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 7,
+    estimatedHours: "2-3 hours",
+  },
+  {
+    slug: "claude-code-for-analysts",
+    title: "Claude Code for Analysts",
+    summary: "Cleaner data work, better reporting, and analysis workflows that save time without adding chaos.",
+    section: "Professional Tracks",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 7,
+    estimatedHours: "2-3 hours",
+  },
+  {
+    slug: "claude-code-for-students",
+    title: "Claude Code for Students",
+    summary: "Research, studying, projects, and responsible use patterns for learners who want a practical edge.",
+    section: "Professional Tracks",
+    tier: "pro",
+    status: "coming-soon",
+    lessonCount: 6,
+    estimatedHours: "2-3 hours",
+  },
+];
+
+export function getAllPaths() {
+  return PATHS;
+}
+
+export function getPathBySlug(slug: string) {
+  return PATHS.find((path) => path.slug === slug);
+}
+
+export function getPathsBySection(section: string) {
+  return PATHS.filter((path) => path.section === section);
+}

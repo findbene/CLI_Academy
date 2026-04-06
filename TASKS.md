@@ -9,9 +9,10 @@ After the repo audit on 2026-04-06, this is the current truth:
 - the repo has strong product and curriculum planning docs
 - the repo has a real schema baseline in `infrastructure/schema.sql`
 - the repo has a thin FastAPI backend scaffold
+- the repo has a rebuilt Next.js recovery scaffold in `app/`
 - the repo has strong beginner/setup lesson content
-- the current snapshot does **not** contain the rebuilt learner frontend in `app/`
-- the repo should be treated as a selective salvage plus rebuild, not as a near-launch product
+- the frontend route architecture is restored, but the real auth/data/billing logic still needs rewiring
+- the repo should still be treated as a selective salvage plus rebuild, not as a near-launch product
 
 Use this file as the source of truth going forward.
 
@@ -32,17 +33,21 @@ Use this file as the source of truth going forward.
 
 ### Frontend
 
-- [ ] Scaffold and commit the new Next.js frontend in `app/`
-- [ ] Build public marketing shell
+- [x] Scaffold and commit the new Next.js frontend in `app/`
+- [x] Build public marketing shell
+- [x] Restore route-group architecture and core page skeletons
+- [x] Restore recovered API route surface in `app/api`
+- [x] Restore lesson route shell and filesystem-backed content loading
+- [x] Build dashboard shell
+- [x] Build setup-first path catalog
+- [x] Build path detail pages
+- [x] Build downloads center shell
+- [x] Build floating tutor shell
 - [ ] Build onboarding flow
-- [ ] Build dashboard shell
-- [ ] Build setup-first path catalog
-- [ ] Build path detail pages
 - [ ] Build lesson player with support for warnings, screenshots, diagrams, and recap blocks
-- [ ] Build downloads center
-- [ ] Build troubleshooting center
-- [ ] Build compatibility matrix UI
-- [ ] Build floating tutor shell
+- [x] Build troubleshooting center
+- [x] Build compatibility matrix UI
+- [ ] Replace recovery-mode stubs with real Supabase, Stripe, and Anthropic integrations
 
 ### Backend
 
