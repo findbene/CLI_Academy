@@ -5,10 +5,10 @@ Last updated: 2026-04-03
 ## Product Overview
 
 **One-liner:**
-CLI Academy is the safest, most beginner-friendly way to go from zero to productive with Claude Code and secure AI agent workflows.
+CLI Academy is the safest, most beginner-friendly place to set up, troubleshoot, understand, and start using Claude Code, Claude CoWork, and related agentic tools on real machines and environments.
 
 **What it does:**
-It helps learners install, configure, understand, troubleshoot, and safely use Claude-based tools through guided paths, verified labs, contextual tutoring, and practical downloads. It is designed to turn curiosity into confident use, not just content consumption.
+It helps learners install, configure, verify, troubleshoot, and start using Claude-based tools through guided setup paths, visual lessons, contextual tutoring, compatibility guidance, and practical downloads. It is designed to turn fear and confusion into confident first success, then grow learners into productive use.
 
 **Product category:**
 Practical AI learning platform / AI operations learning SaaS
@@ -28,7 +28,7 @@ Initially individuals and small teams. Later SMB and team buyers.
 Individual learners first. Later founders, team leads, and ops managers.
 
 **Primary use case:**
-Get Claude-based tools working productively and safely.
+Get Claude Code and adjacent tools working correctly on a real machine without confusion or technical overwhelm.
 
 **Jobs to be done:**
 - Help me get set up correctly without wasting time.
@@ -39,8 +39,9 @@ Get Claude-based tools working productively and safely.
 **Use cases:**
 - Learn Claude Code from scratch
 - Set up platform-specific environments
-- Learn secure deployment habits
-- Use guided workflows and troubleshooting support
+- Troubleshoot broken installs and configs
+- Verify setup success on a real device
+- Use guided workflows and downloadable support assets
 
 ## Personas
 
@@ -82,17 +83,18 @@ confusion, hesitation, fear of doing something unsafe, and frustration when guid
 ## Differentiation
 
 **Key differentiators:**
-- safety-first instruction
+- setup-first instruction
+- troubleshooting-first teaching
 - contextual tutor
-- verified labs
+- downloadable and printable guides
 - freshness and trust surfaces
 - beginner-friendly transformation promise
 
 **How we do it differently:**
-We combine practical instruction, structured learning, troubleshooting help, and trust metadata in one product.
+We combine step-by-step setup instruction, structured troubleshooting, visual teaching, practical downloads, and trust metadata in one product.
 
 **Why that is better:**
-Learners do not need to stitch together scattered resources or guess what to trust.
+Learners do not need to stitch together scattered resources, guess what to trust, or wonder whether a guide matches their device and environment.
 
 **Why customers choose us:**
 Because we help them actually succeed, not just consume information.
@@ -135,9 +137,10 @@ Concern that the product may be too technical, too narrow, or not worth paying f
 - "Give me a clear step-by-step path."
 - "Tell me what not to do."
 - "Help me troubleshoot in context."
+- "Show me what I should be seeing on screen."
 
 **Words to use:**
-safe, guided, practical, trusted, step-by-step, productive, verified, beginner-friendly
+safe, guided, practical, trusted, step-by-step, verified, beginner-friendly, troubleshooting, setup, real machine, visual
 
 **Words to avoid:**
 revolutionary, autonomous magic, enterprise transformation, AGI, impossible productivity

@@ -1,106 +1,132 @@
 # TASKS.md
 
-This file tracks the build plan for CLI Academy.
+This file tracks the canonical rebuild plan for CLI Academy.
 
-## Phase 0 - Repo Foundation
+## Reality Reset
 
-- [x] Create independent product blueprint
-- [x] Create operating docs: `README.md`, `CLAUDE.md`, `TASKS.md`, `DECISIONS.md`
-- [x] Create product docs: blueprint, PRD, TRD, launch plan, swarm architecture
-- [x] Create product marketing context
-- [x] Create starter repo health scripts
-- [x] Create brand system documentation
-- [x] Create UI system documentation
-- [x] Create starter design token package
+After the repo audit on 2026-04-06, this is the current truth:
+
+- the repo has strong product and curriculum planning docs
+- the repo has a real schema baseline in `infrastructure/schema.sql`
+- the repo has a thin FastAPI backend scaffold
+- the repo has strong beginner/setup lesson content
+- the current snapshot does **not** contain the rebuilt learner frontend in `app/`
+- the repo should be treated as a selective salvage plus rebuild, not as a near-launch product
+
+Use this file as the source of truth going forward.
+
+## Phase 0 - Truth Alignment and Recovery
+
+- [x] Audit the repo and identify actual strengths, gaps, and contradictions
+- [x] Create `docs/CLI_ACADEMY_RECOVERY_REFRAME_AND_REBUILD.md`
+- [x] Recenter product strategy on beginner setup and troubleshooting
+- [x] Update `README.md` to reflect the true core product and repo state
+- [x] Update `docs/PRD.md` to reflect the setup-first MVP
+- [x] Replace stale task assumptions with this recovery plan
+- [x] Update `.agents/product-marketing-context.md` to match the new canonical positioning
+- [x] Update `DECISIONS.md` to reflect the stronger core wedge and reality reset
+- [x] Update `docs/TRD.md` to reflect frontend rebuild, schema v2, and trust surfaces
 - [ ] Remove or archive temporary blueprint extraction scratch files
-- [x] Initialize git for this repo
-- [x] Add baseline `.env.example` (`app/.env.example`)
-- [x] Add CI workflow (`.github/workflows/ci.yml`)
 
-## Phase 1 - Core Buildable Product
+## Phase 1 - Rebuild the Core Learner Product
 
-- [x] Scaffold Next.js frontend in `app/` (19 routes, build passing)
-- [x] Scaffold FastAPI backend in `backend/`
-- [x] Add app font loading and map production fonts to the design tokens
-- [x] Build the first shared UI primitives from the token system
-- [x] Set up Supabase project structure and migration plan
-- [x] Define Phase 1 database schema (`infrastructure/schema.sql` — 871 lines, full RLS)
-- [x] Implement auth (Supabase SSR + OAuth callback route)
-- [x] Implement onboarding wizard (3-step, saves to Supabase profiles)
-- [x] Implement dashboard (server component, real Supabase queries)
-- [x] Implement path catalog (`/paths`, `/paths/[slug]`)
-- [x] Implement path detail pages (`/learn/[pathSlug]`)
-- [x] Implement lesson player (`LessonPlayer` client + `LessonContent` server)
-- [x] Implement floating tutor (SSE streaming via `/api/tutor`, Anthropic SDK)
-- [x] Implement progress tracking (`/api/progress` GET/POST)
-- [x] Implement download center (`/downloads` — tiered asset list)
-- [x] Implement Stripe checkout and webhooks (`/api/stripe/checkout`, `/api/stripe/webhook`)
-- [x] Implement telemetry events (`/api/events`)
-- [x] Ship first free flagship path (beginners: 8 lessons, windows: 6 lessons, macos: 5 lessons)
-- [x] Ship Claude Code Setup/Config/Troubleshoot path (8 lessons — config, errors, hooks, MCP)
-- [x] Ship Claude CoWork: Agentic Knowledge Work path (7 lessons — research preview product)
-- [x] Define full 6-section curriculum architecture (17 paths, PathMeta status field, section grouping)
-- [x] Rewrite paths catalog page with section-grouped display and coming-soon handling
-- [x] Scaffold OpenClaw Ecosystem paths (openclaw-deployment, nemoclaw-runtime, zeroclaw-quickstart, autoclaw-automation)
-- [x] Scaffold Professional Track paths (marketers, founders, sales, analysts, students)
-- [x] Configure and deploy (Supabase credentials, Stripe products, Vercel, Railway)
-- [ ] Write full content for MCP Server Mastery (9 lessons)
-- [ ] Write full content for VPS Deployment (10 lessons)
-- [ ] Write full content for OpenClaw Deployment (8 lessons)
-- [ ] Write full content for NemoClaw Runtime (6 lessons)
-- [ ] Write full content for ZeroClaw Quickstart (5 lessons)
-- [ ] Write full content for AutoClaw Automation (7 lessons)
-- [ ] Write full content for Workflow Automation (7 lessons)
+### Frontend
 
-## Phase 2 - Monetization and Trust Depth
+- [ ] Scaffold and commit the new Next.js frontend in `app/`
+- [ ] Build public marketing shell
+- [ ] Build onboarding flow
+- [ ] Build dashboard shell
+- [ ] Build setup-first path catalog
+- [ ] Build path detail pages
+- [ ] Build lesson player with support for warnings, screenshots, diagrams, and recap blocks
+- [ ] Build downloads center
+- [ ] Build troubleshooting center
+- [ ] Build compatibility matrix UI
+- [ ] Build floating tutor shell
 
-- [ ] Add annual plan as default upgrade emphasis
-- [ ] Replace all placeholder downloadable assets with polished real assets
-- [ ] Add release notes center
+### Backend
+
+- [x] Keep the current FastAPI scaffold in `backend/`
+- [ ] Add tutor rate-limit enforcement to match policy
+- [ ] Add progress endpoints
+- [ ] Add enrollment and entitlement endpoints
+- [ ] Add downloads endpoints
+- [ ] Add compatibility and troubleshooting endpoints
+- [ ] Add telemetry/event ingestion endpoints
+
+### Data Model
+
+- [x] Keep the current schema as a baseline
+- [ ] Design schema v2 for tracks, courses, lesson steps, downloads, tutor contexts, compatibility, troubleshooting, versions, and freshness
+- [ ] Add migration plan from the current schema to schema v2
+
+## Phase 2 - Flagship Beginner Content and Trust Surfaces
+
+- [ ] Polish Claude Code Setup for Absolute Beginners
+- [ ] Polish Claude CoWork Introduction and Setup for Beginners
+- [ ] Polish Claude Code + CoWork Troubleshooting Basics
+- [ ] Build First Useful Things to Do with Claude Code path
+- [ ] Build Safe Use, Files, Commands, and Project Structure Basics path
+- [ ] Add Linux setup path
+- [ ] Add screenshots to major setup lessons
+- [ ] Add diagrams to major setup lessons
+- [ ] Add short video metadata/support for major setup lessons
+- [ ] Create real PDF checklists for flagship paths
+- [ ] Create real Markdown guides for flagship paths
+- [ ] Add tested-on metadata system
+- [ ] Add content freshness review workflow
 - [ ] Add known issues center
-- [ ] Add stale-content detection and visible freshness warnings
-- [ ] Expand tutor context quality
-- [ ] Add email onboarding and upgrade lifecycle
-- [ ] Add video snippet support to lessons
+- [ ] Add release radar
 
-## Phase 3 - Retention and Role Expansion
+## Phase 3 - Productive Use and Role Expansion
 
-- [x] Define Professional Tracks section in curriculum architecture (5 paths scaffolded)
-- [ ] Write full content for Claude Code for Marketers (7 lessons)
-- [ ] Write full content for Claude Code for Founders (7 lessons)
-- [ ] Write full content for Claude Code for Sales (7 lessons)
-- [ ] Write full content for Claude Code for Analysts (7 lessons)
-- [ ] Write full content for Claude Code for Students (6 lessons)
-- [ ] Add badges and completion status
-- [ ] Add certificate system
-- [ ] Add community layer
-- [ ] Add richer assessment system
-- [ ] Add internal content ops agents beyond tutor support
+- [ ] Build CLAUDE.md / MEMORY.md path
+- [ ] Build Skills, Slash Commands, Plugins, and Hooks path
+- [ ] Build beginner MCP path
+- [ ] Rewrite marketer track from placeholder to real curriculum
+- [ ] Rewrite founder track from placeholder to real curriculum
+- [ ] Rewrite analyst track from placeholder to real curriculum
+- [ ] Rewrite student track from placeholder to real curriculum
+- [ ] Add junior developer track
+- [ ] Add designer track
+- [ ] Merge sales into a broader sales and ops track
+- [ ] Add richer downloadable use-case packs
 
-## Phase 4 - Team Product
+## Phase 4 - Automation and Advanced Infrastructure
 
-- [ ] Add org accounts
-- [ ] Add seat management
-- [ ] Add manager dashboard
+- [ ] Build agent workflow foundations path
+- [ ] Build subagents and agent teams path
+- [ ] Build n8n / Make / Zapier path
+- [ ] Expand Claude Code on a VPS path
+- [ ] Add Mac mini / dedicated box deployment path
+- [ ] Add OpenClaw foundations path
+- [ ] Add OpenClaw deployment and troubleshooting path
+- [ ] Add OpenClaw variants comparison path
+- [ ] Expand NemoClaw, ZeroClaw, and AutoClaw content as advanced tracks
+
+## Phase 5 - Business and Team Expansion
+
+- [ ] Add recommendations engine
+- [ ] Add badges and certificates
+- [ ] Add team account foundations
+- [ ] Add manager views
 - [ ] Add team billing
-- [ ] Add private/custom paths
-- [ ] Add team onboarding workflows
+- [ ] Add internal content freshness agents
 
-## Phase 5 - Expansion
+## What Not To Build Yet
 
-- [ ] Launch template/blueprint marketplace
-- [ ] Launch integration hub
-- [ ] Launch ROI reporting
-- [ ] Launch managed runtime offering
-- [ ] Add enterprise SSO/SAML
+- [ ] Do not build a marketplace yet
+- [ ] Do not build a broad community layer yet
+- [ ] Do not build enterprise SSO yet
+- [ ] Do not build a managed runtime yet
+- [ ] Do not ship shallow placeholder tracks as if they are real products
 
 ## Immediate Next Build Sequence
 
-1. Initialize git and baseline project config
-2. Scaffold the app/backend directories
-3. Load the production fonts and wire the token system into global styles
-4. Write Phase 1 schema contract
-5. Build the learner journey from landing page to first lesson completion
-6. Build the tutor and verified lab loop
-7. Add payment and entitlement infrastructure
-8. Prepare launch assets and soft-launch plan
+1. Finish doc alignment in `DECISIONS.md`, `TRD.md`, and `.agents/product-marketing-context.md`
+2. Rebuild the frontend shell in `app/`
+3. Add tutor rate limiting and core learner APIs to `backend/`
+4. Design and implement schema v2
+5. Ship the flagship beginner setup-and-troubleshooting experience
+6. Add the downloads center, compatibility matrix, and trust surfaces
+7. Only then expand deeper Pro content

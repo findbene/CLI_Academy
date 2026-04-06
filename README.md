@@ -1,6 +1,6 @@
 # CLI Academy
 
-CLI Academy is an independent SaaS learning platform built to take people from curiosity to confident, productive use of Claude-powered tools.
+CLI Academy is an independent SaaS learning platform built to help ordinary people successfully set up, troubleshoot, understand, and start using Claude Code, Claude CoWork, and related agentic tools on real machines and environments.
 
 This repo is the new home for the product. It is intentionally separate from `C:\Citadel_AI_Automation`. We can borrow what was strong from Citadel, but this codebase is designed to stand on its own.
 
@@ -8,19 +8,20 @@ This repo is the new home for the product. It is intentionally separate from `C:
 
 CLI Academy is not a generic course site.
 
-It is a guided product for learning, applying, troubleshooting, and safely operating Claude-based workflows and secure agent systems through:
+It is a guided product for setup, configuration, troubleshooting, first useful wins, and practical growth with Claude-based tools through:
 
-- Structured learning paths
-- Verified labs
+- Structured setup-first learning paths
+- OS-specific and environment-specific guidance
 - Contextual troubleshooting
-- Downloadable assets
-- Lightweight video snippets
+- Downloadable and printable assets
+- Visual teaching support
 - Guided setup wizards
-- A multi-agent internal system that keeps the content, support, and growth loops sharp
+- A built-in tutor
+- A coordinated internal agent system that improves support and content behind the scenes
 
 The core wedge:
 
-> The safest, most beginner-friendly way to go from zero to productive with Claude Code and secure AI agent workflows.
+> The safest, most beginner-friendly place to set up, troubleshoot, understand, and start using Claude Code, Claude CoWork, and related agentic tools on real machines and real environments.
 
 ## Brand Direction
 
@@ -47,21 +48,22 @@ Current recommendation:
 
 This repo currently contains:
 
-- A new execution-ready blueprint
-- Product, technical, launch, brand, and UI documentation
+- Strong product and curriculum planning documents
+- A real Supabase schema baseline
+- A thin FastAPI backend scaffold
+- Strong beginner/setup lesson content plus advanced content drafts
 - AI-builder operating rules
 - Starter repository structure
-- Starter design tokens
 - Small validation scripts
 
-It does not yet contain the production app implementation. The next build step is to scaffold the app and backend from the documents in `docs/`.
+It does not yet contain the rebuilt learner frontend, mature trust/download systems, or the full production product implementation. The next build step is to rebuild the learner app around the setup-and-troubleshooting core documented in `docs/`.
 
 ## Repo Map
 
 - `docs/` - blueprint and supporting product/technical/brand docs
 - `.agents/` - product marketing context for future marketing work
-- `app/` - planned Next.js frontend home
-- `backend/` - planned FastAPI backend home
+- `app/` - planned Next.js frontend home; currently needs rebuilding
+- `backend/` - thin FastAPI backend scaffold
 - `agents/` - planned internal agent system home
 - `content/` - planned curriculum, assets, and lesson source
 - `infrastructure/` - planned database, deploy, and environment infrastructure
@@ -79,10 +81,12 @@ It does not yet contain the production app implementation. The next build step i
 - `CLAUDE.md`
 - `TASKS.md`
 - `DECISIONS.md`
+- `docs/CLI_ACADEMY_RECOVERY_REFRAME_AND_REBUILD.md`
 
 ## Operating Principles
 
 - Build the independent product first, not a Citadel dependency chain
+- Make beginner setup and troubleshooting the core product area
 - Keep every idea from the broader vision, but phase it deliberately
 - Launch a narrow, excellent v1 before expanding breadth
 - Treat trust, safety, and freshness as product features

@@ -2,18 +2,25 @@
 
 Project: CLI Academy
 Version: 1.0
-Status: planning
+Status: recovery planning
 
 ## 1. Architecture Summary
 
-CLI Academy is an independent monorepo with:
+CLI Academy is an independent monorepo intended to contain:
 
-- Next.js frontend
-- FastAPI backend
+- a rebuilt Next.js frontend
+- a FastAPI backend
 - Supabase for auth, database, and storage
 - Stripe for billing
 - Python-based tutor and internal agent services
-- MDX-driven content system
+- an MDX-driven content system with structured metadata
+
+Current snapshot reality:
+
+- `app/` needs rebuilding
+- `backend/` is a thin scaffold
+- `infrastructure/schema.sql` is a useful baseline
+- `content/` contains substantial lesson drafts
 
 ## 2. System Context
 
@@ -29,7 +36,7 @@ User
 
 ## 3. Frontend
 
-Planned home: `app/`
+Target home: `app/`
 
 Responsibilities:
 
@@ -37,16 +44,18 @@ Responsibilities:
 - auth UX
 - onboarding
 - dashboard
-- path catalog
+- setup-first path catalog
 - path details
 - lesson player
 - floating tutor shell
+- troubleshooting center
+- compatibility matrix
 - downloads
 - checkout initiation
 
 ## 4. Backend
 
-Planned home: `backend/`
+Current home: `backend/`
 
 Responsibilities:
 
@@ -54,7 +63,8 @@ Responsibilities:
 - enrollment and progress logic
 - entitlement logic
 - tutor proxy/orchestration
-- lab verification endpoints
+- troubleshooting and compatibility endpoints
+- downloads endpoints
 - event ingestion
 - release note and content freshness services later
 
@@ -90,7 +100,7 @@ Each lesson should support:
 
 ## 7. Phase 1 Core Data Model
 
-Phase 1 should define entities for:
+Schema v1 already defines entities for:
 
 - users
 - user_profiles
@@ -104,8 +114,17 @@ Phase 1 should define entities for:
 - tutor_usage
 - app_events
 
-Phase 2 adds:
+Schema v2 should add:
 
+- tracks
+- courses
+- lesson_steps
+- content_versions
+- freshness_reviews
+- tutor_contexts
+- compatibility_matrix
+- troubleshooting_guides
+- issue_signatures
 - release_notes
 - known_issues
 - certificates
@@ -193,11 +212,11 @@ Phase 2:
 
 ## 14. Build Sequence
 
-1. scaffold frontend
-2. scaffold backend
-3. define schema
-4. implement auth and onboarding
-5. implement learning surfaces
-6. implement tutor and lab verification
+1. align docs to the setup-first recovery plan
+2. rebuild frontend shell
+3. extend backend beyond tutor/auth scaffold
+4. design and implement schema v2
+5. implement learning, troubleshooting, and downloads surfaces
+6. harden tutor with rate limiting and retrieval
 7. implement billing and gating
-8. add trust and analytics layers
+8. add trust, compatibility, and analytics layers

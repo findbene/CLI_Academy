@@ -34,10 +34,10 @@ The wedge is not "AI education" in general.
 
 The wedge is:
 
-> The safest, most beginner-friendly way to go from zero to productive with Claude Code and secure AI agent workflows.
+> The safest, most beginner-friendly place to set up, troubleshoot, understand, and start using Claude Code, Claude CoWork, and related agentic tools on real machines and real environments.
 
 Reason:
-This is sharper, more monetizable, and easier to defend than broad AI education.
+This is sharper, more monetizable, more trust-building, and easier to defend than broad AI education or generic "agent workflows" positioning.
 
 ## D-004: Product Shape
 
@@ -56,17 +56,19 @@ Status: accepted
 Decision:
 Launch with a narrow but premium Phase 1:
 
-- one free flagship foundation path
-- one paid practical path
-- one paid secure deployment path
+- one excellent free beginner setup foundation
+- one excellent free troubleshooting foundation
+- one strong free first-success path
+- one paid practical depth path
 - tutor
-- verified labs
 - downloads
+- compatibility matrix
+- troubleshooting center
 - Stripe
 - trust surfaces
 
 Reason:
-This is enough to prove value and monetize without collapsing under scope.
+This is enough to prove the true wedge and monetize without collapsing under scope.
 
 ## D-006: Tutor Policy
 
@@ -191,19 +193,19 @@ Module-level `new Stripe(key)` and `new Anthropic({apiKey})` throw at build time
 Status: accepted
 
 Decision:
-Expand the curriculum from 3 free paths to a full 6-section, 17-path ladder:
+Keep the curriculum organized as a 6-section ladder, but treat the setup-and-troubleshooting foundations as the most polished and most important part of the product:
 
-- **Foundations** (free): Beginners, Windows, macOS, Setup/Config/Troubleshoot, Claude CoWork
+- **Foundations** (free): Claude Code beginners, Claude CoWork beginners, troubleshooting basics, first useful wins, safe files/commands/project structure, Windows, macOS, Linux
 - **Agent Infrastructure** (pro): MCP Server Mastery
 - **Self-Hosting** (pro): Claude Code on a VPS
 - **OpenClaw Ecosystem** (pro): OpenClaw Deployment, NemoClaw Runtime, ZeroClaw Quickstart, AutoClaw Automation
 - **Workflows** (pro): AI Workflow Automation
 - **Professional Tracks** (pro/free): Marketers, Founders, Sales, Analysts, Students
 
-Paths are marked `status: "available"` or `"coming-soon"` in PathMeta. The paths catalog renders all sections with grouped path cards and clear coming-soon states. The dashboard dims coming-soon cards and disables their links.
+Paths may be marked `status: "available"` or `"coming-soon"`, but placeholder tracks should not be marketed as mature offerings. The public product should lead with the strongest beginner paths, then open into deeper practical and advanced content.
 
 Reason:
-The original AgentOps-Academy foundation included OpenClaw, NemoClaw, ZeroClaw, AutoClaw, and Claude CoWork as first-class product areas. The product also needed role-based professional tracks from the start. This architecture defines the full ladder so every page and navigation element reflects the intended scope.
+The product needs breadth in the roadmap, but coherence in the learner journey. The setup-and-troubleshooting core must anchor the public promise before role tracks, automation, or advanced self-hosting become the headline.
 
 Source: AgentOps-Academy codebase audit (2026-04-05) + owner direction.
 
@@ -216,6 +218,36 @@ Decision:
 
 Reason:
 Prevents sending learners to empty lesson pages while still surfacing the full curriculum scope on the paths page and dashboard.
+
+## D-018: Setup and Troubleshooting Are the Core Product Area
+
+Status: accepted
+
+Decision:
+Treat setup, configuration, verification, troubleshooting, and beginner-first first success as the core product area of CLI Academy.
+
+This must be reflected in:
+
+- product positioning
+- onboarding
+- path catalog order
+- lesson system
+- downloads
+- tutor design
+- compatibility and known-issues surfaces
+
+Reason:
+This is the clearest painkiller problem in the category and the strongest differentiator available to the product.
+
+## D-019: Current Repo Snapshot Requires Frontend Rebuild
+
+Status: accepted
+
+Decision:
+Treat the current repository snapshot as documentation-forward with partial backend/content assets, not as a near-launch frontend product.
+
+Reason:
+The current snapshot contains an empty `app/` directory, a thin backend scaffold, a real schema baseline, and strong content drafts. Planning and task documents must reflect that truth so execution starts from reality instead of drift.
 
 ## D-015: Route Group Architecture
 
