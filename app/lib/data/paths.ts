@@ -193,15 +193,3 @@ export const PATHS: PathMeta[] = [
     estimatedHours: "2-3 hours",
   },
 ];
-
-export function getAllPaths() {
-  return PATHS;
-}
-
-export function getPathBySlug(slug: string) {
-  return PATHS.find((path) => path.slug === slug);
-}
-
-export function getPathsBySection(section: string) {
-  return PATHS.filter((path) => path.section === section);
-}

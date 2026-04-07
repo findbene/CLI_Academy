@@ -1,0 +1,216 @@
+---
+title: "Workflow Design Patterns"
+description: "Learn the reusable patterns that make AI workflows reliable — sequential chains, fan-out/fan-in, checkpoints, and guard rails."
+slug: "workflow-design-patterns"
+lesson_number: 2
+estimated_minutes: 14
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["workflow", "patterns", "design", "automation"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know the four core workflow patterns, when to use each one, and how to combine them into robust automation pipelines.
+
+## Why This Matters
+
+Without patterns, workflows become fragile scripts that break when inputs change. Patterns give you tested structures to build on — the same way software design patterns prevent you from reinventing error handling every time you write a function.
+
+## Core Concepts
+
+### Pattern 1: Sequential Chain
+
+The simplest pattern. Each step feeds its output to the next:
+
+```
+Input → Step A → Step B → Step C → Output
+```
+
+**Example: Blog post pipeline**
+1. Read raw notes from a file
+2. Claude generates an outline from the notes
+3. Claude expands the outline into a draft
+4. Claude reviews the draft for style and grammar
+5. Save the final draft
+
+**When to use:** When each step depends on the previous step's output and must run in order.
+
+**Implementation:**
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# Step 1: Generate outline
+OUTLINE=$(claude --print "Read notes.md and create a blog post outline with 5 sections.")
+
+# Step 2: Expand to draft
+echo "$OUTLINE" > /tmp/outline.md
+DRAFT=$(claude --print "Read /tmp/outline.md and expand each section into 2-3 paragraphs.")
+
+# Step 3: Review and polish
+echo "$DRAFT" > /tmp/draft.md
+FINAL=$(claude --print "Read /tmp/draft.md. Fix grammar, improve flow, and ensure consistent tone. Output the complete revised post.")
+
+# Step 4: Save
+echo "$FINAL" > output/blog-post-$(date +%F).md
+```
+
+**Key principle:** Each step has a single, clear job. If a step fails, you know exactly where the pipeline broke.
+
+### Pattern 2: Fan-Out / Fan-In
+
+Process multiple items in parallel, then combine results:
+
+```
+         ┌→ Process A ─┐
+Input ───┼→ Process B ─┼→ Combine → Output
+         └→ Process C ─┘
+```
+
+**Example: Multi-file code review**
+1. List all changed files
+2. Review each file independently (fan-out)
+3. Combine individual reviews into a summary report (fan-in)
+
+**Implementation:**
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+REVIEW_DIR="/tmp/reviews"
+mkdir -p "$REVIEW_DIR"
+
+# Fan-out: review each file
+for FILE in $(git diff --name-only HEAD~1); do
+    claude --print "Review $FILE for bugs, style issues, and security concerns. Output markdown." \
+        > "$REVIEW_DIR/$(basename $FILE).md" &
+done
+wait  # Wait for all parallel reviews
+
+# Fan-in: combine
+claude --print "Read all .md files in $REVIEW_DIR. Create a unified review summary with:
+- Executive summary (3 sentences)
+- Critical issues (if any)
+- File-by-file findings
+- Overall assessment" > review-summary.md
+```
+
+**When to use:** When tasks are independent and can run in parallel. The combine step needs all parallel results.
+
+**Caution:** Running many Claude Code instances in parallel consumes API credits proportionally. For 5 files, this is fine. For 500, batch them.
+
+### Pattern 3: Checkpoint / Resume
+
+Save intermediate state so you can resume if the workflow fails partway through:
+
+```
+Input → Step A → [save] → Step B → [save] → Step C → Output
+```
+
+**Example: Large data processing**
+1. Parse CSV file into chunks
+2. Process each chunk with Claude (save after each)
+3. Combine processed chunks into final result
+
+**Implementation:**
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+CHECKPOINT_DIR="./checkpoints"
+mkdir -p "$CHECKPOINT_DIR"
+
+# Process chunks, skip already-done ones
+for CHUNK in data/chunk-*.csv; do
+    BASENAME=$(basename "$CHUNK" .csv)
+    CHECKPOINT="$CHECKPOINT_DIR/$BASENAME.done"
+    
+    if [ -f "$CHECKPOINT" ]; then
+        echo "Skipping $BASENAME (already processed)"
+        continue
+    fi
+    
+    claude --print "Read $CHUNK. For each row, extract the name, email, and company. Output as JSON." \
+        > "output/$BASENAME.json"
+    
+    touch "$CHECKPOINT"
+    echo "Processed $BASENAME"
+done
+```
+
+**When to use:** When the workflow processes many items and restarting from scratch is expensive. Also useful for workflows that hit API rate limits.
+
+### Pattern 4: Guard Rail
+
+Add validation checks between steps that halt the pipeline if something looks wrong:
+
+```
+Input → Step A → [validate] → Step B → [validate] → Output
+```
+
+**Example: Content generation with safety checks**
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# Generate content
+CONTENT=$(claude --print "Write a product description for our new CLI tool.")
+
+# Guard rail: check for hallucinated features
+echo "$CONTENT" > /tmp/content.md
+VALIDATION=$(claude --print "Read /tmp/content.md. Check if any features mentioned are NOT in our actual feature list (features.md). Output ONLY 'PASS' if everything is accurate, or 'FAIL: [reason]' if hallucinated content is found.")
+
+if [[ "$VALIDATION" != PASS* ]]; then
+    echo "Guard rail failed: $VALIDATION"
+    exit 1
+fi
+
+# Content passed validation
+mv /tmp/content.md output/product-description.md
+```
+
+**When to use:** When the cost of a wrong output is higher than the cost of an extra validation step. Essential for content that will be published, code that will be deployed, or data that will be sent to customers.
+
+### Combining Patterns
+
+Real workflows combine multiple patterns:
+
+```
+Input → Sequential Setup → Fan-Out Processing → Guard Rail → Fan-In Summary → Output
+              ↑                    ↑
+         [checkpoint]         [checkpoint]
+```
+
+Start simple. Add patterns only when you have a specific problem they solve:
+- Steps keep breaking → add checkpoints
+- Processing is too slow → add fan-out
+- Output quality is inconsistent → add guard rails
+- Steps are getting complex → break into sequential chain
+
+## Check Your Work
+
+- [ ] You can describe the four workflow patterns (Sequential, Fan-out/Fan-in, Checkpoint, Guard Rail)
+- [ ] You know when to use each pattern
+- [ ] You understand how to combine patterns for complex workflows
+- [ ] You recognize which pattern to add when a specific problem occurs
+
+## Key Takeaways
+
+- Sequential chains are the default — use them unless you have a reason not to.
+- Fan-out/fan-in speeds up independent tasks but costs proportionally more.
+- Checkpoints save you from restarting expensive workflows that fail halfway.
+- Guard rails catch bad output before it reaches production. Add them to any workflow with high-stakes output.
+
+## What's Next
+
+The next lesson gets hands-on — you will build a real workflow from scratch using these patterns.

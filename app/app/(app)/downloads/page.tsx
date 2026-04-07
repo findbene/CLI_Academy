@@ -1,55 +1,86 @@
-const downloads = [
-  {
-    title: "Claude Code setup checklist",
-    format: "PDF",
-    tier: "Free",
-    summary: "A print-friendly checklist for installation, verification, and first-run sanity checks.",
-  },
-  {
-    title: "Windows path and permissions quick reference",
-    format: "Markdown",
-    tier: "Free",
-    summary: "A lightweight guide to path quirks, shell choices, and permission gotchas on Windows.",
-  },
-  {
-    title: "CLAUDE.md starter pack",
-    format: "Markdown + JSON",
-    tier: "Pro",
-    summary: "Starter templates for project instructions, memory hygiene, and practical agent guardrails.",
-  },
-];
+import { Download, FileText, Package } from "lucide-react";
+import { AssetCard } from "@/components/assets/AssetCard";
+import {
+  getAllLocalAssets,
+  getAssetFormatLabel,
+  toDownloadSurfaceAsset,
+  type DownloadSurfaceAsset,
+} from "@/lib/assets";
+import { getServerViewer } from "@/lib/viewer";
 
-export default function DownloadsPage() {
+export default async function DownloadsPage() {
+  const viewer = await getServerViewer();
+  const learnerTier = viewer.profile?.tier ?? "free";
+  const downloads: DownloadSurfaceAsset[] = getAllLocalAssets().map((asset) =>
+    toDownloadSurfaceAsset(asset, learnerTier),
+  );
+
+  if (viewer.supabaseConfigured && viewer.supabaseContext) {
+    const { data: assets } = await viewer.supabaseContext.supabase
+      .from("assets")
+      .select("title, description, file_url, asset_type, tier_required, version_label")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    if (assets?.length) {
+      downloads.push(
+        ...assets.map((asset, index) => ({
+          categoryLabel: "Library asset",
+          downloads: asset.file_url
+            ? [
+                {
+                  external: true,
+                  formatLabel: getAssetFormatLabel(asset.asset_type),
+                  href: asset.file_url,
+                },
+              ]
+            : [],
+          locked: asset.tier_required === "pro" && learnerTier !== "pro",
+          printable: asset.asset_type === "pdf" || asset.asset_type === "md" || asset.asset_type === "docx",
+          slug: `supabase-asset-${index}`,
+          summary: asset.description ?? "Published asset from the CLI Academy library.",
+          tier: asset.tier_required === "pro" ? ("pro" as const) : ("free" as const),
+          title: asset.title ?? "Untitled asset",
+          updatedAt: "Published",
+          versionLabel: asset.version_label ?? undefined,
+        })),
+      );
+    }
+  }
+
+  const freeCount = downloads.filter((d) => d.tier === "free").length;
+  const proCount = downloads.filter((d) => d.tier === "pro").length;
+
   return (
     <main className="page-shell">
       <section className="panel p-6">
-        <div className="eyebrow">Downloads center</div>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight">Recovered download surface</h1>
-        <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">
-          The route is back. The next step is replacing placeholder entries with real, versioned assets and export
-          flows. For now, this page restores the product shape and the value proposition around downloadable guides.
-        </p>
+        <div className="flex items-start gap-4">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(22,176,168,0.12)]">
+            <Download className="size-6 text-[var(--color-accent-primary)]" />
+          </div>
+          <div>
+            <div className="eyebrow">Downloads center</div>
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight">Downloads and printable guides</h1>
+            <p className="mt-3 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">
+              Keep the most useful setup checklists, starter templates, and troubleshooting references open while you work.
+            </p>
+          </div>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(22,176,168,0.10)] px-3 py-1.5 text-sm text-[var(--color-accent-primary)]">
+            <FileText className="size-3.5" />
+            {freeCount} free assets
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(201,134,18,0.10)] px-3 py-1.5 text-sm text-[var(--color-accent-warning)]">
+            <Package className="size-3.5" />
+            {proCount} pro assets
+          </div>
+        </div>
       </section>
 
-      <section className="mt-8 grid gap-4">
+      <section className="mt-8 grid gap-4 lg:grid-cols-2">
         {downloads.map((download) => (
-          <article key={download.title} className="panel p-5">
-            <div className="flex flex-wrap gap-2">
-              <span className="badge" data-tone="accent">
-                {download.format}
-              </span>
-              <span className="badge" data-tone={download.tier === "Free" ? "accent" : "warning"}>
-                {download.tier}
-              </span>
-            </div>
-            <h2 className="mt-4 text-xl font-semibold">{download.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">{download.summary}</p>
-            <div className="mt-5">
-              <button type="button" className="button-secondary">
-                Download placeholder
-              </button>
-            </div>
-          </article>
+          <AssetCard key={download.slug} asset={download} />
         ))}
       </section>
     </main>

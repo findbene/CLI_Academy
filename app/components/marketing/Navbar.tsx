@@ -3,15 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const links = [
-  { href: "/paths", label: "Paths" },
-  { href: "/troubleshooting", label: "Troubleshooting" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/login", label: "Log in" },
-];
+interface NavbarProps {
+  signedIn?: boolean;
+}
 
-export function Navbar() {
+export function Navbar({ signedIn = false }: NavbarProps) {
   const pathname = usePathname();
+  const links = signedIn
+    ? [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/paths", label: "Paths" },
+        { href: "/downloads", label: "Downloads" },
+        { href: "/trust", label: "Trust" },
+        { href: "/pricing", label: "Pricing" },
+      ]
+    : [
+        { href: "/paths", label: "Paths" },
+        { href: "/troubleshooting", label: "Troubleshooting" },
+        { href: "/trust", label: "Trust" },
+        { href: "/pricing", label: "Pricing" },
+        { href: "/login", label: "Log in" },
+      ];
 
   return (
     <header className="border-b border-[var(--color-border-subtle)] bg-[rgba(255,252,247,0.88)] backdrop-blur">
@@ -49,14 +61,14 @@ export function Navbar() {
             );
           })}
 
-          <Link href="/signup" className="button-primary">
-            Start free
+          <Link href={signedIn ? "/dashboard" : "/signup"} className="button-primary">
+            {signedIn ? "Open app" : "Start free"}
           </Link>
         </nav>
 
         <div className="md:hidden">
-          <Link href="/signup" className="button-primary">
-            Start
+          <Link href={signedIn ? "/dashboard" : "/signup"} className="button-primary">
+            {signedIn ? "App" : "Start"}
           </Link>
         </div>
       </div>

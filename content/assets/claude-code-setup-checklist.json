@@ -1,0 +1,48 @@
+{
+  "asset": "claude-code-setup-checklist",
+  "updated_at": "2026-04-06",
+  "steps": [
+    {
+      "phase": "preflight",
+      "step": "Check Node.js",
+      "command_or_action": "node --version",
+      "expected_result": "Node 18 or newer is installed",
+      "if_failed": "Install or update Node before continuing"
+    },
+    {
+      "phase": "preflight",
+      "step": "Check npm",
+      "command_or_action": "npm --version",
+      "expected_result": "npm is available in the active shell",
+      "if_failed": "Repair the Node installation first"
+    },
+    {
+      "phase": "install",
+      "step": "Install Claude Code",
+      "command_or_action": "npm install -g @anthropic-ai/claude-code",
+      "expected_result": "The install completes cleanly",
+      "if_failed": "Fix install errors before moving to auth"
+    },
+    {
+      "phase": "verify",
+      "step": "Verify the command",
+      "command_or_action": "claude --version",
+      "expected_result": "A version number is returned",
+      "if_failed": "Restart the shell and verify PATH assumptions"
+    },
+    {
+      "phase": "authenticate",
+      "step": "Authenticate",
+      "command_or_action": "claude auth or set ANTHROPIC_API_KEY",
+      "expected_result": "Claude accepts the auth method without credential errors",
+      "if_failed": "Regenerate the key or repeat the auth flow carefully"
+    },
+    {
+      "phase": "first_run",
+      "step": "Run a safe first task",
+      "command_or_action": "Open Claude and ask for a hello file",
+      "expected_result": "Claude completes a tiny file task in the expected folder",
+      "if_failed": "Check the working directory, permissions, and auth status"
+    }
+  ]
+}

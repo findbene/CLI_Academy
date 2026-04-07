@@ -279,6 +279,139 @@ content/paths/
     └── 05-common-macos-gotchas.mdx
 ```
 
+## Path: VPS Deployment (10 lessons)
+
+**File Location:** `content/paths/vps-deployment/`
+**Tier:** Pro
+**Status:** Complete (10/10 lessons)
+
+### 1. vps-requirements.mdx (existed prior)
+- Provider selection (Hetzner, DigitalOcean, Vultr, Linode)
+- Minimum specs for Claude Code agents
+- Cost comparison and recommendations
+
+### 2. vps-security-setup.mdx
+- SSH key authentication, password login disable
+- Non-root user with sudo, UFW firewall
+- unattended-upgrades, Fail2Ban
+- has_safety_warning: true
+
+### 3. vps-networking-config.mdx
+- Outbound HTTPS verification for API calls
+- DNS A records, Caddy reverse proxy
+- Port management rules (open only what you need)
+
+### 4. vps-runtime-installation.mdx
+- nvm install, Node.js LTS, Claude Code global install
+- API key secure storage (~/.claude-env, chmod 600)
+- First run verification test
+
+### 5. vps-ssl-certificates.mdx
+- TLS automatic for API calls (no user action)
+- Caddy auto-TLS for web endpoints
+- Certbot for Nginx, renewal monitoring cron
+- has_safety_warning: true
+
+### 6. vps-headless-agents.mdx
+- tmux (interactive), systemd (automated), nohup (quick)
+- systemd timer scheduling (e.g., 2 AM daily)
+- Comparison table of all methods
+- --print flag for non-interactive mode
+
+### 7. vps-scaling-strategies.mdx
+- CPU/memory/disk/IO monitoring commands
+- Scale up vs scale out decision framework
+- Docker resource limits for isolation
+- Cost optimization strategies
+
+### 8. vps-monitoring-alerting.mdx
+- 4-layer monitoring (journal, resources, uptime, log rotation)
+- Shell scripts + cron for resource checks
+- UptimeRobot/Healthchecks.io external monitoring
+- Notification channels (email, Discord, ntfy)
+
+### 9. vps-backup-recovery.mdx
+- Git push automation for code/config
+- rsync to remote backup server
+- Provider snapshot scheduling
+- Configuration-as-code setup script, recovery procedure
+- has_safety_warning: true
+
+### 10. vps-capstone.mdx
+- Complete nightly code review agent project
+- Bash script, systemd service + timer
+- Git auto-commit, ntfy notifications
+- Failure health check integration
+- has_safety_warning: true
+
+## Path: Workflow Automation (7 lessons)
+
+**File Location:** `content/paths/workflow-automation/`
+**Tier:** Pro
+**Status:** Complete (7/7 lessons)
+
+### 1. workflow-fundamentals.mdx
+- One-off prompts vs repeatable workflows
+- Three components: trigger, steps, verification
+- Automation spectrum (manual → assisted → semi-auto → full-auto)
+- When to automate vs when not to
+
+### 2. workflow-design-patterns.mdx
+- Sequential chain pattern
+- Fan-out / fan-in pattern
+- Checkpoint / resume pattern
+- Guard rail pattern
+- How to combine patterns
+
+### 3. workflow-automation-hands-on.mdx
+- Build a daily project health report from scratch
+- Shell metrics + AI analysis combined
+- Guard rail validation of report completeness
+- Complete working script
+
+### 4. safety-and-verification.mdx
+- Output validation (format, range, allowlist, semantic)
+- Dry-run mode implementation
+- Sandboxing (filesystem, network, permission)
+- Principle of least authority
+- Audit trail logging
+- has_safety_warning: true
+
+### 5. integration-patterns.mdx
+- Git automation (branch, commit, push, PR)
+- REST API integration (fetch and push)
+- Database integration (read and parameterized write)
+- Notifications (Slack, Discord, email, ntfy)
+- Exit trap pattern for failure notifications
+
+### 6. workflow-scaling.mdx
+- Multi-project workflow orchestration
+- Batch processing with rate limiting
+- Cost estimation and control
+- File hash caching to skip unchanged work
+- Cron and systemd timer scheduling
+- Retry logic with failure classification
+
+### 7. workflow-capstone.mdx
+- Multi-Repo Code Guardian — complete system
+- Project registry, per-project analysis, checkpoint resume
+- Guard rails, Git integration, notification hooks
+- systemd timer scheduling
+- Dry-run mode, failure handling at scale
+- has_safety_warning: true
+
+## Total Content Summary
+
+| Path | Lessons | Tier |
+|------|---------|------|
+| Claude Code Beginners | 8 | Free |
+| Claude Code Windows | 5 | Free |
+| Claude Code macOS | 5 | Free |
+| VPS Deployment | 10 | Pro |
+| Workflow Automation | 7 | Pro |
+| *13 additional paths* | *93 lessons* | *Mixed* |
+| **Total** | **128 lessons** | |
+
 ## Next Steps
 
 These lessons are ready for:

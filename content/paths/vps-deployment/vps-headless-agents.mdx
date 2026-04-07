@@ -1,0 +1,220 @@
+---
+title: "Running Headless Agents"
+description: "Run Claude Code sessions that persist after you disconnect — using tmux, systemd, and screen for always-on agents."
+slug: "vps-headless-agents"
+lesson_number: 6
+estimated_minutes: 14
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: false
+tags: ["vps", "headless", "tmux", "systemd", "automation"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will be able to start a Claude Code session on your VPS, disconnect from SSH, and come back later to find it still running. You will know three methods — tmux (interactive), systemd (service), and nohup (quick-and-dirty).
+
+## Why This Matters
+
+When you close an SSH session, all processes started in that session receive a SIGHUP signal and terminate. This means Claude Code stops the moment you close your laptop lid. Headless operation solves this — your agent keeps working whether you are connected or not.
+
+## Core Concepts
+
+### Method 1: tmux (Recommended for Interactive Use)
+
+tmux is a terminal multiplexer. It creates persistent sessions that survive SSH disconnects.
+
+Install tmux:
+
+```bash
+sudo apt install -y tmux
+```
+
+Start a new named session:
+
+```bash
+tmux new-session -s agent
+```
+
+Run your Claude Code command inside the tmux session:
+
+```bash
+cd ~/my-project
+claude "Review all files in this project and create a summary in REVIEW.md"
+```
+
+**Detach** from the session (Claude Code keeps running):
+
+Press `Ctrl+B`, then `D`.
+
+You are back at your regular shell. You can close SSH safely.
+
+**Reattach** later:
+
+```bash
+tmux attach -t agent
+```
+
+Your Claude Code session is exactly where you left it.
+
+**List active sessions:**
+
+```bash
+tmux list-sessions
+```
+
+**Kill a session when done:**
+
+```bash
+tmux kill-session -t agent
+```
+
+### tmux Essentials
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+B D` | Detach from session |
+| `Ctrl+B [` | Scroll mode (navigate with arrow keys, `q` to exit) |
+| `Ctrl+B C` | New window in session |
+| `Ctrl+B N` | Next window |
+| `Ctrl+B P` | Previous window |
+| `Ctrl+B %` | Split pane vertically |
+| `Ctrl+B "` | Split pane horizontally |
+
+### Method 2: systemd (Recommended for Automated Workflows)
+
+For agent tasks that should run on a schedule or restart automatically, use a systemd service.
+
+Create a service file:
+
+```bash
+sudo nano /etc/systemd/system/claude-agent.service
+```
+
+```ini
+[Unit]
+Description=Claude Code Agent Task
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/home/deploy/my-project
+Environment=ANTHROPIC_API_KEY=sk-ant-your-key-here
+ExecStart=/home/deploy/.nvm/versions/node/v22.15.0/bin/claude --print "Run the nightly code review and save results to REVIEW.md"
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Important:** Replace the node path with your actual nvm path. Find it with:
+
+```bash
+which claude
+```
+
+Enable and test:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start claude-agent
+sudo systemctl status claude-agent
+```
+
+View output:
+
+```bash
+journalctl -u claude-agent -f
+```
+
+### Scheduled Execution with systemd Timer
+
+Create a timer to run the service nightly at 2 AM:
+
+```bash
+sudo nano /etc/systemd/system/claude-agent.timer
+```
+
+```ini
+[Unit]
+Description=Run Claude Agent nightly
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+Enable the timer:
+
+```bash
+sudo systemctl enable claude-agent.timer
+sudo systemctl start claude-agent.timer
+```
+
+Verify:
+
+```bash
+sudo systemctl list-timers | grep claude
+```
+
+### Method 3: nohup (Quick and Dirty)
+
+For one-off tasks where you do not want to set up tmux or systemd:
+
+```bash
+nohup claude --print "Generate a project status report" > ~/agent-output.log 2>&1 &
+```
+
+Check progress:
+
+```bash
+tail -f ~/agent-output.log
+```
+
+This works but has no session management, no restart capability, and no structured logging. Use tmux or systemd for anything repeatable.
+
+### Choosing the Right Method
+
+| Method | Best for | Restart on crash? | Scheduled? | Interactive? |
+|--------|----------|-------------------|-----------|-------------|
+| tmux | Ad-hoc interactive work | No | No | Yes |
+| systemd | Automated workflows | Yes (with Restart=) | Yes (timers) | No |
+| nohup | One-off quick tasks | No | No | No |
+
+## Check Your Work
+
+- [ ] `tmux new-session -s test` creates a session; `Ctrl+B D` detaches; `tmux attach -t test` reattaches
+- [ ] If using systemd, `sudo systemctl status claude-agent` shows the service loaded
+- [ ] If using a timer, `sudo systemctl list-timers` shows your timer with the next run time
+- [ ] Claude Code output appears in `journalctl` or your log file
+
+## Common Issues
+
+**tmux: command not found:** Install it: `sudo apt install tmux`.
+
+**systemd service fails immediately:** Check `journalctl -u claude-agent -n 50` for the error. Common causes: wrong node path, missing API key, working directory does not exist.
+
+**Claude Code exits with "no TTY":** Some Claude Code modes expect an interactive terminal. Use the `--print` flag for non-interactive headless use. This runs a single prompt and prints the result.
+
+**Timer never fires:** Ensure you ran both `systemctl enable` and `systemctl start` on the timer (not just the service).
+
+## Key Takeaways
+
+- tmux is the best tool for interactive headless sessions — detach and reattach freely.
+- systemd services are best for automated, scheduled, or restart-on-failure workflows.
+- Always use `--print` for non-interactive Claude Code invocations.
+- nohup works in a pinch but lacks management features.
+
+## What's Next
+
+The next lesson covers scaling strategies — when a single VPS is not enough and how to handle growing workloads.

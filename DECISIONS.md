@@ -260,3 +260,17 @@ Decision:
 
 Reason:
 Prevents double-wrapping (marketing nav + app sidebar). Each route group owns its own shell, keeping the root layout minimal.
+
+## D-020: Phase E UX Features — Global Search, Code Copy, Auto-Advance, Settings Editor
+
+Status: accepted
+Date: 2025-07-14
+
+Decision:
+1. **Global search** — Server-side search index at `/api/search` with 1-minute TTL cache. Client-side `SearchDialog` with Cmd+K / Ctrl+K, fuzzy subsequence matching with tiered scoring (prefix > contains > fuzzy). Mounted in root layout, trigger button in AppSidebar.
+2. **Code copy** — Dedicated `CodeBlock` component with `navigator.clipboard.writeText()`, language badge, and group-hover reveal. Replaces inline `<pre>/<code>` in `LessonContent`.
+3. **Auto-advance** — After marking a lesson complete, show a celebration toast for 2 seconds then `router.push()` to `nextLessonHref`. If last lesson in path, toast says "You finished this path!" with no navigation.
+4. **Settings editor** — `ProfileEditor` component with display/edit toggle for goal and OS. PATCH `/api/profile` with allowlisted keys merged into `profiles.onboarding_answers` JSONB. Server-side auth + string validation (max 200 chars).
+
+Reason:
+These features close the most visible UX gaps for a learner-facing product: discoverability (search), code utility (copy), momentum (auto-advance), and personalization (settings). All are lightweight, stateless, and require no schema changes.

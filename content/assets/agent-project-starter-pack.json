@@ -1,0 +1,20 @@
+{
+  "asset": "agent-project-starter-pack",
+  "updated_at": "2026-04-06",
+  "folders": ["prompts", "docs", "outputs", "scripts"],
+  "claude_md_sections": [
+    "Mission",
+    "Architecture",
+    "File Organization",
+    "Coding Standards",
+    "Definition of Done",
+    "Safety Rules"
+  ],
+  "memory_md_sections": [
+    "Current goals",
+    "Important decisions",
+    "Known issues",
+    "Open questions",
+    "Next actions"
+  ]
+}

@@ -1,0 +1,8 @@
+phase,step,command_or_action,what_good_looks_like,if_it_fails
+preflight,Check Node,node --version,Shows Node 18 or newer,Install or update Node first
+preflight,Check npm,npm --version,Shows an npm version,Repair Node installation first
+install,Install Claude Code,npm install -g @anthropic-ai/claude-code,Install completes without fatal errors,Do not continue until install is stable
+verify,Check Claude version,claude --version,Shows a Claude Code version,Fully restart shell and retry
+authenticate,Authenticate Claude Code,claude auth or set ANTHROPIC_API_KEY,Auth completes without invalid-key errors,Generate a fresh key or re-run auth carefully
+first_run,Open Claude,claude,Interactive prompt opens,Return to install or auth checks
+first_run,Run a tiny task,Ask Claude to create a hello file,The file is created in the expected folder,Check working directory and permissions

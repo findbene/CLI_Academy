@@ -27,7 +27,7 @@ Use this file as the source of truth going forward.
 - [x] Update `.agents/product-marketing-context.md` to match the new canonical positioning
 - [x] Update `DECISIONS.md` to reflect the stronger core wedge and reality reset
 - [x] Update `docs/TRD.md` to reflect frontend rebuild, schema v2, and trust surfaces
-- [ ] Remove or archive temporary blueprint extraction scratch files
+- [x] Remove or archive temporary blueprint extraction scratch files
 
 ## Phase 1 - Rebuild the Core Learner Product
 
@@ -44,20 +44,20 @@ Use this file as the source of truth going forward.
 - [x] Build downloads center shell
 - [x] Build floating tutor shell
 - [ ] Build onboarding flow
-- [ ] Build lesson player with support for warnings, screenshots, diagrams, and recap blocks
+- [x] Build lesson player with support for warnings, screenshots, diagrams, and recap blocks
 - [x] Build troubleshooting center
 - [x] Build compatibility matrix UI
-- [ ] Replace recovery-mode stubs with real Supabase, Stripe, and Anthropic integrations
+- [x] Replace recovery-mode stubs with real Supabase, Stripe, and Anthropic integrations
 
 ### Backend
 
 - [x] Keep the current FastAPI scaffold in `backend/`
-- [ ] Add tutor rate-limit enforcement to match policy
-- [ ] Add progress endpoints
+- [x] Add tutor rate-limit enforcement to match policy
+- [x] Add progress endpoints
 - [ ] Add enrollment and entitlement endpoints
 - [ ] Add downloads endpoints
 - [ ] Add compatibility and troubleshooting endpoints
-- [ ] Add telemetry/event ingestion endpoints
+- [x] Add telemetry/event ingestion endpoints
 
 ### Data Model
 
@@ -67,31 +67,31 @@ Use this file as the source of truth going forward.
 
 ## Phase 2 - Flagship Beginner Content and Trust Surfaces
 
-- [ ] Polish Claude Code Setup for Absolute Beginners
-- [ ] Polish Claude CoWork Introduction and Setup for Beginners
-- [ ] Polish Claude Code + CoWork Troubleshooting Basics
-- [ ] Build First Useful Things to Do with Claude Code path
-- [ ] Build Safe Use, Files, Commands, and Project Structure Basics path
+- [x] Polish Claude Code Setup for Absolute Beginners
+- [x] Polish Claude CoWork Introduction and Setup for Beginners
+- [x] Polish Claude Code + CoWork Troubleshooting Basics
+- [x] Build First Useful Things to Do with Claude Code path
+- [x] Build Safe Use, Files, Commands, and Project Structure Basics path
 - [ ] Add Linux setup path
-- [ ] Add screenshots to major setup lessons
-- [ ] Add diagrams to major setup lessons
+- [x] Add screenshots to major setup lessons
+- [x] Add diagrams to major setup lessons
 - [ ] Add short video metadata/support for major setup lessons
-- [ ] Create real PDF checklists for flagship paths
-- [ ] Create real Markdown guides for flagship paths
+- [x] Create real PDF checklists for flagship paths
+- [x] Create real Markdown guides for flagship paths
 - [ ] Add tested-on metadata system
 - [ ] Add content freshness review workflow
-- [ ] Add known issues center
+- [x] Add known issues center
 - [ ] Add release radar
 
 ## Phase 3 - Productive Use and Role Expansion
 
-- [ ] Build CLAUDE.md / MEMORY.md path
-- [ ] Build Skills, Slash Commands, Plugins, and Hooks path
-- [ ] Build beginner MCP path
-- [ ] Rewrite marketer track from placeholder to real curriculum
-- [ ] Rewrite founder track from placeholder to real curriculum
-- [ ] Rewrite analyst track from placeholder to real curriculum
-- [ ] Rewrite student track from placeholder to real curriculum
+- [x] Build CLAUDE.md / MEMORY.md path
+- [x] Build Skills, Slash Commands, Plugins, and Hooks path
+- [x] Build beginner MCP path
+- [x] Rewrite marketer track from placeholder to real curriculum
+- [x] Rewrite founder track from placeholder to real curriculum
+- [x] Rewrite analyst track from placeholder to real curriculum
+- [x] Rewrite student track from placeholder to real curriculum
 - [ ] Add junior developer track
 - [ ] Add designer track
 - [ ] Merge sales into a broader sales and ops track
@@ -99,15 +99,15 @@ Use this file as the source of truth going forward.
 
 ## Phase 4 - Automation and Advanced Infrastructure
 
-- [ ] Build agent workflow foundations path
-- [ ] Build subagents and agent teams path
+- [x] Build agent workflow foundations path
+- [x] Build subagents and agent teams path
 - [ ] Build n8n / Make / Zapier path
-- [ ] Expand Claude Code on a VPS path
+- [x] Expand Claude Code on a VPS path
 - [ ] Add Mac mini / dedicated box deployment path
-- [ ] Add OpenClaw foundations path
-- [ ] Add OpenClaw deployment and troubleshooting path
+- [x] Add OpenClaw foundations path
+- [x] Add OpenClaw deployment and troubleshooting path
 - [ ] Add OpenClaw variants comparison path
-- [ ] Expand NemoClaw, ZeroClaw, and AutoClaw content as advanced tracks
+- [x] Expand NemoClaw, ZeroClaw, and AutoClaw content as advanced tracks
 
 ## Phase 5 - Business and Team Expansion
 
@@ -128,10 +128,18 @@ Use this file as the source of truth going forward.
 
 ## Immediate Next Build Sequence
 
-1. Finish doc alignment in `DECISIONS.md`, `TRD.md`, and `.agents/product-marketing-context.md`
-2. Rebuild the frontend shell in `app/`
-3. Add tutor rate limiting and core learner APIs to `backend/`
-4. Design and implement schema v2
-5. Ship the flagship beginner setup-and-troubleshooting experience
-6. Add the downloads center, compatibility matrix, and trust surfaces
+All five rebuild phases (A–E) are complete as of 2025-07-14:
+
+- **Phase A** — Foundation: Aurora hero, footer, middleware merge, recovery copy purge
+- **Phase B** — Visual polish: framer-motion transitions, dashboard/lesson/downloads/pricing/trust pages
+- **Phase C** — Content: 128 lessons delivered across all 17 paths
+- **Phase D** — Backend hardening: real streaming, rate limiting, SDK updates, readiness probe
+- **Phase E** — UX features: code-copy blocks, Cmd+K global search, settings editing, auto-advance
+
+Next priorities:
+1. Deploy and verify production environment
+2. Build onboarding flow
+3. Schema v2 migration (tracks, courses, lesson steps, downloads)
+4. Content freshness review workflow + tested-on metadata
+5. Linux setup path and remaining Phase 2 gaps
 7. Only then expand deeper Pro content

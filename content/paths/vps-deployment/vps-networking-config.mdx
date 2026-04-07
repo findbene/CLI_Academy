@@ -1,0 +1,128 @@
+---
+title: "VPS Networking Configuration"
+description: "Set up DNS, manage ports, and optionally configure a reverse proxy for web-accessible agent output."
+slug: "vps-networking-config"
+lesson_number: 3
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: false
+tags: ["vps", "networking", "dns", "reverse-proxy"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand the networking requirements for a VPS running Claude Code, know when DNS and reverse proxies matter, and have a working network configuration.
+
+## Why This Matters
+
+Claude Code on a VPS needs exactly one outbound connection: HTTPS to the Anthropic API. Everything else is optional. But if you want to view logs remotely, serve agent-generated reports, or integrate with webhooks, you need to understand the networking layer. This lesson separates what is required from what is optional.
+
+## Core Concepts
+
+### Required: Outbound HTTPS
+
+Claude Code communicates with `api.anthropic.com` over HTTPS (port 443 outbound). Your UFW configuration from the previous lesson already allows all outbound traffic. No additional setup is required for core functionality.
+
+Verify connectivity:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" https://api.anthropic.com
+```
+
+A `401` response means the network path works (the auth failure is expected without headers). A timeout or connection refused means something is blocking outbound HTTPS.
+
+### Optional: DNS Setup
+
+If you want to reach your VPS by name instead of IP (e.g., `agent.yourdomain.com`), add a DNS A record:
+
+| Type | Name | Value | TTL |
+|------|------|-------|-----|
+| A | agent | your-server-ip | 300 |
+
+Use your domain registrar's DNS panel or a service like Cloudflare. The record propagates in minutes to hours depending on TTL.
+
+### Optional: Reverse Proxy with Caddy
+
+If you want to serve static files, logs, or dashboards from your VPS over HTTPS, Caddy is the simplest option. It handles TLS certificates automatically.
+
+Install Caddy:
+
+```bash
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudflare.com/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudflare.com/caddy/stable/deb/debian.list' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+```
+
+Create a basic Caddyfile at `/etc/caddy/Caddyfile`:
+
+```
+agent.yourdomain.com {
+    root * /home/deploy/agent-output
+    file_server browse
+}
+```
+
+Open ports 80 and 443:
+
+```bash
+sudo ufw allow 80
+sudo ufw allow 443
+sudo systemctl restart caddy
+```
+
+Caddy will automatically obtain and renew a Let's Encrypt TLS certificate.
+
+### Port Management Rules
+
+Keep your firewall tight. Only open ports you are actively using:
+
+| Port | Purpose | When to open |
+|------|---------|-------------|
+| 22 | SSH | Always (already open) |
+| 80 | HTTP (Caddy redirect) | Only if serving web content |
+| 443 | HTTPS (Caddy) | Only if serving web content |
+| Custom | Webhook listener | Only if receiving external callbacks |
+
+Close ports when you stop using them:
+
+```bash
+sudo ufw delete allow 80
+sudo ufw delete allow 443
+```
+
+### Private Networking
+
+Some providers offer private/internal networks between your VPS instances. If you run multiple servers (e.g., one for the agent, one for a database), use private networking for inter-server communication. It is faster and not exposed to the internet.
+
+## Check Your Work
+
+- [ ] `curl https://api.anthropic.com` returns a response (401 is fine)
+- [ ] If you set up DNS, `ping agent.yourdomain.com` resolves to your VPS IP
+- [ ] If you set up Caddy, `https://agent.yourdomain.com` shows a directory listing
+- [ ] `sudo ufw status` shows only the ports you intentionally opened
+
+## Common Issues
+
+**Curl times out to Anthropic API:** Some providers block outbound traffic by default (especially free tiers). Check your provider's firewall/security group settings in their dashboard — this is separate from UFW.
+
+**Caddy fails to get a TLS certificate:** Your DNS record must point to the VPS IP, and ports 80 and 443 must be open. Caddy uses the HTTP-01 challenge, which requires both ports.
+
+**DNS not resolving:** TTL propagation takes time. Use `dig agent.yourdomain.com` to check. If it returns the correct IP but browser/curl does not work, the issue is on the server side (firewall or Caddy config).
+
+## Key Takeaways
+
+- Claude Code only needs outbound HTTPS — no inbound ports required for core use.
+- DNS and reverse proxies are optional but useful for web-accessible output.
+- Caddy handles TLS automatically — no manual certificate management.
+- Open ports deliberately and close them when no longer needed.
+
+## What's Next
+
+The next lesson covers installing Node.js, Claude Code, and the runtime dependencies your agent needs.

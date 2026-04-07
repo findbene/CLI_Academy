@@ -1,5 +1,21 @@
 import type { Metadata } from "next";
+import { Sora, IBM_Plex_Mono } from "next/font/google";
+import { SearchDialog } from "@/components/ui/search-dialog";
 import "./globals.css";
+
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+  weight: ["400", "500"],
+});
 
 export const metadata: Metadata = {
   title: {
@@ -16,8 +32,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full">{children}</body>
+    <html
+      lang="en"
+      className={`h-full antialiased ${sora.variable} ${ibmPlexMono.variable}`}
+    >
+      <body className="min-h-full">
+        <SearchDialog />
+        {children}
+      </body>
     </html>
   );
 }

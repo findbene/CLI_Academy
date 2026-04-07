@@ -1,0 +1,178 @@
+---
+title: "Backup and Recovery"
+description: "Protect your VPS configuration, agent output, and project data with automated backups and a tested recovery plan."
+slug: "vps-backup-recovery"
+lesson_number: 9
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: true
+tags: ["vps", "backup", "recovery", "disaster-recovery"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have automated backups of your agent's work, a tested recovery procedure, and confidence that you can rebuild your entire VPS setup from scratch in under an hour.
+
+## Why This Matters
+
+VPS providers can have outages. Disks can fail. You can accidentally `rm -rf` the wrong directory. A backup strategy is not optional for any server running real workloads. The question is not whether you will need it — it is whether you will be ready when you do.
+
+> **⚠️ Safety Warning:** Never store API keys, tokens, or credentials in unencrypted backups. Your backup destination must be at least as secure as your server. Encrypt sensitive backups or exclude credential files entirely.
+
+## Core Concepts
+
+### What to Back Up
+
+| Category | What | Where | How often |
+|----------|------|-------|-----------|
+| Agent output | Reports, reviews, generated files | `~/agent-output/` or project dirs | Daily |
+| Configuration | `.bashrc`, systemd units, Caddyfile, scripts | `/etc/`, `/home/deploy/` | After changes |
+| Project code | Git repos | `~/projects/` | Push to remote on every commit |
+| Secrets | API keys, env files | `~/.claude-env` | Manual, encrypted only |
+
+### What NOT to Back Up
+
+- Node modules (`node_modules/`) — reinstall from `package.json`
+- System packages — reinstall from your setup script
+- Cache and temp files — they regenerate
+
+### Method 1: Git Push for Code (Essential)
+
+Your project code should always live in a Git remote (GitHub, GitLab, etc.). This is your primary code backup:
+
+```bash
+cd ~/my-project
+git add -A
+git commit -m "chore: agent output — nightly review"
+git push origin main
+```
+
+Automate via cron:
+
+```bash
+0 3 * * * cd /home/deploy/my-project && git add -A && git commit -m "chore: auto-commit $(date +\%F)" && git push origin main 2>/dev/null
+```
+
+The `2>/dev/null` suppresses output when there is nothing new to commit.
+
+### Method 2: Rsync to a Remote Destination
+
+For files that are not in Git (agent output, logs, generated reports), use rsync to another server or a storage service:
+
+```bash
+rsync -avz --delete \
+    /home/deploy/agent-output/ \
+    backup-user@backup-server:/backups/vps-agent/
+```
+
+Automate with cron (daily at 4 AM):
+
+```
+0 4 * * * rsync -avz --delete /home/deploy/agent-output/ backup-user@backup-server:/backups/vps-agent/ >> /home/deploy/logs/backup.log 2>&1
+```
+
+### Method 3: VPS Provider Snapshots
+
+Most providers offer automated snapshots:
+
+- **DigitalOcean:** Enable weekly backups ($1/mo for the cheapest droplet) or take manual snapshots.
+- **Hetzner:** Manual snapshots available in the dashboard.
+- **Vultr:** Automatic backups as an add-on.
+
+Provider snapshots capture the entire disk state. They are the fastest recovery method but are provider-locked — you cannot take a DigitalOcean snapshot to Hetzner.
+
+### Method 4: Configuration-as-Code (Best Practice)
+
+The most reliable "backup" for your server configuration is a setup script that can rebuild everything from scratch:
+
+Create `/home/deploy/scripts/setup-server.sh`:
+
+```bash
+#!/bin/bash
+set -e
+
+echo "=== System Updates ==="
+sudo apt update && sudo apt upgrade -y
+
+echo "=== Essential Packages ==="
+sudo apt install -y build-essential git curl wget tmux fail2ban ufw
+
+echo "=== Node.js via nvm ==="
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm install --lts
+
+echo "=== Claude Code ==="
+npm install -g @anthropic-ai/claude-code
+
+echo "=== Firewall ==="
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw --force enable
+
+echo "=== Setup Complete ==="
+echo "Remember to:"
+echo "  1. Set ANTHROPIC_API_KEY in ~/.claude-env"
+echo "  2. Copy systemd service files"
+echo "  3. Restore agent output from backup"
+```
+
+Store this script in your Git repo. When you need to rebuild, spin up a new VPS and run the script.
+
+### Recovery Procedure
+
+When disaster strikes, follow this order:
+
+1. **Spin up a new VPS** with the same OS (Ubuntu 22.04 LTS)
+2. **Run your setup script** to install all dependencies
+3. **Clone your project repos** from Git
+4. **Restore agent output** from rsync backup or provider snapshot
+5. **Set API key** in `~/.claude-env`
+6. **Copy systemd units** and enable timers
+7. **Verify** — run a test Claude Code command to confirm everything works
+
+### Testing Your Recovery
+
+A backup you have never tested is not a backup. Once a month:
+
+1. Spin up a cheap temporary VPS ($0.01/hour)
+2. Run your setup script
+3. Restore from backup
+4. Verify Claude Code works
+5. Destroy the test VPS
+
+This takes 30 minutes and proves your recovery works.
+
+## Check Your Work
+
+- [ ] Project code is pushed to a Git remote
+- [ ] Agent output is backed up via rsync, snapshots, or both
+- [ ] A setup script can rebuild your server from scratch
+- [ ] Secrets are excluded from backups OR encrypted
+- [ ] You have tested recovery at least once
+
+## Common Issues
+
+**rsync fails with "Permission denied":** Set up SSH key authentication between your VPS and backup server, just like you did between your laptop and VPS.
+
+**Git push from cron fails:** Cron runs in a minimal environment. Use the full path to git (`/usr/bin/git`) and ensure SSH keys are available to the cron user.
+
+**Provider snapshot takes too long:** Large disks take longer to snapshot. For faster snapshots, keep your VPS disk size small and store large files externally (object storage, Git LFS).
+
+## Key Takeaways
+
+- Git push is your primary code backup — make it automatic.
+- rsync handles non-Git files (agent output, logs, reports).
+- Configuration-as-code (setup scripts) is the fastest recovery path.
+- Test your recovery. An untested backup is a hope, not a plan.
+
+## What's Next
+
+The final lesson brings everything together in a capstone project — you will set up a complete automated agent workflow from scratch.

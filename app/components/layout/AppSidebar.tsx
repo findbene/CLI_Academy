@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SignOutButton } from "@/components/auth/SignOutButton";
+import { SearchTrigger } from "@/components/ui/search-dialog";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
@@ -9,8 +11,15 @@ const navItems = [
   { href: "/settings", label: "Settings" },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  tier?: "free" | "pro";
+  tutorMessagesRemaining?: number | null;
+  userEmail?: string | null;
+}
+
+export function AppSidebar({ tier = "free", tutorMessagesRemaining, userEmail }: AppSidebarProps) {
   const pathname = usePathname();
+  const dailyLimit = tier === "pro" ? 100 : 10;
 
   return (
     <aside className="desktop-only sticky top-0 flex h-screen flex-col border-r border-[var(--color-border-subtle)] bg-[rgba(255,255,255,0.88)] p-5 backdrop-blur">
@@ -22,12 +31,16 @@ export function AppSidebar() {
           <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">
             CLI Academy
           </div>
-          <div className="text-sm text-[var(--color-fg-muted)]">Recovery rebuild</div>
+          <div className="text-sm text-[var(--color-fg-muted)]">Learn &middot; Build &middot; Ship</div>
         </div>
       </Link>
 
       <div className="mb-4 text-xs uppercase tracking-[0.14em] text-[var(--color-fg-muted)]">
         Learn
+      </div>
+
+      <div className="mb-4">
+        <SearchTrigger />
       </div>
 
       <nav className="grid gap-2">
@@ -57,10 +70,16 @@ export function AppSidebar() {
       </nav>
 
       <div className="mt-auto rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] p-4">
-        <div className="text-sm font-medium">Tutor limits</div>
+        <div className="text-sm font-medium">{userEmail ?? "Signed-in learner"}</div>
         <div className="mt-2 text-sm text-[var(--color-fg-muted)]">
-          Free learners get 10 tutor messages daily. Pro gets 100.
+          {tier === "pro" ? "Pro learner" : "Free learner"} · {dailyLimit} tutor messages daily
+          {typeof tutorMessagesRemaining === "number" ? ` · ${tutorMessagesRemaining} left today` : ""}
         </div>
+        {userEmail ? (
+          <div className="mt-4">
+            <SignOutButton />
+          </div>
+        ) : null}
       </div>
     </aside>
   );

@@ -3,6 +3,13 @@ import os
 import jwt
 from fastapi import Header, HTTPException
 
+# ---------------------------------------------------------------------------
+# JWT Configuration
+# ---------------------------------------------------------------------------
+
+_JWT_ALGORITHM = "HS256"
+_JWT_AUDIENCE = "authenticated"
+
 
 def verify_supabase_jwt(authorization: str | None = Header(None)) -> str:
     """FastAPI dependency — verifies a Supabase JWT and returns the user_id (sub claim).
@@ -23,8 +30,8 @@ def verify_supabase_jwt(authorization: str | None = Header(None)) -> str:
         payload = jwt.decode(
             token,
             secret,
-            algorithms=["HS256"],
-            audience="authenticated",
+            algorithms=[_JWT_ALGORITHM],
+            audience=_JWT_AUDIENCE,
         )
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")

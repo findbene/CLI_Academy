@@ -1,0 +1,8 @@
+scenario,step,action,expected_result
+missing_key,1,Decide whether you are using claude auth or ANTHROPIC_API_KEY,You know which auth path you are debugging
+missing_key,2,Print the key in the active shell,You can see whether the variable is present
+invalid_key,1,Generate a fresh key in the Anthropic console,You have a clean replacement credential
+invalid_key,2,Replace the old key everywhere it is used,Old key references are removed
+shell_mismatch,1,Check which shell actually runs Claude Code,You stop debugging the wrong environment
+real_request_failure,1,Run a small real Claude request,You verify auth with an actual API call
+safety,1,Rotate any suspected leaked key,The old key is no longer usable

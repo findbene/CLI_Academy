@@ -1,25 +1,5 @@
-const guides = [
-  {
-    title: "Claude command not found",
-    likelyCause: "Global install missing, PATH not updated, or the shell needs restarting.",
-    nextStep: "Check `node --version`, `npm --version`, then reinstall Claude Code and restart the terminal.",
-  },
-  {
-    title: "Authentication failed",
-    likelyCause: "Invalid or expired API key, or the wrong account context.",
-    nextStep: "Create a fresh key, run `claude auth` again, and verify the account you are using.",
-  },
-  {
-    title: "Windows path and permission weirdness",
-    likelyCause: "Mixing WSL paths with Windows paths, or shell-specific permission differences.",
-    nextStep: "Confirm whether you are in WSL2 or PowerShell first, then use the matching path conventions.",
-  },
-  {
-    title: "Claude CoWork is not visible",
-    likelyCause: "Feature rollout limits, missing account tier, or region/account access delay.",
-    nextStep: "Check Pro status, current rollout notes, and try the supported access path again later.",
-  },
-];
+import Link from "next/link";
+import { knownIssues, troubleshootingGuides } from "@/lib/support";
 
 export default function TroubleshootingPage() {
   return (
@@ -28,22 +8,71 @@ export default function TroubleshootingPage() {
         <div className="eyebrow">Troubleshooting center</div>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight">Start with the symptom, not the panic</h1>
         <p className="mt-4 text-lg leading-8 text-[var(--color-fg-muted)]">
-          CLI Academy should treat troubleshooting as part of the curriculum, not a support afterthought. This rebuilt
-          page restores that surface so the product has a proper home for common failure patterns and next-step guidance.
+          Troubleshooting is part of the curriculum, not a support afterthought. Find common failure patterns,
+          diagnostic steps, and next-step guidance organized by symptom.
         </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/compatibility" className="button-secondary">
+            Check compatibility first
+          </Link>
+          <Link href="/trust" className="button-primary">
+            Open trust center
+          </Link>
+        </div>
       </div>
 
       <div className="mt-10 grid gap-4 md:grid-cols-2">
-        {guides.map((guide) => (
-          <article key={guide.title} className="panel p-5">
+        {troubleshootingGuides.map((guide) => (
+          <article key={guide.slug} className="panel p-5">
+            <div className="flex flex-wrap gap-2">
+              <span className="badge" data-tone={guide.severity === "advanced" ? "danger" : guide.severity === "important" ? "warning" : "accent"}>
+                {guide.severity}
+              </span>
+              <span className="badge">{guide.problemArea}</span>
+            </div>
             <h2 className="text-xl font-semibold">{guide.title}</h2>
+            <div className="mt-4 text-sm font-medium">Symptoms</div>
+            <ul className="mt-2 grid gap-2 text-sm leading-6 text-[var(--color-fg-muted)]">
+              {guide.symptoms.map((symptom) => (
+                <li key={symptom}>• {symptom}</li>
+              ))}
+            </ul>
             <div className="mt-4 text-sm font-medium">Likely cause</div>
             <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">{guide.likelyCause}</p>
+            <div className="mt-4 text-sm font-medium">Safest checks</div>
+            <ul className="mt-2 grid gap-2 text-sm leading-6 text-[var(--color-fg-muted)]">
+              {guide.safestChecks.map((check) => (
+                <li key={check}>• {check}</li>
+              ))}
+            </ul>
             <div className="mt-4 text-sm font-medium">Next safest step</div>
             <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">{guide.nextStep}</p>
           </article>
         ))}
       </div>
+
+      <section className="mt-10 panel p-6">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-2xl font-semibold">Known issues that may explain a failure</h2>
+          <Link href="/trust" className="button-secondary">
+            View all trust notes
+          </Link>
+        </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {knownIssues.map((issue) => (
+            <article key={issue.slug} className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] p-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="badge" data-tone={issue.status === "resolved" ? "accent" : issue.status === "monitoring" ? "warning" : "danger"}>
+                  {issue.status}
+                </span>
+                <span className="badge">{issue.tool}</span>
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">{issue.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">{issue.workaround}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

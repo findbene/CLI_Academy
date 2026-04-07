@@ -10,10 +10,18 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from auth import verify_supabase_jwt
+from rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/tutor", tags=["tutor"])
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+_max_tokens = int(os.getenv("TUTOR_MAX_TOKENS", "1024"))
+_request_timeout = float(os.getenv("TUTOR_REQUEST_TIMEOUT", "30.0"))
 
 # ---------------------------------------------------------------------------
 # Request / response models
@@ -22,20 +30,20 @@ router = APIRouter(prefix="/tutor", tags=["tutor"])
 
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]
-    content: str = Field(..., min_length=1)
+    content: str = Field(..., min_length=1, max_length=4000)
 
 
 class LessonContext(BaseModel):
-    lesson_slug: str | None = None
-    lesson_title: str | None = None
-    path_slug: str | None = None
-    user_os: str | None = None
-    user_role: str | None = None
-    user_skill: str | None = None
+    lesson_slug: str | None = Field(default=None, max_length=200)
+    lesson_title: str | None = Field(default=None, max_length=200)
+    path_slug: str | None = Field(default=None, max_length=200)
+    user_os: str | None = Field(default=None, max_length=200)
+    user_role: str | None = Field(default=None, max_length=200)
+    user_skill: str | None = Field(default=None, max_length=200)
 
 
 class TutorStreamRequest(BaseModel):
-    messages: list[ChatMessage] = Field(..., min_length=1)
+    messages: list[ChatMessage] = Field(..., min_length=1, max_length=50)
     context: LessonContext = Field(default_factory=LessonContext)
 
 
@@ -65,12 +73,18 @@ Guidelines:
 
 
 def _build_system_prompt(ctx: LessonContext) -> str:
+    # Sanitize context fields to prevent prompt injection via newlines
+    def _sanitize(value: str | None, default: str) -> str:
+        if not value:
+            return default
+        return value.replace("\n", " ").replace("\r", " ")
+    
     return _SYSTEM_PROMPT_TEMPLATE.format(
-        lesson_title=ctx.lesson_title or "General Q&A",
-        path_slug=ctx.path_slug or "general",
-        user_os=ctx.user_os or "unknown",
-        user_role=ctx.user_role or "general",
-        user_skill=ctx.user_skill or "beginner",
+        lesson_title=_sanitize(ctx.lesson_title, "General Q&A"),
+        path_slug=_sanitize(ctx.path_slug, "general"),
+        user_os=_sanitize(ctx.user_os, "unknown"),
+        user_role=_sanitize(ctx.user_role, "general"),
+        user_skill=_sanitize(ctx.user_skill, "beginner"),
     )
 
 
@@ -100,12 +114,12 @@ async def _stream_tutor(request: TutorStreamRequest, user_id: str) -> AsyncGener
     # Convert internal message models to the format anthropic SDK expects.
     messages = [{"role": m.role, "content": m.content} for m in request.messages]
 
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(timeout=_request_timeout)
 
     try:
         with client.messages.stream(
             model=model,
-            max_tokens=1024,
+            max_tokens=_max_tokens,
             system=system_prompt,
             messages=messages,
         ) as stream:
@@ -114,6 +128,15 @@ async def _stream_tutor(request: TutorStreamRequest, user_id: str) -> AsyncGener
 
         yield _sse({"type": "done"})
         yield _sse_raw("[DONE]")
+
+    except anthropic.APITimeoutError as exc:
+        logger.warning("Anthropic request timed out for user %s: %s", user_id, exc)
+        yield _sse(
+            {
+                "type": "error",
+                "message": "The tutor took too long to respond. Please try a shorter question.",
+            }
+        )
 
     except anthropic.AuthenticationError as exc:
         logger.error("Anthropic authentication error: %s", exc)
@@ -161,6 +184,7 @@ async def _stream_tutor(request: TutorStreamRequest, user_id: str) -> AsyncGener
 async def tutor_stream(
     request: TutorStreamRequest,
     user_id: str = Depends(verify_supabase_jwt),
+    _rl: None = Depends(rate_limit(requests_per_window=20, window_seconds=60)),
 ) -> StreamingResponse:
     """
     Stream a tutor response as Server-Sent Events.

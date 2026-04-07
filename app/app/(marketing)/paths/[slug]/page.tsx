@@ -1,6 +1,9 @@
+import { AssetCard } from "@/components/assets/AssetCard";
 import Link from "next/link";
-import { getPathBySlug } from "@/lib/data/paths";
+import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
+import { getCatalogPathBySlug, getPathCta } from "@/lib/catalog";
 import { getLessonsForPath } from "@/lib/mdx";
+import { getServerViewer } from "@/lib/viewer";
 
 interface PathDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -8,7 +11,7 @@ interface PathDetailPageProps {
 
 export default async function PathDetailPage({ params }: PathDetailPageProps) {
   const { slug } = await params;
-  const path = getPathBySlug(slug);
+  const [path, viewer] = await Promise.all([getCatalogPathBySlug(slug), getServerViewer()]);
 
   if (!path) {
     return (
@@ -16,7 +19,7 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
         <div className="panel p-6">
           <h1 className="text-3xl font-semibold">Path not found</h1>
           <p className="mt-3 text-[var(--color-fg-muted)]">
-            This recovered path slug does not match the current catalog.
+            This path could not be found. It may have been moved or is no longer available.
           </p>
         </div>
       </main>
@@ -24,6 +27,10 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
   }
 
   const lessons = path.status === "available" ? await getLessonsForPath(path.slug) : [];
+  const cta = getPathCta(path, { signedIn: Boolean(viewer.user), tier: viewer.profile?.tier ?? null });
+  const recommendedAssets = getRecommendedAssetsForPath(path.slug)
+    .slice(0, 2)
+    .map((asset) => toDownloadSurfaceAsset(asset, viewer.profile?.tier ?? "free"));
 
   return (
     <main className="page-shell">
@@ -41,15 +48,14 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
           <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">{path.summary}</p>
           <div className="metadata-bar mt-5">
             <span>{path.section}</span>
-            <span>{path.lessonCount} lessons</span>
+            <span>{path.availableLessonCount} lessons</span>
             <span>{path.estimatedHours}</span>
+            {path.lastReviewedAt ? <span>Reviewed {path.lastReviewedAt}</span> : null}
+            {path.versionLabel ? <span>{path.versionLabel}</span> : null}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={path.status === "available" ? `/learn/${path.slug}` : "/signup"}
-              className="button-primary"
-            >
-              {path.status === "available" ? "Open learner view" : "Get notified"}
+            <Link href={cta.href} className="button-primary">
+              {cta.label}
             </Link>
             <Link href="/paths" className="button-secondary">
               Back to catalog
@@ -60,15 +66,30 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
         <aside className="panel p-6">
           <div className="text-sm font-semibold">Status note</div>
           <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
-            The rebuilt frontend catalog is intentionally honest. Paths marked coming soon may already have lesson files
-            or draft content, but they stay gated until the content and UX are ready to trust publicly.
+            Paths marked coming soon may already have draft content, but they stay gated until the lessons meet our quality and trust standards.
           </p>
+          {path.tier === "pro" ? (
+            <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
+              This is a Pro path. Free learners can browse the overview, then upgrade when they are ready for deeper material.
+            </p>
+          ) : null}
         </aside>
       </section>
 
+      {recommendedAssets.length ? (
+        <section className="mt-10 grid gap-4">
+          <h2 className="text-2xl font-semibold">Included starter assets</h2>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {recommendedAssets.map((asset) => (
+              <AssetCard key={asset.slug} asset={asset} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {lessons.length > 0 ? (
         <section className="mt-10 grid gap-4">
-          <h2 className="text-2xl font-semibold">Recovered lesson list</h2>
+          <h2 className="text-2xl font-semibold">Lessons</h2>
           {lessons.map((lesson) => (
             <article key={lesson.slug} className="panel flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
               <div>

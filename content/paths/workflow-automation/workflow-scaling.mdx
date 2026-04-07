@@ -1,0 +1,308 @@
+---
+title: "Workflow Scaling"
+description: "Scale your workflows across multiple projects, schedule batch runs, manage API costs, and handle failures gracefully at volume."
+slug: "workflow-scaling"
+lesson_number: 6
+estimated_minutes: 14
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["workflow", "scaling", "batch", "cost", "scheduling"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to run workflows across multiple projects, batch work to control costs, schedule recurring runs, and handle the failure modes that emerge at scale.
+
+## Why This Matters
+
+A workflow that works for one project breaks when you run it across ten. A script that costs $0.05 per run costs $36 per month when it runs every hour. Scaling requires different thinking than prototyping.
+
+## Core Concepts
+
+### Multi-Project Workflows
+
+Run the same workflow against multiple projects:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# Project registry
+PROJECTS=(
+    "$HOME/projects/webapp"
+    "$HOME/projects/api-service"
+    "$HOME/projects/mobile-app"
+    "$HOME/projects/docs-site"
+)
+
+RESULTS_DIR="./multi-report"
+mkdir -p "$RESULTS_DIR"
+FAILED=0
+
+for PROJECT in "${PROJECTS[@]}"; do
+    PROJECT_NAME=$(basename "$PROJECT")
+    echo "=== Processing: $PROJECT_NAME ==="
+    
+    if [ ! -d "$PROJECT" ]; then
+        echo "SKIP: $PROJECT does not exist"
+        continue
+    fi
+    
+    if ./health-report.sh "$PROJECT" > "$RESULTS_DIR/$PROJECT_NAME.md" 2>&1; then
+        echo "OK: $PROJECT_NAME"
+    else
+        echo "FAIL: $PROJECT_NAME"
+        FAILED=$((FAILED + 1))
+    fi
+done
+
+echo "=== Summary: $((${#PROJECTS[@]} - FAILED))/${#PROJECTS[@]} succeeded ==="
+[ "$FAILED" -eq 0 ] || exit 1
+```
+
+**Key decisions:**
+- Run sequentially (slower but predictable costs) or parallel (faster but more API load)?
+- Continue on failure or stop at first error?
+- Save individual results or only a combined summary?
+
+### Batch Processing with Rate Limiting
+
+Control how fast you consume API credits:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+BATCH_SIZE=5        # Process 5 items, then pause
+PAUSE_SECONDS=10    # Pause duration between batches
+ITEMS=("$@")        # Items from command line arguments
+TOTAL=${#ITEMS[@]}
+PROCESSED=0
+
+for i in "${!ITEMS[@]}"; do
+    ITEM="${ITEMS[$i]}"
+    echo "Processing item $((i + 1))/$TOTAL: $ITEM"
+    
+    # Your Claude-powered processing here
+    claude --print "Analyze $ITEM and output a summary." > "output/$(basename $ITEM).md"
+    
+    PROCESSED=$((PROCESSED + 1))
+    
+    # Pause after each batch
+    if [ $((PROCESSED % BATCH_SIZE)) -eq 0 ] && [ "$PROCESSED" -lt "$TOTAL" ]; then
+        echo "Batch complete. Pausing $PAUSE_SECONDS seconds..."
+        sleep "$PAUSE_SECONDS"
+    fi
+done
+
+echo "Done: $PROCESSED/$TOTAL items processed"
+```
+
+### Cost Estimation
+
+Before running a scaled workflow, estimate the cost:
+
+```
+Cost per run = (input tokens + output tokens) × price per token
+
+Input tokens ≈ prompt length + file content length
+Output tokens ≈ expected response length
+```
+
+**Rough estimates for Claude Code tasks:**
+
+| Task | Typical Input | Typical Output | Approximate Cost |
+|------|---------------|----------------|-----------------|
+| File review (single file) | 2K tokens | 500 tokens | ~$0.01 |
+| Project summary | 10K tokens | 1K tokens | ~$0.05 |
+| Full project analysis | 50K tokens | 5K tokens | ~$0.25 |
+| Multi-file code review | 30K tokens | 3K tokens | ~$0.15 |
+
+**Monthly cost formula:**
+```
+Monthly cost = cost per run × runs per day × 30
+
+Example:
+$0.05/run × 24 runs/day × 30 days = $36/month
+$0.05/run × 1 run/day × 30 days = $1.50/month
+```
+
+**Cost control strategies:**
+- Run expensive workflows less frequently (daily instead of hourly)
+- Filter inputs before sending to Claude (skip unchanged files)
+- Cache results — do not re-analyze files that have not changed
+- Use cheaper prompts for triage, expensive prompts only for flagged items
+
+### Caching to Reduce Redundant Work
+
+Skip files that have not changed since the last run:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+CACHE_DIR="./.workflow-cache"
+mkdir -p "$CACHE_DIR"
+
+for FILE in src/**/*.ts; do
+    # Compute hash of file content
+    HASH=$(sha256sum "$FILE" | cut -d' ' -f1)
+    CACHE_KEY="$CACHE_DIR/$(echo "$FILE" | tr '/' '_').hash"
+    
+    # Check if file has changed since last run
+    if [ -f "$CACHE_KEY" ] && [ "$(cat "$CACHE_KEY")" = "$HASH" ]; then
+        echo "SKIP (unchanged): $FILE"
+        continue
+    fi
+    
+    # Process the file
+    echo "ANALYZE: $FILE"
+    claude --print "Review $FILE for issues." > "reviews/$(basename $FILE).md"
+    
+    # Update cache
+    echo "$HASH" > "$CACHE_KEY"
+done
+```
+
+This pattern dramatically reduces costs for workflows that run frequently against large codebases where most files do not change between runs.
+
+### Scheduling with Cron
+
+Schedule workflows to run automatically:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Run daily at 6 AM
+0 6 * * * /home/user/workflows/health-report.sh /home/user/project >> /home/user/workflows/logs/cron.log 2>&1
+
+# Run every Monday at 9 AM
+0 9 * * 1 /home/user/workflows/weekly-review.sh >> /home/user/workflows/logs/weekly.log 2>&1
+
+# Run every 4 hours during work hours (8 AM - 6 PM, weekdays)
+0 8-18/4 * * 1-5 /home/user/workflows/monitor.sh >> /home/user/workflows/logs/monitor.log 2>&1
+```
+
+**Cron environment gotchas:**
+- Cron runs with a minimal `$PATH` — use full paths for all commands
+- Cron does not load your `.bashrc` — source environment files explicitly
+- Redirect both stdout and stderr to log files
+
+```bash
+#!/bin/bash
+# Add to the top of cron-invoked scripts
+export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node/ | tail -1)/bin"
+source "$HOME/.claude-env"  # Load API keys
+```
+
+### Scheduling with systemd Timers
+
+More reliable than cron for important workflows:
+
+```ini
+# ~/.config/systemd/user/health-report.service
+[Unit]
+Description=Daily Health Report
+
+[Service]
+Type=oneshot
+ExecStart=/home/user/workflows/health-report.sh /home/user/project
+Environment=ANTHROPIC_API_KEY=your-key-here
+StandardOutput=append:/home/user/workflows/logs/health.log
+StandardError=append:/home/user/workflows/logs/health.log
+```
+
+```ini
+# ~/.config/systemd/user/health-report.timer
+[Unit]
+Description=Run health report daily
+
+[Timer]
+OnCalendar=*-*-* 06:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+systemctl --user enable --now health-report.timer
+systemctl --user list-timers
+```
+
+### Failure Handling at Scale
+
+At scale, failures are normal. Design for them:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+MAX_RETRIES=3
+RETRY_DELAY=30  # seconds
+
+run_with_retry() {
+    local COMMAND="$1"
+    local ATTEMPT=1
+    
+    while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
+        if eval "$COMMAND"; then
+            return 0
+        fi
+        
+        echo "Attempt $ATTEMPT/$MAX_RETRIES failed. Retrying in ${RETRY_DELAY}s..."
+        ATTEMPT=$((ATTEMPT + 1))
+        sleep "$RETRY_DELAY"
+    done
+    
+    echo "FAILED after $MAX_RETRIES attempts: $COMMAND"
+    return 1
+}
+
+# Usage
+run_with_retry "claude --print 'Analyze src/main.ts' > output/main.md"
+```
+
+**When to retry:**
+- Network errors (API timeouts, connection refused)
+- Rate limit errors (429 status codes)
+
+**When NOT to retry:**
+- Authentication errors (bad API key will never work)
+- Validation failures (bad input will produce the same bad output)
+- Permission errors (the file or path will still be inaccessible)
+
+## Check Your Work
+
+- [ ] You can run a workflow across multiple projects with per-project error handling
+- [ ] You understand how to estimate and control API costs at scale
+- [ ] You can set up cron or systemd timers for scheduled runs
+- [ ] You know when to retry vs. fail permanently
+
+## Common Issues
+
+**"Cron job is not running"**
+Check `crontab -l` to verify the entry exists, check the log file for errors, and ensure the script has execute permissions. Test the script manually with the same environment cron uses.
+
+**"API costs are higher than expected"**
+Add logging to track actual token usage per run. Cache aggressively. Reduce prompt size by summarizing inputs before sending them to Claude.
+
+**"Some projects fail while others succeed"**
+This is expected at scale. Ensure your wrapper script continues processing after individual failures and reports a summary at the end.
+
+## Key Takeaways
+
+- Multi-project workflows need per-project error handling and a summary report.
+- Cache file hashes to skip unchanged files and dramatically reduce costs.
+- Estimate costs before scaling: runs per day × cost per run × 30.
+- Use systemd timers instead of cron for workflows where reliability matters.
+
+## What's Next
+
+The final lesson is a capstone project — you will build a complete workflow automation system from scratch.

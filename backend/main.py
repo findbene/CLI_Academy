@@ -48,12 +48,14 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
 # Application
 # ---------------------------------------------------------------------------
 
+_is_production = os.getenv("ENV", "development").lower() == "production"
+
 app = FastAPI(
     title="CLI Academy Backend",
     description="API server for the CLI Academy learning platform.",
     version="0.1.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
     lifespan=lifespan,
 )
 
@@ -61,8 +63,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_parse_allowed_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # ---------------------------------------------------------------------------

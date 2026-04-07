@@ -1,0 +1,137 @@
+---
+title: "SSL Certificates and HTTPS"
+description: "Secure all connections to and from your VPS with properly configured TLS — including API traffic and optional web endpoints."
+slug: "vps-ssl-certificates"
+lesson_number: 5
+estimated_minutes: 10
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: true
+tags: ["vps", "ssl", "tls", "certificates", "security"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand how TLS protects your agent's API traffic, know how to verify certificate health, and have automated certificate renewal configured if you are serving web content.
+
+## Why This Matters
+
+Every call Claude Code makes to the Anthropic API includes your API key in the request headers. TLS (the protocol behind HTTPS) encrypts that traffic so no one between your VPS and Anthropic's servers can read it. This protection is automatic for API calls, but if you are serving anything from your VPS over the web, you need to configure TLS yourself.
+
+> **⚠️ Safety Warning:** Never serve agent output, logs, or dashboards over plain HTTP. Unencrypted connections expose data to anyone on the network path. Always use HTTPS for web-accessible endpoints.
+
+## Core Concepts
+
+### TLS for API Calls (Automatic)
+
+Claude Code communicates with `api.anthropic.com` over HTTPS. This is handled by Node.js's built-in TLS stack. You do not need to configure certificates for this — it works out of the box.
+
+Verify that your system's certificate bundle is current:
+
+```bash
+openssl s_client -connect api.anthropic.com:443 -brief
+```
+
+You should see output including `Verification: OK`. If verification fails, update your CA certificates:
+
+```bash
+sudo apt install -y ca-certificates
+sudo update-ca-certificates
+```
+
+### TLS for Web Endpoints (Manual Setup Required)
+
+If you configured Caddy in the networking lesson, TLS is already handled automatically. Caddy uses Let's Encrypt to obtain and renew certificates with zero configuration.
+
+Verify your certificate:
+
+```bash
+curl -vI https://agent.yourdomain.com 2>&1 | grep -E "subject:|expire"
+```
+
+You should see your domain in the subject and an expiry date 90 days in the future.
+
+### If Using Nginx Instead of Caddy
+
+If you prefer Nginx, use Certbot for certificate management:
+
+```bash
+sudo apt install -y nginx certbot python3-certbot-nginx
+sudo certbot --nginx -d agent.yourdomain.com
+```
+
+Certbot will:
+1. Obtain a certificate from Let's Encrypt
+2. Configure Nginx to use it
+3. Set up automatic renewal via a systemd timer
+
+Verify the renewal timer is active:
+
+```bash
+sudo systemctl list-timers | grep certbot
+```
+
+Test renewal (dry run):
+
+```bash
+sudo certbot renew --dry-run
+```
+
+### Certificate Renewal Monitoring
+
+Let's Encrypt certificates expire after 90 days. Both Caddy and Certbot handle automatic renewal, but you should verify it is working.
+
+A simple monitoring approach — add a cron job that checks certificate expiry:
+
+```bash
+crontab -e
+```
+
+Add this line (checks daily at 6 AM):
+
+```
+0 6 * * * openssl s_client -connect agent.yourdomain.com:443 -servername agent.yourdomain.com 2>/dev/null | openssl x509 -noout -checkend 604800 || echo "Certificate expiring within 7 days" | mail -s "TLS Warning" you@example.com
+```
+
+This sends an email if the certificate expires within 7 days.
+
+### Self-Signed Certificates (Don't)
+
+Self-signed certificates are tempting for internal tools. Do not use them.
+
+Why:
+- They train you to ignore certificate warnings.
+- Tools and scripts that interact with your server need explicit trust overrides (`--insecure` flags), which are easy to leave in production code.
+- Let's Encrypt is free and automatic. There is no reason to self-sign for any internet-facing endpoint.
+
+For truly internal-only endpoints (accessible only via SSH tunnel), skip TLS entirely and use the SSH tunnel as the transport security.
+
+## Check Your Work
+
+- [ ] `openssl s_client -connect api.anthropic.com:443 -brief` shows `Verification: OK`
+- [ ] If serving web content, `curl -vI https://agent.yourdomain.com` shows a valid certificate
+- [ ] If using Caddy, it handles renewal automatically (check with `sudo systemctl status caddy`)
+- [ ] If using Certbot, `sudo certbot renew --dry-run` succeeds
+
+## Common Issues
+
+**openssl verification fails for Anthropic API:** Your system CA bundle is outdated. Run `sudo apt install ca-certificates && sudo update-ca-certificates`.
+
+**Certbot fails to obtain a certificate:** Ensure ports 80 and 443 are open in UFW, your DNS A record points to the VPS IP, and no other process is using port 80.
+
+**Certificate renewed but Nginx still serves the old one:** Restart Nginx after renewal: `sudo systemctl restart nginx`. Certbot's Nginx plugin usually handles this, but manual Nginx configs may not include the reload hook.
+
+## Key Takeaways
+
+- API traffic to Anthropic is encrypted automatically via HTTPS. No configuration needed.
+- Web-facing endpoints must use TLS. Caddy handles this automatically; Nginx needs Certbot.
+- Let's Encrypt is free and automatic — never self-sign for internet-facing services.
+- Monitor certificate expiry even with auto-renewal enabled.
+
+## What's Next
+
+The next lesson covers running Claude Code headlessly — detaching it from your SSH session so it keeps working when you disconnect.

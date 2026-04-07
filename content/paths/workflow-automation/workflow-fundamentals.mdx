@@ -1,0 +1,146 @@
+---
+title: "Workflow Fundamentals"
+description: "Understand what AI workflows are, how they differ from one-off prompts, and when automation actually helps."
+slug: "workflow-fundamentals"
+lesson_number: 1
+estimated_minutes: 10
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: false
+tags: ["workflow", "automation", "fundamentals"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will understand the difference between one-off prompts and repeatable workflows, know the three components every workflow needs, and have a mental model for when automation helps versus when it is overhead.
+
+## Why This Matters
+
+Most people use Claude Code like a chatbot: ask once, get an answer, move on. That works for questions. It does not work for tasks you do repeatedly — formatting reports, reviewing PRs, generating test data, cleaning imports. Workflows turn one-off prompts into reliable, repeatable processes that save time every day.
+
+## Core Concepts
+
+### One-Off Prompt vs. Workflow
+
+**One-off prompt:**
+```
+"Fix the TypeScript error in auth.ts"
+```
+
+This is a single instruction with immediate result. Good for unique problems.
+
+**Workflow:**
+```
+Every time a new PR is opened:
+  1. Read the changed files
+  2. Check for common issues (missing types, console.log, TODO comments)
+  3. Generate a review summary
+  4. Save it as a PR comment draft
+```
+
+This is a repeatable process with defined inputs, steps, and outputs. It runs the same way every time.
+
+### The Three Components of Every Workflow
+
+Every useful workflow has exactly three things:
+
+**1. Trigger — What starts it?**
+- Manual (you run a command)
+- Scheduled (cron, systemd timer)
+- Event-driven (new file, Git push, webhook)
+
+**2. Steps — What happens?**
+- Read inputs (files, APIs, databases)
+- Process (analyze, transform, generate)
+- Write outputs (files, messages, commits)
+
+**3. Verification — How do you know it worked?**
+- Output matches expected format
+- No errors in logs
+- Result is actually useful (not hallucinated garbage)
+
+If any component is missing, you do not have a workflow — you have a hope.
+
+### When Automation Helps
+
+Automate when:
+- You do the same task more than 3 times a week
+- The task has clear, stable inputs and outputs
+- Errors in the task are catchable (file exists, format is valid)
+- The cost of the task taking 10 seconds longer is low (not real-time)
+
+Do NOT automate when:
+- The task requires human judgment that cannot be verified automatically
+- The inputs change shape every time (you will spend more time maintaining the workflow than saving)
+- The cost of a wrong result is high and verification is hard (legal documents, financial transactions)
+- You have only done the task twice and are not sure you will do it again
+
+### The Automation Spectrum
+
+Not everything needs full automation. There is a spectrum:
+
+| Level | Description | Example |
+|-------|-------------|---------|
+| Manual | You run every step manually | Ad-hoc code review |
+| Assisted | Claude helps but you drive | "Review this file for security issues" |
+| Semi-auto | Script runs steps, you verify output | Nightly report generator, you review before sending |
+| Full-auto | Runs unattended, alerts on failure | Scheduled code quality check with auto-commit |
+
+Start at "assisted" and move toward "full-auto" only when you trust the output. Jumping straight to full automation for a new task is a recipe for broken workflows.
+
+### Workflow Examples by Role
+
+**For developers:**
+- PR review summary generation
+- Test data seeding for new features
+- Dependency update assessment (read changelogs, assess risk)
+- Documentation generation from code changes
+
+**For non-developers using Claude Code:**
+- Report formatting and standardization
+- Email draft generation from meeting notes
+- Data cleaning and validation pipelines
+- Content repurposing (blog post → social thread → newsletter)
+
+### What Makes a Good Workflow Prompt
+
+A workflow prompt is different from a conversation prompt. It must be:
+
+**Specific:** Include exact file paths, format requirements, and constraints.
+
+Bad: "Review the code"
+Good: "Read all .ts files in src/. For each file, check for: unused imports, console.log statements, functions over 50 lines, missing return types. Output a markdown table with file, issue, and line number."
+
+**Deterministic:** The same input should produce the same structure of output every time.
+
+Bad: "Tell me about the project"
+Good: "Generate a JSON object with keys: file_count, total_lines, languages (array), and last_modified (ISO date)."
+
+**Bounded:** Set limits so the agent does not run forever.
+
+Bad: "Improve the entire codebase"
+Good: "Review the 5 most recently modified files. Limit to 3 suggestions per file."
+
+## Check Your Work
+
+You understand workflow fundamentals if you can answer:
+
+- [ ] What are the three components of every workflow? (Trigger, Steps, Verification)
+- [ ] When should you NOT automate a task?
+- [ ] What is the difference between "assisted" and "full-auto" on the automation spectrum?
+- [ ] Why should workflow prompts be specific, deterministic, and bounded?
+
+## Key Takeaways
+
+- A workflow is a repeatable process with a trigger, steps, and verification.
+- Automate tasks you do frequently with stable inputs and verifiable outputs.
+- Start at "assisted" and graduate to "full-auto" as trust builds.
+- Workflow prompts need specificity, determinism, and bounds that one-off prompts do not.
+
+## What's Next
+
+The next lesson covers workflow design patterns — the reusable structures that make workflows reliable and maintainable.

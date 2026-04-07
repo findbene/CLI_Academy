@@ -1,0 +1,311 @@
+---
+title: "VPS Deployment Capstone"
+description: "Build a complete automated agent workflow on your VPS — from server setup through scheduled execution and monitoring."
+slug: "vps-capstone"
+lesson_number: 10
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: true
+tags: ["vps", "capstone", "automation", "project"]
+---
+
+## What You'll See
+
+By the end of this capstone, you will have a fully functional VPS running an automated Claude Code workflow: a nightly code review agent that checks a repository, generates a markdown report, commits it to Git, and alerts you if anything goes wrong.
+
+## Why This Matters
+
+This capstone ties together every concept from the path — server security, networking, runtime installation, headless operation, monitoring, and backup. Building it end-to-end proves you can deploy and maintain a production agent workflow.
+
+> **⚠️ Safety Warning:** This capstone deploys an agent that writes to a Git repository automatically. Use a dedicated test repo, not a production codebase. Review the agent's commit history after the first few runs to verify it behaves as expected.
+
+## The Project: Nightly Code Review Agent
+
+### What It Does
+
+Every night at 2 AM, the agent:
+
+1. Pulls the latest code from a Git repository
+2. Runs a Claude Code review analyzing code quality, potential bugs, and suggestions
+3. Saves the review as a timestamped markdown file
+4. Commits and pushes the review to the repository
+5. Sends a notification with a summary
+
+### Prerequisites
+
+Before starting, you should have completed all previous lessons:
+
+- [ ] Secured VPS with SSH keys and UFW firewall
+- [ ] Node.js and Claude Code installed via nvm
+- [ ] API key configured in `~/.claude-env`
+- [ ] tmux and systemd familiarity
+- [ ] Monitoring scripts in place
+
+### Step 1: Set Up the Project
+
+SSH into your VPS and create the project structure:
+
+```bash
+mkdir -p ~/nightly-review/{reviews,scripts,logs}
+cd ~/nightly-review
+git init
+```
+
+Create a `README.md`:
+
+```bash
+cat > README.md << 'EOF'
+# Nightly Code Review Agent
+
+Automated Claude Code reviews generated on a VPS.
+Reviews are stored in the `reviews/` directory.
+
+## Schedule
+
+Runs nightly at 2:00 AM UTC via systemd timer.
+
+## Structure
+
+- `reviews/` — Generated review markdown files
+- `scripts/` — Automation scripts
+- `logs/` — Execution logs
+EOF
+```
+
+Set up Git remote (replace with your repo URL):
+
+```bash
+git remote add origin git@github.com:your-username/nightly-review.git
+git add -A
+git commit -m "chore: initial setup"
+git push -u origin main
+```
+
+### Step 2: Create the Review Script
+
+Create `scripts/run-review.sh`:
+
+```bash
+cat > scripts/run-review.sh << 'SCRIPT'
+#!/bin/bash
+set -euo pipefail
+
+# Configuration
+PROJECT_DIR="/home/deploy/nightly-review"
+TARGET_REPO="/home/deploy/your-project"  # The repo to review
+REVIEW_DIR="$PROJECT_DIR/reviews"
+LOG_FILE="$PROJECT_DIR/logs/review-$(date +%F).log"
+DATE=$(date +%F)
+TIMESTAMP=$(date +%F_%H-%M)
+
+# Load environment
+set -a
+source /home/deploy/.claude-env
+set +a
+
+# Ensure nvm is loaded
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+echo "[$TIMESTAMP] Starting nightly review" | tee -a "$LOG_FILE"
+
+# Pull latest target repo
+cd "$TARGET_REPO"
+git pull origin main >> "$LOG_FILE" 2>&1 || true
+
+# Run Claude Code review
+cd "$TARGET_REPO"
+REVIEW_OUTPUT=$(claude --print "Review this codebase for:
+1. Code quality issues (naming, structure, dead code)
+2. Potential bugs or logic errors
+3. Security concerns (hardcoded secrets, input validation)
+4. Performance suggestions
+5. Documentation gaps
+
+Format your review as a structured markdown document with sections for each category.
+Start with a one-paragraph executive summary.
+Rate overall code health on a scale of 1-10.
+Be specific — reference actual file names and line numbers." 2>> "$LOG_FILE")
+
+# Save review
+REVIEW_FILE="$REVIEW_DIR/review-$TIMESTAMP.md"
+cat > "$REVIEW_FILE" << EOF
+# Code Review — $DATE
+
+**Generated:** $(date -u +"%Y-%m-%d %H:%M UTC")
+**Target:** $TARGET_REPO
+**Agent:** Claude Code (headless, VPS)
+
+---
+
+$REVIEW_OUTPUT
+EOF
+
+echo "[$TIMESTAMP] Review saved to $REVIEW_FILE" | tee -a "$LOG_FILE"
+
+# Commit and push the review
+cd "$PROJECT_DIR"
+git add reviews/
+git commit -m "review: nightly code review $DATE" >> "$LOG_FILE" 2>&1
+git push origin main >> "$LOG_FILE" 2>&1
+
+echo "[$TIMESTAMP] Review committed and pushed" | tee -a "$LOG_FILE"
+
+# Send notification (using ntfy.sh — replace with your preferred method)
+SUMMARY=$(echo "$REVIEW_OUTPUT" | head -5)
+curl -s -d "Nightly review complete for $DATE. Summary: $SUMMARY" \
+    "https://ntfy.sh/your-vps-alerts" > /dev/null 2>&1 || true
+
+echo "[$TIMESTAMP] Notification sent. Done." | tee -a "$LOG_FILE"
+SCRIPT
+```
+
+Make it executable:
+
+```bash
+chmod +x scripts/run-review.sh
+```
+
+### Step 3: Create the systemd Service
+
+```bash
+sudo tee /etc/systemd/system/nightly-review.service << 'EOF'
+[Unit]
+Description=Nightly Claude Code Review
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/home/deploy/nightly-review
+ExecStart=/home/deploy/nightly-review/scripts/run-review.sh
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+### Step 4: Create the Timer
+
+```bash
+sudo tee /etc/systemd/system/nightly-review.timer << 'EOF'
+[Unit]
+Description=Run nightly review at 2 AM UTC
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+EOF
+```
+
+Enable and start:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable nightly-review.timer
+sudo systemctl start nightly-review.timer
+```
+
+### Step 5: Test the Full Pipeline
+
+Run the service manually to verify everything works:
+
+```bash
+sudo systemctl start nightly-review
+```
+
+Watch the output:
+
+```bash
+journalctl -u nightly-review -f
+```
+
+Check that:
+- The review file was created in `reviews/`
+- The commit was pushed to your remote repository
+- The notification was sent
+
+### Step 6: Add Failure Monitoring
+
+Create a failure alert for the service:
+
+```bash
+cat > scripts/check-review-health.sh << 'SCRIPT'
+#!/bin/bash
+# Check if last review was within 26 hours (gives 2-hour buffer)
+LAST_REVIEW=$(ls -t /home/deploy/nightly-review/reviews/ | head -1)
+if [ -z "$LAST_REVIEW" ]; then
+    curl -d "No reviews found — agent may never have run" \
+        "https://ntfy.sh/your-vps-alerts"
+    exit 1
+fi
+
+LAST_MOD=$(stat -c %Y "/home/deploy/nightly-review/reviews/$LAST_REVIEW")
+NOW=$(date +%s)
+AGE=$(( (NOW - LAST_MOD) / 3600 ))
+
+if [ "$AGE" -gt 26 ]; then
+    curl -d "Last review is ${AGE}h old — nightly agent may have failed" \
+        "https://ntfy.sh/your-vps-alerts"
+fi
+SCRIPT
+chmod +x scripts/check-review-health.sh
+```
+
+Schedule it:
+
+```bash
+crontab -e
+```
+
+Add:
+
+```
+0 8 * * * /home/deploy/nightly-review/scripts/check-review-health.sh
+```
+
+This checks every morning at 8 AM that the nightly review actually ran.
+
+## Check Your Work
+
+- [ ] The review script runs successfully end-to-end
+- [ ] A markdown review file is generated with real content
+- [ ] The review is committed and pushed to your Git remote
+- [ ] A notification arrives through your chosen channel
+- [ ] The systemd timer is enabled and shows the next run time
+- [ ] The health check script alerts if the review stops running
+
+## Going Further
+
+Once this pipeline works, consider expanding it:
+
+- **Multiple repos:** Run reviews for several projects by parameterizing the target repo.
+- **Custom review criteria:** Tailor the Claude prompt to your team's standards or coding guidelines.
+- **Review comparison:** Have the agent compare this week's review to last week's and highlight trends.
+- **Web dashboard:** Serve the `reviews/` directory via Caddy for easy team access.
+
+## Key Takeaways
+
+- A complete VPS agent workflow combines security + runtime + headless execution + monitoring + backup.
+- systemd services and timers provide reliable, scheduled execution with built-in logging.
+- Always test the full pipeline before relying on it.
+- Monitor for missed runs, not just errors — a silent failure is worse than a noisy one.
+
+## Path Complete
+
+You now have the knowledge and hands-on experience to run Claude Code on a VPS for automated agent workflows. You have covered provider selection, security hardening, networking, runtime installation, TLS, headless operation, scaling, monitoring, backup, and end-to-end automation.
+
+The VPS is your foundation. What you build on it — nightly reviews, automated testing, content generation, CI/CD augmentation — is up to you.

@@ -1,0 +1,210 @@
+---
+title: "Monitoring and Alerting"
+description: "Set up lightweight monitoring so you know when your agent fails, your server runs low, or something unexpected happens."
+slug: "vps-monitoring-alerting"
+lesson_number: 8
+estimated_minutes: 14
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: false
+tags: ["vps", "monitoring", "alerting", "observability"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have a monitoring setup that tells you when your agent tasks fail, when server resources run low, and when your VPS goes offline — without installing heavy infrastructure tools.
+
+## Why This Matters
+
+A headless agent on a VPS works while you are not watching. That is the point. But "not watching" becomes a problem when tasks silently fail for days. Monitoring bridges the gap: the server tells you when something needs attention, so you do not have to check manually.
+
+## Core Concepts
+
+### Layer 1: systemd Journal Monitoring
+
+If your agent runs as a systemd service (from the headless agents lesson), its output goes to the journal. Check for failures:
+
+```bash
+journalctl -u claude-agent --since "24 hours ago" --no-pager | grep -i "error\|fail\|exception"
+```
+
+Create a monitoring script at `/home/deploy/scripts/check-agent.sh`:
+
+```bash
+#!/bin/bash
+FAILURES=$(journalctl -u claude-agent --since "1 hour ago" --no-pager | grep -ci "error\|fail\|exception")
+if [ "$FAILURES" -gt 0 ]; then
+    echo "Claude agent had $FAILURES errors in the last hour" | \
+        mail -s "[VPS Alert] Agent Errors Detected" you@example.com
+fi
+```
+
+Make it executable and schedule it:
+
+```bash
+chmod +x /home/deploy/scripts/check-agent.sh
+crontab -e
+```
+
+Add:
+
+```
+0 * * * * /home/deploy/scripts/check-agent.sh
+```
+
+This checks every hour and emails you if errors are found.
+
+### Layer 2: Resource Monitoring
+
+Create `/home/deploy/scripts/check-resources.sh`:
+
+```bash
+#!/bin/bash
+
+# Check disk usage
+DISK_USAGE=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')
+if [ "$DISK_USAGE" -gt 85 ]; then
+    echo "Disk usage at ${DISK_USAGE}%" | \
+        mail -s "[VPS Alert] Disk Space Low" you@example.com
+fi
+
+# Check memory
+MEM_AVAILABLE=$(free -m | grep Mem | awk '{print $7}')
+if [ "$MEM_AVAILABLE" -lt 200 ]; then
+    echo "Available memory: ${MEM_AVAILABLE}MB" | \
+        mail -s "[VPS Alert] Low Memory" you@example.com
+fi
+
+# Check load average (1 min)
+LOAD=$(cat /proc/loadavg | awk '{print $1}')
+CPU_COUNT=$(nproc)
+LOAD_INT=$(echo "$LOAD" | awk '{printf "%d", $1}')
+if [ "$LOAD_INT" -gt "$CPU_COUNT" ]; then
+    echo "Load average: $LOAD (CPUs: $CPU_COUNT)" | \
+        mail -s "[VPS Alert] High Load" you@example.com
+fi
+```
+
+Schedule it every 15 minutes:
+
+```
+*/15 * * * * /home/deploy/scripts/check-resources.sh
+```
+
+### Layer 3: Uptime Monitoring
+
+External uptime monitors check if your VPS is reachable. If you are serving web content via Caddy, use a free service:
+
+- **UptimeRobot** (free tier: 50 monitors, 5-minute intervals)
+- **Better Stack** (free tier: 10 monitors)
+- **Cronitor** (free tier: limited monitors)
+
+These services ping your HTTPS endpoint and alert you via email, Slack, or SMS if it goes down.
+
+For SSH-only servers (no web endpoint), use a heartbeat pattern instead. Create a cron job that regularly pings an external endpoint:
+
+```bash
+*/5 * * * * curl -s https://hc-ping.com/your-unique-uuid > /dev/null
+```
+
+[Healthchecks.io](https://healthchecks.io) provides free heartbeat monitoring — it alerts you if the cron job stops running.
+
+### Layer 4: Log Rotation
+
+Logs grow indefinitely without rotation. Ensure journald limits log size:
+
+```bash
+sudo nano /etc/systemd/journald.conf
+```
+
+Set:
+
+```
+SystemMaxUse=500M
+MaxRetentionSec=30day
+```
+
+Restart journald:
+
+```bash
+sudo systemctl restart systemd-journald
+```
+
+For custom log files (e.g., agent output logs), use logrotate:
+
+```bash
+sudo nano /etc/logrotate.d/claude-agent
+```
+
+```
+/home/deploy/logs/*.log {
+    daily
+    rotate 14
+    compress
+    missingok
+    notifempty
+}
+```
+
+### What NOT to Run
+
+For a personal VPS with 1-2 agents, do not install:
+
+- **Prometheus + Grafana** — massive overhead for monitoring a single server
+- **ELK Stack** — Elasticsearch alone needs 2 GB RAM
+- **Datadog / New Relic agents** — costs add up fast for simple use cases
+
+These tools make sense at 10+ servers. For 1-3 servers, shell scripts and cron jobs are the right tool.
+
+### Notification Channels
+
+Email is reliable but slow. For faster alerts, consider:
+
+**Webhook to Discord/Slack:**
+
+Replace `mail` commands with:
+
+```bash
+curl -H "Content-type: application/json" \
+    -d '{"content":"VPS Alert: Disk usage above 85%"}' \
+    "https://discord.com/api/webhooks/your-webhook-url"
+```
+
+**ntfy.sh (free, self-hostable push notifications):**
+
+```bash
+curl -d "Disk usage above 85%" https://ntfy.sh/your-topic
+```
+
+Subscribe on your phone with the ntfy app for instant push notifications.
+
+## Check Your Work
+
+- [ ] Agent error monitoring script runs on cron and detects errors
+- [ ] Resource monitoring script alerts on disk, memory, or CPU thresholds
+- [ ] An external uptime monitor (or heartbeat) is configured
+- [ ] Logs are rotated so disk does not fill up over time
+- [ ] You received a test alert through your chosen notification channel
+
+## Common Issues
+
+**Mail command not found:** Install a minimal mailer: `sudo apt install -y mailutils`. For sending email from a VPS, you may also need an SMTP relay. Using webhook-based notifications (Discord, Slack, ntfy) avoids mail configuration entirely.
+
+**Cron jobs not running:** Check with `crontab -l`. Verify the script paths are absolute and the scripts are executable (`chmod +x`).
+
+**Alerts are too noisy:** Tune your thresholds. Start with generous limits (85% disk, 200MB memory) and tighten only after you understand your baseline.
+
+## Key Takeaways
+
+- Shell scripts + cron is the right monitoring weight for 1-3 servers.
+- Monitor three things: agent task health, system resources, and uptime.
+- Use an external uptime service — you cannot monitor a dead server from itself.
+- Rotate logs to prevent silent disk exhaustion.
+
+## What's Next
+
+The next lesson covers backup and recovery — protecting your agent's work and being able to rebuild quickly when things go wrong.

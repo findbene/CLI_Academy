@@ -1,0 +1,6 @@
+topic,wsl2_example,powershell_example,why_it_matters
+home_folder,/home/yourname,C:\Users\yourname,Each shell uses a different home path
+project_folder,/home/yourname/projects/my-app,C:\Users\yourname\projects\my-app,Claude should work inside the right filesystem for the shell
+windows_drive_access,/mnt/c/Users/yourname/projects/my-app,C:\Users\yourname\projects\my-app,WSL2 can access Windows files but with extra friction
+show_current_folder,pwd,Get-Location,Use the shell-native command when verifying location
+print_api_key,echo $ANTHROPIC_API_KEY,echo $env:ANTHROPIC_API_KEY,Environment variable syntax changes across shells

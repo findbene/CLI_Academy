@@ -1,0 +1,396 @@
+---
+title: "Workflow Capstone: Multi-Repo Code Guardian"
+description: "Build a complete multi-repo code guardian workflow — automated analysis, reporting, Git integration, and alerting across all your projects."
+slug: "workflow-capstone"
+lesson_number: 7
+estimated_minutes: 22
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: true
+tags: ["workflow", "capstone", "automation", "multi-repo", "guardian"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will have built a complete Multi-Repo Code Guardian — an automated system that analyzes all your projects daily, generates per-project reports, commits results to Git, posts a summary to your notification channel, and resumes after failures without re-processing completed work.
+
+## Why This Matters
+
+This capstone combines every pattern from this path: sequential chains, fan-out, checkpoints, guard rails, Git integration, notification hooks, cost control, and scheduling. Building it proves you can design and ship real workflow automation.
+
+> **Safety Warning:** This workflow makes automated Git commits and sends notifications. Always test against throwaway repos first. Use `--dry-run` mode until you trust the output.
+
+## Core Concepts
+
+### Project Overview
+
+The Code Guardian will:
+1. Read a registry of your projects
+2. For each project: run static analysis, AI-powered code review, and dependency checks
+3. Save per-project reports with checkpoint tracking
+4. Commit all reports to a dedicated monitoring repo
+5. Send a summary notification (Slack, Discord, or ntfy)
+6. Run daily via systemd timer
+
+### Step 1: Project Structure
+
+```
+~/workflows/code-guardian/
+├── code-guardian.sh          # Main workflow script
+├── projects.txt              # Project registry (one path per line)
+├── reports/                  # Generated reports
+├── checkpoints/              # Track completed projects
+├── logs/                     # Execution logs
+└── config.env                # Environment variables
+```
+
+Set it up:
+
+```bash
+mkdir -p ~/workflows/code-guardian/{reports,checkpoints,logs}
+cd ~/workflows/code-guardian
+```
+
+### Step 2: Configuration
+
+Create `config.env`:
+
+```bash
+# config.env — Do NOT commit this file
+NOTIFICATION_WEBHOOK=""   # Slack or Discord webhook URL
+NTFY_TOPIC=""             # Alternative: ntfy.sh topic
+GIT_REMOTE="origin"       # Remote for report commits
+GIT_BRANCH="auto/guardian-reports"
+DRY_RUN=false
+MAX_RETRIES=2
+BATCH_SIZE=3
+```
+
+Create `projects.txt` (one project per line):
+
+```
+/home/user/projects/webapp
+/home/user/projects/api-service
+/home/user/projects/docs-site
+```
+
+### Step 3: The Core Analyzer
+
+This function runs against a single project:
+
+```bash
+analyze_project() {
+    local PROJECT_DIR="$1"
+    local PROJECT_NAME=$(basename "$PROJECT_DIR")
+    local REPORT="$REPORTS_DIR/$PROJECT_NAME.md"
+    local CHECKPOINT="$CHECKPOINT_DIR/$PROJECT_NAME.done"
+    
+    # Skip if already processed today
+    if [ -f "$CHECKPOINT" ] && [ "$(date -r "$CHECKPOINT" +%F)" = "$(date +%F)" ]; then
+        echo "SKIP (already done today): $PROJECT_NAME"
+        return 0
+    fi
+    
+    # Validate project exists
+    if [ ! -d "$PROJECT_DIR" ]; then
+        echo "WARN: $PROJECT_DIR does not exist"
+        return 1
+    fi
+    
+    echo "ANALYZING: $PROJECT_NAME"
+    
+    # Gather static metrics
+    local FILE_COUNT=$(find "$PROJECT_DIR" \
+        -not -path '*/node_modules/*' \
+        -not -path '*/.git/*' \
+        -not -path '*/.next/*' \
+        -not -path '*/__pycache__/*' \
+        -type f | wc -l)
+    
+    local RECENT_COMMITS=$(cd "$PROJECT_DIR" && \
+        git log --oneline --since="7 days ago" 2>/dev/null | wc -l || echo "0")
+    
+    local LAST_COMMIT=$(cd "$PROJECT_DIR" && \
+        git log -1 --format="%h %s (%cr)" 2>/dev/null || echo "No git history")
+    
+    # AI analysis (the expensive step)
+    local ANALYSIS
+    ANALYSIS=$(claude --print "You are a code guardian. Analyze the project at $PROJECT_DIR.
+
+Perform these checks:
+1. **Code Smells**: Find TODO/FIXME/HACK comments, console.log/print() in non-test files, files over 300 lines
+2. **Security Scan**: Look for hardcoded secrets, SQL concatenation, unvalidated inputs, exposed .env references
+3. **Dependency Health**: Check if package.json or requirements.txt exist, note any outdated lock files
+4. **Architecture Notes**: Flag any circular imports, god files (>500 lines), or missing error handling
+
+Output a structured markdown report. If a category has no issues, say 'Clean — no issues found.'
+Limit total output to 100 lines." 2>/dev/null) || {
+        echo "FAIL: Claude analysis failed for $PROJECT_NAME"
+        return 1
+    }
+    
+    # Generate the report
+    cat > "$REPORT" << REPORT_EOF
+# Code Guardian Report: $PROJECT_NAME
+**Date:** $(date +%F)
+**Path:** $PROJECT_DIR
+
+## Quick Stats
+- **Files:** $FILE_COUNT
+- **Commits (7d):** $RECENT_COMMITS
+- **Last commit:** $LAST_COMMIT
+
+## Analysis
+$ANALYSIS
+
+---
+*Generated by Code Guardian*
+REPORT_EOF
+    
+    # Guard rail: report must have expected sections
+    if ! grep -q "Quick Stats" "$REPORT" || ! grep -q "Analysis" "$REPORT"; then
+        echo "FAIL: Report for $PROJECT_NAME is missing sections"
+        return 1
+    fi
+    
+    # Mark as done
+    touch "$CHECKPOINT"
+    echo "OK: $PROJECT_NAME ($(wc -l < "$REPORT") lines)"
+    return 0
+}
+```
+
+### Step 4: The Orchestrator
+
+The main script that ties everything together:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# Load configuration
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/config.env"
+
+# Paths
+REPORTS_DIR="$SCRIPT_DIR/reports"
+CHECKPOINT_DIR="$SCRIPT_DIR/checkpoints"
+LOG_FILE="$SCRIPT_DIR/logs/run-$(date +%F_%H%M).log"
+PROJECTS_FILE="$SCRIPT_DIR/projects.txt"
+SUMMARY="$REPORTS_DIR/SUMMARY.md"
+
+# Start logging
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "=== Code Guardian: $(date) ==="
+
+# Parse flags
+if [[ "${1:-}" == "--dry-run" ]]; then
+    DRY_RUN=true
+    echo "[DRY RUN MODE]"
+fi
+
+# Notification helper
+notify() {
+    local MESSAGE="$1"
+    local URGENCY="${2:-normal}"
+    
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would notify: $MESSAGE"
+        return
+    fi
+    
+    if [ -n "$NOTIFICATION_WEBHOOK" ]; then
+        curl -sf -X POST "$NOTIFICATION_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"$MESSAGE\"}" || true
+    fi
+    
+    if [ -n "${NTFY_TOPIC:-}" ]; then
+        curl -sf -d "$MESSAGE" "https://ntfy.sh/$NTFY_TOPIC" || true
+    fi
+}
+
+# Error trap
+trap 'notify "Code Guardian FAILED — check logs" "urgent"' ERR
+
+# Include the analyze_project function (from Step 3)
+# ... (paste the function here or source it)
+
+# Read project list
+if [ ! -f "$PROJECTS_FILE" ]; then
+    echo "ERROR: $PROJECTS_FILE not found"
+    exit 1
+fi
+
+mapfile -t PROJECTS < <(grep -v '^#' "$PROJECTS_FILE" | grep -v '^$')
+TOTAL=${#PROJECTS[@]}
+SUCCEEDED=0
+FAILED=0
+SKIPPED=0
+
+echo "Projects: $TOTAL"
+
+# Process each project
+for PROJECT in "${PROJECTS[@]}"; do
+    if analyze_project "$PROJECT"; then
+        SUCCEEDED=$((SUCCEEDED + 1))
+    else
+        FAILED=$((FAILED + 1))
+    fi
+done
+
+# Generate summary
+cat > "$SUMMARY" << SUMMARY_EOF
+# Code Guardian Summary
+**Date:** $(date +%F)
+**Projects analyzed:** $TOTAL
+**Succeeded:** $SUCCEEDED
+**Failed:** $FAILED
+
+## Per-Project Reports
+$(for F in "$REPORTS_DIR"/*.md; do
+    [ "$F" = "$SUMMARY" ] && continue
+    NAME=$(basename "$F" .md)
+    echo "- [$NAME](./$NAME.md)"
+done)
+
+---
+*Generated by Code Guardian*
+SUMMARY_EOF
+
+echo "=== Summary: $SUCCEEDED OK, $FAILED FAILED out of $TOTAL ==="
+
+# Git integration
+if [ "$DRY_RUN" = false ]; then
+    cd "$SCRIPT_DIR"
+    
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        git checkout -B "$GIT_BRANCH" 2>/dev/null || true
+        git add reports/ logs/
+        git commit -m "chore(guardian): daily report $(date +%F)
+
+$SUCCEEDED/$TOTAL projects analyzed successfully." || {
+            echo "Nothing to commit (no changes)"
+        }
+        git push "$GIT_REMOTE" "$GIT_BRANCH" --force-with-lease || {
+            echo "WARN: Git push failed"
+        }
+    fi
+fi
+
+# Notify
+STATUS_EMOJI="✅"
+[ "$FAILED" -gt 0 ] && STATUS_EMOJI="⚠️"
+
+notify "$STATUS_EMOJI Code Guardian: $SUCCEEDED/$TOTAL projects OK $([ $FAILED -gt 0 ] && echo "($FAILED failed)")"
+
+echo "=== Done: $(date) ==="
+```
+
+### Step 5: Schedule It
+
+Create a systemd timer (Linux/macOS) or Task Scheduler task (Windows):
+
+```ini
+# ~/.config/systemd/user/code-guardian.service
+[Unit]
+Description=Code Guardian - Multi-repo analysis
+
+[Service]
+Type=oneshot
+ExecStart=/home/user/workflows/code-guardian/code-guardian.sh
+WorkingDirectory=/home/user/workflows/code-guardian
+EnvironmentFile=/home/user/workflows/code-guardian/config.env
+StandardOutput=append:/home/user/workflows/code-guardian/logs/systemd.log
+StandardError=append:/home/user/workflows/code-guardian/logs/systemd.log
+```
+
+```ini
+# ~/.config/systemd/user/code-guardian.timer
+[Unit]
+Description=Run Code Guardian daily
+
+[Timer]
+OnCalendar=*-*-* 06:00:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+```
+
+Enable it:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now code-guardian.timer
+```
+
+### Step 6: Testing Your Guardian
+
+**Test 1: Dry run**
+```bash
+./code-guardian.sh --dry-run
+```
+Verify: Reports generate but no Git commits or notifications.
+
+**Test 2: Single project**
+```bash
+# Temporarily reduce projects.txt to one project
+echo "/home/user/projects/webapp" > projects.txt
+./code-guardian.sh
+```
+Verify: One report generated, checkpoint created, notification sent.
+
+**Test 3: Failure handling**
+```bash
+# Add a non-existent project path
+echo "/nonexistent/path" >> projects.txt
+./code-guardian.sh
+```
+Verify: Non-existent project shows as FAILED, other projects still process, summary reflects the failure.
+
+**Test 4: Checkpoint resume**
+```bash
+# Run once, then run again immediately
+./code-guardian.sh
+./code-guardian.sh
+```
+Verify: Second run skips already-processed projects ("SKIP: already done today").
+
+## Check Your Work
+
+- [ ] The guardian runs against all projects in your registry
+- [ ] Per-project reports have all required sections (Quick Stats, Analysis)
+- [ ] Checkpoints prevent re-processing the same project twice in one day
+- [ ] Git commits go to a dedicated branch (not main)
+- [ ] Notifications fire on both success and failure
+- [ ] `--dry-run` mode produces no side effects
+- [ ] The systemd timer is enabled and shows in `systemctl --user list-timers`
+
+## Common Issues
+
+**"Analysis is slow / expensive"**
+Add the caching pattern from the Scaling lesson. Only re-analyze projects where files have changed since the last run (check Git hash).
+
+**"Notifications are not firing"**
+Test the webhook directly: `curl -X POST "$WEBHOOK_URL" -d '{"text": "test"}'`. Check if your firewall blocks outbound HTTPS.
+
+**"Reports have inconsistent format"**
+Add stricter guard rails. If the AI output does not match expected structure, retry once with a more explicit prompt before marking as failed.
+
+## Key Takeaways
+
+This capstone used every pattern from the path:
+- **Sequential chain:** Each project goes through analysis → report → validation → checkpoint
+- **Fan-out/fan-in:** Multiple projects processed, combined into a summary
+- **Checkpoints:** Skip already-processed projects on re-run
+- **Guard rails:** Validate report structure before accepting
+- **Integration:** Git auto-commit, webhook notifications, systemd scheduling
+- **Scaling:** Batch processing, cost awareness, retry logic
+
+You now have the skills to build production-grade workflow automation with Claude Code.

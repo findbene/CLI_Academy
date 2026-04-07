@@ -1,0 +1,171 @@
+---
+title: "VPS Security Setup"
+description: "Lock down SSH access, configure a firewall, and harden your VPS before installing anything else."
+slug: "vps-security-setup"
+lesson_number: 2
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: true
+tags: ["vps", "security", "ssh", "firewall"]
+---
+
+## What You'll See
+
+By the end of this lesson, your VPS will have SSH key-only authentication, a running firewall that blocks everything except what you explicitly allow, and a non-root user for daily operations.
+
+## Why This Matters
+
+A VPS on the public internet gets probed within minutes of creation. Automated bots try default passwords, scan open ports, and exploit known vulnerabilities. If you skip security setup, you are not "getting to the fun part faster" — you are handing your server to strangers. Every step here is load-bearing.
+
+> **⚠️ Safety Warning:** Never run Claude Code or any agent software on an unsecured VPS. An exposed server with API keys is a financial and security liability. Complete this lesson before proceeding.
+
+## Core Concepts
+
+### Step 1: SSH Key Authentication
+
+If you already have an SSH key pair (`~/.ssh/id_ed25519` or `~/.ssh/id_rsa`), you can skip key generation. Otherwise, create one on your **local machine** (not the VPS):
+
+```bash
+ssh-keygen -t ed25519 -C "your-email@example.com"
+```
+
+Accept the default file location. Use a passphrase — it protects the key if your laptop is compromised.
+
+Copy the public key to your VPS:
+
+```bash
+ssh-copy-id your-username@your-server-ip
+```
+
+Verify you can log in without a password prompt:
+
+```bash
+ssh your-username@your-server-ip
+```
+
+### Step 2: Disable Password Authentication
+
+Once key-based login works, disable password authentication entirely. Edit the SSH daemon config:
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+Find and set these values:
+
+```
+PasswordAuthentication no
+PermitRootLogin no
+PubkeyAuthentication yes
+```
+
+Restart the SSH service:
+
+```bash
+sudo systemctl restart sshd
+```
+
+**Do not close your current SSH session yet.** Open a second terminal and verify you can still connect. If you locked yourself out, the original session is your lifeline.
+
+### Step 3: Create a Non-Root User
+
+If your provider gave you root access only, create a regular user:
+
+```bash
+adduser deploy
+usermod -aG sudo deploy
+```
+
+Copy your SSH key to the new user:
+
+```bash
+mkdir -p /home/deploy/.ssh
+cp ~/.ssh/authorized_keys /home/deploy/.ssh/
+chown -R deploy:deploy /home/deploy/.ssh
+chmod 700 /home/deploy/.ssh
+chmod 600 /home/deploy/.ssh/authorized_keys
+```
+
+From now on, always log in as `deploy` and use `sudo` when root permissions are needed.
+
+### Step 4: Configure UFW Firewall
+
+Ubuntu ships with UFW (Uncomplicated Firewall). Enable it with minimal rules:
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw enable
+```
+
+Verify the status:
+
+```bash
+sudo ufw status verbose
+```
+
+You should see SSH (port 22) allowed from anywhere, everything else denied inbound. If you need additional ports later (e.g., for a web dashboard), add them explicitly.
+
+### Step 5: Automatic Security Updates
+
+Enable unattended upgrades so critical patches apply automatically:
+
+```bash
+sudo apt update
+sudo apt install unattended-upgrades
+sudo dpkg-reconfigure -plow unattended-upgrades
+```
+
+Select "Yes" when prompted. This covers security patches only — it will not upgrade major packages or break your setup.
+
+### Step 6: Fail2Ban (Optional but Recommended)
+
+Fail2Ban watches log files and bans IPs that show malicious activity:
+
+```bash
+sudo apt install fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+```
+
+The default configuration protects SSH. You can verify bans with:
+
+```bash
+sudo fail2ban-client status sshd
+```
+
+## Check Your Work
+
+Run through this checklist:
+
+- [ ] You can SSH in with your key (no password prompt)
+- [ ] `PasswordAuthentication no` is set in `/etc/ssh/sshd_config`
+- [ ] `PermitRootLogin no` is set
+- [ ] You log in as a non-root user with `sudo` access
+- [ ] `sudo ufw status` shows SSH allowed, default deny incoming
+- [ ] `unattended-upgrades` is installed and enabled
+
+## Common Issues
+
+**Locked out after disabling password auth:** If you closed your session before verifying key login, use your VPS provider's web console (DigitalOcean/Hetzner/Vultr all offer this) to regain access and fix the SSH config.
+
+**UFW blocks your SSH connection:** If you enabled UFW before allowing SSH, use the provider's web console to run `sudo ufw allow ssh` or `sudo ufw disable`.
+
+**Permission denied on authorized_keys:** The `.ssh` directory must be `700` and `authorized_keys` must be `600`. Ownership must match the user you are logging in as.
+
+## Key Takeaways
+
+- SSH key-only authentication eliminates brute-force password attacks.
+- UFW with default-deny gives you a predictable firewall baseline.
+- A non-root user with sudo is safer than working as root directly.
+- Unattended upgrades and Fail2Ban are low-effort, high-impact hardening.
+
+## What's Next
+
+With security locked down, the next lesson covers network configuration — DNS, ports, and reverse proxies if you want web access to your agent's output.

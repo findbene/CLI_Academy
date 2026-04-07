@@ -1,35 +1,9 @@
-const rows = [
-  {
-    tool: "Claude Code",
-    environment: "Windows + WSL2",
-    status: "Strong default",
-    notes: "Recommended for most Windows learners who want the smoothest Unix-like setup path.",
-  },
-  {
-    tool: "Claude Code",
-    environment: "Windows + PowerShell",
-    status: "Supported with quirks",
-    notes: "Useful when WSL2 is not available, but path and permission behavior needs more explanation.",
-  },
-  {
-    tool: "Claude Code",
-    environment: "macOS + Homebrew",
-    status: "Strong default",
-    notes: "Best-supported beginner path for macOS, including Apple Silicon.",
-  },
-  {
-    tool: "Claude CoWork",
-    environment: "Browser interface",
-    status: "Access-dependent",
-    notes: "Availability depends on account tier and rollout state, so this must stay freshness-aware.",
-  },
-  {
-    tool: "OpenClaw",
-    environment: "Self-hosted Linux",
-    status: "Advanced only",
-    notes: "Not a beginner entry point. Requires stronger warnings, prerequisites, and hardening guidance.",
-  },
-];
+import Link from "next/link";
+import { compatibilityEntries } from "@/lib/support";
+
+function statusLabel(status: string) {
+  return status.replaceAll("-", " ");
+}
 
 export default function CompatibilityPage() {
   return (
@@ -41,6 +15,14 @@ export default function CompatibilityPage() {
           This is one of the clearest trust surfaces in the product. Learners should be able to see which tool,
           platform, and environment combinations are the safest defaults and which ones deserve stronger caution.
         </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/trust" className="button-secondary">
+            Open trust center
+          </Link>
+          <Link href="/troubleshooting" className="button-primary">
+            Troubleshoot a problem
+          </Link>
+        </div>
       </div>
 
       <div className="mt-10 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-1)]">
@@ -50,29 +32,37 @@ export default function CompatibilityPage() {
               <th className="px-4 py-3 font-medium">Tool</th>
               <th className="px-4 py-3 font-medium">Environment</th>
               <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Tested on</th>
               <th className="px-4 py-3 font-medium">Notes</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.tool}-${row.environment}`} className="border-t border-[var(--color-border-subtle)] align-top">
+            {compatibilityEntries.map((row) => (
+              <tr key={row.slug} className="border-t border-[var(--color-border-subtle)] align-top">
                 <td className="px-4 py-4 font-medium">{row.tool}</td>
-                <td className="px-4 py-4 text-[var(--color-fg-muted)]">{row.environment}</td>
+                <td className="px-4 py-4 text-[var(--color-fg-muted)]">
+                  <div>{row.environment}</div>
+                  <div className="mt-1 text-xs">{row.osFamily} · {row.shellFamily}</div>
+                </td>
                 <td className="px-4 py-4">
                   <span
                     className="badge"
                     data-tone={
-                      row.status === "Strong default"
+                      row.status === "strong-default"
                         ? "accent"
-                        : row.status === "Advanced only"
+                        : row.status === "advanced-only"
                           ? "danger"
                           : "warning"
                     }
                   >
-                    {row.status}
+                    {statusLabel(row.status)}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-[var(--color-fg-muted)]">{row.notes}</td>
+                <td className="px-4 py-4 text-[var(--color-fg-muted)]">{row.testedOn}</td>
+                <td className="px-4 py-4 text-[var(--color-fg-muted)]">
+                  <div>{row.notes}</div>
+                  <div className="mt-2 text-xs">Best for: {row.bestFor}</div>
+                </td>
               </tr>
             ))}
           </tbody>

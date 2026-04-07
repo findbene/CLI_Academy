@@ -1,0 +1,236 @@
+---
+title: "Safety and Verification"
+description: "Make your AI workflows trustworthy — output validation, sandboxing, dry runs, and the principle of least authority."
+slug: "safety-and-verification"
+lesson_number: 4
+estimated_minutes: 14
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: ">=1.0.0"
+has_safety_warning: true
+tags: ["workflow", "safety", "verification", "trust"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to make AI workflows safe to run unattended — through output validation, sandboxing, dry-run modes, and the principle of least authority.
+
+## Why This Matters
+
+An AI workflow that generates wrong output is annoying. An AI workflow that silently overwrites production data, publishes nonsense, or deletes files is a disaster. Safety is not optional when you remove the human from the loop.
+
+> **Safety Warning:** This lesson covers techniques for running AI workflows unattended. Before automating any workflow that writes to production systems, sends communications, or modifies shared resources, always test thoroughly in a safe environment first.
+
+## Core Concepts
+
+### The Trust Equation
+
+Every workflow has a trust level:
+
+```
+Trust = Verification Quality × Track Record ÷ Blast Radius
+```
+
+- **Verification Quality:** How reliably can you check the output is correct?
+- **Track Record:** How many times has this workflow run successfully?
+- **Blast Radius:** If the output is wrong, how bad is the damage?
+
+A workflow that generates a local markdown file has low blast radius. A workflow that pushes code to production has high blast radius. Apply more safety layers as blast radius increases.
+
+### Safety Layer 1: Output Validation
+
+Always validate AI output before acting on it. Never pipe raw AI output directly into a destructive command.
+
+**Bad:**
+```bash
+# NEVER do this — AI output goes directly to rm
+FILES_TO_DELETE=$(claude --print "List files we should clean up")
+rm -rf $FILES_TO_DELETE
+```
+
+**Safe:**
+```bash
+# Generate a plan file first
+claude --print "List files that are safe to delete (only temp files, build artifacts). Output one path per line." \
+    > /tmp/cleanup-plan.txt
+
+# Review the plan
+echo "Files proposed for deletion:"
+cat /tmp/cleanup-plan.txt
+
+# Validate: only allow files in expected directories
+while IFS= read -r FILE; do
+    case "$FILE" in
+        /tmp/*|./build/*|./.next/*|./__pycache__/*)
+            echo "OK: $FILE"
+            ;;
+        *)
+            echo "BLOCKED: $FILE (not in an allowed directory)"
+            exit 1
+            ;;
+    esac
+done < /tmp/cleanup-plan.txt
+```
+
+**Validation types:**
+- **Format validation:** Output matches expected structure (JSON parses, markdown has headers, CSV has correct columns)
+- **Range validation:** Numbers are within expected bounds (line count > 0, file size < 10MB)
+- **Allowlist validation:** Output references only known-safe resources (paths, URLs, commands)
+- **Semantic validation:** Use a second Claude call to verify the first (costs more, catches more)
+
+### Safety Layer 2: Dry-Run Mode
+
+Every workflow that modifies anything should have a `--dry-run` flag:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+DRY_RUN=false
+if [[ "${1:-}" == "--dry-run" ]]; then
+    DRY_RUN=true
+    echo "[DRY RUN] No changes will be made"
+fi
+
+# ... generate output ...
+
+if [ "$DRY_RUN" = true ]; then
+    echo "Would write to: $OUTPUT_FILE"
+    echo "Preview:"
+    echo "$CONTENT" | head -20
+    echo "..."
+else
+    echo "$CONTENT" > "$OUTPUT_FILE"
+    echo "Written to: $OUTPUT_FILE"
+fi
+```
+
+**Rule:** Always run with `--dry-run` first on any new workflow. Trust the output before removing the flag.
+
+### Safety Layer 3: Sandboxing
+
+Restrict what the workflow can access:
+
+**File system sandboxing:**
+```bash
+# Run in a temporary directory — cannot affect your real files
+SANDBOX=$(mktemp -d)
+cp -r "$PROJECT_DIR" "$SANDBOX/project"
+cd "$SANDBOX/project"
+
+# ... run workflow here ...
+
+# Only copy results out if validation passes
+if validate_output; then
+    cp "$SANDBOX/project/output.md" "$PROJECT_DIR/output.md"
+fi
+
+rm -rf "$SANDBOX"
+```
+
+**Network sandboxing:**
+For workflows that should not make network calls, use environment restrictions:
+```bash
+# Remove credentials from the workflow's environment
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset DATABASE_URL
+```
+
+**Permission sandboxing:**
+Run workflows as a restricted user when possible:
+```bash
+# Create a dedicated workflow user (Linux)
+sudo useradd --system --no-create-home --shell /bin/false workflow-runner
+sudo -u workflow-runner ./my-workflow.sh
+```
+
+### Safety Layer 4: Principle of Least Authority
+
+Give the workflow only the permissions it needs:
+
+| Workflow Task | Needs | Does NOT Need |
+|---------------|-------|---------------|
+| Code review report | Read source files | Write to source files |
+| Blog post generator | Write to output/ directory | Write to src/ directory |
+| Dependency checker | Read package.json | Run npm install |
+| Data summarizer | Read CSV files | Network access |
+
+**In practice:**
+```bash
+# Instead of giving full project access:
+claude --print "Analyze the entire project and make improvements"
+
+# Limit scope explicitly:
+claude --print "Read ONLY the files in src/utils/. Do NOT modify any files. Output a markdown report of potential issues."
+```
+
+### Safety Layer 5: Audit Trail
+
+Log everything so you can trace what happened:
+
+```bash
+LOG_FILE="./logs/workflow-$(date +%F_%H%M).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "Started: $(date)"
+echo "User: $(whoami)"
+echo "Directory: $(pwd)"
+echo "Arguments: $@"
+
+# ... workflow steps ...
+
+echo "Completed: $(date)"
+```
+
+**What to log:**
+- Start time, end time, duration
+- All inputs (file paths, arguments, environment)
+- All Claude prompts and response sizes
+- All files created, modified, or deleted
+- All validation results (pass/fail)
+- Exit code and error messages
+
+### The Safety Checklist
+
+Before running any workflow unattended, verify:
+
+- [ ] **Output validation exists** — bad output is caught before it causes damage
+- [ ] **Dry-run mode works** — you can preview what would happen
+- [ ] **Blast radius is bounded** — the workflow cannot affect things outside its scope
+- [ ] **Permissions are minimal** — only the access it needs, nothing more
+- [ ] **Logs are captured** — you can audit what happened after the fact
+- [ ] **Rollback is possible** — you can undo whatever the workflow did
+- [ ] **Failure mode is safe** — if anything goes wrong, the workflow stops (not continues with garbage)
+
+## Check Your Work
+
+- [ ] You understand the five safety layers (Validation, Dry-Run, Sandboxing, Least Authority, Audit)
+- [ ] You can explain why piping raw AI output to destructive commands is dangerous
+- [ ] You know how to implement a dry-run flag in a workflow script
+- [ ] You can trace a workflow's actions through its log file
+
+## Common Issues
+
+**"My workflow worked fine in testing but broke in production"**
+Testing usually runs with your full user permissions and environment. Production may have different paths, permissions, or missing dependencies. Always test in an environment that matches production as closely as possible.
+
+**"The validation step is too strict — it rejects good output"**
+Start with loose validation and tighten over time. Validation that blocks 100% of runs is worse than no validation because people disable it.
+
+**"Logging makes the workflow too slow"**
+Log to a file (fast) rather than a network service (slow). Compress old logs on a schedule. Log summary info, not the full content of every step.
+
+## Key Takeaways
+
+- Never pipe raw AI output directly into destructive operations.
+- Every modifying workflow needs a `--dry-run` mode.
+- Apply more safety layers as blast radius increases.
+- Log everything — you will need the audit trail when something goes wrong.
+
+## What's Next
+
+The next lesson covers integration patterns — connecting your workflows to external tools, APIs, and services.

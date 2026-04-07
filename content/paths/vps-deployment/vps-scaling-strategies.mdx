@@ -1,0 +1,174 @@
+---
+title: "Scaling Strategies"
+description: "Know when to scale up vs. scale out, and how to handle growing agent workloads without overcomplicating your setup."
+slug: "vps-scaling-strategies"
+lesson_number: 7
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: false
+tags: ["vps", "scaling", "performance", "architecture"]
+---
+
+## What You'll See
+
+By the end of this lesson, you will know how to identify when your VPS is underpowered, decide between scaling up (bigger server) and scaling out (more servers), and implement practical scaling patterns without premature over-engineering.
+
+## Why This Matters
+
+A single 2 GB VPS handles most personal agent workflows comfortably. But when you add build pipelines, concurrent tasks, or Docker containers, resource limits appear. Scaling decisions made early save painful migrations later — but scaling too early wastes money and adds complexity.
+
+## Core Concepts
+
+### Knowing When to Scale
+
+Monitor these signals on your current VPS:
+
+**CPU:**
+```bash
+top -b -n 1 | head -5
+```
+
+If CPU usage is consistently above 80% during agent tasks, you are CPU-bound.
+
+**Memory:**
+```bash
+free -h
+```
+
+If available memory drops below 200 MB during peak use, you are memory-bound. Watch for OOM (Out of Memory) kills in `dmesg`:
+
+```bash
+dmesg | grep -i "oom\|killed"
+```
+
+**Disk:**
+```bash
+df -h /
+```
+
+If usage exceeds 80%, clean up or expand. Check what is consuming space:
+
+```bash
+du -sh /* 2>/dev/null | sort -rh | head -10
+```
+
+**I/O:**
+```bash
+iostat -x 1 3
+```
+
+If `%util` is consistently above 90%, your disk is the bottleneck.
+
+### Scale Up: Bigger Server
+
+The simplest scaling approach. Most providers let you resize a VPS with a few clicks and a reboot.
+
+**When to scale up:**
+- Single workload that needs more resources (e.g., building a large project)
+- Memory-bound tasks (Docker + Claude Code + build tools)
+- You are running one agent doing one thing at a time
+
+**Typical scale-up path:**
+
+| Stage | Spec | Cost (approx.) | Good for |
+|-------|------|-----------------|----------|
+| Start | 1 CPU / 2 GB | $6-12/mo | Single agent, light tasks |
+| Growth | 2 CPU / 4 GB | $12-24/mo | Build workflows, Docker |
+| Heavy | 4 CPU / 8 GB | $24-48/mo | Multiple concurrent tasks |
+
+### Scale Out: More Servers
+
+When one server cannot handle your workload regardless of size, or when you need isolation between tasks.
+
+**When to scale out:**
+- You need tasks to run in parallel without competing for resources
+- You want failure isolation — one agent crashing should not affect others
+- Different tasks need different environments (e.g., Node.js 18 vs 22)
+
+**Simple scale-out pattern:**
+
+```
+┌──────────────────┐
+│ Control server    │  (tiny, runs scheduler/cron)
+│ 1 CPU / 1 GB     │
+└────────┬─────────┘
+         │ SSH
+    ┌────┴────┐
+    │         │
+┌───┴───┐ ┌──┴────┐
+│Agent 1│ │Agent 2│  (worker servers)
+│2/4 GB │ │2/4 GB │
+└───────┘ └───────┘
+```
+
+The control server dispatches tasks to worker servers via SSH:
+
+```bash
+ssh deploy@agent-1 "cd ~/project && claude --print 'Run code review'"
+ssh deploy@agent-2 "cd ~/project && claude --print 'Generate test suite'"
+```
+
+### Resource Limits per Container (Docker)
+
+If you run multiple agents on one server with Docker, set resource limits to prevent one from starving the others:
+
+```bash
+docker run -d \
+  --name agent-review \
+  --memory="2g" \
+  --cpus="1.0" \
+  your-agent-image
+```
+
+### What Not to Do
+
+**Don't scale before measuring.** If your VPS runs fine at 30% CPU and 50% memory, you do not need a bigger server.
+
+**Don't run a Kubernetes cluster for two agents.** Kubernetes is overhead that makes sense at hundreds of containers. For 2-5 agents, use Docker Compose or a simple multi-server SSH pattern.
+
+**Don't use spot/preemptible instances for important agent tasks.** These can be terminated with minimal notice. Use them only for batch jobs where interruption is acceptable.
+
+### Cost Optimization
+
+- **Right-size your server:** Downgrade if monitoring shows consistent low utilization.
+- **Use snapshots:** Before upgrading, snapshot your server. If the upgrade does not help, restore and try a different approach.
+- **Time-based scaling:** Some providers support scheduled resizing. Scale up for batch processing windows (e.g., nightly builds), scale down during idle hours.
+
+## Check Your Work
+
+- [ ] You know how to check CPU, memory, disk, and I/O utilization
+- [ ] You can identify which resource is the bottleneck
+- [ ] You know the difference between scaling up and scaling out
+- [ ] You have a monitoring baseline for your current server
+
+## Common Issues
+
+**Server feels slow but metrics look fine:** Check if the Anthropic API is the bottleneck (slow responses). Use `time claude --print "Hello"` to measure round-trip time. If it exceeds 10-15 seconds for a simple prompt, the delay is API-side, not server-side.
+
+**OOM killing Claude Code processes:** Set a swap file as a safety valve (not a performance solution):
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+**Docker containers consume all RAM:** Always set `--memory` limits. Without limits, Docker allows a container to consume all available memory.
+
+## Key Takeaways
+
+- Measure before scaling. Most personal agent workflows fit on a $12/mo VPS.
+- Scale up first — it is simpler and cheaper than running multiple servers.
+- Scale out when you need parallel execution or failure isolation.
+- Set resource limits when running multiple agents on one server.
+
+## What's Next
+
+The next lesson covers monitoring and alerting — knowing when something goes wrong before you notice it manually.

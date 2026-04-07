@@ -1,0 +1,181 @@
+---
+title: "Runtime Installation"
+description: "Install Node.js, Claude Code, and essential dependencies on your secured VPS."
+slug: "vps-runtime-installation"
+lesson_number: 4
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "claude-code@1.x"
+last_reviewed_at: "2026-04-06"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  claude-code: "1.x"
+has_safety_warning: false
+tags: ["vps", "installation", "nodejs", "runtime"]
+---
+
+## What You'll See
+
+By the end of this lesson, Claude Code will be installed and running on your VPS, authenticated with your Anthropic API key, and ready to accept commands.
+
+## Why This Matters
+
+A clean, reproducible installation means you can rebuild your server from scratch if needed. Version-pinned dependencies mean your agent does not break when upstream packages update. This lesson gives you both.
+
+## Core Concepts
+
+### Step 1: System Updates
+
+Start with a fully updated system:
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+Install essential build tools that Claude Code and npm packages may need:
+
+```bash
+sudo apt install -y build-essential git curl wget
+```
+
+### Step 2: Install Node.js via nvm
+
+Use nvm (Node Version Manager) for clean version management. Do not use `apt install nodejs` — it ships an outdated version.
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+```
+
+Reload your shell:
+
+```bash
+source ~/.bashrc
+```
+
+Install the current LTS version:
+
+```bash
+nvm install --lts
+nvm use --lts
+node --version
+```
+
+You should see a version like `v22.x.x` or higher.
+
+### Step 3: Install Claude Code
+
+Install Claude Code globally:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Verify the installation:
+
+```bash
+claude --version
+```
+
+### Step 4: Configure Your API Key
+
+Set your Anthropic API key as an environment variable. Add it to your shell profile for persistence:
+
+```bash
+echo 'export ANTHROPIC_API_KEY="sk-ant-your-key-here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Security note:** Your `.bashrc` is readable only by your user (permissions `644` by default). For shared servers or team setups, use a `.env` file with stricter permissions:
+
+```bash
+echo 'ANTHROPIC_API_KEY=sk-ant-your-key-here' > ~/.claude-env
+chmod 600 ~/.claude-env
+```
+
+Then source it in your shell profile:
+
+```bash
+echo 'set -a; source ~/.claude-env; set +a' >> ~/.bashrc
+```
+
+### Step 5: First Run Test
+
+Create a test directory and verify Claude Code works:
+
+```bash
+mkdir -p ~/test-project
+cd ~/test-project
+echo "# Test Project" > README.md
+claude "Read the README and confirm you can see this project."
+```
+
+Claude should respond acknowledging the README. If it does, your installation is complete.
+
+Clean up:
+
+```bash
+rm -rf ~/test-project
+```
+
+### Step 6: Optional — Python and Docker
+
+If your workflows need Python or Docker:
+
+**Python:**
+
+```bash
+sudo apt install -y python3 python3-pip python3-venv
+python3 --version
+```
+
+**Docker:**
+
+```bash
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker deploy
+```
+
+Log out and back in for the Docker group to take effect. Verify:
+
+```bash
+docker run hello-world
+```
+
+### Version Pinning
+
+Pin your Node.js version in a `.nvmrc` file in each project directory:
+
+```bash
+echo "22" > ~/my-project/.nvmrc
+```
+
+When you `cd` into the directory, run `nvm use` to switch to the pinned version. This prevents version drift across projects.
+
+## Check Your Work
+
+- [ ] `node --version` returns v22.x or higher
+- [ ] `claude --version` returns a version number
+- [ ] `echo $ANTHROPIC_API_KEY` returns your key (starts with `sk-ant-`)
+- [ ] A test Claude Code command succeeds and returns a response
+- [ ] If installed, `python3 --version` and `docker --version` return version numbers
+
+## Common Issues
+
+**nvm: command not found:** Your shell did not reload after the nvm install script. Run `source ~/.bashrc` or open a new SSH session.
+
+**Claude Code returns an auth error:** Double-check your API key. The key must start with `sk-ant-`. Verify with `echo $ANTHROPIC_API_KEY` — if it is empty, the environment variable was not set correctly.
+
+**npm permission errors:** If you see EACCES errors, you are likely running npm as root or with a mis-configured prefix. Using nvm avoids this entirely because it installs Node.js in your home directory.
+
+**Docker permission denied:** You must log out and back in after adding your user to the `docker` group. Running `newgrp docker` in the current session also works.
+
+## Key Takeaways
+
+- Use nvm for Node.js — never install from apt on Ubuntu.
+- Pin your API key in a file with `600` permissions, not hardcoded in scripts.
+- Test with a throwaway project before setting up real workflows.
+- Pin Node.js versions per project with `.nvmrc` for reproducibility.
+
+## What's Next
+
+With the runtime installed, the next lesson covers SSL certificates and HTTPS — the encryption layer that protects your API key in transit.

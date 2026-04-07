@@ -19,7 +19,7 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
     {
       role: "assistant",
       content:
-        "Tutor recovery mode is active. I can still help you reason through setup, troubleshooting, and what to learn next while the full Anthropic-backed flow is being restored.",
+        "Hi! I'm your AI tutor. I can help you understand concepts, debug issues, and figure out what to learn next.",
     },
   ]);
 
@@ -42,6 +42,12 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
           lessonTitle,
         }),
       });
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!response.ok || contentType.includes("application/json")) {
+        const data = (await response.json().catch(() => ({}))) as { message?: string };
+        throw new Error(data.message ?? "The tutor is unavailable right now.");
+      }
 
       if (!response.body) {
         throw new Error("Missing response stream");
@@ -81,17 +87,19 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
               });
             }
           } catch {
-            // Ignore malformed recovery chunks.
+            // Ignore malformed chunks.
           }
         }
       }
-    } catch {
+    } catch (error) {
       setMessages((current) => [
         ...current,
         {
           role: "assistant",
           content:
-            "The tutor stream is still being rewired. For now, start with the lesson steps, then use the troubleshooting path if a command fails.",
+            error instanceof Error
+              ? error.message
+              : "The tutor is temporarily unavailable. Please try again in a moment.",
         },
       ]);
     } finally {
@@ -105,16 +113,26 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
         type="button"
         className="fixed right-5 bottom-5 z-40 rounded-full bg-[var(--color-accent-primary)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-2)]"
         onClick={() => setOpen((current) => !current)}
+        aria-label={open ? "Close AI tutor" : "Open AI tutor"}
       >
         {open ? "Close tutor" : "Open tutor"}
       </button>
 
       {open ? (
-        <aside className="fixed right-5 bottom-20 z-40 flex h-[34rem] w-[min(100vw-2.5rem,24rem)] flex-col overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-3)]">
+        <aside
+          className="fixed right-5 bottom-20 z-40 flex h-[34rem] w-[min(100vw-2.5rem,24rem)] flex-col overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-3)]"
+          role="dialog"
+          aria-label="AI Tutor"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setOpen(false);
+            }
+          }}
+        >
           <div className="border-b border-[var(--color-border-subtle)] p-4">
             <div className="text-sm font-semibold">CLI Academy Tutor</div>
             <div className="mt-1 text-sm text-[var(--color-fg-muted)]">
-              {lessonTitle ? `Lesson context: ${lessonTitle}` : "General recovery mode"}
+              {lessonTitle ? `Lesson context: ${lessonTitle}` : "Ask me anything"}
             </div>
           </div>
 
@@ -141,6 +159,13 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Ask about setup, troubleshooting, or what to learn next."
               className="min-h-24 w-full rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-lesson)] px-3 py-2 text-sm"
+              aria-label="Your question for the AI tutor"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
             />
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-xs text-[var(--color-fg-muted)]">Free: 10/day · Pro: 100/day</span>
