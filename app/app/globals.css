@@ -19,7 +19,7 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  background: radial-gradient(circle at top, rgba(22, 176, 168, 0.12), transparent 28%),
+  background: radial-gradient(circle at top, var(--color-accent-glow), transparent 28%),
     linear-gradient(180deg, var(--color-bg-page) 0%, var(--color-bg-lesson) 100%);
   color: var(--color-fg-default);
   font-family: var(--font-sans);
@@ -41,6 +41,64 @@ button {
   cursor: pointer;
 }
 
+/* ── Skip to content (accessibility) ────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--color-accent-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0 0 var(--radius-md, 0.5rem) 0;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ── Global heading typography ──────────────────────────────── */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* ── Text selection ─────────────────────────────────────────── */
+
+::selection {
+  background: rgba(22, 176, 168, 0.22);
+  color: var(--color-fg-default);
+}
+
+/* ── Custom scrollbar ───────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fg-muted);
+}
+
 :focus-visible {
   outline: var(--focus-ring-width) solid var(--color-border-focus);
   outline-offset: var(--focus-ring-offset);
@@ -56,14 +114,28 @@ button {
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-1), inset 0 1px 0 0 rgba(22, 176, 168, 0.07);
 }
 
 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-accent-primary);
+}
+
+.eyebrow::before {
+  content: "";
+  display: block;
+  width: 1.25rem;
+  height: 1.5px;
+  background: currentColor;
+  flex-shrink: 0;
+  border-radius: 1px;
 }
 
 .button-primary,
@@ -78,18 +150,31 @@ button {
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   transition:
-    background-color var(--duration-base) var(--ease-standard),
+    background var(--duration-base) var(--ease-standard),
     border-color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
     transform var(--duration-fast) var(--ease-standard);
 }
 
 .button-primary {
-  background: var(--color-accent-primary);
+  background: linear-gradient(135deg, var(--teal-500) 0%, var(--teal-600) 100%);
   color: var(--color-fg-on-accent);
 }
 
 .button-primary:hover {
-  background: var(--color-accent-primary-hover);
+  background: linear-gradient(135deg, #1dd4c6 0%, var(--teal-500) 100%);
+  box-shadow: 0 0 20px rgba(22, 176, 168, 0.35), 0 4px 12px rgba(22, 176, 168, 0.2);
+  transform: translateY(-1px);
+}
+
+.button-primary:active {
+  transform: scale(0.98);
+  box-shadow: 0 0 8px rgba(22, 176, 168, 0.2);
+}
+
+.button-secondary:active,
+.button-ghost:active {
+  transform: scale(0.98);
 }
 
 .button-secondary {
@@ -169,12 +254,26 @@ button {
 
 .lesson-prose pre {
   overflow-x: auto;
-  padding: var(--space-4);
+  padding: var(--space-5);
   border-radius: var(--radius-lg);
   background: var(--color-bg-code);
-  color: var(--color-fg-inverse);
+  color: #e4f0fb;
   font-family: var(--font-mono);
   font-size: var(--font-size-mono-sm);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lesson-prose pre::before {
+  content: "\25CF  \25CF  \25CF";
+  display: block;
+  font-size: 7px;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.2);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: var(--font-sans);
+  line-height: 1;
 }
 
 .lesson-prose ul {
@@ -482,5 +581,123 @@ button {
   }
   .hero-stats {
     gap: var(--space-4);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Utility: text-gradient
+   ───────────────────────────────────────────────────────────── */
+
+.text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--teal-500) 0%,
+    color-mix(in srgb, var(--teal-500) 55%, var(--blue-500) 45%) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Utility: panel-lift  — adds hover float + border glow
+   ───────────────────────────────────────────────────────────── */
+
+.panel-lift {
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-panel) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard);
+}
+
+.panel-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2), inset 0 1px 0 0 rgba(22, 176, 168, 0.14);
+  border-color: rgba(22, 176, 168, 0.3);
+}
+
+/* ============================================================= */
+/* Print styles                                                    */
+/* ============================================================= */
+@media print {
+  /* Hide chrome: header, footer, nav, tutor, buttons */
+  header,
+  footer,
+  nav,
+  aside,
+  [role="dialog"],
+  .button-primary,
+  .button-secondary,
+  .button-ghost,
+  button {
+    display: none !important;
+  }
+
+  /* Reset backgrounds and shadows for print */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+
+  .page-shell,
+  .app-shell {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .panel {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure lesson prose is readable */
+  .lesson-prose {
+    max-width: 100% !important;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  .lesson-prose pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    font-size: 9pt;
+  }
+
+  /* Show link URLs in print */
+  .lesson-prose a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #555;
+  }
+
+  .lesson-prose a[href^="#"]::after,
+  .lesson-prose a[href^="javascript:"]::after {
+    content: "";
+  }
+
+  /* Avoid orphans and widows */
+  .lesson-prose p,
+  .lesson-prose li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .lesson-prose h1,
+  .lesson-prose h2,
+  .lesson-prose h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Images: fit page width */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
   }
 }

@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { knownIssues, troubleshootingGuides } from "@/lib/support";
+
+export const metadata: Metadata = {
+  title: "Troubleshooting",
+  description:
+    "Start with the symptom. Known issues, error codes, and step-by-step fixes for Claude Code, Claude CoWork, and related agentic tools on Windows, macOS, and Linux.",
+};
+
 
 export default function TroubleshootingPage() {
   return (

@@ -1,12 +1,6 @@
 "use client";
 
-export default function AppError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function AppError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div className="page-shell flex min-h-[60vh] items-center justify-center">
       <div className="panel max-w-lg p-8 text-center">

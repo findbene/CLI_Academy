@@ -1,5 +1,5 @@
 import { Download, FileText, Package } from "lucide-react";
-import { AssetCard } from "@/components/assets/AssetCard";
+import { DownloadsFilter } from "@/components/assets/DownloadsFilter";
 import {
   getAllLocalAssets,
   getAssetFormatLabel,
@@ -78,11 +78,9 @@ export default async function DownloadsPage() {
         </div>
       </section>
 
-      <section className="mt-8 grid gap-4 lg:grid-cols-2">
-        {downloads.map((download) => (
-          <AssetCard key={download.slug} asset={download} />
-        ))}
-      </section>
+      <div className="mt-8">
+        <DownloadsFilter downloads={downloads} />
+      </div>
     </main>
   );
 }

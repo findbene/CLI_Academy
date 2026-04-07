@@ -1,0 +1,260 @@
+---
+title: "OpenClaw on a VPS (Always-On, 24/7)"
+description: "Deploy OpenClaw on a $6/month DigitalOcean or Hostinger VPS using Docker Compose. Includes SSH hardening, UFW firewall, and SSL setup."
+slug: "openclaw-vps-always-on"
+lesson_number: 4
+estimated_minutes: 25
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+  docker: "24+"
+  ubuntu: "22.04 or 24.04"
+has_safety_warning: true
+tags: ["openclaw", "vps", "docker", "digitalocean", "self-hosting", "always-on"]
+---
+
+<WarnBlock title="Safety Warning">A VPS is a public server. Before exposing any port, complete Steps 4 (SSH hardening) and 5 (UFW firewall) in this lesson. Never run OpenClaw on an unprotected VPS with a weak or default password. Exposed OpenClaw instances have been used for spam relay and API key theft.</WarnBlock>
+
+## What You'll See
+
+OpenClaw running 24/7 on a $6/month Ubuntu VPS, accessible via HTTPS on your own domain or subdomain, hardened with SSH key authentication, UFW port restrictions, and an optional SSL certificate from Let's Encrypt.
+
+## Why This Matters
+
+Running OpenClaw on your laptop or Mac Mini means the Gateway goes offline when the machine sleeps or shuts down. A VPS runs constantly — your WhatsApp or Telegram automations stay active at 3am, over weekends, and while you're traveling. For most autonomous agent use cases, always-on is the only way to get real value.
+
+A $6/month VPS (DigitalOcean Droplet, Hostinger VPS1) is sufficient:
+- 1 vCPU / 1 GB RAM / 25 GB SSD
+- Ubuntu 22.04 LTS
+
+## Core Concepts
+
+### Step 1 — Create Your VPS
+
+**DigitalOcean** (most developer-friendly):
+1. Create account at digitalocean.com
+2. Create Droplet → Ubuntu 22.04 → Regular → 1 GB / $6/mo
+3. Choose datacenter nearest to you
+4. Authentication: **SSH keys** (see Step 4 before creating the droplet)
+5. Copy the IP address shown after creation
+
+**Hostinger** (cheapest path):
+1. VPS Hosting → KVM 1 plan (~$5.99/mo)
+2. Ubuntu 22.04 OS
+3. Set root password during setup (change it in Step 4)
+
+### Step 2 — First SSH Connection
+
+```bash
+# From your local terminal
+ssh root@YOUR_VPS_IP
+```
+
+You'll see a security warning on first connect — type `yes` to add the fingerprint.
+
+### Step 3 — Create a Non-Root User
+
+Running as `root` permanently is a security risk. Create a dedicated user:
+
+```bash
+adduser openclaw
+usermod -aG sudo openclaw
+su - openclaw
+```
+
+All remaining commands in this lesson run as the `openclaw` user.
+
+### Step 4 — SSH Key Authentication (On Your Local Machine)
+
+Running this **on your local machine**, not the VPS:
+
+```bash
+# Generate an SSH key pair if you don't have one
+ssh-keygen -t ed25519 -C "openclaw-vps"
+
+# Copy your public key to the VPS
+ssh-copy-id openclaw@YOUR_VPS_IP
+```
+
+Test the key-based login:
+```bash
+ssh openclaw@YOUR_VPS_IP
+```
+
+If it connects without a password prompt, disable password authentication:
+
+```bash
+# On the VPS
+sudo nano /etc/ssh/sshd_config
+```
+
+Find and change these lines:
+```
+PasswordAuthentication no
+PubkeyAuthentication yes
+PermitRootLogin no
+```
+
+Apply the change:
+```bash
+sudo systemctl restart sshd
+```
+
+> **Verify** your key-based login still works in a **new terminal window** before closing your current session.
+
+### Step 5 — UFW Firewall
+
+```bash
+sudo apt install ufw -y
+
+# Default: block everything incoming, allow everything outgoing
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Allow SSH (CRITICAL — do this before enabling UFW or you'll lock yourself out)
+sudo ufw allow ssh
+
+# Allow OpenClaw Web UI (only if you need direct browser access to the VPS)
+# Omit this if you're proxying behind Nginx
+sudo ufw allow 3301/tcp
+
+# Enable
+sudo ufw enable
+sudo ufw status
+```
+
+### Step 6 — Install Docker
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+
+# Log out and back in for the group change to take effect
+exit
+ssh openclaw@YOUR_VPS_IP
+```
+
+Verify:
+```bash
+docker --version
+docker compose version
+```
+
+### Step 7 — Clone and Configure OpenClaw
+
+```bash
+cd ~
+git clone https://github.com/openclaw-project/openclaw.git
+cd openclaw
+
+cp .env.example .env
+nano .env
+```
+
+Required configuration for a VPS:
+
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENCLAW_PORT=3301
+OPENCLAW_WEB_UI=true
+OPENCLAW_SECRET=your_64_char_secret_here
+OWNER_DISPLAY_NAME=YourName
+OWNER_TIMEZONE=UTC
+
+# VPS-specific: bind to all interfaces so Nginx can proxy to it
+OPENCLAW_HOST=0.0.0.0
+```
+
+### Step 8 — Run with Docker Compose
+
+```bash
+docker compose up -d
+docker compose logs -f openclaw
+```
+
+Confirm you see the Gateway started message, then `Ctrl+C` to exit logs.
+
+### (Optional) Step 9 — SSL with Nginx + Let's Encrypt
+
+If you have a domain pointing to your VPS IP:
+
+```bash
+sudo apt install nginx certbot python3-certbot-nginx -y
+```
+
+Create an Nginx config:
+```bash
+sudo nano /etc/nginx/sites-available/openclaw
+```
+
+```nginx
+server {
+    server_name agent.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3301;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/openclaw /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+
+# Get SSL certificate
+sudo certbot --nginx -d agent.yourdomain.com
+```
+
+Certbot auto-renews. Your Gateway is now accessible at `https://agent.yourdomain.com`.
+
+### Auto-Restart on VPS Reboot
+
+Docker Compose handles this automatically if you add a restart policy to `docker-compose.yml`:
+
+```yaml
+services:
+  openclaw:
+    image: openclaw/gateway:latest
+    restart: unless-stopped   # ← Add this
+    ...
+```
+
+Then:
+```bash
+docker compose down && docker compose up -d
+```
+
+Now if your VPS reboots (e.g., after a kernel update), OpenClaw restarts without your intervention.
+
+### Monitoring
+
+```bash
+# Live logs
+docker compose logs -f openclaw
+
+# Container resource usage
+docker stats openclaw
+```
+
+### Cost Summary
+
+| Provider | Plan | Monthly | Annual |
+|----------|------|---------|--------|
+| DigitalOcean | Droplet 1 GB | $6.00 | $72 |
+| Hostinger | VPS KVM 1 | $5.99 | $71.88 |
+| Hetzner | CX11 | €3.79 | ~$50 |
+
+For a passive autonomous agent running 24/7, this is the most cost-effective setup.
+
+## What's Next
+
+VPS setup complete. Continue to Lesson 5 for Raspberry Pi / small device setup, or skip to Lesson 6 (Model Routing) if you're ready to configure which AI model powers your Gateway.

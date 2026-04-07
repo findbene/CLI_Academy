@@ -14,9 +14,9 @@ has_safety_warning: true
 tags: ["openclaw", "operations", "updates", "rollback"]
 ---
 
-## What You'll See
+<WarnBlock title="Caution">OpenClaw updates on bare-metal deployments run database migrations that cannot be automatically reversed. Always take a full database backup before any update. If an update fails mid-migration without a backup, manual recovery of the database state will be required.</WarnBlock>
 
-By the end of this lesson, you will be able to upgrade OpenClaw with a tested procedure that minimizes downtime, verify the new version before traffic hits it, and roll back to the previous version within 5 minutes if something goes wrong.
+## What You'll See
 
 ## Why This Matters
 

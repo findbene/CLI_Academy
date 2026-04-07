@@ -14,9 +14,9 @@ has_safety_warning: true
 tags: ["mcp", "security", "prompt-injection", "credentials"]
 ---
 
-## What You'll See
+<WarnBlock title="Security Warning">MCP servers run with the credentials you provide and can take real actions on real systems. An overprivileged MCP connection can read, write, or delete data across every service it has access to. Apply the principle of least privilege — grant only the minimum permissions required for each task, and never reuse high-privilege tokens across multiple MCP servers.</WarnBlock>
 
-By the end of this lesson, you will understand the MCP threat model, recognize prompt injection in tool results, know how to scope credentials defensively, and have a security checklist for every MCP server you configure.
+## What You'll See
 
 ## Why This Matters
 

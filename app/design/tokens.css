@@ -98,6 +98,11 @@
 
   --color-accent-primary: var(--teal-500);
   --color-accent-primary-hover: var(--teal-600);
+  --color-accent-subtle: rgba(22, 176, 168, 0.12);
+  --color-accent-subtle-strong: rgba(22, 176, 168, 0.15);
+  --color-accent-subtle-faint: rgba(22, 176, 168, 0.05);
+  --color-accent-glow: rgba(22, 176, 168, 0.12);
+  --color-accent-ring: rgba(22, 176, 168, 0.2);
   --color-accent-warning: var(--amber-500);
   --color-status-success: var(--moss-500);
   --color-status-danger: var(--coral-500);
@@ -146,6 +151,11 @@
 
   --color-accent-primary: #29c4ba;
   --color-accent-primary-hover: #58d1c6;
+  --color-accent-subtle: rgba(41, 196, 186, 0.14);
+  --color-accent-subtle-strong: rgba(41, 196, 186, 0.18);
+  --color-accent-subtle-faint: rgba(41, 196, 186, 0.06);
+  --color-accent-glow: rgba(41, 196, 186, 0.14);
+  --color-accent-ring: rgba(41, 196, 186, 0.25);
   --color-accent-warning: #e5ab3b;
   --color-status-success: #49b97a;
   --color-status-danger: #ef7a68;

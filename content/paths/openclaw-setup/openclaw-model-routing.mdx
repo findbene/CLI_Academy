@@ -1,0 +1,222 @@
+---
+title: "Model Routing: API Keys and Local Inference"
+description: "Connect OpenClaw to Anthropic, OpenAI, and Google APIs. Optionally configure Ollama or LM Studio for fully local, zero-data-leak inference."
+slug: "openclaw-model-routing"
+lesson_number: 6
+estimated_minutes: 18
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+  ollama: "0.3+"
+has_safety_warning: false
+tags: ["openclaw", "model-routing", "api-keys", "ollama", "local-inference", "privacy"]
+---
+
+## What You'll See
+
+Your OpenClaw Gateway configured with one or more model back-ends. You'll understand how routing rules work, how to set daily spend caps to avoid surprise bills, and how to configure Ollama for fully air-gapped local inference.
+
+## Why This Matters
+
+OpenClaw separates the agent (skills, heartbeat, memory) from the model completely. You can swap models at any time without touching your skills or configuration. This lesson is where you decide: cloud models (powerful, easy, costs money), local models (private, free after hardware, slower), or a hybrid routing strategy where sensitive tasks route locally and general tasks use the cloud.
+
+## Core Concepts
+
+### The Model Routing Architecture
+
+OpenClaw uses a **routing table** in your `.env` (or via the Web UI). Each route maps a model name to a provider:
+
+```
+Task Request
+     │
+     ▼
+OpenClaw Router
+     │
+     ├──► Anthropic (Claude)  ◄── ANTHROPIC_API_KEY
+     ├──► OpenAI (GPT-4o)     ◄── OPENAI_API_KEY
+     ├──► Google (Gemini)     ◄── GOOGLE_API_KEY
+     └──► Ollama (local)      ◄── OLLAMA_HOST (no key needed)
+```
+
+You can have multiple providers registered simultaneously. Skills specify which model they prefer; the router falls back to your default if the preferred model isn't available.
+
+---
+
+### Cloud Model Configuration
+
+#### Anthropic (Claude)
+
+Get your key: [console.anthropic.com](https://console.anthropic.com) → API Keys → Create Key
+
+```env
+ANTHROPIC_API_KEY=sk-ant-api03-...
+ANTHROPIC_DEFAULT_MODEL=claude-3-5-haiku-20241022
+```
+
+Haiku is the recommended default for OpenClaw — it's fast, cheap, and handles most skill tasks well. For complex analysis or writing tasks you can route to claude-sonnet in specific skills.
+
+Daily spend cap (important for autonomous agents):
+```env
+OPENCLAW_ANTHROPIC_DAILY_LIMIT_USD=2.00
+```
+
+This hard-stops API calls once you've spent $2/day — critical for preventing runaway loops from burning your budget.
+
+#### OpenAI
+
+Get your key: [platform.openai.com](https://platform.openai.com) → API keys → Create
+
+```env
+OPENAI_API_KEY=sk-proj-...
+OPENAI_DEFAULT_MODEL=gpt-4o-mini
+```
+
+Set a budget limit in the OpenAI dashboard (Usage → Set Limit) as well as in OpenClaw:
+```env
+OPENCLAW_OPENAI_DAILY_LIMIT_USD=2.00
+```
+
+#### Google Gemini
+
+Get your key: [aistudio.google.com](https://aistudio.google.com) → Get API Key
+
+```env
+GOOGLE_API_KEY=AIza...
+GOOGLE_DEFAULT_MODEL=gemini-1.5-flash
+```
+
+Gemini Flash has a generous free tier, making it useful for high-frequency low-stakes tasks.
+
+---
+
+### Local Inference with Ollama
+
+Ollama runs as a local server that exposes the same API shape as OpenAI. OpenClaw can route to it transparently.
+
+**Benefits of local inference:**
+- Zero data sent to any external service
+- No API costs
+- Works offline
+- Critical for privacy-sensitive skills (reading personal documents, medical notes, legal files)
+
+**Tradeoffs:**
+- Slower than cloud models
+- Quality is lower for complex reasoning at 7B scale
+- Requires sufficient RAM (8 GB minimum, 16 GB for comfort)
+
+#### Install Ollama
+
+```bash
+# macOS / Linux
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# macOS via Homebrew
+brew install ollama
+```
+
+#### Pull a Model
+
+```bash
+# Good balance of speed and capability
+ollama pull llama3.2
+
+# Fastest, minimal RAM (1.3 GB)
+ollama pull llama3.2:1b
+
+# Best open-source quality (requires 8GB+ RAM)
+ollama pull mistral
+```
+
+Check what's available:
+```bash
+ollama list
+```
+
+Verify Ollama is running:
+```bash
+curl http://localhost:11434/api/tags
+```
+
+#### Configure OpenClaw to Use Ollama
+
+```env
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_DEFAULT_MODEL=llama3.2
+
+# Route privacy-sensitive skills to Ollama
+OPENCLAW_LOCAL_ROUTING=true
+```
+
+---
+
+### Local Inference with LM Studio
+
+LM Studio is a desktop GUI for running local models. If you prefer a visual interface over CLI, it exposes the same OpenAI-compatible API:
+
+1. Download at [lmstudio.ai](https://lmstudio.ai)
+2. Download a model from the Discover tab
+3. Start the server on the Local Server tab (default port: 1234)
+
+Configure OpenClaw:
+```env
+LM_STUDIO_HOST=http://localhost:1234
+LM_STUDIO_DEFAULT_MODEL=meta-llama-3.2-3b-instruct
+```
+
+---
+
+### Hybrid Routing Strategy
+
+The most practical production setup: use local models for private data, cloud for everything else.
+
+In `~/.openclaw/routing.yaml` (or configured via Web UI):
+
+```yaml
+default: claude-3-5-haiku-20241022
+
+overrides:
+  read-documents: llama3.2       # Local — no data leaves
+  email-draft: claude-3-5-haiku  # Cloud — no sensitive data in emails
+  medical-notes: llama3.2        # Local — privacy critical
+  web-search: gemini-flash       # Cloud — cheap, no private data
+```
+
+You can also set per-model spending caps so the Gateway automatically falls back:
+
+```env
+# If Anthropic daily limit is hit, fall back to Ollama
+OPENCLAW_COST_FALLBACK=ollama
+```
+
+---
+
+### Spend Cap Summary
+
+| Setting | What It Does |
+|---------|-------------|
+| `OPENCLAW_ANTHROPIC_DAILY_LIMIT_USD` | Hard stop on Anthropic spend per day |
+| `OPENCLAW_OPENAI_DAILY_LIMIT_USD` | Hard stop on OpenAI spend per day |
+| `OPENCLAW_COST_FALLBACK` | Model to use when limit is hit |
+| `OPENCLAW_ALERT_SPEND_PCT` | WhatsApp/Telegram alert at X% of daily limit |
+
+Set `OPENCLAW_ALERT_SPEND_PCT=80` to get a message when you've used 80% of your daily budget — before it cuts off.
+
+---
+
+### Verifying Model Routing
+
+In the Web UI (localhost:3301 → Settings → Model Routing), all configured providers should show green status indicators. Run a test:
+
+```bash
+openclaw test-model --provider anthropic
+openclaw test-model --provider ollama
+```
+
+Both should return a sample response and report the latency.
+
+## What's Next
+
+Models configured. Lesson 7 connects your messaging channels — WhatsApp and Telegram — so your agent can receive and send messages.

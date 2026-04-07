@@ -1,0 +1,307 @@
+---
+title: "Writing SKILL.md Files"
+description: "Author OpenClaw skills in the SKILL.md format. Learn the full YAML frontmatter schema, instruction writing, tool declarations, trigger definitions, and validation."
+slug: "openclaw-skill-authoring"
+lesson_number: 3
+estimated_minutes: 22
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "skills", "skill-md", "authoring", "automation", "clawhub"]
+---
+
+## What You'll Learn
+
+The complete anatomy of a SKILL.md file, how to write skill instructions the agent reliably follows, how to declare tools and permissions, and how to test skills before deploying them to the heartbeat.
+
+## Why This Matters
+
+Skills are the unit of work in OpenClaw. Everything the agent does — from sending a morning briefing to processing Shopify orders — is encoded in a skill file. Writing good skills is the difference between an agent that works reliably and one you constantly have to babysit.
+
+A skill is just Markdown with YAML frontmatter. If you can write a structured document, you can write a skill.
+
+## Core Concepts
+
+### The SKILL.md Format
+
+A skill file has two sections: **frontmatter** (YAML metadata) and **body** (Markdown instructions).
+
+```markdown
+---
+# ← Frontmatter starts here
+skill_id: daily-briefing
+name: "Daily Morning Briefing"
+version: 1.2.0
+description: "Send a personalised briefing to the owner every morning."
+author: "your-name"
+tags: ["briefing", "morning", "daily"]
+
+trigger:
+  type: schedule
+  cron: "0 8 * * *"
+
+channels:
+  output: ["whatsapp", "telegram"]
+
+model:
+  preferred: "claude-3-5-haiku-20241022"
+  fallback: "gpt-4o-mini"
+
+tools:
+  - name: fetch_web
+    permission: auto
+  - name: read_calendar
+    permission: auto
+  - name: send_message
+    permission: auto
+
+cost_controls:
+  max_tokens_per_run: 2000
+
+safety:
+  tool_approval_required: false
+  pii_scrub: false
+# ← Frontmatter ends here
+---
+
+# Daily Morning Briefing
+
+You are a morning briefing assistant for {{OWNER_DISPLAY_NAME}}.
+
+## Your Job
+
+Every morning you compile a brief, personal briefing. Keep it friendly and concise.
+
+## Briefing Contents
+
+Cover all of the following:
+
+1. **Today's date and day** — e.g., "Good morning, it's Tuesday 7 April"
+2. **Today's weather** — fetch from https://wttr.in/{{OWNER_LOCATION}}?format=3
+3. **Calendar events today** — list events using read_calendar for today's date
+4. **A short motivating thought** — one sentence, relevant to the day
+
+## Format
+
+Use WhatsApp-friendly formatting:
+- Bold headings with *asterisks*
+- Short paragraphs
+- Keep total length under 200 words
+
+## Tone
+
+Warm and personal — not robotic. Like a friendly assistant, not a news reader.
+```
+
+### Frontmatter Field Reference
+
+```yaml
+# Required
+skill_id: unique-kebab-case-identifier
+name: "Human Readable Name"
+description: "What this skill does, in one sentence."
+
+# Trigger
+trigger:
+  type: schedule | event | condition | reactive
+  cron: "0 8 * * *"        # if type: schedule
+  event: "new_order"        # if type: event
+  condition: "..."          # if type: condition
+
+# Output channels
+channels:
+  output: ["whatsapp"]      # where to send results
+  input: ["telegram"]       # which channel triggers reactive execution (type: reactive)
+
+# Model routing
+model:
+  preferred: "claude-3-5-haiku-20241022"
+  fallback: "ollama/llama3.2"   # local fallback if cloud fails
+
+# Tools the skill is allowed to use
+tools:
+  - name: fetch_web
+    permission: auto         # runs without asking you
+  - name: send_email
+    permission: prompt       # asks for YES before executing
+  - name: delete_file
+    permission: deny         # never allowed in this skill
+
+# Cost controls
+cost_controls:
+  max_tokens_per_run: 3000
+  max_runs_per_day: 5
+
+# Safety
+safety:
+  tool_approval_required: false   # override global Tool Approval setting for this skill
+  pii_scrub: true                 # scrub PII before sending to cloud models
+```
+
+### Tool Permission Levels
+
+| Permission | Behaviour |
+|-----------|-----------|
+| `auto` | Runs immediately, no confirmation needed |
+| `prompt` | Pauses, sends you a confirmation request on WhatsApp/Telegram — waits for your reply |
+| `deny` | Refuses to use this tool even if the AI tries to call it |
+
+The `prompt` permission is the implementation of the **Tool Approvals** system (covered in Module 3). For any action that changes external state — sending a message, posting to social media, deleting a file, making a purchase — start with `prompt` and only change to `auto` once you've verified the skill behaves correctly.
+
+### Writing Effective Skill Instructions
+
+The body of the SKILL.md is the instruction set for the AI. These practices consistently produce more reliable execution:
+
+**Be explicit about the output format:**
+```markdown
+## Output Format
+
+Return a JSON object with these fields:
+- "subject": string — email subject line
+- "body": string — full email body, plain text
+- "to": string — recipient email address
+
+Do not include any text outside the JSON object.
+```
+
+**Specify exactly what data to use:**
+```markdown
+## Data Sources
+
+1. Fetch today's open tasks from Todoist using read_todoist_tasks with filter "today"
+2. Do not invent tasks. If the API returns empty, say "No tasks due today."
+3. Do not include overdue tasks from previous days.
+```
+
+**Give the agent an exit condition:**
+```markdown
+## When to Stop
+
+If any tool call fails three times, stop execution and send:
+"Briefing unavailable today: [tool name] failed. Will retry tomorrow."
+
+Do not continue with partial data — send the failure message and exit.
+```
+
+**Use template variables for personalisation:**
+
+Template variables are replaced at runtime from your `.env`:
+
+```markdown
+Good morning {{OWNER_DISPLAY_NAME}}, today is {{DATE_TODAY}}.
+Your timezone is {{OWNER_TIMEZONE}}.
+```
+
+Available variables:
+- `{{OWNER_DISPLAY_NAME}}` — from `OWNER_DISPLAY_NAME` in `.env`
+- `{{OWNER_TIMEZONE}}` — from `OWNER_TIMEZONE` in `.env`
+- `{{DATE_TODAY}}` — today's date (injected by the Gateway)
+- `{{TIME_NOW}}` — current time in owner's timezone
+- `{{CHANNEL}}` — which channel triggered this execution
+
+### A Complete Real Skill: Email Drafter
+
+```markdown
+---
+skill_id: email-responder
+name: "Email Draft Preparer"
+description: "Reads new emails and prepares draft responses for owner review."
+version: 1.0.0
+
+trigger:
+  type: event
+  event: "new_email"
+
+channels:
+  output: ["telegram"]
+
+model:
+  preferred: "claude-3-5-haiku-20241022"
+
+tools:
+  - name: read_email
+    permission: auto
+  - name: write_email_draft
+    permission: auto    # writes a draft, does NOT send
+  - name: send_email
+    permission: deny    # never send automatically
+
+cost_controls:
+  max_runs_per_day: 50  # handle up to 50 emails per day
+
+safety:
+  pii_scrub: true       # don't send personal info to cloud models
+---
+
+# Email Draft Preparer
+
+You are an email assistant for {{OWNER_DISPLAY_NAME}}.
+
+## Your Job
+
+When a new email arrives:
+1. Read the email content and sender
+2. Assess whether it needs a reply (spam, newsletters, and automated notifications do not)
+3. If a reply is appropriate, draft a response that is:
+   - Professional but personal
+   - Under 150 words
+   - Answers the key question or action item in the original email
+4. Save the draft using write_email_draft
+5. Send me a Telegram message with:
+   - Who the email was from
+   - One sentence summary of the subject
+   - Your draft response (for me to approve and send manually)
+
+## I Will Send, Not You
+
+You draft only. I will review and send. Never use the send_email tool.
+
+## If the Email Is Spam or Automated
+
+Just send: "Ignored: [sender] - [subject line]. Automated/spam."
+Do not draft a response.
+```
+
+### Validating Before Deploying
+
+```bash
+# Validate frontmatter syntax and tool declarations
+openclaw validate-skill ~/.openclaw/skills/email-responder.skill.md
+
+# Test execute without sending output
+openclaw run-skill email-responder --dry-run
+
+# Run for real (once)
+openclaw run-skill email-responder --once
+```
+
+The `--dry-run` flag runs the full skill instruction loop but intercepts any outbound messages and tool writes, logging what *would* have happened. Use this before adding any skill to the heartbeat.
+
+### Installing from ClawHub
+
+```bash
+# Browse available skills
+openclaw clawhub search "shopify"
+
+# Install a skill
+openclaw clawhub install shopify-order-notifier
+
+# The skill is placed in ~/.openclaw/skills/
+# Review it before activating:
+cat ~/.openclaw/skills/shopify-order-notifier.skill.md
+```
+
+Always review a ClawHub skill before using it. Look specifically at:
+1. What tools it requests and at what permission level
+2. Whether it sends data to external services
+3. Whether it can write or delete anything
+
+A skill that requests `send_email: auto` or `delete_file: auto` deserves scrutiny.
+
+## What's Next
+
+Lesson 4 covers the `.learnings/` directory — how OpenClaw stores corrections you make to its behaviour and applies them in future executions.

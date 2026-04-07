@@ -98,6 +98,12 @@ export const getCatalogPaths = cache(async (): Promise<CatalogPath[]> => {
   });
 });
 
+/** Only paths that are ready for learners — hides coming-soon stubs. */
+export async function getPublishedCatalogPaths(): Promise<CatalogPath[]> {
+  const paths = await getCatalogPaths();
+  return paths.filter((path) => path.status === "available");
+}
+
 export async function getCatalogPathBySlug(slug: string) {
   const paths = await getCatalogPaths();
   return paths.find((path) => path.slug === slug) ?? null;
@@ -105,7 +111,7 @@ export async function getCatalogPathBySlug(slug: string) {
 
 export async function getCatalogPathsBySection(section: string) {
   const paths = await getCatalogPaths();
-  return paths.filter((path) => path.section === section);
+  return paths.filter((path) => path.section === section && path.status === "available");
 }
 
 export function getPathCta(path: CatalogPath, viewer: CatalogViewer): CatalogPathCta {

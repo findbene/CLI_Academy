@@ -3,8 +3,9 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from routers import health, tutor
 
@@ -73,3 +74,16 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(tutor.router)
+
+
+# ---------------------------------------------------------------------------
+# Global exception handler — never leak stack traces to clients
+# ---------------------------------------------------------------------------
+
+@app.exception_handler(Exception)
+async def _global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal error occurred. Please try again later."},
+    )

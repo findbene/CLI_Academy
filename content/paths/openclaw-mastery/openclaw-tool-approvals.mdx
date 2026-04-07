@@ -1,0 +1,295 @@
+---
+title: "Tool Approvals: The YES Gate"
+description: "Understand OpenClaw's three-tier permission system, how the YES gate works, approval request formatting, timeout behaviour, and how to design multi-step confirmation flows."
+slug: "openclaw-tool-approvals"
+lesson_number: 8
+estimated_minutes: 18
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "permissions", "approval", "safety", "tool-gates"]
+---
+
+## What You'll Learn
+
+How OpenClaw's three permission levels work, the mechanics of the approval (YES gate) system, timeout behaviour, and patterns for designing safe multi-step operations.
+
+---
+
+## The Core Principle: Read Freely, Act With Permission
+
+Every OpenClaw skill operates under a simple security philosophy:
+
+> **The agent should be able to gather all the information it needs without restriction. But before it acts on that information — before it changes, sends, deletes, or publishes anything — it must have your permission.**
+
+This principle separates the agent's observation phase from its action phase. Reading, computing, and researching: unrestricted. Writing, sending, deleting, calling external APIs with mutations: gated.
+
+---
+
+## The Three Permission Levels
+
+Every tool in a skill configuration has one of three permission levels:
+
+### `auto` — Execute without asking
+
+```yaml
+tools:
+  - name: fetch_web
+    permission: auto
+  - name: read_file
+    permission: auto
+  - name: run_calculation
+    permission: auto
+```
+
+Use `auto` for:
+- Read operations that can't affect the world
+- Calculations and formatting
+- Lookups that carry no risk
+
+Never use `auto` for:
+- Anything that deletes, modifies, or publishes content
+- Anything that sends a message (except sending to *you*)
+- Anything that charges money or calls a payment API
+- Shell commands
+
+### `prompt` — Pause and ask the owner
+
+```yaml
+tools:
+  - name: delete_file
+    permission: prompt
+  - name: send_email
+    permission: prompt
+  - name: create_calendar_event
+    permission: prompt
+```
+
+When the agent reaches a `prompt` tool, it stops, formats an approval request, and sends it to your WhatsApp or Telegram. It does not continue until you reply **YES** (or decline).
+
+Use `prompt` for:
+- All write, delete, send, and publish operations
+- External API calls with side effects
+- Calendar changes or invitations
+- Actions involving third parties
+
+### `deny` — Never allow this tool in this skill
+
+```yaml
+tools:
+  - name: wordpress_publish
+    permission: deny
+  - name: run_command
+    permission: deny
+  - name: send_sms
+    permission: deny
+```
+
+Use `deny` for:
+- Tools the skill has no reason to use
+- Tools that are too dangerous for the skill's scope
+- Tools that should only be used by a specific other skill
+
+`deny` overrides everything. Even if the agent's instructions seem to call for the tool, it won't execute.
+
+---
+
+## What a YES Gate Looks Like
+
+When the agent reaches a `prompt` tool, it pauses and sends you an approval request. Here's what that looks like in WhatsApp or Telegram:
+
+```
+🔐 Approval Needed — Email Triage Skill
+
+I'm ready to send the following draft reply:
+
+TO: james@acmecorp.com
+SUBJECT: Re: Invoice Query #20251
+---
+Hi James,
+
+Thank you for getting in touch. I've checked invoice #20251 and can confirm 
+the balance outstanding is £3,200.00, due on 30 April 2026.
+
+Please let me know if you have any questions.
+
+Kind regards,
+[Your Name]
+---
+
+Reply YES to send.
+Reply EDIT [changes] to modify first.
+Reply NO to discard.
+```
+
+The approval request always includes:
+- Which skill triggered it
+- The exact action that will be taken
+- Complete detail of what will happen (not a summary — the actual content)
+- The response instructions
+
+---
+
+## How to Reply
+
+| Your reply | What happens |
+|-----------|-------------|
+| `YES` | Action executes immediately |
+| `yes` (lowercase) | Also accepted — case-insensitive |
+| `Y` | Also accepted |
+| `EDIT [your change]` | Agent revises and sends a new approval request |
+| `NO` | Action is cancelled, agent logs the decision |
+| `CANCEL` | Action is cancelled |
+| Anything else | Agent waits — unrecognised replies don't trigger actions |
+
+**Important:** The `YES` must be sent in the same conversation thread where the approval request was posted. Replying in a different chat has no effect.
+
+---
+
+## Timeout Behaviour
+
+If you don't respond to an approval request, the agent applies its timeout rules:
+
+```yaml
+# Defined in the skill's HEARTBEAT section or globally
+approval_timeout:
+  duration: 30m      # wait 30 minutes for a YES/NO
+  on_timeout: skip   # options: skip | cancel | retry | escalate
+  reminder_at: 25m   # send a reminder 5 minutes before timeout
+```
+
+**Timeout actions:**
+
+| Action | Behaviour |
+|--------|-----------|
+| `skip` | Skip this particular action and continue with the rest of the skill |
+| `cancel` | Abandon the entire skill run and log a timeout |
+| `retry` | Re-send the approval request (limited to 2 retries) |
+| `escalate` | Send an alert to a secondary channel (if configured) |
+
+**Recommended default:** `skip` for routine operations, `cancel` for high-stakes operations where partial completion would be worse than no completion.
+
+---
+
+## Multi-Step Approvals
+
+Some operations require a sequence of approvals. You can structure these as a chain:
+
+```markdown
+---
+skill_id: contract-sender
+name: "Contract Sender"
+tools:
+  - name: read_file
+    permission: auto
+  - name: write_email_draft
+    permission: auto
+  - name: review_document
+    permission: auto
+  - name: send_email
+    permission: prompt
+  - name: create_calendar_event
+    permission: prompt
+---
+
+# Contract Sender
+
+## Step 1 — Prepare
+- Read the contract file from ~/Documents/contracts/pending/
+- Draft the cover email
+
+## Step 2 — Get Approval to Send Contract
+Send me the draft email for approval:
+
+"📄 Contract Draft Ready
+
+TO: [client email]
+SUBJECT: [subject]
+
+[email body preview]
+
+Attachment: [contract filename]
+
+Reply YES to send, NO to cancel, or EDIT [changes] to revise."
+
+Wait for YES.
+
+## Step 3 — Only After YES: Send
+Send the email with the PDF attachment.
+
+## Step 4 — Second Approval: Follow-Up Calendar Invite
+After sending, propose a review meeting:
+
+"✅ Contract sent to [client].
+
+Shall I create a calendar invite for a 30-minute review call next week?
+
+Reply YES [preferred day] — e.g., YES Tuesday 2pm
+Reply NO to skip."
+
+Wait for YES [day] response.
+
+## Step 5 — Only If Approved: Create Calendar Event
+Create the meeting invite with the client using the specified day/time.
+```
+
+This pattern — prepare, approve, act, propose next step, approve, act — is the right structure for any multi-stage workflow.
+
+---
+
+## Approval Requests for Destructive Operations
+
+For destructive actions (anything that deletes or cannot be undone), the approval request format should be more explicit:
+
+```
+⚠️ Irreversible Action — Approval Required
+
+Skill: WhatsApp Cleaner
+Action: Archive 14 WhatsApp chats
+
+These chats will be archived (not deleted):
+- Mum 👨‍👩‍👧 (last message: 3 years ago)
+- Old Work Group (last message: 2 years ago)
+- Holiday 2021 (last message: 2 years ago)
+[+11 more]
+
+This cannot be undone from OpenClaw. Archived chats can be manually 
+unarchived in the WhatsApp app.
+
+Reply YES to archive all 14.
+Reply LIST to see all chat names before deciding.
+Reply NO to cancel.
+```
+
+Key differences for destructive actions:
+- Include the word "irreversible" or a clear statement about what can/cannot be undone
+- Show the actual names/items being affected — not just a count
+- Give an intermediate option (LIST, PREVIEW) before full commitment
+
+---
+
+## Designing for Good Approval UX
+
+The approval gate is only as good as the approval request. Keep these in mind:
+
+**Include everything the owner needs to make the decision** — don't hide details to make the YES feel easier. If it's a long email, show the full email. If it's 10 files being moved, show the file names.
+
+**One action per approval request** — don't bundle "send 5 emails" into a single YES. That's how mistakes get approved in bulk. Request approval for each distinct action or for a clearly-defined group.
+
+**Describe the scope clearly** — "delete old chats" is not a good description. "Archive 14 WhatsApp chats where the last message was sent more than 24 months ago" is.
+
+**Test with `--dry-run`**:
+```bash
+openclaw run-skill contract-sender --dry-run
+```
+A dry run shows you the approval requests without executing anything. Use this to verify your skill will ask for the right things in the right format before putting it on the heartbeat.
+
+---
+
+## What's Next
+
+Lesson 9 covers the Logic Spine — the validation layer that sits between the agent's intent and actual tool execution, and how the Schema Matcher protects against malformed or dangerous commands even when permissions are set to `auto`.

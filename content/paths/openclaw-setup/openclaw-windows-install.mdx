@@ -1,0 +1,183 @@
+---
+title: "OpenClaw on Windows (WSL2 + Docker)"
+description: "Install and run the OpenClaw Gateway on Windows using WSL2 and Docker Desktop. Includes firewall setup, .env configuration, and first-launch verification."
+slug: "openclaw-windows-install"
+lesson_number: 2
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+  docker: "24+"
+  wsl: "2"
+has_safety_warning: true
+tags: ["openclaw", "windows", "wsl2", "docker", "installation"]
+---
+
+<WarnBlock title="Safety Note">This lesson involves opening a port on your local machine. Only expose port 3301 (the OpenClaw Web UI) on your local network. Never expose it to the public internet without authentication and TLS. The VPS lesson covers public-facing hardening.</WarnBlock>
+
+## What You'll See
+
+By the end of this lesson OpenClaw will be running inside WSL2 on your Windows machine, accessible from your browser at `http://localhost:3301`, with your `.env` file configured and Docker watching for container restarts.
+
+## Why This Matters
+
+Running OpenClaw natively on Windows (non-WSL) has historically caused path-handling bugs, permission issues, and CRLF line-ending problems with SKILL.md files. The WSL2 + Docker path sidesteps all of them. You get a clean Linux environment, reproducible deployments, and a container you can stop/start/update without touching Windows at all.
+
+## Core Concepts
+
+### Prerequisites
+
+Before you start, confirm these are in place:
+
+- **Windows 10 (22H2) or Windows 11** — WSL2 is supported on both
+- **WSL2 installed** with Ubuntu 22.04 or Ubuntu 24.04 as your default distribution
+- **Docker Desktop with WSL2 backend enabled** (Settings → Resources → WSL Integration → Ubuntu ✅)
+- **4 GB RAM available** — the Gateway itself is lightweight but the model routing adds overhead if you run local inference
+
+Check WSL2 is working:
+```powershell
+wsl --status
+```
+You should see: `Default Distribution: Ubuntu` and `Default Version: 2`.
+
+### Step 1 — Open a WSL2 Terminal
+
+From Windows Terminal or PowerShell:
+```powershell
+wsl
+```
+
+You are now inside Ubuntu. All following commands run here unless stated otherwise.
+
+### Step 2 — Clone the OpenClaw Repository
+
+```bash
+# Move to your home directory
+cd ~
+
+# Clone the repo
+git clone https://github.com/openclaw-project/openclaw.git
+cd openclaw
+```
+
+### Step 3 — Copy and Configure `.env`
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+The essential keys to configure now:
+
+```env
+# Model back-end (start with one; you can add more later)
+ANTHROPIC_API_KEY=sk-ant-...
+# OPENAI_API_KEY=sk-...
+# GOOGLE_API_KEY=...
+
+# Gateway settings
+OPENCLAW_PORT=3301
+OPENCLAW_WEB_UI=true
+
+# Security: set a long random string
+OPENCLAW_SECRET=replace_this_with_64_random_chars
+
+# Your identity (the agent will reference this in responses)
+OWNER_DISPLAY_NAME=YourName
+OWNER_TIMEZONE=Europe/London
+```
+
+Press `Ctrl+O` to save, `Ctrl+X` to exit nano.
+
+> **Tip:** Generate a secure secret instantly:
+> ```bash
+> openssl rand -hex 32
+> ```
+> Copy the output into `OPENCLAW_SECRET`.
+
+### Step 4 — Start the Gateway with Docker Compose
+
+```bash
+docker compose up -d
+```
+
+Docker will pull the OpenClaw image on first run (approximately 400 MB). Subsequent starts are instant.
+
+Watch the logs to confirm startup:
+```bash
+docker compose logs -f openclaw
+```
+
+You should see lines similar to:
+```
+[openclaw] Gateway v3.x.x starting...
+[openclaw] Web UI available at http://0.0.0.0:3301
+[openclaw] Heartbeat loop: 30 min interval
+[openclaw] Awaiting messaging channel connection...
+```
+
+Press `Ctrl+C` to exit log follow (the container keeps running).
+
+### Step 5 — Open the Web UI
+
+In your Windows browser:
+```
+http://localhost:3301
+```
+
+You'll see the OpenClaw dashboard. No credentials yet — the first-run wizard will ask you to set an admin password.
+
+### Step 6 — Windows Firewall (Local Network Only)
+
+By default Docker on WSL2 binds to `localhost` only — no external access. If you want to reach the Gateway from your phone on the same Wi-Fi network:
+
+```powershell
+# Run this in Windows PowerShell (Admin), NOT in WSL
+netsh advfirewall firewall add rule `
+  name="OpenClaw Web UI" `
+  dir=in `
+  action=allow `
+  protocol=TCP `
+  localport=3301
+```
+
+Now visit `http://<your-windows-ip>:3301` from your phone. Find your local IP with `ipconfig` in PowerShell.
+
+### Auto-Start on Windows Boot
+
+To have the Gateway start automatically when Windows starts:
+
+```bash
+# Inside WSL2
+# Add to end of ~/.bashrc or create a systemd service
+
+# Quick option: add to .bashrc (runs when you open WSL)
+echo "cd ~/openclaw && docker compose up -d 2>/dev/null" >> ~/.bashrc
+```
+
+For a more robust systemd approach, refer to the [OpenClaw docs on Windows auto-start](https://openclaw.dev/docs/windows).
+
+### Verifying End-to-End
+
+At this point you should be able to:
+
+1. Open `http://localhost:3301` — Web UI loads ✅
+2. See "Heartbeat: Active" in the status panel ✅
+3. See "Messaging Channels: 0 connected" (expected — that's Lesson 7) ✅
+4. See your `ANTHROPIC_API_KEY` listed under Model Routing ✅
+
+### Common Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `docker: command not found` | Docker Desktop WSL integration not enabled | Enable in Docker Desktop → Settings → Resources → WSL Integration |
+| Port 3301 already in use | Another process is on that port | Change `OPENCLAW_PORT` in `.env` and restart |
+| `ANTHROPIC_API_KEY invalid` | Key pasted with extra whitespace | Ensure no leading/trailing spaces in `.env` |
+| Web UI loads but "No model configured" | `.env` not mounted to container | Run `docker compose down && docker compose up -d` to remount |
+
+## What's Next
+
+Windows setup complete. The next lesson covers macOS — skip there if you have team members on Mac. Otherwise jump to Lesson 6 (Model Routing) to configure which AI models power your Gateway.

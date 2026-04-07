@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Trust & Safety",
+  description:
+    "Our commitments on content freshness, safety warnings, transparent pricing, and responsible AI agent workflows at CLI Academy.",
+};
+
 import {
   AlertCircle,
   CheckCircle2,
@@ -7,7 +15,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { getCatalogPaths } from "@/lib/catalog";
+import { getPublishedCatalogPaths } from "@/lib/catalog";
 import {
   compatibilityEntries,
   getFreshnessState,
@@ -32,7 +40,7 @@ function toneForIssueStatus(status: string) {
 }
 
 export default async function TrustPage() {
-  const catalogPaths = await getCatalogPaths();
+  const catalogPaths = await getPublishedCatalogPaths();
   const pathFreshness = catalogPaths
     .filter((path) => path.status === "available")
     .slice(0, 6)
@@ -46,7 +54,7 @@ export default async function TrustPage() {
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="panel p-6">
           <div className="flex items-start gap-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(22,176,168,0.12)]">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-subtle)]">
               <ShieldCheck className="size-6 text-[var(--color-accent-primary)]" />
             </div>
             <div>
@@ -60,7 +68,7 @@ export default async function TrustPage() {
             </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(22,176,168,0.10)] px-3 py-1.5 text-sm text-[var(--color-accent-primary)]">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-accent-subtle)] px-3 py-1.5 text-sm text-[var(--color-accent-primary)]">
               <CheckCircle2 className="size-3.5" />
               {compatibilityEntries.length} environment notes
             </div>

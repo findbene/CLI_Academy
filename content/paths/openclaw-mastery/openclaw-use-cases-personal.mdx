@@ -1,0 +1,341 @@
+---
+title: "10 Production Use Cases (Part 1: Personal)"
+description: "Deploy five personal productivity use cases with production-ready skill configurations: web scraper, lead generator, email reader, Telegram/WhatsApp chatbot, and personal concierge."
+slug: "openclaw-use-cases-personal"
+lesson_number: 5
+estimated_minutes: 24
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "use-cases", "personal", "web-scraping", "lead-gen", "email", "concierge"]
+---
+
+## What You'll Learn
+
+Five production-ready OpenClaw use cases for personal productivity, complete with skill configuration examples and implementation notes.
+
+## Why This Matters
+
+Use cases are the clearest way to understand what OpenClaw can actually do. Each one in this lesson is deployed in real installations — not hypothetical. The skill excerpts are starting points you can adapt immediately.
+
+---
+
+## Use Case 1: Web Scraper
+
+**Scenario:** You want daily summaries of competitor pricing, news headlines, job listings, or product availability — without opening a browser.
+
+**How it works:** OpenClaw uses the `fetch_web` tool to retrieve pages on a schedule, extracts the relevant data, and sends you a digest.
+
+**Skill Configuration:**
+
+```markdown
+---
+skill_id: price-monitor
+name: "Competitor Price Monitor"
+trigger:
+  type: schedule
+  cron: "0 9 * * 1-5"    # 9am weekdays
+channels:
+  output: ["telegram"]
+tools:
+  - name: fetch_web
+    permission: auto
+---
+
+# Competitor Price Monitor
+
+## Websites to Check
+Fetch the following URLs and extract the current price for the listed product:
+
+1. https://competitor-a.com/product/widget-pro → look for the element with class "product-price"
+2. https://competitor-b.com/products/widget → look for "Price:" followed by a number
+3. https://alternative-c.co.uk/widgets → main product price heading
+
+## Output Format
+
+Send a Telegram message:
+
+*Price Check — {{DATE_TODAY}}*
+
+| Product | Site A | Site B | Site C |
+|---------|--------|--------|--------|
+| Widget Pro | £X.XX | £X.XX | £X.XX |
+
+If a price couldn't be fetched: mark as "N/A (fetch failed)".
+
+Note if any price has changed since yesterday's check.
+```
+
+**Tip:** Store yesterday's prices in a `.learnings/context.md` entry — OpenClaw can compare today's values and alert you to changes automatically.
+
+---
+
+## Use Case 2: Lead Generator
+
+**Scenario:** You want a daily list of new potential customers — businesses that match your ICP (ideal customer profile), from publicly available directories, job boards, or news sources.
+
+**How it works:** The skill searches LinkedIn company data or industry directories, extracts business names and contact information, and sends a formatted list.
+
+```markdown
+---
+skill_id: lead-finder
+name: "Daily Lead Finder"
+trigger:
+  type: schedule
+  cron: "0 7 * * 1,3,5"   # Monday, Wednesday, Friday at 7am
+channels:
+  output: ["whatsapp"]
+tools:
+  - name: fetch_web
+    permission: auto
+  - name: read_file
+    permission: auto
+  - name: write_file
+    permission: auto   # save found leads to avoid duplicates
+---
+
+# Daily Lead Finder
+
+## Target Profile
+Find businesses matching:
+- Industry: [your industry]
+- Size: 10–200 employees
+- Location: UK
+- Signal: Recently hired an "Operations Manager" or "Head of Automation" (indicates interest in process improvement)
+
+## Sources to Check
+1. LinkedIn Jobs search: site:linkedin.com/jobs "Operations Manager" "UK" posted:week
+2. Indeed: https://www.indeed.co.uk/jobs?q=operations+manager&l=United+Kingdom&fromage=7
+3. Check the company name against already-found-leads.txt (read_file) — skip duplicates
+
+## What to Extract
+For each promising company (max 5 per run):
+- Company name
+- Location
+- Hiring signal (what job they posted)
+- LinkedIn company page URL (if findable)
+
+## Save and Report
+1. Append new leads to already-found-leads.txt (write_file)
+2. Send me a WhatsApp message:
+
+*🎯 3 New Leads — {{DATE_TODAY}}*
+
+1. *[Company Name]* — London — Hiring: Ops Manager
+   linkedin.com/company/...
+
+2. ...
+
+Signal: All hired operations-type roles in the last 7 days.
+```
+
+---
+
+## Use Case 3: Email Reader and Response Drafter
+
+**Scenario:** Your email inbox is overwhelming. You want OpenClaw to read new emails, categorise them, and draft replies you can approve and send.
+
+**How it works:** The `read_email` tool connects to your email provider (Gmail, Outlook) via OAuth. The skill reads new mail, classifies it, and drafts responses for non-trivial emails.
+
+```markdown
+---
+skill_id: email-triage
+name: "Email Triage and Draft"
+trigger:
+  type: schedule
+  cron: "0 9,13,17 * * 1-5"  # 9am, 1pm, 5pm weekdays
+channels:
+  output: ["telegram"]
+tools:
+  - name: read_email
+    permission: auto
+  - name: write_email_draft
+    permission: auto    # saves draft, does NOT send
+  - name: send_email
+    permission: deny    # never auto-send
+safety:
+  pii_scrub: true       # strip names/addresses before cloud routing
+---
+
+# Email Triage and Draft
+
+Read all unread emails received since my last check.
+
+## Classify Each Email
+
+A) **Needs reply** — direct question, request, or action item from a real person
+B) **FYI only** — newsletters, CC'd conversations, status updates
+C) **Action required but no reply** — invoices, receipts, confirmations
+D) **Spam/automated** — marketing, HR system notifications, automated alerts
+
+## For Type A Emails Only
+
+Draft a reply:
+- Professional tone, friendly
+- Under 100 words unless complexity requires more
+- Address the main question or action item
+- Use "Kind regards, {{OWNER_DISPLAY_NAME}}" as sign-off
+
+Save draft using write_email_draft.
+
+## Telegram Report
+
+Send me:
+*📧 Email Check — {{TIME_NOW}}*
+
+**Reply needed (X):**
+- [Sender] Re: [Subject] → *Draft saved*
+
+**FYI (X):**
+- [quick list]
+
+**Actions needed (X):**
+- [invoice from X, receipt from Y]
+
+**Ignored (X):** newsletters, automated
+```
+
+**Note on OAuth setup:** Run `openclaw connect email --provider gmail` to complete the OAuth flow. This is a one-time browser step.
+
+---
+
+## Use Case 4: Always-On Telegram / WhatsApp Chatbot
+
+**Scenario:** You want an intelligent conversation partner available instantly on your messaging apps — for questions, task management, research, calculations, or just thinking out loud.
+
+**How it works:** A reactive skill (type: reactive) answers direct messages. Unlike heartbeat skills, this runs in response to your messages rather than on a schedule.
+
+```markdown
+---
+skill_id: personal-assistant
+name: "Personal AI Assistant"
+trigger:
+  type: reactive
+  channels: ["whatsapp", "telegram"]
+model:
+  preferred: "claude-3-5-sonnet-20241022"   # Better quality for conversations
+  fallback: "gpt-4o"
+tools:
+  - name: fetch_web
+    permission: auto
+  - name: read_file
+    permission: auto
+  - name: read_calendar
+    permission: auto
+  - name: run_calculation
+    permission: auto
+  - name: create_reminder
+    permission: prompt   # ask before setting reminders
+---
+
+# Personal AI Assistant
+
+You are {{OWNER_DISPLAY_NAME}}'s personal AI assistant, available via WhatsApp and Telegram.
+
+## Your Capabilities
+
+You can:
+- Answer questions and do research (fetch_web)
+- Read documents I've uploaded to ~/Documents/assistant-inbox/
+- Check today's calendar
+- Do calculations and unit conversions
+- Help me draft text, emails, and messages
+
+## Personality
+
+- Concise by default — don't over-explain
+- If I ask "quick question:", keep the answer under 3 sentences
+- If I send a URL, summarise the page content unprompted
+- Use my timezone ({{OWNER_TIMEZONE}}) for all time references
+
+## Context Recall
+
+Before answering, check if any of my .learnings are relevant to the question.
+Apply them naturally — don't announce that you're using memory.
+```
+
+This skill turns your WhatsApp or Telegram into a 24/7 AI assistant that knows your preferences and can actually do things, not just answer questions.
+
+---
+
+## Use Case 5: Personal Concierge
+
+**Scenario:** You want an agent that proactively manages your calendar, surfaces things you need to know today, reschedules conflicts, and reminds you of important tasks — like a personal assistant who works through your messaging apps.
+
+```markdown
+---
+skill_id: personal-concierge
+name: "Personal Concierge"
+trigger:
+  type: schedule
+  cron: "0 8 * * *"
+channels:
+  output: ["whatsapp"]
+tools:
+  - name: read_calendar
+    permission: auto
+  - name: fetch_web
+    permission: auto
+  - name: read_email
+    permission: auto
+  - name: create_calendar_event
+    permission: prompt   # requires your approval
+  - name: send_message
+    permission: prompt   # requires your approval before sending to others
+---
+
+# Personal Concierge — Morning Briefing and Prep
+
+You are my personal concierge. Every morning, prepare me to have a great day.
+
+## Morning Run (8am)
+
+1. **Check calendar** for today's events
+   - Flag any double-bookings or back-to-back meetings with no travel time
+   - Note meetings I haven't prepared for (no agenda or notes filed)
+   
+2. **Check email highlights** — any overnight messages needing same-day response?
+
+3. **Brief me on the day:**
+
+*Good morning {{OWNER_DISPLAY_NAME}} — {{DATE_TODAY}}*
+
+📅 *Today's Schedule:*
+[list events with times]
+
+⚠️ *Heads Up:*
+[flag any conflicts or preparation gaps]
+
+📧 *Needs Your Attention:*
+[emails requiring same-day response]
+
+💡 *Suggested:*
+[one practical suggestion for the day]
+
+## Important Rules
+
+- Never create events or send messages without my explicit approval
+- When suggesting actions, present them as options, not decisions
+- If I haven't replied to a suggested action within 2 hours, drop it
+```
+
+---
+
+## Working with These Skills
+
+All five skills can be installed simultaneously. They won't conflict — each operates independently with its own trigger and tools.
+
+Deploy sequence:
+1. Install one skill and test with `openclaw run-skill [id] --once`
+2. Verify output looks correct
+3. Activate on the heartbeat
+4. Monitor logs for the first 3–5 executions
+5. Add corrections via `/learn` as you notice things to improve
+
+## What's Next
+
+Lesson 6 covers five business-focused use cases: DevOps sentinel, e-commerce manager, local document reader, flight booking agent, and Shopify order management.

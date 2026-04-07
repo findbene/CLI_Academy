@@ -1,0 +1,275 @@
+---
+title: "PII Scrubbing: Privacy Before the Cloud"
+description: "How OpenClaw detects and redacts personally identifiable information before sending content to cloud language models, and how to route sensitive operations to local models instead."
+slug: "openclaw-pii-scrubbing"
+lesson_number: 10
+estimated_minutes: 16
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "privacy", "pii", "security", "data-protection", "local-models"]
+---
+
+## What You'll Learn
+
+How cloud LLMs handle your data by default, which PII patterns OpenClaw detects automatically, how scrubbing and restoration work, how to configure scrubbing per skill, and when to route sensitive work to a local model instead.
+
+---
+
+## Why This Matters
+
+Every time your OpenClaw agent sends a prompt to a cloud language model — Anthropic's Claude, OpenAI's GPT, Google's Gemini — that text passes through external infrastructure.
+
+For most tasks, this is fine. But consider what your agent might be processing:
+- Customer emails containing names, addresses, and order history
+- Financial documents with account numbers or tax IDs
+- Medical notes or health information
+- HR documents with salary data and personal details
+- Contracts and legal documents with confidential terms
+
+Most cloud LLM providers log prompts for safety monitoring. Some retain data for model training by default (though they offer opt-outs). Some enterprise agreements change this — but in standard API usage, you should assume prompt data is retained.
+
+PII Scrubbing ensures that sensitive identifiers are replaced with safe placeholders before the prompt leaves your machine.
+
+---
+
+## What Gets Detected and Scrubbed
+
+OpenClaw's built-in PII scanner detects the following patterns:
+
+| Category | Pattern | Placeholder |
+|----------|---------|-------------|
+| UK National Insurance Number | AA 12 34 56 C | `[REDACTED-NIN]` |
+| UK NHS Number | 123 456 7890 | `[REDACTED-NHS]` |
+| National Insurance (compact) | AA123456C | `[REDACTED-NIN]` |
+| Credit / Debit Card | 4929 xxxx xxxx xxxx | `[REDACTED-CARD]` |
+| US Social Security Number | 123-45-6789 | `[REDACTED-SSN]` |
+| US Social Security (compact) | 123456789 (in context) | `[REDACTED-SSN]` |
+| Passport number | P<GBR / 9 digit format | `[REDACTED-PASSPORT]` |
+| Sort code + account number | 12-34-56 / 12345678 | `[REDACTED-BANK-UK]` |
+| US bank account number | 17+ digit account (in context) | `[REDACTED-BANK-US]` |
+| IBAN | GB29 NWBK 6016 1331 9268 19 | `[REDACTED-IBAN]` |
+| Email address (in documents) | user@example.com | `[REDACTED-EMAIL]` |
+| IP address | 192.168.0.1 | `[REDACTED-IP]` |
+| UK mobile / landline | 07700 900000 | `[REDACTED-PHONE]` |
+| US phone number | (555) 867-5309 | `[REDACTED-PHONE]` |
+| Date of birth (in context) | "born 14/03/1985" | `[REDACTED-DOB]` |
+
+**Context-aware detection:** Some patterns (like 8-digit numbers) only trigger when they appear alongside contextual keywords — "account number", "sort code", "SSN", "date of birth". This reduces false positives on numbers that happen to match the format without being PII.
+
+---
+
+## How Scrubbing and Restoration Work
+
+PII Scrubbing is a two-pass process:
+
+**Pass 1 — Outbound (before cloud)**
+
+```
+Input text:
+"Customer James Holden (james.h@example.com, card 4929 3456 7890 1234) 
+returned order #2093 on 14 March 2026."
+
+After scrubbing:
+"Customer James Holden ([REDACTED-EMAIL], card [REDACTED-CARD]) 
+returned order #2093 on 14 March 2026."
+
+Scrub map (stored locally, never sent to cloud):
+  REDACTED-EMAIL-1 → james.h@example.com
+  REDACTED-CARD-1  → 4929 3456 7890 1234
+```
+
+The scrub map is stored in memory for the duration of the skill run only. It is never written to disk.
+
+**Pass 2 — Inbound (after cloud response)**
+
+```
+Cloud response:
+"The customer [REDACTED-EMAIL] has been issued a full refund for [REDACTED-CARD]."
+
+After restoration:
+"The customer james.h@example.com has been issued a full refund for 
+card ending 1234."
+
+Note: Full card number NOT restored in output — only the last 4 digits.
+Cards are always masked on restoration: 4929 3456 7890 1234 → card ending 1234
+```
+
+Restoration only applies in the current run. If the agent encounters a placeholder from a previous run (e.g., in a stored file), it cannot restore it — the scrub map has been cleared.
+
+---
+
+## Configuring PII Scrubbing Per Skill
+
+Enable scrubbing in your skill's YAML frontmatter:
+
+```yaml
+---
+skill_id: email-triage
+name: "Email Triage"
+safety:
+  pii_scrub: true              # enable scrubbing for this skill
+  pii_scrub_categories:        # optionally limit to specific categories
+    - card
+    - ssn
+    - nin
+    - bank
+    # omit if you want all categories
+  pii_scrub_log: false         # do NOT log what was scrubbed (more private)
+---
+```
+
+Or enable scrubbing globally for all skills:
+
+```bash
+openclaw config set security.pii_scrub_default=true
+```
+
+With global scrubbing on, individual skills can opt out with `pii_scrub: false` (for skills that already use local-only routing).
+
+---
+
+## Full Local Routing: The Zero-Leak Option
+
+For the most sensitive work, the right answer isn't to scrub PII — it's to never send the data to a cloud model at all.
+
+Configure a skill to route exclusively to a local model:
+
+```yaml
+---
+skill_id: contract-analyser
+name: "Contract Analyser"
+model:
+  preferred: "ollama/llama3.1:70b"   # run this model locally with Ollama
+  fallback: null                      # no fallback — fail if local model unavailable
+  cloud_routing: deny                 # hard block on any cloud routing
+safety:
+  pii_scrub: false     # not needed — nothing leaves the machine
+---
+```
+
+When `cloud_routing: deny` is set and the local model is unavailable, the skill returns an error rather than falling back to a cloud provider:
+
+```
+Skill: contract-analyser
+Error: Local model (ollama/llama3.1:70b) is not available.
+Cloud routing is disabled for this skill. Cannot proceed.
+
+Start Ollama with: ollama serve
+Pull model with: ollama pull llama3.1:70b
+
+Skill cancelled. No data was sent to any external server.
+```
+
+This is the correct behaviour. The user knows exactly why it failed and how to fix it.
+
+---
+
+## Choosing: Scrub vs. Local Routing
+
+| Situation | Recommended Approach |
+|-----------|---------------------|
+| Email triage with customer names, general business content | `pii_scrub: true` on cloud model |
+| Financial documents with account numbers | Local model OR `pii_scrub: true` strict categories |
+| Contract review with confidential terms | Local model, `cloud_routing: deny` |
+| Medical or health notes | Local model, `cloud_routing: deny` |
+| HR data, salary information | Local model, `cloud_routing: deny` |
+| General questions, research, coding help | Cloud is fine — no scrubbing needed |
+| Lead generation from public sources | Cloud is fine — no scrubbing needed |
+| Customer support drafts | `pii_scrub: true` on cloud model |
+
+The general rule: **if the document contains data that would cause a compliance problem if breached, use local routing. If it contains incidental personal details in ordinary business content, scrubbing is sufficient.**
+
+---
+
+## The `.learnings/` Privacy Flag
+
+The `.learnings/` system (covered in Lesson 4) also interacts with PII Scrubbing. When you store a learning file with `private: true`, it affects how that file is handled:
+
+```markdown
+---
+file: preferences.md
+private: true     # this file uses local routing when referenced
+---
+
+# Owner Financial Context
+
+- Primary current account: sort code 20-00-00, account 12345678
+- Credit card for business: ending 4321
+- Monthly revenue target: £18,000
+```
+
+With `private: true`:
+- The file is only loaded into skills where the model is local OR scrubbing is enabled
+- Cloud-routed skills that try to load a `private: true` file get a stub instead: `[Private learning file — not available to cloud-routed skills]`
+- The check happens at load time, not at prompt time
+
+This means you can store genuinely sensitive context for your local AI assistant without risking it appearing in cloud-routed prompt content.
+
+---
+
+## Verifying PII Scrubbing Is Working
+
+Test with a sample prompt before deploying a sensitive skill:
+
+```bash
+openclaw scrub-test "Customer NI number AA 12 34 56 A placed an order worth £1,200 using card 4111 1111 1111 1111 on 01/04/2026."
+```
+
+Expected output:
+
+```
+Scrub test result:
+
+Input:
+  "Customer NI number AA 12 34 56 A placed an order worth £1,200 using card 4111 1111 1111 1111 on 01/04/2026."
+
+Output to cloud:
+  "Customer NI number [REDACTED-NIN] placed an order worth £1,200 using card [REDACTED-CARD] on 01/04/2026."
+
+Detected and scrubbed:
+  - NIN: AA 12 34 56 A → [REDACTED-NIN]
+  - Card: 4111 1111 1111 1111 → [REDACTED-CARD]
+
+Note: Date "01/04/2026" was not scrubbed — date-of-birth detection is context-aware and this does not appear in a DOB context.
+```
+
+If something is not being scrubbed that should be, file a pattern request at `openclaw.io/patterns`.
+
+---
+
+## Completing the Security Picture
+
+You've now covered all three security layers:
+
+| Layer | Lesson | What It Does |
+|-------|--------|-------------|
+| Incidents & Defaults | Lesson 7 | Understand why defaults matter; use `safety_profile=strict` |
+| Tool Approvals | Lesson 8 | Gate destructive actions with YES; use `prompt` for all writes |
+| Logic Spine | Lesson 9 | Pre-permission validation; Schema Matcher blocks dangerous patterns |
+| PII Scrubbing | Lesson 10 | Redact sensitive data before cloud routing; use local model for highest-sensitivity work |
+
+These four layers are independent and complementary. Running all four means:
+1. Your permissions are conservative by default
+2. Every destructive action needs your explicit approval
+3. Malformed or dangerous tool calls are blocked before they execute
+4. Sensitive data never leaves your machine in identifiable form
+
+This is OpenClaw's full security stack — and it exists because the community discovered the hard way that each layer is necessary.
+
+---
+
+## You've Completed OpenClaw Mastery
+
+You now know:
+- **HEARTBEAT.md**: how the agent loop works, trigger types, scheduling, budget management
+- **SKILL.md authoring**: tool permissions, instruction writing, ClawHub workflows
+- **`.learnings/` memory**: persistent corrections, preferences, and private context
+- **10 production use cases**: personal concierge, business operations, document reading, e-commerce
+- **Security guardrails**: real incidents that shaped the system, the YES gate, Logic Spine, and PII Scrubbing
+
+Return to the course catalogue to explore the next path, or go build your first production skill.

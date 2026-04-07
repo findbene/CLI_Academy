@@ -1,0 +1,8 @@
+# CLI Academy — robots.txt
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /onboarding/
+
+Sitemap: https://cliacademy.com/sitemap.xml

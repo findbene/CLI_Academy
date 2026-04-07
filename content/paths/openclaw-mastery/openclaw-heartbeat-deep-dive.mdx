@@ -1,0 +1,240 @@
+---
+title: "The HEARTBEAT Loop"
+description: "Understand how OpenClaw's autonomous heartbeat works — its cron schedule, trigger types, execution model, and how to tune it without wasting API budget."
+slug: "openclaw-heartbeat-deep-dive"
+lesson_number: 2
+estimated_minutes: 16
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "heartbeat", "autonomy", "scheduler", "cron", "proactive"]
+---
+
+## What You'll Learn
+
+How the HEARTBEAT loop works mechanically, how to configure its timing and triggers, how to write skills that run proactively on it, and how to budget API calls to keep costs predictable.
+
+## Why This Matters
+
+The HEARTBEAT is what makes OpenClaw an *agent* rather than a *chatbot*. Without it, you have a very capable assistant you have to initiate every conversation with. With it, OpenClaw becomes proactive — checking, acting, notifying — while you're doing other things.
+
+Getting the heartbeat right separates an OpenClaw installation that feels magical from one that feels like a fancy messaging bot.
+
+## Core Concepts
+
+### What the Heartbeat Loop Actually Does
+
+Every N minutes (default: 30), the Gateway executes this cycle:
+
+```
+1. Wake up
+2. Load all SKILL.md files tagged with "heartbeat: true"
+3. For each skill: evaluate trigger condition
+   ├── Condition met → execute skill
+   └── Condition not met → skip
+4. Collect execution results
+5. For each result with output:
+   └── Route output to configured channels (WhatsApp/Telegram)
+6. Write execution log
+7. Sleep until next cycle
+```
+
+The loop never stops. When results need to be acted on (deleting a file, sending an email), those actions happen inside skill execution in Step 3.
+
+### The HEARTBEAT.md File
+
+Every OpenClaw installation has a `HEARTBEAT.md` configuration file. This controls the loop itself — separate from individual skill files:
+
+```markdown
+---
+type: heartbeat-config
+---
+
+# OpenClaw HEARTBEAT Configuration
+
+interval_minutes: 30
+
+# Run even if no skills are scheduled? (keeps the loop active for reactive triggers)
+always_alive: true
+
+# Maximum API calls per heartbeat cycle
+max_api_calls_per_cycle: 10
+
+# Quiet hours (pause proactive skills, still respond to direct messages)
+quiet_hours:
+  enabled: true
+  start: "23:00"
+  end: "07:30"
+  timezone: "Europe/London"
+
+# Emergency wake trigger: any message containing these strings wakes the loop immediately
+emergency_triggers:
+  - "urgent"
+  - "emergency"
+  - "asap"
+```
+
+### Trigger Types
+
+Skills can be added to the heartbeat in three different ways:
+
+#### 1. Time-Based (Cron)
+
+```yaml
+# In a SKILL.md file header
+trigger:
+  type: schedule
+  cron: "0 8 * * 1-5"    # 8am Monday to Friday
+```
+
+Standard cron syntax. Examples:
+
+| Cron Expression | Meaning |
+|----------------|---------|
+| `0 8 * * *` | Every day at 8am |
+| `0 8 * * 1-5` | Weekdays at 8am |
+| `*/30 * * * *` | Every 30 minutes |
+| `0 9,13,18 * * *` | 9am, 1pm, 6pm every day |
+| `0 0 1 * *` | First of each month at midnight |
+
+#### 2. Event-Based
+
+```yaml
+trigger:
+  type: event
+  event: "new_email"       # fires when new email arrives (requires email integration)
+  # or:
+  # event: "github_pr"     # GitHub PR opened
+  # event: "new_order"     # Shopify order (requires Shopify integration)
+  # event: "calendar_reminder"  # Google Calendar alert
+```
+
+Event triggers respond to external state changes rather than time. They're more efficient than polling — OpenClaw only wakes up when something actually happened.
+
+#### 3. Condition-Based
+
+```yaml
+trigger:
+  type: condition
+  check: "daily"      # evaluated once per heartbeat cycle
+  condition: |
+    Check if CPU usage on my VPS has been above 80% for more than 10 minutes.
+    If yes, trigger this skill.
+```
+
+Condition triggers allow the agent to make a judgment call before executing. More flexible, slightly more expensive (requires an LLM call to evaluate).
+
+### Reading the Heartbeat Logs
+
+```bash
+docker compose logs openclaw 2>&1 | grep "HEARTBEAT"
+```
+
+Example healthy output:
+```
+[HEARTBEAT] 2026-04-07 08:00:00 UTC — Cycle #1847 starting
+[HEARTBEAT] Checking 7 scheduled skills...
+[HEARTBEAT] "daily-briefing" → triggered (schedule match)
+[HEARTBEAT] "email-check" → skipped (quiet hours)
+[HEARTBEAT] "shopify-orders" → triggered (event: new_order)
+[HEARTBEAT] "vps-health" → skipped (condition: CPU normal)
+[HEARTBEAT] Executed 2 skills in 8.3s, 4 API calls
+[HEARTBEAT] Cycle #1847 complete
+[HEARTBEAT] Next cycle: 2026-04-07 08:30:00 UTC
+```
+
+Key metrics to watch:
+- **Execution time**: Should be under cycle interval. If 2 skills take 28 minutes on a 30-minute loop, you have a near-permanent background load
+- **API calls per cycle**: Keep this below `max_api_calls_per_cycle` to avoid rate limits
+- **Skipped skills**: Normal — shows the heartbeat evaluated them and correctly decided not to run
+
+### Budgeting the Heartbeat
+
+Autonomous agents can surprise you with API bills. Here's how to reason about the cost before deploying:
+
+```
+Skills that run hourly × 24 hours × 30 days = monthly executions
+× average tokens per execution ÷ 1,000,000 × price per MTok = monthly cost
+```
+
+Example: Daily briefing skill, runs once/day, uses ~2,000 tokens (Claude Haiku)
+- 30 days × 2,000 tokens = 60,000 tokens/month
+- At $0.25/MTok (Haiku): $0.015/month — negligible
+
+Example: Email check skill, runs every 30 minutes, uses ~500 tokens
+- 48 times/day × 500 tokens × 30 days = 720,000 tokens/month
+- At $0.25/MTok: $0.18/month — still very cheap
+
+Heartbeat costs are typically minimal. The expensive pattern is skills that read large documents or make many API calls per execution.
+
+### Setting API Budgets per Skill
+
+```yaml
+# In a SKILL.md file header
+cost_controls:
+  max_tokens_per_run: 2000
+  max_runs_per_day: 10
+  fallback_on_exceed: "skip"   # or: "notify_owner", "use_local_model"
+```
+
+If a skill exceeds its budget, OpenClaw skips it until the next day and (optionally) sends you a notification explaining what was skipped and why.
+
+### Quiet Hours Configuration
+
+The heartbeat continues running during quiet hours, but proactive outbound messages are held until the window reopens:
+
+```markdown
+quiet_hours:
+  enabled: true
+  start: "23:00"
+  end: "07:30"
+  timezone: "Europe/London"
+  
+  # Skills that still execute during quiet hours (no outbound message)
+  silent_execution:
+    - "overnight-backup"
+    - "log-rotation"
+  
+  # Skills that are fully suspended during quiet hours
+  suspended:
+    - "daily-briefing"        # doesn't make sense to receive at 3am
+    - "whatsapp-responder"    # you'll miss the reply anyway
+```
+
+### Forcing a Heartbeat Run
+
+For testing:
+
+```bash
+# From your terminal
+docker exec -it openclaw openclaw heartbeat --run-now
+
+# Or from the Web UI
+Dashboard → Heartbeat → Run Now
+```
+
+This triggers a full cycle immediately, regardless of the configured interval. Useful for verifying a new skill works before waiting 30 minutes.
+
+### Advanced: Adaptive Intervals
+
+OpenClaw supports adaptive heartbeat intervals — speeding up when there's activity, slowing down during quiet periods:
+
+```markdown
+interval_minutes: 30
+
+adaptive:
+  enabled: true
+  busy_interval: 10      # Check every 10 min when messages are coming in
+  idle_interval: 60      # Check every 60 min during long quiet periods
+  idle_threshold: 120    # Minutes without activity before switching to idle interval
+```
+
+This keeps the agent responsive when you're using it while conserving API calls overnight.
+
+## What's Next
+
+Lesson 3 covers writing your own SKILL.md files — the building blocks that tell OpenClaw exactly what to do during each heartbeat execution.

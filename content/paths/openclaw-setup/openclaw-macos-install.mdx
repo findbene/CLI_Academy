@@ -1,0 +1,218 @@
+---
+title: "OpenClaw on macOS"
+description: "Install OpenClaw on macOS using Homebrew or git clone. Includes LaunchAgent setup for automatic startup on boot."
+slug: "openclaw-macos-install"
+lesson_number: 3
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+  macos: "13+ (Ventura and later)"
+has_safety_warning: false
+tags: ["openclaw", "macos", "homebrew", "launchagent", "installation"]
+---
+
+## What You'll See
+
+OpenClaw running natively on your Mac, accessible at `http://localhost:3301`, starting automatically on login via a LaunchAgent — no Docker required, though Docker is also supported if you prefer it.
+
+## Why This Matters
+
+macOS has the smoothest OpenClaw installation experience. No WSL2, no virtual machine overhead. If you're on an Apple Silicon Mac (M1, M2, M3, M4), the native ARM build is dramatically faster for local inference workloads. If you also use a Mac Mini as a home server, this path doubles as the setup guide for that hardware.
+
+## Core Concepts
+
+### Method A — Homebrew (Recommended)
+
+If you already use Homebrew (the most common macOS package manager), this is a single command:
+
+```bash
+brew tap openclaw-project/openclaw
+brew install openclaw
+```
+
+Homebrew installs the binary to `/usr/local/bin/openclaw` (Intel) or `/opt/homebrew/bin/openclaw` (Apple Silicon), creates the default config directory at `~/.openclaw/`, and installs a sample `.env`.
+
+Verify the install:
+```bash
+openclaw --version
+```
+
+### Method B — Git Clone
+
+If you don't use Homebrew or want the latest unreleased code:
+
+```bash
+cd ~
+git clone https://github.com/openclaw-project/openclaw.git
+cd openclaw
+```
+
+Install Node.js dependencies (OpenClaw's runtime layer uses Node):
+```bash
+npm install
+```
+
+### Configure `.env`
+
+Whether you used Homebrew or git clone, copy the example config:
+
+```bash
+# Homebrew path
+cp ~/.openclaw/.env.example ~/.openclaw/.env
+
+# Git clone path
+cp .env.example .env
+```
+
+Open in your preferred editor:
+```bash
+# Homebrew
+nano ~/.openclaw/.env
+
+# Git clone
+nano .env
+```
+
+Minimum required configuration:
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENCLAW_PORT=3301
+OPENCLAW_WEB_UI=true
+OPENCLAW_SECRET=replace_with_random_64_chars
+OWNER_DISPLAY_NAME=YourName
+OWNER_TIMEZONE=America/New_York
+```
+
+Generate a secure secret:
+```bash
+openssl rand -hex 32
+```
+
+### First Launch
+
+```bash
+# Homebrew
+openclaw start
+
+# Git clone
+npm run start
+```
+
+Open `http://localhost:3301` in your browser. Complete the first-run wizard to set your admin password.
+
+### Auto-Start on Login (LaunchAgent)
+
+A *LaunchAgent* is macOS's built-in way to run processes automatically when you log in. This is the right tool for OpenClaw — it's lighter than a Docker container and integrates with macOS's service management.
+
+**Step 1 — Create the plist file:**
+
+```bash
+nano ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+```
+
+Paste this content (adjust paths if you used git clone):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.openclaw.gateway</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/openclaw</string>
+    <string>start</string>
+  </array>
+
+  <!-- For Apple Silicon - Intel users: /usr/local/bin/openclaw -->
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/openclaw.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/openclaw-error.log</string>
+</dict>
+</plist>
+```
+
+**Step 2 — Set correct permissions:**
+```bash
+chmod 644 ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+```
+
+**Step 3 — Load the agent:**
+```bash
+launchctl load ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+```
+
+**Step 4 — Verify it's running:**
+```bash
+launchctl list | grep openclaw
+```
+
+You should see a PID number next to `dev.openclaw.gateway`.
+
+### Managing the LaunchAgent
+
+```bash
+# Stop temporarily
+launchctl unload ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+
+# Start again
+launchctl load ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+
+# View live logs
+tail -f /tmp/openclaw.log
+```
+
+### Apple Mac Mini as Home Server
+
+The Mac Mini (M2 or later) makes an excellent always-on OpenClaw host:
+
+- Idle power draw: ~7W (fanless modes on M-series chips)
+- 8 GB RAM is sufficient for cloud model routing; 16 GB recommended for local inference via Ollama
+- Built-in Wi-Fi and Ethernet — no need for a separate connection
+- Running "headless" (no monitor): use macOS's "Allow Power Nap" and disable the display sleep without sleeping the system (System Settings → Battery)
+
+Enable remote access so you can manage it over SSH from any other device:
+```bash
+# On the Mac Mini
+sudo systemsetup -setremotelogin on
+```
+
+Then connect from your laptop:
+```bash
+ssh yourname@mac-mini-local-ip
+```
+
+### Common Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `openclaw: command not found` after Homebrew | Shell not sourcing Homebrew | Run `eval "$(brew shellenv)"` or restart terminal |
+| LaunchAgent not auto-starting | Wrong binary path | Confirm path with `which openclaw`, update plist |
+| "Operation not permitted" on plist | Permission issue | `chmod 644` on the plist file |
+| Port 3301 blocked | macOS Firewall | System Settings → Network → Firewall → Allow OpenClaw |
+
+## What's Next
+
+macOS setup complete. Jump to Lesson 6 (Model Routing) unless you also want to set up a VPS or Raspberry Pi for always-on operation without leaving your Mac running.

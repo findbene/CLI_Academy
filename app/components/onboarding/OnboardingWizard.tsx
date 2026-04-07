@@ -137,6 +137,12 @@ export function OnboardingWizard() {
 
   const stepKey = stepOrder[currentStep];
 
+  const stepLabels: Record<string, string> = {
+    machine: "Your setup",
+    confidence: "Experience",
+    goal: "Your goal",
+  };
+
   return (
     <div className="grid gap-8">
       <div className="panel p-6">
@@ -152,7 +158,7 @@ export function OnboardingWizard() {
               className="badge"
               data-tone={index === currentStep ? "accent" : "default"}
             >
-              Step {index + 1}
+              {index + 1}. {stepLabels[step] ?? step}
             </span>
           ))}
         </div>

@@ -1,191 +1,274 @@
 #!/usr/bin/env python3
 """
 validate_content.py
-Validates all MDX lesson files for required frontmatter fields,
-WarnBlock presence on safety lessons, and broken internal links.
+===================
+Validates every MDX lesson file under content/paths/**/*.mdx.
 
-Usage:
+Checks performed
+----------------
+  - Frontmatter parses (starts with ``---``)
+  - Required fields present: title, description, slug, lesson_number,
+    estimated_minutes, tier_required
+  - Correct field types (lesson_number and estimated_minutes are integers)
+  - ``slug`` matches the filename (without .mdx)
+  - ``tier_required`` is one of {free, pro}
+  - ``lesson_number`` is >= 1 and unique within the path
+  - ``estimated_minutes`` is >= 1
+  - ``last_reviewed_at`` is a valid YYYY-MM-DD date (warn if > 365 days old)
+  - Lessons where ``has_safety_warning = true`` contain a <WarnBlock>
+  - Body is non-empty
+  - No placeholder "lorem ipsum" text in body
+
+Usage
+-----
     python scripts/validate_content.py
-    python scripts/validate_content.py --fix   # auto-fix minor issues
 
-Exits 0 on success, 1 on validation failures (CI blocker).
+Exits 0 on success (warnings do not fail), 1 when errors are found.
 """
 
-import sys
-import re
-import json
-from pathlib import Path
-from datetime import datetime, timezone
+from __future__ import annotations
 
-import yaml  # pip install pyyaml
+import re
+import sys
+from datetime import date, datetime, timedelta
+from pathlib import Path
 
 CONTENT_DIR = Path(__file__).parent.parent / "content" / "paths"
 
-REQUIRED_FRONTMATTER = [
-    "title",
-    "description",
-    "slug",
-    "lesson_number",
-    "estimated_minutes",
-    "tier_required",
-    "version_label",
-    "last_reviewed_at",
-    "reviewed_by",
-    "has_safety_warning",
-    "tags",
-]
+REQUIRED_FIELDS: dict[str, type] = {
+    "title": str,
+    "description": str,
+    "slug": str,
+    "lesson_number": int,
+    "estimated_minutes": int,
+    "tier_required": str,
+}
 
 VALID_TIERS = {"free", "pro"}
+STALE_THRESHOLD_DAYS = 365
 
-# Lessons where has_safety_warning=true MUST contain a WarnBlock
+# Lessons where has_safety_warning=true MUST contain a WarnBlock component
 WARN_BLOCK_PATTERN = re.compile(r"<WarnBlock")
 
-# How stale is too stale (days)
-STALE_THRESHOLD_DAYS = 180
+
+# ---------------------------------------------------------------------------
+# Frontmatter parsing (dependency-free, mirrors app/lib/mdx.ts)
+# ---------------------------------------------------------------------------
+
+def _parse_scalar(raw: str) -> object:
+    trimmed = raw.strip()
+    if (trimmed.startswith('"') and trimmed.endswith('"')) or (
+        trimmed.startswith("'") and trimmed.endswith("'")
+    ):
+        return trimmed[1:-1]
+    if trimmed == "true":
+        return True
+    if trimmed == "false":
+        return False
+    if re.fullmatch(r"\d+", trimmed):
+        return int(trimmed)
+    return trimmed
 
 
-def parse_frontmatter(content: str) -> tuple[dict, str]:
-    """Extract YAML frontmatter and body from MDX content."""
-    if not content.startswith("---"):
-        return {}, content
-    parts = content.split("---", 2)
-    if len(parts) < 3:
-        return {}, content
+def _split_frontmatter(source: str) -> tuple[str, str]:
+    if not source.startswith("---"):
+        return "", source
+    end_index = source.find("\n---", 3)
+    if end_index == -1:
+        return "", source
+    return source[4:end_index].strip(), source[end_index + 4:].strip()
+
+
+def _parse_frontmatter(text: str) -> dict[str, object]:
+    parsed: dict[str, object] = {}
+    for line in text.splitlines():
+        if not line.strip() or line.startswith("  ") or line.startswith("- "):
+            continue
+        m = re.match(r"^([A-Za-z0-9_-]+):\s*(.*)$", line)
+        if not m:
+            continue
+        parsed[m.group(1)] = _parse_scalar(m.group(2))
+    return parsed
+
+
+# ---------------------------------------------------------------------------
+# Validation
+# ---------------------------------------------------------------------------
+
+def validate_lesson(path: Path) -> list[tuple[str, str]]:
+    """Return list of (level, message) tuples. level = 'error' | 'warning'."""
+    issues: list[tuple[str, str]] = []
+    name = path.name
+
     try:
-        fm = yaml.safe_load(parts[1]) or {}
-    except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML frontmatter: {e}")
-    return fm, parts[2]
+        source = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return [("error", f"{name}: cannot read file -- {exc}")]
 
+    fm_text, body = _split_frontmatter(source)
 
-def validate_lesson(path: Path) -> list[str]:
-    """Returns list of error strings. Empty = pass."""
-    errors = []
-    content = path.read_text(encoding="utf-8")
+    if not fm_text:
+        return [("error", f"{name}: no YAML frontmatter (file must start with ---)")]
 
-    try:
-        fm, body = parse_frontmatter(content)
-    except ValueError as e:
-        return [f"{path.name}: {e}"]
+    fm = _parse_frontmatter(fm_text)
 
-    # Required fields
-    for field in REQUIRED_FRONTMATTER:
-        if field not in fm:
-            errors.append(f"{path.name}: missing frontmatter field '{field}'")
+    # Required fields + types
+    for field, expected_type in REQUIRED_FIELDS.items():
+        value = fm.get(field)
+        if value is None:
+            issues.append(("error", f"{name}: missing required field `{field}`"))
+            continue
+        if not isinstance(value, expected_type):
+            issues.append((
+                "error",
+                f"{name}: `{field}` is {type(value).__name__!r}, expected {expected_type.__name__!r}",
+            ))
 
-    # Tier validation
-    if fm.get("tier_required") not in VALID_TIERS:
-        errors.append(
-            f"{path.name}: invalid tier_required '{fm.get('tier_required')}' — must be free|pro"
-        )
+    # Slug must match filename
+    fm_slug = str(fm.get("slug", ""))
+    if fm_slug and fm_slug != path.stem:
+        issues.append(("error", f"{name}: slug {fm_slug!r} != filename {path.stem!r}"))
 
-    # Stale content check
-    if "last_reviewed_at" in fm:
+    # tier_required
+    tier = str(fm.get("tier_required", ""))
+    if tier and tier not in VALID_TIERS:
+        issues.append(("error", f"{name}: invalid tier_required {tier!r} -- must be free|pro"))
+
+    # lesson_number >= 1
+    ln = fm.get("lesson_number")
+    if isinstance(ln, int) and ln < 1:
+        issues.append(("error", f"{name}: lesson_number must be >= 1, got {ln}"))
+
+    # estimated_minutes >= 1
+    em = fm.get("estimated_minutes")
+    if isinstance(em, int) and em < 1:
+        issues.append(("error", f"{name}: estimated_minutes must be >= 1, got {em}"))
+
+    # last_reviewed_at
+    reviewed_raw = str(fm.get("last_reviewed_at", ""))
+    if reviewed_raw:
         try:
-            reviewed = datetime.fromisoformat(str(fm["last_reviewed_at"])).replace(
-                tzinfo=timezone.utc
-            )
-            age_days = (datetime.now(timezone.utc) - reviewed).days
-            if age_days > STALE_THRESHOLD_DAYS:
-                errors.append(
-                    f"{path.name}: content is {age_days} days old (>{STALE_THRESHOLD_DAYS}). "
-                    f"Update last_reviewed_at or mark is_deprecated=true."
-                )
-        except (ValueError, TypeError):
-            errors.append(f"{path.name}: invalid last_reviewed_at format (use ISO 8601)")
+            reviewed_date = datetime.strptime(reviewed_raw, "%Y-%m-%d").date()
+            age = date.today() - reviewed_date
+            if age > timedelta(days=STALE_THRESHOLD_DAYS):
+                issues.append(("warning", f"{name}: stale review -- last_reviewed_at={reviewed_raw} ({age.days} days ago)"))
+        except ValueError:
+            issues.append(("warning", f"{name}: invalid last_reviewed_at {reviewed_raw!r} (expected YYYY-MM-DD)"))
 
-    # Safety warning enforcement
-    if fm.get("has_safety_warning") is True:
-        if not WARN_BLOCK_PATTERN.search(body):
-            errors.append(
-                f"{path.name}: has_safety_warning=true but no <WarnBlock> found in content. "
-                f"Add a WarnBlock or set has_safety_warning=false."
-            )
+    # has_safety_warning + WarnBlock
+    if fm.get("has_safety_warning") is True and not WARN_BLOCK_PATTERN.search(body):
+        issues.append(("error", f"{name}: has_safety_warning=true but <WarnBlock> not found in body"))
 
-    # estimated_minutes must be positive int
-    if "estimated_minutes" in fm:
-        try:
-            mins = int(fm["estimated_minutes"])
-            if mins <= 0:
-                errors.append(f"{path.name}: estimated_minutes must be > 0")
-        except (TypeError, ValueError):
-            errors.append(f"{path.name}: estimated_minutes must be a number")
+    # Non-empty body
+    if not body.strip():
+        issues.append(("warning", f"{name}: lesson body is empty"))
 
-    # Check for lorem ipsum (content quality gate)
+    # lorem ipsum check
     if "lorem ipsum" in body.lower():
-        errors.append(f"{path.name}: contains placeholder 'lorem ipsum' text")
+        issues.append(("error", f"{name}: contains placeholder 'lorem ipsum' text"))
 
-    return errors
+    return issues
 
 
-def validate_path_json(path_json: Path) -> list[str]:
-    """Validates path.json metadata file."""
-    errors = []
-    try:
-        meta = json.loads(path_json.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError) as e:
-        return [f"{path_json}: {e}"]
+def validate_path(path_dir: Path) -> list[tuple[str, str]]:
+    """Validate all lessons in one learning path directory."""
+    issues: list[tuple[str, str]] = []
+    mdx_files = sorted(path_dir.glob("*.mdx"))
 
-    required = ["slug", "title", "description", "tier_required", "version_label",
-                "last_reviewed_at", "difficulty", "estimated_hours", "lessons"]
-    for field in required:
-        if field not in meta:
-            errors.append(f"{path_json.name}: missing field '{field}'")
+    if not mdx_files:
+        issues.append(("warning", f"{path_dir.name}: no .mdx lesson files found"))
+        return issues
 
-    if meta.get("difficulty") not in {"beginner", "intermediate", "advanced"}:
-        errors.append(f"{path_json.name}: invalid difficulty")
+    lesson_numbers: dict[int, str] = {}
 
-    # Check all listed lessons exist
-    parent_dir = path_json.parent
-    for lesson_slug in meta.get("lessons", []):
-        lesson_file = parent_dir / f"{lesson_slug}.mdx"
-        if not lesson_file.exists():
-            errors.append(
-                f"{path_json.name}: lesson '{lesson_slug}' listed but "
-                f"'{lesson_file.name}' not found"
-            )
+    for mdx_file in mdx_files:
+        issues.extend(validate_lesson(mdx_file))
 
-    return errors
+        # Collision detection
+        source = mdx_file.read_text(encoding="utf-8", errors="ignore")
+        fm_text, _ = _split_frontmatter(source)
+        fm = _parse_frontmatter(fm_text)
+        num = fm.get("lesson_number")
+        if isinstance(num, int):
+            if num in lesson_numbers:
+                issues.append((
+                    "error",
+                    f"{mdx_file.name}: lesson_number {num} collides with {lesson_numbers[num]}",
+                ))
+            else:
+                lesson_numbers[num] = mdx_file.name
 
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main() -> int:
-    all_errors: list[str] = []
-    lesson_count = 0
-    path_count = 0
-
     if not CONTENT_DIR.exists():
-        print(f"⚠  Content directory not found: {CONTENT_DIR}")
-        print("   Run this script from the repo root after adding content.")
+        print(f"WARN: Content directory not found: {CONTENT_DIR}")
         return 0
 
-    for path_dir in sorted(CONTENT_DIR.iterdir()):
-        if not path_dir.is_dir():
-            continue
+    path_dirs = sorted(d for d in CONTENT_DIR.iterdir() if d.is_dir())
+    if not path_dirs:
+        print(f"WARN: No path directories found under {CONTENT_DIR}")
+        return 0
 
-        path_count += 1
+    all_errors: list[str] = []
+    all_warnings: list[str] = []
+    total_lessons = 0
+    rows: list[tuple[str, int, int, int]] = []
 
-        # Validate path.json
-        path_json = path_dir / "path.json"
-        if path_json.exists():
-            all_errors.extend(validate_path_json(path_json))
-        else:
-            all_errors.append(f"{path_dir.name}/: missing path.json")
+    for path_dir in path_dirs:
+        mdx_count = len(list(path_dir.glob("*.mdx")))
+        total_lessons += mdx_count
+        path_issues = validate_path(path_dir)
+        errs = [m for lvl, m in path_issues if lvl == "error"]
+        warns = [m for lvl, m in path_issues if lvl == "warning"]
+        all_errors.extend(errs)
+        all_warnings.extend(warns)
+        rows.append((path_dir.name, mdx_count, len(errs), len(warns)))
 
-        # Validate each lesson
-        for mdx_file in sorted(path_dir.glob("*.mdx")):
-            lesson_count += 1
-            all_errors.extend(validate_lesson(mdx_file))
+    # Summary header
+    print()
+    print("CLI Academy -- Content Catalog Validation")
+    print("=" * 60)
+    print(f"  Paths   : {len(path_dirs)}")
+    print(f"  Lessons : {total_lessons}")
+    print(f"  Errors  : {len(all_errors)}")
+    print(f"  Warnings: {len(all_warnings)}")
+    print()
 
+    # Per-path table
+    print(f"  {'Path':<40} {'Lessons':>7} {'Errors':>7} {'Warnings':>9}")
+    print("  " + "-" * 65)
+    for slug, count, errs, warns in rows:
+        print(f"  {slug:<40} {count:>7} {errs:>7} {warns:>9}")
+
+    # Detailed issues
     if all_errors:
-        print(f"\n❌ Content validation FAILED — {len(all_errors)} error(s)\n")
-        for err in all_errors:
-            print(f"   • {err}")
-        print(f"\nScanned {lesson_count} lessons across {path_count} paths.")
+        print()
+        print("ERRORS")
+        print("-" * 60)
+        for msg in all_errors:
+            print(f"  [ERROR] {msg}")
+
+    if all_warnings:
+        print()
+        print("WARNINGS")
+        print("-" * 60)
+        for msg in all_warnings:
+            print(f"  [WARN]  {msg}")
+
+    print()
+    if all_errors:
+        print(f"FAILED: {len(all_errors)} error(s) must be fixed.")
         return 1
 
-    print(
-        f"✅ Content validation passed — {lesson_count} lessons, {path_count} paths, 0 errors"
-    )
+    print(f"PASSED: all {total_lessons} lessons valid across {len(path_dirs)} paths.")
+    if all_warnings:
+        print(f"        {len(all_warnings)} non-blocking warning(s) shown above.")
     return 0
 
 

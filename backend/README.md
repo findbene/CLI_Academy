@@ -47,6 +47,11 @@ The API is now available at `http://localhost:8000`.
 | `ANTHROPIC_MODEL` | No | `claude-sonnet-4-6` | Anthropic model to use for the tutor |
 | `ALLOWED_ORIGINS` | No | `http://localhost:3000` | Comma-separated list of allowed CORS origins |
 | `PORT` | No | `8000` | Port for the uvicorn server (used in Docker / PaaS deployments) |
+| `SUPABASE_URL` | Yes (prod) | — | Supabase project URL — enables server-side daily limit enforcement |
+| `SUPABASE_SERVICE_KEY` | Yes (prod) | — | Supabase service-role key — bypasses RLS for `tutor_usage` writes |
+| `SUPABASE_JWT_SECRET` | Yes | — | JWT secret from Supabase dashboard → Settings → API |
+
+> **Daily limits**: When `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set, the backend enforces per-user daily tutor message limits (free: 10 messages/day, pro: 100 messages/day) by reading and upserting the `tutor_usage` table. If either variable is absent the limit check is skipped gracefully.
 
 ## API endpoints
 

@@ -1,0 +1,103 @@
+---
+title: "What Is the OpenClaw Gateway?"
+description: "Understand what the OpenClaw Gateway is, how it differs from chatbots and hosted AI, and why running it on your own hardware changes what's possible."
+slug: "openclaw-gateway-overview"
+lesson_number: 1
+estimated_minutes: 12
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "introduction", "gateway", "autonomous-agents"]
+---
+
+## What You'll Learn
+
+By the end of this lesson you will understand what the OpenClaw Gateway is, how it compares to a chatbot or hosted AI assistant, what "autonomous" actually means in this context, and which hardware you can run it on.
+
+## Why This Matters
+
+Most AI tools require you to open an app, type a message, and wait for a response. The OpenClaw Gateway inverts that relationship. You set it up once, give it goals and skills, and it works in the background — proactively checking tasks, responding to messages, executing jobs — without you doing anything.
+
+Understanding this architecture before you install anything saves hours of confusion later.
+
+## Core Concepts
+
+### The Gateway, Not "A Bot"
+
+OpenClaw is not a chatbot. The term "Gateway" is intentional. Think of it as a self-hosted AI dispatcher that:
+
+1. **Lives on your machine** — not on someone else's server
+2. **Connects to messaging channels** — WhatsApp, Telegram, Slack, SMS
+3. **Executes real tasks** — reads files, calls APIs, writes to databases, sends emails
+4. **Runs on a heartbeat loop** — wakes itself up every N minutes and checks what needs doing
+
+The phrase "Digital Employee" is commonly used in the OpenClaw community because that's the closest mental model. You hire it once, train it with skills, and it handles recurring work.
+
+### How OpenClaw (formerly Clawdbot / Moltbot) Evolved
+
+OpenClaw started as two separate projects — **Clawdbot** (a WhatsApp automation framework) and **Moltbot** (a Telegram-native task runner). In early 2025 the maintainers merged the codebases under the OpenClaw name, unified the plugin architecture, and introduced the **ClawHub** skills marketplace. It is now the most widely deployed self-hosted AI agent framework for personal and small-team use.
+
+Key landmarks:
+- **v1.0 (Clawdbot era):** WhatsApp QR-code pairing, basic prompt-response
+- **v2.0 (post-merge):** Telegram integration, HEARTBEAT loop introduced
+- **v3.0 (current):** Multi-channel, ClawHub skills, local inference via Ollama/LM Studio
+
+### The Architecture in Three Layers
+
+```
+┌─────────────────────────────────────────────────┐
+│  Messaging Channels                              │
+│  WhatsApp · Telegram · Slack · SMS              │
+└────────────────────┬────────────────────────────┘
+                     │ messages / commands
+┌────────────────────▼────────────────────────────┐
+│  OpenClaw Gateway (your hardware)               │
+│  ┌──────────────┐  ┌──────────────┐             │
+│  │ Skill Engine │  │ Heartbeat    │             │
+│  │ (.skill.md)  │  │ Loop         │             │
+│  └──────────────┘  └──────────────┘             │
+│  ┌──────────────────────────────┐               │
+│  │ Memory & .learnings/         │               │
+│  └──────────────────────────────┘               │
+└────────────────────┬────────────────────────────┘
+                     │ API calls
+┌────────────────────▼────────────────────────────┐
+│  Model Back-End (your choice)                   │
+│  Anthropic · OpenAI · Google · Ollama (local)   │
+└─────────────────────────────────────────────────┘
+```
+
+The critical thing to notice: **the model back-end is swappable**. You can run OpenClaw against Anthropic's Claude, OpenAI's GPT-4o, Google Gemini, or a fully local model via Ollama — with zero data leaving your hardware in that last case.
+
+### What "Autonomous" Actually Means
+
+Autonomy in OpenClaw works on two axes:
+
+| Axis | What it controls |
+|------|-----------------|
+| **Reactive** | Responds when you message it — like a smart assistant always on call |
+| **Proactive** | Acts on its own via the Heartbeat loop — no message required |
+
+A well-configured OpenClaw agent does both. You can message it "check my Shopify orders" and it responds instantly (reactive). You can also configure it to wake up at 8am every day, check your orders, flag anything needing attention, and send you a morning briefing to WhatsApp — without you asking (proactive).
+
+### Supported Platforms
+
+| Platform | Effort | Best For |
+|----------|--------|----------|
+| Windows (WSL2 + Docker) | Medium | Developers with existing WSL setup |
+| macOS | Low | Most common path |
+| VPS (Ubuntu) | Medium | 24/7 always-on without leaving a computer running |
+| Raspberry Pi 4/5 | Medium | Low-cost always-on home server |
+| Apple Mac Mini | Low | Silent, energy-efficient home server |
+
+The following lessons cover each platform in detail.
+
+## What's Next
+
+The next lesson walks through the Windows installation using WSL2 and Docker — the recommended Windows path because it gives you a clean Linux environment, avoids Windows-specific path issues, and lets you manage the Gateway as a containerized service.
+
+If you're on macOS, skip directly to Lesson 3. For VPS or Raspberry Pi, skip to Lessons 4 or 5.

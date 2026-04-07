@@ -7,7 +7,7 @@ import {
   MessageCircle,
   Sparkles,
 } from "lucide-react";
-import { getCatalogPaths, type CatalogPath } from "@/lib/catalog";
+import { getPublishedCatalogPaths, type CatalogPath } from "@/lib/catalog";
 import { getServerViewer } from "@/lib/viewer";
 
 function getRecommendedPaths(input: {
@@ -58,7 +58,7 @@ function getRecommendedPaths(input: {
 }
 
 export default async function DashboardPage() {
-  const [viewer, catalogPaths] = await Promise.all([getServerViewer(), getCatalogPaths()]);
+  const [viewer, catalogPaths] = await Promise.all([getServerViewer(), getPublishedCatalogPaths()]);
 
   if (!viewer.supabaseConfigured || !viewer.user || !viewer.profile || !viewer.supabaseContext) {
     const recommended = catalogPaths.filter((path) => path.status === "available");
@@ -75,31 +75,31 @@ export default async function DashboardPage() {
           </section>
 
           <section className="grid gap-5 md:grid-cols-3">
-            <article className="panel group p-5 transition hover:shadow-md">
-              <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
-                <Compass className="size-5 text-[var(--color-accent-primary)]" />
-              </div>
-              <div className="text-sm font-medium text-[var(--color-fg-muted)]">Get started</div>
-              <div className="mt-2 text-2xl font-semibold">Pick a path</div>
-              <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Browse the catalog and enroll in a learning path that matches your goals.</p>
-            </article>
-            <article className="panel group p-5 transition hover:shadow-md">
-              <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
-                <BookOpen className="size-5 text-[var(--color-accent-primary)]" />
-              </div>
-              <div className="text-sm font-medium text-[var(--color-fg-muted)]">Recommended</div>
-              <div className="mt-2 text-2xl font-semibold">Start with foundations</div>
-              <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Claude Code for Beginners is the fastest path to your first working session.</p>
-            </article>
-            <article className="panel group p-5 transition hover:shadow-md">
-              <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
-                <MessageCircle className="size-5 text-[var(--color-accent-primary)]" />
-              </div>
-              <div className="text-sm font-medium text-[var(--color-fg-muted)]">AI Tutor</div>
-              <div className="mt-2 text-2xl font-semibold">10 free / 100 pro</div>
-              <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Ask the floating tutor anything about your current lesson, OS, or setup.</p>
-            </article>
-          </section>
+          <article className="panel panel-lift group p-5">
+            <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
+              <Compass className="size-5 text-[var(--color-accent-primary)]" />
+            </div>
+            <div className="text-sm font-medium text-[var(--color-fg-muted)]">Get started</div>
+            <div className="mt-2 text-2xl font-semibold">Pick a path</div>
+            <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Browse the catalog and enroll in a learning path that matches your goals.</p>
+          </article>
+          <article className="panel panel-lift group p-5">
+            <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
+              <BookOpen className="size-5 text-[var(--color-accent-primary)]" />
+            </div>
+            <div className="text-sm font-medium text-[var(--color-fg-muted)]">Recommended</div>
+            <div className="mt-2 text-2xl font-semibold">Start with foundations</div>
+            <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Claude Code for Beginners is the fastest path to your first working session.</p>
+          </article>
+          <article className="panel panel-lift group p-5">
+            <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
+              <MessageCircle className="size-5 text-[var(--color-accent-primary)]" />
+            </div>
+            <div className="text-sm font-medium text-[var(--color-fg-muted)]">AI Tutor</div>
+            <div className="mt-2 text-2xl font-semibold">10 free / 100 pro</div>
+            <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Ask the floating tutor anything about your current lesson, OS, or setup.</p>
+          </article>
+        </section>
 
           <section className="grid gap-4">
             <div className="flex items-center justify-between gap-3">
@@ -199,7 +199,7 @@ export default async function DashboardPage() {
         </section>
 
         <section className="grid gap-5 md:grid-cols-3">
-          <article className="panel group p-5 transition hover:shadow-md">
+          <article className="panel panel-lift group p-5">
             <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
               <Sparkles className="size-5 text-[var(--color-accent-primary)]" />
             </div>
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
             <div className="mt-2 text-2xl font-semibold capitalize">{currentFocus}</div>
             <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Environment: {environment} · Tier: {viewer.profile.tier}</p>
           </article>
-          <article className="panel group p-5 transition hover:shadow-md">
+          <article className="panel panel-lift group p-5">
             <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
               <CheckCircle2 className="size-5 text-[var(--color-accent-primary)]" />
             </div>
@@ -215,7 +215,7 @@ export default async function DashboardPage() {
             <div className="mt-2 text-4xl font-bold tracking-tight">{completedLessonsCount ?? 0}</div>
             <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Tracked across all enrolled paths.</p>
           </article>
-          <article className="panel group p-5 transition hover:shadow-md">
+          <article className="panel panel-lift group p-5">
             <div className="mb-3 flex items-center gap-3">
               <div className="relative size-12">
                 <svg viewBox="0 0 36 36" className="size-12 -rotate-90">

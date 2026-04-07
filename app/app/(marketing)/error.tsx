@@ -1,12 +1,8 @@
 "use client";
 
-export default function MarketingError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+import Link from "next/link";
+
+export default function MarketingError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div className="page-shell flex min-h-[60vh] items-center justify-center">
       <div className="panel max-w-lg p-8 text-center">
@@ -21,9 +17,9 @@ export default function MarketingError({
           <button onClick={reset} className="button-primary">
             Try again
           </button>
-          <a href="/" className="button-secondary">
+          <Link href="/" className="button-secondary">
             Go home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

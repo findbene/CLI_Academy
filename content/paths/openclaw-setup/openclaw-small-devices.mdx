@@ -1,0 +1,200 @@
+---
+title: "OpenClaw on Raspberry Pi and Small Devices"
+description: "Run OpenClaw on a Raspberry Pi 4 or 5, Apple Mac Mini, or other ARM/small-form-factor hardware. ARM optimization, NVMe SSD tips, and headless configuration."
+slug: "openclaw-small-devices"
+lesson_number: 5
+estimated_minutes: 20
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+  raspberry_pi_os: "Bookworm (64-bit)"
+has_safety_warning: false
+tags: ["openclaw", "raspberry-pi", "arm", "mac-mini", "self-hosting", "local"]
+---
+
+## What You'll See
+
+OpenClaw running on a Raspberry Pi 5 (or Pi 4) as a silent, always-on home agent — or on an Apple Mac Mini — using dramatically less power than a full desktop while providing the same persistent autonomous behaviour.
+
+## Why This Matters
+
+A Raspberry Pi 5 consumes around 5–12 W under load. A Mac Mini (M2) uses roughly 7 W at idle. Compare that to a mid-range laptop at 30–60 W. For a 24/7 always-on OpenClaw Gateway these small devices are the home-server sweet spot: they're silent, cheap to run, and fast enough for API-backed model routing (and increasingly viable for local inference with Ollama).
+
+## Core Concepts
+
+### Choosing Your Device
+
+| Device | CPU | RAM | Power | Best For |
+|--------|-----|-----|-------|----------|
+| Raspberry Pi 5 | ARM Cortex-A76, 4-core | 4 or 8 GB | 5–12 W | Budget home agent server |
+| Raspberry Pi 4 | ARM Cortex-A72, 4-core | 4 or 8 GB | 4–8 W | OpenClaw + cloud routing only |
+| Apple Mac Mini (M2+) | Apple Silicon | 8–24 GB | 7–25 W | Local Ollama inference, silent, fast |
+| ODROID N2+ | ARM Cortex-A73+A53 | 4 GB | 5–10 W | Alternative to Pi |
+
+**Recommendation:** Pi 5 with 8 GB RAM if you want local inference. Pi 4 with 4 GB is fine for cloud-routed models only. Mac Mini if budget allows — it's the easiest of all three.
+
+---
+
+## Raspberry Pi Setup (5 or 4)
+
+### Step 1 — Flash the OS
+
+Use [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash:
+- **OS:** Raspberry Pi OS Bookworm **64-bit** (not 32-bit — OpenClaw requires 64-bit ARM)
+- **Storage:** NVMe SSD (preferred) or high-endurance microSD
+
+During flashing, use the gear icon to:
+- Set hostname: `openclaw-pi`
+- Enable SSH
+- Set username and password
+- Configure Wi-Fi (or use Ethernet — preferred for stability)
+
+### Step 2 — Boot and Connect
+
+```bash
+# From your laptop
+ssh pi@openclaw-pi.local
+# or
+ssh pi@YOUR_PI_IP
+```
+
+### Step 3 — Update and Install Docker
+
+```bash
+sudo apt update && sudo apt upgrade -y
+
+# Docker's official install script (works on ARM)
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+```
+
+Log out and back in, then verify:
+```bash
+docker --version
+```
+
+### Step 4 — NVMe SSD (Pi 5 Recommended)
+
+The Pi 5 supports NVMe SSDs via the M.2 HAT. Running OpenClaw with memory/skills on an NVMe SSD vs. a microSD card is significantly faster for the `.learnings/` read/write operations.
+
+If you're booting from a microSD but want to store OpenClaw data on NVMe:
+
+```bash
+# Mount your NVMe (adjust /dev/nvme0n1 to match your device)
+sudo mkfs.ext4 /dev/nvme0n1p1
+sudo mkdir -p /mnt/nvme
+sudo mount /dev/nvme0n1p1 /mnt/nvme
+
+# Add to /etc/fstab for auto-mount on boot
+echo "/dev/nvme0n1p1 /mnt/nvme ext4 defaults 0 0" | sudo tee -a /etc/fstab
+```
+
+Clone OpenClaw to the NVMe:
+```bash
+cd /mnt/nvme
+git clone https://github.com/openclaw-project/openclaw.git
+cd openclaw
+```
+
+### Step 5 — Configure and Start
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENCLAW_PORT=3301
+OPENCLAW_WEB_UI=true
+OPENCLAW_SECRET=64_char_random_string
+OWNER_DISPLAY_NAME=YourName
+OWNER_TIMEZONE=Europe/London
+
+# ARM-specific: disable features that stress RAM
+OPENCLAW_CACHE_SIZE=64mb
+```
+
+Start:
+```bash
+docker compose up -d
+docker compose logs -f openclaw
+```
+
+### Pi 4 vs Pi 5 Performance Notes
+
+| Task | Pi 4 (4GB) | Pi 5 (8GB) |
+|------|-----------|-----------|
+| Cloud model routing | Fast | Fast |
+| Ollama (llama3.2:3b) | Very slow | Usable (~2 tok/s) |
+| Ollama (llama3.2:1b) | Slow but works | ~5 tok/s |
+| .learnings/ read/write | OK on SSD | Fast on NVMe |
+| 5 concurrent WhatsApp messages | Fine | Fine |
+
+For **cloud models only** (Anthropic, OpenAI), a Pi 4 is entirely sufficient. Local inference on a Pi is a nice experiment but not practical for production use — get a Mac Mini or VPS for that.
+
+---
+
+## Apple Mac Mini Setup
+
+The Mac Mini running OpenClaw uses the same setup as Lesson 3 (macOS), with these additional considerations:
+
+### Preventing Sleep
+
+```bash
+# Prevent display sleep, disk sleep, and system sleep
+sudo pmset -a sleep 0
+sudo pmset -a disksleep 0
+sudo pmset -a displaysleep 1   # display can sleep, system cannot
+```
+
+Or via System Settings → Battery → Options → Prevent automatic sleeping when the display is off.
+
+### Remote Management
+
+```bash
+# Enable SSH
+sudo systemsetup -setremotelogin on
+
+# From another machine
+ssh yourname@mac-mini.local
+```
+
+For full GUI remote access, enable Screen Sharing in System Settings → General → Sharing.
+
+### Local Inference on Mac Mini (Apple Silicon)
+
+The Mac Mini M2 and later can run Ollama local models at practical speeds — 15–30 tokens/second for 7B models on M2, faster on M3/M4:
+
+```bash
+# Install Ollama
+brew install ollama
+
+# Pull a model
+ollama pull llama3.2
+
+# Ollama runs as an API server on localhost:11434
+# Point OpenClaw to it (covered in Lesson 6)
+```
+
+---
+
+## UFW Firewall for Home Devices
+
+```bash
+sudo apt install ufw -y
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow from 192.168.0.0/24 to any port 3301  # local network only
+sudo ufw enable
+```
+
+This allows Web UI access only from devices on your home network.
+
+## What's Next
+
+Hardware setup complete. Lesson 6 covers Model Routing — connecting your API keys and optionally setting up Ollama for fully local inference.

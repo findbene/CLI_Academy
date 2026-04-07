@@ -1,6 +1,7 @@
 import { LessonContent } from "@/components/lesson/LessonContent";
 import { LessonPlayer } from "@/components/lesson/LessonPlayer";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
 import { getRecommendedAssetsForLesson, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
@@ -10,6 +11,27 @@ import { getServerViewer } from "@/lib/viewer";
 
 interface LessonPageProps {
   params: Promise<{ pathSlug: string; lessonSlug: string }>;
+}
+
+export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
+  const { pathSlug, lessonSlug } = await params;
+  const path = await getCatalogPathBySlug(pathSlug);
+  const lessons = await getLessonsForPath(pathSlug);
+  const lesson = lessons.find((item) => item.slug === lessonSlug);
+
+  if (!path || !lesson) {
+    return { title: "Lesson not found | CLI Academy" };
+  }
+
+  return {
+    title: `${lesson.title} — ${path.title} | CLI Academy`,
+    description: lesson.description,
+    openGraph: {
+      title: `${lesson.title} — ${path.title} | CLI Academy`,
+      description: lesson.description,
+      type: "article",
+    },
+  };
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {

@@ -1,5 +1,6 @@
 import { AssetCard } from "@/components/assets/AssetCard";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
 import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
@@ -8,6 +9,25 @@ import { getServerViewer } from "@/lib/viewer";
 
 interface LearnPathPageProps {
   params: Promise<{ pathSlug: string }>;
+}
+
+export async function generateMetadata({ params }: LearnPathPageProps): Promise<Metadata> {
+  const { pathSlug } = await params;
+  const path = await getCatalogPathBySlug(pathSlug);
+
+  if (!path) {
+    return { title: "Path not found | CLI Academy" };
+  }
+
+  return {
+    title: `Learn: ${path.title} | CLI Academy`,
+    description: path.summary,
+    openGraph: {
+      title: `Learn: ${path.title} | CLI Academy`,
+      description: path.summary,
+      type: "website",
+    },
+  };
 }
 
 export default async function LearnPathPage({ params }: LearnPathPageProps) {

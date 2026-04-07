@@ -46,7 +46,7 @@ export function CheckoutButton({
       <button type="button" className={className} onClick={handleCheckout} disabled={loading}>
         {loading ? "Opening..." : (label ?? (billingInterval === "annual" ? "Choose annual" : "Choose Pro"))}
       </button>
-      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      {error && <p className="text-sm text-[var(--color-status-danger)] mt-2">{error}</p>}
     </div>
   );
 }

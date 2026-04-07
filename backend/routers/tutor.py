@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from auth import verify_supabase_jwt
+from daily_limit import enforce_daily_tutor_limit
 from rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
@@ -185,6 +186,7 @@ async def tutor_stream(
     request: TutorStreamRequest,
     user_id: str = Depends(verify_supabase_jwt),
     _rl: None = Depends(rate_limit(requests_per_window=20, window_seconds=60)),
+    _dl: None = Depends(enforce_daily_tutor_limit),
 ) -> StreamingResponse:
     """
     Stream a tutor response as Server-Sent Events.

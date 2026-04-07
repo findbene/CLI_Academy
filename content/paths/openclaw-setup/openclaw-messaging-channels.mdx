@@ -1,0 +1,213 @@
+---
+title: "Connecting WhatsApp and Telegram"
+description: "Link your OpenClaw Gateway to WhatsApp via QR code pairing and Telegram via BotFather. Includes ClawHub skill installation and end-to-end testing."
+slug: "openclaw-messaging-channels"
+lesson_number: 7
+estimated_minutes: 15
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "whatsapp", "telegram", "messaging", "clawhub", "channels"]
+---
+
+## What You'll See
+
+Your OpenClaw Gateway connected to WhatsApp and/or Telegram. You'll send your first message to the agent and receive a response. You'll also install your first ClawHub skill — a pre-built capability package — and verify end-to-end automation.
+
+## Why This Matters
+
+The messaging channel is the human interface to your autonomous agent. Once connected, you interact with OpenClaw exactly like you would a contact in WhatsApp or Telegram — no app to open, no URL to remember. The agent is just there, ready.
+
+For proactive tasks (heartbeat-driven automations), the messaging channel is also how the agent pushes alerts, reports, and decisions back to you.
+
+## Core Concepts
+
+### Channel Architecture
+
+OpenClaw uses official-compatible bridge libraries to attach to messaging platforms. The session lives inside the Gateway — not on your phone or in the cloud:
+
+```
+Your Phone                  OpenClaw Gateway
+WhatsApp App ─── QR Sync ──► WhatsApp Session
+Telegram App ─── Bot Token ─► Telegram Bot
+                              │
+                              ▼
+                         Skill Engine
+                         Heartbeat Loop
+```
+
+Once connected, the session persists. You don't need your phone nearby for the Gateway to process messages.
+
+---
+
+## WhatsApp Setup
+
+### Step 1 — Navigate to Channels in the Web UI
+
+Open `http://localhost:3301` → Channels → Add Channel → WhatsApp
+
+### Step 2 — Scan the QR Code
+
+The Web UI displays a QR code (refreshes every 30 seconds).
+
+On your phone:
+1. Open WhatsApp
+2. Tap Settings (iPhone) or the three-dot menu (Android)
+3. Select **Linked Devices**
+4. Tap **Link a Device**
+5. Point your camera at the QR code in the Web UI
+
+### Step 3 — Verify Connection
+
+Once scanned, the Web UI should show:
+```
+WhatsApp — Connected
+Session: active
+Linked number: +44 7xxx xxxxxx
+```
+
+### Step 4 — Send a Test Message
+
+From your WhatsApp, message yourself (the number linked to OpenClaw) or message any number that you've configured as a trusted contact.
+
+Try:
+```
+/ping
+```
+
+OpenClaw responds:
+```
+Pong! Gateway v3.x.x online. Heartbeat: active.
+```
+
+### WhatsApp Notes
+
+- The linked device session is **independent** from your phone — the Gateway continues receiving and processing messages even when your phone is off or out of battery
+- WhatsApp allows a maximum of 4 linked devices per account — the Gateway counts as one
+- If you restart the Gateway container, the session auto-resumes without re-scanning
+- **Group messages**: By default OpenClaw only responds in DMs. Enable group response in Settings → Channels → WhatsApp → Allow Group Triggers
+
+---
+
+## Telegram Setup
+
+Telegram's bot system is different from WhatsApp's linked device approach. You create a bot identity via @BotFather and get a token OpenClaw uses to operate as that bot.
+
+### Step 1 — Create a Telegram Bot
+
+1. Open Telegram and search for **@BotFather**
+2. Send `/newbot`
+3. Choose a display name (e.g. "My OpenClaw Agent")
+4. Choose a username ending in `bot` (e.g. `myopenclaw_bot`)
+5. BotFather replies with your **token**: `1234567890:ABCdef...`
+
+Copy this token.
+
+### Step 2 — Add the Token to OpenClaw
+
+In the Web UI: Channels → Add Channel → Telegram → paste your bot token → Save
+
+Or in `.env`:
+```env
+TELEGRAM_BOT_TOKEN=1234567890:ABCdef...
+```
+
+Restart the Gateway if you added it via `.env`:
+```bash
+docker compose restart openclaw
+```
+
+### Step 3 — Start the Bot
+
+In Telegram, find your bot by its username and send `/start`. The Gateway responds with a greeting.
+
+Test:
+```
+/ping
+```
+
+Response:
+```
+Pong! Gateway v3.x.x online. OpenClaw is live on this channel.
+```
+
+### Telegram Notes
+
+- Bots **cannot** initiate conversations — they can only respond to users who have started a chat with them. For outbound alerts (heartbeat reports), the agent needs to have the chat ID of your conversation with the bot.
+- OpenClaw auto-captures your chat ID when you first message the bot and stores it for heartbeat use
+- To allow the bot to send you proactive messages, confirm "Allow Heartbeat Outbound" in Channels → Telegram settings
+
+---
+
+## Installing Your First ClawHub Skill
+
+**ClawHub** is the official OpenClaw skill marketplace — pre-built `SKILL.md` packages you install in one click.
+
+### Step 1 — Open ClawHub
+
+Web UI → Skills → ClawHub
+
+### Step 2 — Install a Skill
+
+Browse to **Daily Briefing** (one of the most popular starter skills). Click Install.
+
+The Daily Briefing skill:
+- Runs at 8:00am (configurable)
+- Checks your calendar, pending tasks, weather
+- Sends a summary message to your WhatsApp or Telegram
+
+### Step 3 — Configure the Skill
+
+In Skills → My Skills → Daily Briefing → Configure:
+
+```yaml
+trigger:
+  type: schedule
+  cron: "0 8 * * *"   # 8am every day
+
+channels:
+  - whatsapp           # or telegram
+
+output_format: "concise"
+```
+
+Save. The skill now runs automatically on schedule.
+
+---
+
+## End-to-End Flow Verification
+
+You can confirm the full stack is working by triggering the heartbeat manually:
+
+```bash
+# From inside the Gateway container
+docker exec -it openclaw openclaw heartbeat --run-now
+```
+
+Or from the Web UI: Dashboard → Heartbeat → Run Now
+
+Within 30 seconds you should receive a message on WhatsApp or Telegram from your agent. That's the full pipeline: model routing → skill execution → messaging channel delivery.
+
+---
+
+## Adding Multiple Channels
+
+You can add both WhatsApp and Telegram simultaneously. The agent handles both independently:
+
+- Skills can target specific channels (`channels: ["whatsapp"]`) or all channels (`channels: ["*"]`)
+- Incoming messages from either channel route through the same skill engine
+- The agent tracks which channel a conversation started on and continues replying on it
+
+---
+
+## What's Next
+
+Your OpenClaw Gateway is fully operational. You've completed the setup path.
+
+**Next steps to explore:**
+- **OpenClaw Mastery** — Build your own SKILL.md files, understand the HEARTBEAT loop deeply, deploy the 10 production use cases, and learn the security guardrails that prevent the most common agent incidents
+- **OpenClaw Troubleshooting** — Reference lesson for diagnosing connection issues, API errors, and skill failures

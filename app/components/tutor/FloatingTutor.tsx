@@ -111,7 +111,7 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
     <>
       <button
         type="button"
-        className="fixed right-5 bottom-5 z-40 rounded-full bg-[var(--color-accent-primary)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-2)]"
+        className="fixed right-4 bottom-4 z-40 rounded-full bg-[var(--color-accent-primary)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-2)] md:right-5 md:bottom-5"
         onClick={() => setOpen((current) => !current)}
         aria-label={open ? "Close AI tutor" : "Open AI tutor"}
       >
@@ -120,7 +120,7 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
 
       {open ? (
         <aside
-          className="fixed right-5 bottom-20 z-40 flex h-[34rem] w-[min(100vw-2.5rem,24rem)] flex-col overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-3)]"
+          className="fixed right-0 bottom-16 z-40 flex h-[min(34rem,calc(100dvh-5rem))] w-full flex-col overflow-hidden border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-3)] md:right-5 md:bottom-20 md:w-[24rem] md:rounded-[var(--radius-2xl)] md:border"
           role="dialog"
           aria-label="AI Tutor"
           onKeyDown={(e) => {
@@ -147,7 +147,13 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
                       : "ml-auto bg-[var(--color-accent-primary)] text-white"
                   }`}
                 >
-                  {message.content || (loading && message.role === "assistant" ? "..." : "")}
+                  {message.content || (loading && message.role === "assistant" ? (
+                    <span className="inline-flex items-center gap-1">
+                      <span className="size-1.5 animate-bounce rounded-full bg-[var(--color-fg-muted)] [animation-delay:0ms]" />
+                      <span className="size-1.5 animate-bounce rounded-full bg-[var(--color-fg-muted)] [animation-delay:150ms]" />
+                      <span className="size-1.5 animate-bounce rounded-full bg-[var(--color-fg-muted)] [animation-delay:300ms]" />
+                    </span>
+                  ) : "")}
                 </div>
               ))}
             </div>

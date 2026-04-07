@@ -22,7 +22,7 @@ By the end of this lesson, you will understand how TLS protects your agent's API
 
 Every call Claude Code makes to the Anthropic API includes your API key in the request headers. TLS (the protocol behind HTTPS) encrypts that traffic so no one between your VPS and Anthropic's servers can read it. This protection is automatic for API calls, but if you are serving anything from your VPS over the web, you need to configure TLS yourself.
 
-> **⚠️ Safety Warning:** Never serve agent output, logs, or dashboards over plain HTTP. Unencrypted connections expose data to anyone on the network path. Always use HTTPS for web-accessible endpoints.
+<WarnBlock title="Safety Warning">Never serve agent output, logs, or dashboards over plain HTTP. Unencrypted connections expose data to anyone on the network path. Always use HTTPS for web-accessible endpoints.</WarnBlock>
 
 ## Core Concepts
 

@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PATH_SECTIONS, getCatalogPathsBySection, getPathCta } from "@/lib/catalog";
+
+export const metadata: Metadata = {
+  title: "Learning Paths",
+  description:
+    "Browse every CLI Academy learning path — from Claude Code setup to MCP mastery and role-based tracks. Honest status labels, tier access, and live lesson counts.",
+};
+
 import { getServerViewer } from "@/lib/viewer";
 
 export default async function PathsCatalogPage() {
@@ -19,6 +27,8 @@ export default async function PathsCatalogPage() {
       <div className="mt-10 grid gap-10">
         {await Promise.all(PATH_SECTIONS.map(async (section) => {
           const paths = await getCatalogPathsBySection(section);
+
+          if (paths.length === 0) return null;
 
           return (
             <section key={section} className="grid gap-5">

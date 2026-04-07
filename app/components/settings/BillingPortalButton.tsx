@@ -32,7 +32,7 @@ export function BillingPortalButton() {
       <button type="button" className="button-secondary" onClick={handleClick} disabled={loading}>
         {loading ? "Opening..." : "Open billing portal"}
       </button>
-      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      {error && <p className="text-sm text-[var(--color-status-danger)] mt-2">{error}</p>}
     </div>
   );
 }

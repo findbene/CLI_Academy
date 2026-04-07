@@ -38,6 +38,11 @@ export function SearchDialog() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const openRef = useRef(false);
+  // Sync ref in an effect so event-handler closures read the latest open state
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   // Fetch search index on first open
   useEffect(() => {
@@ -48,27 +53,40 @@ export function SearchDialog() {
       .catch(() => {});
   }, [open, entries.length]);
 
-  // Cmd+K / Ctrl+K shortcut
+  // Cmd+K / Ctrl+K shortcut + custom open event
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setOpen((prev) => !prev);
+        if (openRef.current) {
+          setOpen(false);
+        } else {
+          setQuery("");
+          setSelectedIndex(0);
+          setOpen(true);
+        }
       }
       if (e.key === "Escape") {
         setOpen(false);
       }
     }
+    function handleOpenSearch() {
+      setQuery("");
+      setSelectedIndex(0);
+      setOpen(true);
+    }
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("open-search", handleOpenSearch);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("open-search", handleOpenSearch);
+    };
   }, []);
 
-  // Focus input when dialog opens
+  // Focus input when dialog opens (state resets are handled in the open event handlers)
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
-      setQuery("");
-      setSelectedIndex(0);
     }
   }, [open]);
 
@@ -79,10 +97,7 @@ export function SearchDialog() {
         .sort((a, b) => scoreMatch(query, b) - scoreMatch(query, a))
         .slice(0, 20);
 
-  // Reset selection when filtered list changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
+  // Selection resets to 0 in the onChange handler when query changes
 
   const navigate = useCallback(
     (href: string) => {
@@ -137,7 +152,7 @@ export function SearchDialog() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
             onKeyDown={handleKeyDown}
             placeholder="Search paths and lessons…"
             className="flex-1 bg-transparent text-sm text-[var(--color-fg-default)] outline-none placeholder:text-[var(--color-fg-muted)]"
@@ -230,13 +245,13 @@ export function SearchDialog() {
 export function SearchTrigger() {
   return (
     <button
-      onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))}
+      onClick={() => window.dispatchEvent(new CustomEvent("open-search"))}
       className="flex w-full items-center gap-2 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-4 py-2.5 text-left text-sm text-[var(--color-fg-muted)] transition hover:border-[var(--color-border-default)] hover:text-[var(--color-fg-default)]"
       aria-label="Search"
     >
       <Search className="size-4" />
       <span className="flex-1">Search…</span>
-      <kbd className="hidden rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-default)] px-1.5 py-0.5 font-mono text-[10px] sm:inline-block">
+      <kbd className="hidden rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] px-1.5 py-0.5 font-mono text-[10px] sm:inline-block">
         ⌘K
       </kbd>
     </button>

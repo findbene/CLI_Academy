@@ -38,7 +38,7 @@ export async function GET() {
         type: "lesson",
         title: l.title,
         description: l.description,
-        href: `/paths/${p.slug}/lessons/${l.slug}`,
+        href: `/learn/${p.slug}/${l.slug}`,
         tier: l.tierRequired,
         pathTitle: p.title,
       });

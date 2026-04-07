@@ -25,6 +25,7 @@ interface ProfileEditorProps {
 export function ProfileEditor({ initialGoal, initialOS }: ProfileEditorProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [goal, setGoal] = useState(initialGoal);
   const [os, setOs] = useState(initialOS);
   const [savedGoal, setSavedGoal] = useState(initialGoal);
@@ -43,6 +44,8 @@ export function ProfileEditor({ initialGoal, initialOS }: ProfileEditorProps) {
         setSavedGoal(goal);
         setSavedOS(os);
         setEditing(false);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
       }
     } finally {
       setSaving(false);
@@ -70,14 +73,20 @@ export function ProfileEditor({ initialGoal, initialOS }: ProfileEditorProps) {
             {OS_OPTIONS.find((o) => o.value === savedOS)?.label ?? (savedOS || "Not set yet")}
           </div>
         </div>
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setEditing(true)}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border-subtle)] px-4 py-2 text-sm text-[var(--color-fg-muted)] transition hover:border-[var(--color-border-default)] hover:text-[var(--color-fg-default)]"
           >
             <Pencil className="size-3.5" />
             Edit preferences
           </button>
+          {saveSuccess && (
+            <span className="text-sm font-medium text-[var(--color-status-success)]">
+              ✓ Preferences saved
+            </span>
+          )}
         </div>
       </div>
     );
@@ -93,7 +102,7 @@ export function ProfileEditor({ initialGoal, initialOS }: ProfileEditorProps) {
           id="profile-goal"
           value={goal}
           onChange={(e) => setGoal(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-default)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent-primary)]"
+          className="mt-2 w-full rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent-primary)]"
         >
           <option value="">Select a goal…</option>
           {GOAL_OPTIONS.map((g) => (
@@ -111,7 +120,7 @@ export function ProfileEditor({ initialGoal, initialOS }: ProfileEditorProps) {
           id="profile-os"
           value={os}
           onChange={(e) => setOs(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-default)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent-primary)]"
+          className="mt-2 w-full rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent-primary)]"
         >
           <option value="">Select OS…</option>
           {OS_OPTIONS.map((o) => (
@@ -123,6 +132,7 @@ export function ProfileEditor({ initialGoal, initialOS }: ProfileEditorProps) {
       </div>
       <div className="flex gap-3 md:col-span-2">
         <button
+          type="button"
           onClick={handleSave}
           disabled={saving}
           className="button-primary inline-flex items-center gap-2"
@@ -131,6 +141,7 @@ export function ProfileEditor({ initialGoal, initialOS }: ProfileEditorProps) {
           Save changes
         </button>
         <button
+          type="button"
           onClick={handleCancel}
           disabled={saving}
           className="rounded-xl border border-[var(--color-border-subtle)] px-4 py-2 text-sm text-[var(--color-fg-muted)] transition hover:text-[var(--color-fg-default)]"

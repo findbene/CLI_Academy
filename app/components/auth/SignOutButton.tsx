@@ -19,6 +19,9 @@ export function SignOutButton() {
         router.push("/login");
         router.refresh();
       });
+    } catch {
+      // If router navigation fails, fall back to a hard redirect
+      window.location.href = "/login";
     } finally {
       setLoading(false);
     }

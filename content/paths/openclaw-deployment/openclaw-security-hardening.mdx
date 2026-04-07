@@ -14,9 +14,9 @@ has_safety_warning: true
 tags: ["openclaw", "security", "hardening", "production"]
 ---
 
-## What You'll See
+<WarnBlock title="Security Warning">Firewall rules applied in this lesson take effect immediately and affect all inbound connections. An incorrect UFW rule — particularly one that blocks SSH — can permanently lock you out of your server. Verify SSH access is working in your current session before running `ufw enable`, and keep an out-of-band console available as a fallback.</WarnBlock>
 
-By the end of this lesson, you will have applied the production security hardening checklist to your OpenClaw deployment: tightened network access, secured secrets storage, configured TLS correctly, enabled audit logging, and applied developer isolation policies.
+## What You'll See
 
 ## Why This Matters
 

@@ -1,13 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Simple, honest pricing for CLI Academy. Start free with 10 daily tutor messages. Upgrade to Pro for deeper paths, 100 messages/day, and full download access.",
+};
+
 import {
   BookOpen,
   Check,
-  Download,
   MessageCircle,
   ShieldCheck,
   Sparkles,
   Terminal,
-  Zap,
 } from "lucide-react";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
 import { BillingPortalButton } from "@/components/settings/BillingPortalButton";
@@ -91,7 +97,7 @@ export default async function PricingPage() {
               key={plan.name}
               className={`panel relative p-6 transition ${
                 plan.highlighted
-                  ? "border-[var(--color-accent-primary)] shadow-lg ring-1 ring-[rgba(22,176,168,0.15)]"
+                  ? "border-[var(--color-accent-primary)] shadow-lg ring-1 ring-[var(--color-accent-subtle-strong)]"
                   : ""
               }`}
             >
@@ -101,7 +107,7 @@ export default async function PricingPage() {
                 </div>
               ) : null}
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--color-accent-subtle)]">
                   <Icon className="size-5 text-[var(--color-accent-primary)]" />
                 </div>
                 <div className="eyebrow">{plan.name}</div>
@@ -133,8 +139,8 @@ export default async function PricingPage() {
                   </div>
                 ) : (
                   <div className="grid gap-3">
-                    <CheckoutButton label="Choose Pro monthly" />
-                    <CheckoutButton billingInterval="annual" className="button-secondary" label="Choose Pro annual" />
+                    <CheckoutButton label="Choose Pro monthly — $29/mo" />
+                    <CheckoutButton billingInterval="annual" className="button-secondary" label="Choose Pro annual — $290/yr (save 17%)" />
                   </div>
                 )}
               </div>

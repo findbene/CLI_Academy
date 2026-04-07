@@ -28,8 +28,8 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
         tutorMessagesRemaining={tutorMessagesRemaining}
         userEmail={viewer.user?.email}
       />
-      <div className="min-h-screen">
-        <div className="mobile-only border-b border-[var(--color-border-subtle)] bg-[rgba(255,255,255,0.88)] px-4 py-3 backdrop-blur">
+      <div id="main-content" className="min-h-screen">
+        <div className="mobile-only border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-page)]/88 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-xs uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">

@@ -1,0 +1,411 @@
+---
+title: "10 Production Use Cases (Part 2: Business)"
+description: "Five business-grade OpenClaw deployments: a DevOps sentinel, e-commerce manager, local document reader, flight booking agent, and Shopify refund processor."
+slug: "openclaw-use-cases-business"
+lesson_number: 6
+estimated_minutes: 26
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "use-cases", "business", "devops", "ecommerce", "shopify", "documents"]
+---
+
+## What You'll Learn
+
+Five business-focused OpenClaw deployments you can model your own operations on, with full skill configurations and explanation of the real-world constraints each one navigates.
+
+---
+
+## Use Case 6: DevOps Sentinel
+
+**Scenario:** You run one or more VPS servers and want to know immediately when something goes wrong: CPU spikes, disk filling up, services crashing, or failed deployments.
+
+**How it works:** On a frequent heartbeat, the sentinel SSHs into your servers, runs diagnostic commands, evaluates the results, and messages you if anything is out of range.
+
+```markdown
+---
+skill_id: devops-sentinel
+name: "DevOps Sentinel"
+trigger:
+  type: schedule
+  cron: "*/15 * * * *"   # every 15 minutes
+channels:
+  output: ["telegram"]
+tools:
+  - name: run_ssh_command
+    permission: auto     # read-only commands only; see enforcement below
+  - name: send_message
+    permission: auto
+  - name: write_file
+    permission: auto     # update status log
+safety:
+  command_allowlist:
+    - "df -h"
+    - "top -bn1 | head -15"
+    - "systemctl status"
+    - "docker ps"
+    - "free -m"
+    - "tail -n 50 /var/log/syslog"
+    # any command NOT in this list: permission becomes prompt
+---
+
+# DevOps Sentinel
+
+Monitor {{SSH_HOST_PRIMARY}} and alert only on real problems.
+
+## Checks to Run (every 15 minutes)
+
+1. **Disk:** `df -h /` — alert if usage > 80%
+2. **Memory:** `free -m` — alert if available < 256MB
+3. **CPU:** `top -bn1 | head -15` — alert if 1-min load average > 4.0
+4. **Docker:** `docker ps` — alert if any container status is "Restarting" or "Exited"
+5. **App health:** `curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/health` — alert if not 200
+
+## Alert Format
+
+Only send a Telegram message if at least one check is abnormal.
+
+*🚨 Server Alert — {{SERVER_NAME}}*
+Time: {{TIME_NOW}}
+
+❌ Disk: 87% used (threshold: 80%)
+✅ Memory: OK
+✅ CPU: OK
+
+*Suggested action:* Check /var/log for large files.
+
+## Status Log
+
+After each check, update ~/openclaw-data/sentinel-log.json with:
+- Timestamp
+- Pass/fail per check
+- Whether an alert was sent
+
+## Quiet Hours
+
+Do not send alerts between 1am–7am unless a critical service is completely down (HTTP check returns non-200).
+```
+
+---
+
+## Use Case 7: E-commerce Manager
+
+**Scenario:** You run a Shopify or WooCommerce store and want daily sales summaries, low-stock alerts, and new review notifications — without logging into the admin panel.
+
+```markdown
+---
+skill_id: ecommerce-manager
+name: "E-commerce Daily Manager"
+trigger:
+  type: schedule
+  cron: "0 7 * * *"   # 7am daily
+channels:
+  output: ["whatsapp"]
+tools:
+  - name: shopify_api
+    permission: auto     # read-only scope; see API key config
+  - name: write_file
+    permission: auto     # update daily-report.md
+---
+
+# E-commerce Manager — Daily Report
+
+Pull today's data from the Shopify API.
+
+## What to Fetch
+
+1. **Yesterday's orders** (status: any, created_at: yesterday)
+   - Total count
+   - Total revenue (sum of total_price_set.shop_money.amount)
+   - Top-selling variant (by quantity)
+   - Any unfulfilled orders older than 48 hours
+
+2. **Inventory snapshot**
+   - Variants where inventory_quantity < 10
+   - Variants where inventory_quantity = 0 (out of stock)
+
+3. **Recent reviews** (if review app webhook is configured)
+   - Any 1-star or 2-star reviews posted in last 24h
+
+## Report Format
+
+*📦 Store Report — {{DATE_YESTERDAY}}*
+
+**Sales:**
+- Orders: X | Revenue: £X,XXX.XX
+- Top seller: [product name] (X units)
+
+⚠️ *Unfulfilled (>48h):* [list order numbers]
+
+**Inventory:**
+🔴 Out of stock: [variant names]
+🟡 Low stock (<10): [variant names]
+
+**Reviews:**
+⭐️ New 1–2 star reviews: [count] — [links to review app]
+
+## If Nothing to Alert
+
+Send a brief ✅ all-clear:
+*📦 Store — {{DATE_YESTERDAY}}: £X,XXX | X orders | No alerts*
+```
+
+**API Setup:** Run `openclaw connect shopify` to enter your Shopify store URL and Admin API key. The connection is stored encrypted in `~/.openclaw/secrets/`.
+
+---
+
+## Use Case 8: Local Document Reader (Zero Cloud Exposure)
+
+**Scenario:** You have sensitive documents — contracts, financial spreadsheets, client reports in PDF, Excel, or Word format — and want to ask questions about them without uploading to any cloud service.
+
+**How it works:** The skill uses `read_local_file` to load documents directly from your machine. The model is routed to Ollama (local), so nothing leaves your hardware.
+
+```markdown
+---
+skill_id: local-doc-reader
+name: "Local Document Q&A"
+trigger:
+  type: reactive
+  channels: ["telegram"]
+model:
+  preferred: "ollama/llama3.1:8b"   # fully local — no cloud routing
+  fallback: null                     # if Ollama is unavailable, refuse
+tools:
+  - name: read_local_file
+    permission: auto
+    allowed_paths:
+      - "~/Documents/contracts/"
+      - "~/Documents/finance/"
+      - "~/Documents/client-reports/"
+      # read_local_file will refuse requests for any path not listed here
+safety:
+  pii_scrub: false   # local model — PII never leaves the machine
+  cloud_routing: deny # hard block on any cloud LLM routing
+---
+
+# Local Document Reader
+
+Answer questions about documents in the following folders:
+- ~/Documents/contracts/
+- ~/Documents/finance/
+- ~/Documents/client-reports/
+
+## How to Handle a Request
+
+1. Identify which document the user is asking about
+2. Load the file using read_local_file
+3. For PDFs: extract text section by section
+4. For Excel/CSV: read as structured data
+5. For Word: read the full document text
+
+## When I Ask a Question
+
+Answer directly from the document content. Always tell me:
+- Which file you read
+- The relevant section or page number (if detectable)
+- A direct answer
+
+Do not summarise unless I ask. Do not add caveats about your limitations.
+
+## If the Document Doesn't Contain the Answer
+
+Say: "I couldn't find that in [filename]. The document covers [brief summary of contents]."
+
+## Example Interactions
+
+Me: "What's the payment term in the Acme contract?"
+You: (reads ~/Documents/contracts/acme-ltd-2025.pdf)
+     "Payment term: Net 30 days. Found in Section 4.2, page 6."
+
+Me: "What was total revenue in Q3 last year?"
+You: (reads ~/Documents/finance/2025-q3-report.xlsx)
+     "Q3 2025 total revenue: £847,200. Found in the Summary sheet, row 12."
+```
+
+**Why local model only:** This skill is intentionally designed with `cloud_routing: deny`. If Ollama is not running, the skill fails gracefully with: "Local model unavailable — refusing to route this request to a cloud service for privacy reasons."
+
+---
+
+## Use Case 9: Flight Booking Research Agent
+
+**Scenario:** You travel regularly and want OpenClaw to search for flights, compile the best options, and present them for your approval — without you sitting at a booking site.
+
+```markdown
+---
+skill_id: flight-finder
+name: "Flight Research Agent"
+trigger:
+  type: reactive
+  channels: ["whatsapp", "telegram"]
+  activation_phrase: "flights:"   # only activates when message starts with "flights:"
+tools:
+  - name: fetch_web
+    permission: auto
+  - name: run_calculation
+    permission: auto
+  - name: write_file
+    permission: auto   # save results
+  - name: open_browser_url
+    permission: prompt  # ask before opening booking page
+---
+
+# Flight Research Agent
+
+You activate when {{OWNER_DISPLAY_NAME}} sends a message starting with "flights:"
+
+## Parsing the Request
+
+Extract:
+- Departure city/airport
+- Destination city/airport
+- Departure date (or range)
+- Return date (if round trip)
+- Number of passengers
+- Preferences (direct only? specific airline? budget?)
+
+## Research Approach
+
+Search the following for each valid combination:
+1. Google Flights: https://www.google.com/travel/flights
+   Fetch the results page and extract the top 5 cheapest options
+2. Skyscanner: https://www.skyscanner.net
+   Cross-reference if prices differ significantly
+
+## Results Format
+
+*✈️ Flight Options: {{ROUTE}} on {{DATE}}*
+
+| Option | Airline | Departs | Arrives | Stops | Price |
+|--------|---------|---------|---------|-------|-------|
+| 1 | British Airways | 07:30 | 13:45 | Direct | £189 |
+| 2 | Ryanair | 06:00 | 12:15 | Direct | £94 |
+| 3 | KLM (via AMS) | 08:00 | 14:00 | 1 stop | £132 |
+
+*Cheapest:* Option 2 — Ryanair £94
+*Recommended:* Option 1 — BA direct, only £95 more
+
+Reply "book 1", "book 2", or "book 3" and I'll open the booking page for you.
+
+## If I Reply "book X"
+
+Ask for confirmation:
+"Open [airline] booking page for [route] on [date] at approximately £[price]? Reply YES to confirm."
+
+Only open the URL if I reply YES.
+
+## Important Limits
+
+- Do not complete any booking. I handle that myself.
+- Never enter personal details into any form.
+- If prices can't be retrieved, say so and suggest I check manually.
+```
+
+---
+
+## Use Case 10: Shopify Refund Processor
+
+**Scenario:** Your Shopify store receives refund requests via email. You want OpenClaw to read the request, check the order, draft a response, and wait for your approval before touching anything.
+
+```markdown
+---
+skill_id: refund-processor
+name: "Shopify Refund Processor"
+trigger:
+  type: event
+  source: email
+  filter:
+    subject_contains: ["refund", "return", "exchange"]
+    sender_not_in: ["noreply@shopify.com"]
+tools:
+  - name: read_email
+    permission: auto
+  - name: shopify_api
+    permission: auto           # read-only to fetch order details
+  - name: shopify_api_write
+    permission: deny           # NEVER auto-process a refund
+  - name: write_email_draft
+    permission: auto
+  - name: send_email
+    permission: deny           # NEVER auto-send
+  - name: send_message
+    permission: auto           # Telegram approval request
+---
+
+# Shopify Refund Processor
+
+A refund or return request has arrived in my inbox.
+
+## Step 1: Extract Details
+
+From the email, identify:
+- Customer name and email
+- Order number (usually #XXXXX)
+- Reason for refund/return
+- What they want: full refund / exchange / partial credit
+
+## Step 2: Fetch Order from Shopify
+
+Use shopify_api (read-only) to look up the order.
+Find:
+- Order total and line items
+- Date of purchase
+- Fulfilment status
+- Whether a return/refund has been processed already
+- Whether the order is within the 30-day return window
+
+## Step 3: Draft Customer Reply
+
+Based on the order information, draft a reply:
+- If order found and within window: acknowledge request, explain process
+- If outside return window: acknowledge, explain policy
+- If already refunded: inform customer and provide refund reference
+- Always: professional, empathetic
+
+## Step 4: Send Me an Approval Request
+
+Do NOT send the draft or action the refund. Send me a Telegram message:
+
+*🔄 Refund Request — Needs Your Review*
+
+Customer: [name] ([email])
+Order: [#number] | [date] | [£amount]
+Request: [brief summary]
+Return window: ✅ Within 30 days / ❌ Outside 30 days
+
+Draft reply saved. 
+
+Next step options:
+— Reply APPROVE to send my draft
+— Reply EDIT to modify before sending  
+— Reply DENY to decline the request
+— Reply IGNORE to take no action
+
+## Step 5: Wait
+
+Do not take any further action until I respond to the Telegram message.
+If I haven't responded in 24 hours, send me a reminder and then wait another 24.
+```
+
+---
+
+## Combining These Skills
+
+These six use cases can all be active simultaneously. The system coordinates them through independent heartbeat and reactive triggers — there's no scheduling conflict.
+
+A typical power user configuration:
+- Morning concierge: 8am briefing
+- Email triage: 9am, 1pm, 5pm checks
+- Price monitor: 9am weekdays
+- Lead finder: Monday / Wednesday / Friday
+- DevOps sentinel: every 15 minutes (silent unless alerting)
+- E-commerce summary: 7am daily
+
+The local document reader and flight research agent activate only when you message them — no background cost.
+
+## What's Next
+
+Lesson 7 covers the three security incidents that shaped OpenClaw's guardrail system — real stories about what happens when agent permissions are too permissive.

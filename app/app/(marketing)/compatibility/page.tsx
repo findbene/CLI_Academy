@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { compatibilityEntries } from "@/lib/support";
+
+export const metadata: Metadata = {
+  title: "Compatibility",
+  description:
+    "Platform and tool compatibility status for Claude Code, Claude CoWork, MCP servers, and related workflows. Verified on Windows, macOS, and Linux.",
+};
+
 
 function statusLabel(status: string) {
   return status.replaceAll("-", " ");

@@ -1,0 +1,188 @@
+---
+title: "Persistent Memory: The .learnings Directory"
+description: "How OpenClaw stores corrections and context in the .learnings/ directory, how to write effective corrections, and how memory is retrieved during skill execution."
+slug: "openclaw-learnings-memory"
+lesson_number: 4
+estimated_minutes: 14
+tier_required: "pro"
+version_label: "openclaw@latest"
+last_reviewed_at: "2026-04-07"
+reviewed_by: "CLI Academy Team"
+supported_tool_versions:
+  openclaw: "latest"
+has_safety_warning: false
+tags: ["openclaw", "memory", "learnings", "corrections", "persistence", "agent-memory"]
+---
+
+## What You'll Learn
+
+How the `.learnings/` directory works as OpenClaw's persistent memory, how corrections are stored and retrieved, and how to write corrections that the agent reliably applies in future.
+
+## Why This Matters
+
+Every AI model starts each conversation knowing nothing about you specifically. It knows language, reasoning, and general world knowledge — but not that you prefer British English, that your company calls customers "clients", or that a specific Shopify vendor is always late.
+
+The `.learnings/` directory is how OpenClaw accumulates this private, contextual knowledge over time. It's the difference between an agent you have to re-explain everything to every day, and one that genuinely improves from experience.
+
+## Core Concepts
+
+### What the .learnings Directory Is
+
+```
+~/.openclaw/
+└── .learnings/
+    ├── corrections.md          ← fact corrections you've made
+    ├── preferences.md          ← how you want things done
+    ├── people.md               ← notes about contacts / relationships
+    ├── context.md              ← recurring project or business context
+    └── skills/
+        ├── email-responder.md  ← skill-specific learnings
+        └── daily-briefing.md   ← skill-specific learnings
+```
+
+These are plain Markdown files. You can read, edit, and add to them directly. The Gateway also updates them automatically when you correct the agent.
+
+### How OpenClaw Retrieves Learnings
+
+At the start of each skill execution, OpenClaw prepends relevant learnings to the system prompt:
+
+```
+[System] You are an OpenClaw agent. Before following the skill instructions below,
+apply the following context from your .learnings directory:
+
+--- Corrections ---
+- British English spelling always (not "color" → "colour")
+- When user says "the client", they mean Hartley Associates unless specified otherwise
+
+--- Preferences ---
+- Morning briefing format: bullet points only, no headers
+- Always lead with the most important item
+
+[Skill instructions follow...]
+```
+
+Learnings are retrieved using semantic similarity — the Gateway embeds your query and fetches the most relevant learnings rather than dumping everything. This keeps the context window focused.
+
+### How Corrections Get Into .learnings
+
+**Method 1: Inline correction during a conversation**
+
+While chatting with your agent on WhatsApp or Telegram, immediately after it says something wrong:
+
+```
+You: Summarise my emails from today
+Agent: You have 3 emails from "color" [uses American spelling]
+You: Remember to always use British English spellings
+```
+
+The Gateway intercepts messages starting with "Remember" (configurable) and saves them:
+```markdown
+# corrections.md
+- Always use British English spellings (not American)
+  Source: user correction, 2026-04-01
+```
+
+**Method 2: Explicit memory write command**
+
+```
+/learn The client meeting on Fridays is with Hartley Associates, not Bridgewater
+/learn My preferred email sign-off is "Kind regards, [Name]"
+/learn Never schedule meetings before 9:30am
+```
+
+**Method 3: Direct file editing**
+
+```bash
+nano ~/.openclaw/.learnings/preferences.md
+```
+
+Add notes in any format — OpenClaw reads them as plain text when relevant.
+
+### What to Put in Each File
+
+**corrections.md** — Facts the agent gets wrong or context it lacks:
+```markdown
+- "the client" = Hartley Associates (not Bridgewater, our old client)
+- My name is spelled correctly as "Biniyam" (not "Binimi" or "Binyam")
+- The VPS IP address is 157.90.xx.xx (not any other address)
+- Product SKU B2847 is "Adjustable Desk Lamp", not "Desk Light"
+```
+
+**preferences.md** — How you want things formatted or done:
+```markdown
+- Morning briefings: brief, bullet-pointed, no longer than 150 words
+- Emails: professional but warm tone, never stiff or formal
+- British English always
+- When in doubt about scheduling, suggest 2 options rather than booking one
+- Currency: GBP, not USD, unless I specify a US client
+```
+
+**people.md** — Context about contacts:
+```markdown
+- Sarah Chen (sarah@hartley.co.uk) = Head of Legal at Hartley Associates
+- James = James Whitfield, my business partner (not email contacts named James)
+- "The team" = my team of 3: Priya, Kofi, and Marcus
+```
+
+**context.md** — Business or project context:
+```markdown
+## Current Projects
+- Project Vega: launching the new analytics dashboard for Hartley, deadline April 30
+- Shopify store: "Northern Gear" - sells outdoor equipment, UK market
+
+## Business Context
+- We invoice on the 1st and 15th of each month
+- Preferred payment: bank transfer (not PayPal)
+- All client-facing documents should include the company logo
+```
+
+### Skill-Specific Learnings
+
+When a correction is made during a specific skill execution, OpenClaw stores it in a skill-specific file rather than the global corrections:
+
+```markdown
+# skills/email-responder.md
+- Do not draft replies to newsletters — just report "Newsletter from [X], no reply needed"
+- Sarah at Hartley sometimes sends 1-word replies like "Agreed" — these do not need a response
+- For emails from accounts@companies.net, check if it's an invoice before drafting reply
+```
+
+Skill-specific learnings are loaded in addition to global learnings when that skill runs.
+
+### Inspecting Memory
+
+```bash
+# View all learnings
+openclaw memory list
+
+# Search learnings
+openclaw memory search "Hartley"
+
+# View the most frequently used learnings
+openclaw memory stats
+
+# Clear a specific learning (use carefully)
+openclaw memory delete "Learning ID"
+```
+
+### Memory and Privacy
+
+The `.learnings/` directory lives entirely on your hardware. If you use cloud models (Anthropic, OpenAI), relevant learnings are sent as part of the prompt — the model sees them but doesn't store them. If you use local Ollama inference, nothing leaves your machine at all.
+
+For sensitive learnings (health information, financial details, personal relationships), either:
+1. Use the `pii_scrub: true` flag on skills that use those learnings — this strips sensitive patterns before sending to cloud models
+2. Route skills that use those learnings to a local Ollama model
+3. Store sensitive context in a learnings file flagged `private: true` — these are loaded into local model prompts only
+
+```markdown
+# ~/.openclaw/.learnings/medical.md
+---
+private: true   # Only used in skills that route to local models
+---
+- My blood type is O+
+- Currently taking medication X — mention if relevant to health-related tasks
+```
+
+## What's Next
+
+Lesson 5 covers the first 5 use cases — how real OpenClaw deployments handle personal productivity scenarios: web scraping, lead generation, email reading, and conversational agent via WhatsApp/Telegram.
