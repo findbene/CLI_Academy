@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getPublicSupabaseConfigMessage } from "@/lib/env";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AuthMode = "login" | "signup";
@@ -52,6 +53,8 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
 
   const isSignup = mode === "signup";
   const safeNextHref = sanitizeNextPath(nextHref);
+  const configurationMessage = getPublicSupabaseConfigMessage();
+  const authUnavailable = Boolean(configurationMessage);
   const title = isSignup ? "Create your CLI Academy account" : "Log in to CLI Academy";
   const description = isSignup
     ? "Start free, save your progress, and unlock the setup-first learning flow across devices."
@@ -59,6 +62,12 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
 
   async function handleEmailPasswordSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (authUnavailable) {
+      setMessage(configurationMessage);
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
 
@@ -108,6 +117,11 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
   }
 
   async function handleGoogleAuth() {
+    if (authUnavailable) {
+      setMessage(configurationMessage);
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
 
@@ -138,6 +152,29 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
       <h1 className="mt-4 text-3xl font-semibold">{title}</h1>
       <p className="mt-4 text-[var(--color-fg-muted)]">{description}</p>
 
+      <div className="mt-6 grid grid-cols-2 gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-lesson)] p-2 text-sm">
+        <Link
+          href={safeNextHref ? `/login?next=${encodeURIComponent(safeNextHref)}` : "/login"}
+          aria-current={isSignup ? undefined : "page"}
+          className={isSignup ? "rounded-[calc(var(--radius-lg)-0.35rem)] px-3 py-2 text-center text-[var(--color-fg-muted)]" : "rounded-[calc(var(--radius-lg)-0.35rem)] bg-[var(--color-surface-elevated)] px-3 py-2 text-center font-medium text-[var(--color-fg)] shadow-sm"}
+        >
+          Log in
+        </Link>
+        <Link
+          href={safeNextHref ? `/signup?next=${encodeURIComponent(safeNextHref)}` : "/signup"}
+          aria-current={isSignup ? "page" : undefined}
+          className={isSignup ? "rounded-[calc(var(--radius-lg)-0.35rem)] bg-[var(--color-surface-elevated)] px-3 py-2 text-center font-medium text-[var(--color-fg)] shadow-sm" : "rounded-[calc(var(--radius-lg)-0.35rem)] px-3 py-2 text-center text-[var(--color-fg-muted)]"}
+        >
+          Sign up
+        </Link>
+      </div>
+
+      {configurationMessage ? (
+        <div className="mt-6 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-lesson)] px-4 py-3 text-sm text-[var(--color-fg-muted)]">
+          {configurationMessage}
+        </div>
+      ) : null}
+
       <form className="mt-8 grid gap-4" onSubmit={handleEmailPasswordSubmit}>
         <label className="grid gap-2 text-sm">
           <span className="font-medium">Email</span>
@@ -147,6 +184,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
             onChange={(event) => setEmail(event.target.value)}
             className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-lesson)] px-4 py-3"
             placeholder="you@example.com"
+            disabled={loading || authUnavailable}
             required
           />
         </label>
@@ -159,6 +197,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
             onChange={(event) => setPassword(event.target.value)}
             className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-lesson)] px-4 py-3"
             placeholder={isSignup ? "Create a password" : "Enter your password"}
+            disabled={loading || authUnavailable}
             required
           />
         </label>
@@ -169,16 +208,27 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
           </div>
         ) : null}
 
-        <button type="submit" className="button-primary mt-2" disabled={loading}>
+        <button type="submit" className="button-primary mt-2" disabled={loading || authUnavailable}>
           {loading ? "Working..." : isSignup ? "Create account" : "Log in"}
         </button>
       </form>
 
       <div className="mt-4">
-        <button type="button" className="button-secondary w-full" onClick={handleGoogleAuth} disabled={loading}>
+        <button
+          type="button"
+          className="button-secondary w-full"
+          onClick={handleGoogleAuth}
+          disabled={loading || authUnavailable}
+        >
           Continue with Google
         </button>
       </div>
+
+      <p className="mt-3 text-sm text-[var(--color-fg-muted)]">
+        {authUnavailable
+          ? "Google OAuth and email/password auth stay disabled until the frontend Supabase public keys are loaded."
+          : "Use either email/password or Google to continue into onboarding and synced progress."}
+      </p>
 
       <div className="mt-6 text-sm text-[var(--color-fg-muted)]">
         {isSignup ? "Already have an account?" : "Need an account?"}{" "}

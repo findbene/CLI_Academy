@@ -9,9 +9,11 @@ interface TutorMessage {
 
 interface FloatingTutorProps {
   lessonTitle?: string;
+  tutorPreload?: string;
+  learningMode?: string;
 }
 
-export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
+export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guided" }: FloatingTutorProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,6 +42,8 @@ export function FloatingTutor({ lessonTitle }: FloatingTutorProps) {
         body: JSON.stringify({
           message: question,
           lessonTitle,
+          tutorPreload,
+          learningMode,
         }),
       });
 

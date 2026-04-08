@@ -13,10 +13,12 @@ It is a guided product for setup, configuration, troubleshooting, first useful w
 - Structured setup-first learning paths
 - OS-specific and environment-specific guidance
 - Contextual troubleshooting
-- Downloadable and printable assets
+- A built-in "**Guided-Learning Engine**" substituting static content with:
+  - **Learning Modes** (Guided, Hint-based, Independent)
+  - **Context-Aware AI Tutoring** (`tutorPreload` injected Prompts)
+  - **Verification Blocks** ensuring actual terminal success before progression
 - Visual teaching support
 - Guided setup wizards
-- A built-in tutor
 - A coordinated internal agent system that improves support and content behind the scenes
 
 The core wedge:

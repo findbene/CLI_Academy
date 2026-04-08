@@ -41,6 +41,8 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as {
     lessonTitle?: string;
     message?: string;
+    tutorPreload?: string;
+    learningMode?: string;
   };
 
   const question = body.message?.trim();
@@ -156,6 +158,8 @@ export async function POST(request: Request) {
               lessonTitle,
               supportContext,
               tier,
+              tutorPreload: body.tutorPreload,
+              learningMode: body.learningMode,
             }),
           });
 

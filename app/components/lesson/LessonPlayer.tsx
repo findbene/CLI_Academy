@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AssetCard } from "@/components/assets/AssetCard";
 import { FloatingTutor } from "@/components/tutor/FloatingTutor";
+import { LearningModeSelector, type LearningMode } from "@/components/lesson/LearningModeSelector";
 import type { DownloadSurfaceAsset } from "@/lib/assets";
 
 interface LessonPlayerProps {
@@ -26,6 +27,8 @@ interface LessonPlayerProps {
   lastReviewedAt: string;
   freshnessState: "fresh" | "review-due" | "stale";
   hasSafetyWarning: boolean;
+  tutorPreload?: string;
+  modeBalance?: string;
   knownIssueTitle?: string;
   previousLessonHref?: string;
   nextLessonHref?: string;
@@ -60,6 +63,8 @@ export function LessonPlayer({
   lastReviewedAt,
   freshnessState,
   hasSafetyWarning,
+  tutorPreload,
+  modeBalance,
   knownIssueTitle,
   previousLessonHref,
   nextLessonHref,
@@ -73,6 +78,7 @@ export function LessonPlayer({
   const [savingProgress, setSavingProgress] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [learningMode, setLearningMode] = useState<LearningMode>("guided");
   const router = useRouter();
 
   useEffect(() => {
@@ -210,7 +216,11 @@ export function LessonPlayer({
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-            <div className="panel p-6">{children}</div>
+            <div className="grid gap-6 h-fit">
+              <LearningModeSelector currentMode={learningMode} onChange={setLearningMode} />
+              {modeBalance && <div className="text-sm font-mono text-[var(--color-fg-muted)]">Suggested: {modeBalance}</div>}
+              <div className="panel p-6">{children}</div>
+            </div>
             <aside className="grid h-fit gap-4">
               <div className="panel p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold">
@@ -338,7 +348,7 @@ export function LessonPlayer({
           </div>
         </div>
       ) : null}
-      <FloatingTutor lessonTitle={lessonTitle} />
+      <FloatingTutor lessonTitle={lessonTitle} tutorPreload={tutorPreload} learningMode={learningMode} />
     </>
   );
 }

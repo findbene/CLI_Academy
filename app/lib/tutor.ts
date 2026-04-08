@@ -22,6 +22,8 @@ export function buildTutorSystemPrompt(input: {
   lessonTitle?: string;
   supportContext?: string;
   tier: "free" | "pro";
+  tutorPreload?: string;
+  learningMode?: string;
 }) {
   const lessonContext = input.lessonTitle
     ? `The learner is currently in the lesson "${input.lessonTitle}".`
@@ -39,6 +41,14 @@ export function buildTutorSystemPrompt(input: {
     lessonContext,
     `The learner is on the ${input.tier} tier.`,
     input.supportContext ? `Use this grounded support context when relevant: ${input.supportContext}` : "",
+    input.learningMode === "guided" 
+      ? "MODE: GUIDED. Provide explicit instructions, give the answer directly when stuck, and walk the user step by step." 
+      : input.learningMode === "hint" 
+      ? "MODE: HINT-BASED. Provide gentle hints and course corrections. Do NOT give straight answers unless they have tried multiple times." 
+      : input.learningMode === "independent" 
+      ? "MODE: INDEPENDENT. Provide minimal help. Focus strictly on verifying outcome rather than teaching." 
+      : "",
+    input.tutorPreload ? `\nCRITICAL INSTRUCTION FOR THIS LESSON (TUTOR PRELOAD):\n${input.tutorPreload}` : "",
   ].join(" ");
 }
 

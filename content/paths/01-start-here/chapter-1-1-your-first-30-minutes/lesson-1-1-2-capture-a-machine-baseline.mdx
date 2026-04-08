@@ -1,0 +1,36 @@
+---
+title: "Capture a machine baseline"
+lessonNumber: "1.1.2"
+chapterNumber: "1.1"
+pathNumber: "1"
+tutorPreload: "Read my baseline output and tell me what matters for future lessons and what I should not paste publicly."
+verifyType: "terminal_output"
+---
+
+# Capture a machine baseline
+
+## Objective
+
+AI agents act differently depending on what system you are running. If you're on a Mac using `zsh`, Claude Code behaves completely differently than if you're on Windows using `PowerShell`. 
+
+To troubleshoot like a pro, you need to know exactly what system you are running. We are going to capture your system's "baseline" and save it.
+
+## Walkthrough
+
+1. Open your Terminal (or Command Prompt / PowerShell on Windows).
+2. We are going to run a command to see your Node version. Type the following and press **Enter**:
+```bash
+node -v
+```
+3. Highlight whatever the terminal prints out (for example, `v20.15.0`) and copy it.
+4. On your computer, navigate into your `cli-academy/notes` folder.
+5. Create a new simple text file called `machine-baseline.txt`.
+6. Paste your Node version inside it.
+
+> [!TIP]
+> Don't know how to open your Terminal? Got an error that said "node is not recognized"? Don't panic! Open the Tutor in the bottom right corner and type: *"My computer says node is not recognized. Help!"* The Tutor is trained exactly for this.
+
+<VerificationBlock 
+  deliverable="A starter `machine-profile.md` with OS, shell, package manager, editor, and login method."
+  verifyCheck="Learner can run the profile command block and paste results into the template."
+/>

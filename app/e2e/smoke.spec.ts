@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+const authConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
 // ---------------------------------------------------------------------------
 // Smoke tests — validates the critical public and protected surfaces load
 // without 500s and that auth gating redirects unauthenticated users.
@@ -42,15 +44,76 @@ test.describe("Protected surfaces", () => {
   const protectedRoutes = ["/dashboard", "/settings", "/downloads"];
 
   for (const route of protectedRoutes) {
-    test(`${route} loads without a server error for unauthenticated users`, async ({ page }) => {
+    test(`${route} handles unauthenticated users without a server error`, async ({ page }) => {
       const response = await page.goto(route);
       expect(response?.status()).toBeLessThan(500);
 
-      // The current product serves a safe fallback state for unauthenticated users
-      // instead of forcing a redirect on these pages.
-      await expect(page).not.toHaveURL(/\/login/);
+      if (authConfigured) {
+        await expect(page).toHaveURL(new RegExp(`/login\\?next=${encodeURIComponent(route).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
+      } else {
+        await expect(page).not.toHaveURL(/\/login/);
+        await expect(page.locator("body")).not.toContainText(/application error|server error/i);
+      }
     });
   }
+});
+
+test.describe("Auth surfaces", () => {
+  test("login page reflects auth availability", async ({ page }) => {
+    await page.goto("/login");
+
+    await expect(page.getByRole("link", { name: "Sign up" }).first()).toBeVisible();
+
+    const emailInput = page.getByLabel("Email");
+    const passwordInput = page.getByLabel("Password");
+    const submitButton = page.getByRole("button", { name: /log in/i });
+    const googleButton = page.getByRole("button", { name: /continue with google/i });
+
+    if (authConfigured) {
+      await expect(emailInput).toBeEnabled();
+      await expect(passwordInput).toBeEnabled();
+      await expect(submitButton).toBeEnabled();
+      await expect(googleButton).toBeEnabled();
+      await expect(page.getByText(/authentication is unavailable until/i)).toHaveCount(0);
+    } else {
+      await expect(emailInput).toBeDisabled();
+      await expect(passwordInput).toBeDisabled();
+      await expect(submitButton).toBeDisabled();
+      await expect(googleButton).toBeDisabled();
+      await expect(page.getByText(/authentication is unavailable until/i)).toBeVisible();
+    }
+  });
+
+  test("signup page reflects auth availability", async ({ page }) => {
+    await page.goto("/signup");
+
+    await expect(page.getByRole("link", { name: "Log in" }).first()).toBeVisible();
+
+    const emailInput = page.getByLabel("Email");
+    const passwordInput = page.getByLabel("Password");
+    const submitButton = page.getByRole("button", { name: /create account/i });
+    const googleButton = page.getByRole("button", { name: /continue with google/i });
+
+    if (authConfigured) {
+      await expect(emailInput).toBeEnabled();
+      await expect(passwordInput).toBeEnabled();
+      await expect(submitButton).toBeEnabled();
+      await expect(googleButton).toBeEnabled();
+      await expect(page.getByText(/authentication is unavailable until/i)).toHaveCount(0);
+    } else {
+      await expect(emailInput).toBeDisabled();
+      await expect(passwordInput).toBeDisabled();
+      await expect(submitButton).toBeDisabled();
+      await expect(googleButton).toBeDisabled();
+      await expect(page.getByText(/authentication is unavailable until/i)).toBeVisible();
+    }
+  });
+
+  test("auth callback preserves intended next destination when login is required", async ({ page }) => {
+    const response = await page.goto("/api/auth/callback?next=%2Fdashboard");
+    expect(response?.status()).toBeLessThan(500);
+    await expect(page).toHaveURL(/\/login\?next=%2Fdashboard$/);
+  });
 });
 
 test.describe("404 handling", () => {

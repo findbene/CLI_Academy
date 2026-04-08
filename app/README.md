@@ -1,30 +1,28 @@
 # CLI Academy Frontend
 
-This directory contains the rebuilt Next.js frontend recovery scaffold for CLI Academy.
+This directory contains the active Next.js frontend for CLI Academy.
 
 ## Current State
 
-The original frontend source was lost when `app/` existed as a nested git repository that was never pushed remotely. This scaffold restores the route tree, core layouts, lesson surfaces, tutor shell, and API route surface so the product can be rebuilt on top of real structure again.
+The app is no longer just a recovery scaffold. It now ships the main learner surfaces, the auth flow shell, resource hub, protected app routes, tutor UI, and the current API route surface used by the product.
 
-What is restored:
+Implemented here:
 
 - route groups for `(marketing)` and `(app)`
-- marketing pages
+- marketing pages, legal/support pages, and resource hub
+- login and signup pages with email/password and Google OAuth entry points
 - onboarding route
 - dashboard, downloads, settings
-- path catalog and path detail pages
-- learner path and lesson routes
-- tutor shell
-- recovery-mode API routes
+- path catalog, path detail pages, learner path and lesson routes
+- tutor shell and tutor API integration
+- progress/profile/search/checkout portal route surface
 - design tokens and global styling
 
-What still needs rewiring:
+Still dependent on runtime configuration:
 
-- Supabase auth and data
-- Stripe checkout and portal wiring
-- Anthropic-backed tutor orchestration
-- richer MDX rendering
-- progress persistence
+- Supabase auth/session data and Google provider setup
+- Stripe checkout and portal live credentials
+- Anthropic-backed tutor runtime keys
 
 ## Commands
 
@@ -34,6 +32,25 @@ npm run lint
 npm run typecheck
 npm run build
 ```
+
+## Auth Setup
+
+The frontend runs from this nested `app/` directory. Put public and server-side frontend env vars in `app/.env.local`, not in the repo root.
+
+Minimum auth vars:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Google OAuth also requires Supabase provider configuration with callback URLs that include:
+
+- `http://localhost:3000/api/auth/callback`
+- your production callback URL once deployed
+
+Current protected-route behavior is conditional by configuration:
+
+- If frontend Supabase public keys are present, unauthenticated visits to protected app pages redirect to `/login?next=...`
+- If frontend Supabase public keys are absent, the app serves safe fallback content and disables auth actions with explicit setup guidance
 
 ## Important Files
 

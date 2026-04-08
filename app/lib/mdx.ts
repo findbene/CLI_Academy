@@ -6,10 +6,15 @@ export interface LessonMeta {
   title: string;
   description: string;
   lessonNumber: number;
+  chapterNumber: number;
+  pathNumber: number;
   estimatedMinutes: number;
   tierRequired: string;
   lastReviewedAt: string;
   hasSafetyWarning: boolean;
+  tutorPreload?: string;
+  modeBalance?: string;
+  verifyType?: string;
 }
 
 export interface LessonRecord extends LessonMeta {
@@ -88,11 +93,16 @@ function toLessonRecord(filePath: string, source: string): LessonRecord {
     slug: String(parsed.slug ?? fallbackSlug),
     title: String(parsed.title ?? fallbackSlug),
     description: String(parsed.description ?? ""),
-    lessonNumber: Number(parsed.lesson_number ?? 999),
+    lessonNumber: Number(parsed.lessonNumber ?? parsed.lesson_number ?? 999),
+    chapterNumber: Number(parsed.chapterNumber ?? 999),
+    pathNumber: Number(parsed.pathNumber ?? 999),
     estimatedMinutes: Number(parsed.estimated_minutes ?? 10),
     tierRequired: String(parsed.tier_required ?? "free"),
     lastReviewedAt: String(parsed.last_reviewed_at ?? "unknown"),
     hasSafetyWarning: Boolean(parsed.has_safety_warning ?? false),
+    tutorPreload: parsed.tutorPreload ? String(parsed.tutorPreload) : undefined,
+    modeBalance: parsed.modeBalance ? String(parsed.modeBalance) : undefined,
+    verifyType: parsed.verifyType ? String(parsed.verifyType) : undefined,
     body,
     sourcePath: filePath,
   };
@@ -102,8 +112,13 @@ export async function getLessonsForPath(pathSlug: string) {
   const directory = path.join(CONTENT_ROOT, pathSlug);
 
   try {
-    const files = await fs.readdir(directory);
-    const lessonFiles = files.filter((file) => file.endsWith(".mdx"));
+    const files = await fs.readdir(directory, { recursive: true });
+    // files could be nested like "chapter-1/lesson.mdx"
+    // we convert them to full paths before working heavily
+    const lessonFiles = typeof files[0] === 'string' 
+      ? files.filter((file) => file.endsWith(".mdx"))
+      // If the node type varies, falling back to string mapping just in case
+      : files.map(f => String(f)).filter(file => file.endsWith(".mdx"));
 
     const records = await Promise.all(
       lessonFiles.map(async (fileName) => {

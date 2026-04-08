@@ -2,7 +2,7 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getPublicSupabaseEnv } from "@/lib/env";
+import { getPublicSupabaseConfigMessage, getPublicSupabaseEnv } from "@/lib/env";
 
 let browserClient: SupabaseClient | null = null;
 
@@ -10,7 +10,7 @@ export function getSupabaseBrowserClient() {
   const env = getPublicSupabaseEnv();
 
   if (!env) {
-    throw new Error("Supabase browser client is not configured.");
+    throw new Error(getPublicSupabaseConfigMessage() ?? "Supabase browser client is not configured.");
   }
 
   browserClient ??= createBrowserClient(env.url, env.anonKey);

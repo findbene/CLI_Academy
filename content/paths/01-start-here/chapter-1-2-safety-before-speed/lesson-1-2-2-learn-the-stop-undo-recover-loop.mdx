@@ -1,0 +1,36 @@
+---
+title: "Learn the stop, undo, recover loop"
+lessonNumber: "1.2.2"
+chapterNumber: "1.2"
+pathNumber: "1"
+tutorPreload: "What is the safest undo path for this mistake on {{os}}? Give me the least risky option first."
+verifyType: "terminal_output"
+---
+
+# Learn the stop, undo, recover loop
+
+## Objective
+
+Sometimes, despite our best efforts, an AI agent builds something totally broken or gets stuck in an infinite loop. When that happens, your smartest move is to hit the brakes. 
+
+We don't panic. We stop, undo, and recover.
+
+## Walkthrough
+
+### 1. Stop
+If an AI agent is printing massive amounts of text and seems to be out of control, click on your terminal window and press **`Ctrl` + `C`** on your keyboard (even on a Mac). This is the universal "Kill Command." It will instantly stop whatever your terminal is doing.
+
+### 2. Undo
+If the AI wrote terrible code in your project, the fastest way back to safety is using `git`. If you use Git, simply typing `git restore .` will wipe away all the AI's uncommitted broken changes and magically restore your files to how they looked this morning.
+
+### 3. Recover
+If things get permanently stuck, open the Floating Tutor in the bottom right and say:
+> *"I accidentally ran a bad command and I'm stuck. How do I recover?"*
+
+> [!TIP]
+> Keep this lesson open. If you ever feel overwhelmed in the future, scroll back to this page and remember that `Ctrl+C` is your emergency brake!
+
+<VerificationBlock 
+  deliverable="A one-page `undo-recover.md` playbook."
+  verifyCheck="Learner restores a test file successfully."
+/>

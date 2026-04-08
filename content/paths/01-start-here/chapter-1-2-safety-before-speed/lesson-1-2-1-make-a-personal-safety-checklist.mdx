@@ -1,0 +1,38 @@
+---
+title: "Make a personal safety checklist"
+lessonNumber: "1.2.1"
+chapterNumber: "1.2"
+pathNumber: "1"
+tutorPreload: "Turn my setup into a simple green/yellow/red risk checklist for a beginner."
+verifyType: "terminal_output"
+---
+
+# Make a personal safety checklist
+
+## Objective
+
+AI agents like Claude Code aren't just chatbots—they can actually execute commands on your computer. When Claude realizes it needs to install something or delete something to solve your problem, it will pause and ask you for **permission**.
+
+This lesson establishes the "Golden Rule" of AI agents. If you follow this rule, you have nothing to fear.
+
+## Walkthrough
+
+The Golden Rule is simple: **Never grant permission to a command you don't vaguely understand.**
+
+If Claude asks to run `rm -rf /` or `npm publish`, and you've never heard of those commands, *say no*. 
+
+Let's save this rule:
+1. Open your `cli-academy/notes` folder.
+2. Create a file called `safety-checklist.md`.
+3. Open it in any text editor (Notepad, TextEdit, VS Code).
+4. Copy and paste the Golden Rule inside:
+   ```markdown
+   # My Golden Rule
+   I will never press enter or say 'Yes' to an AI unless I vaguely understand what the command does. If I am confused, I will ask the AI or the Floating Tutor to explain the command first.
+   ```
+5. Save the file.
+
+<VerificationBlock 
+  deliverable="A filled `safety-checklist.md` covering secrets, permissions, backups, and stop rules."
+  verifyCheck="The learner checks all required items and can explain the stop rules."
+/>

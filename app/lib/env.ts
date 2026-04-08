@@ -18,6 +18,24 @@ export function getPublicSupabaseEnv() {
   return { url, anonKey };
 }
 
+export function getPublicSupabaseConfigMessage() {
+  const missing: string[] = [];
+
+  if (!getEnv("NEXT_PUBLIC_SUPABASE_URL")) {
+    missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  }
+
+  if (!getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")) {
+    missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
+
+  if (missing.length === 0) {
+    return null;
+  }
+
+  return `Authentication is unavailable until ${missing.join(" and ")} are set in app/.env.local and the Next.js server is restarted.`;
+}
+
 export function getServiceRoleKey() {
   return getEnv("SUPABASE_SERVICE_ROLE_KEY");
 }
@@ -39,5 +57,5 @@ export function getAnthropicApiKey() {
 }
 
 export function getAnthropicModel() {
-  return getEnv("ANTHROPIC_MODEL") ?? "claude-sonnet-4-6";
+  return getEnv("ANTHROPIC_MODEL") ?? "claude-3-5-sonnet-latest";
 }

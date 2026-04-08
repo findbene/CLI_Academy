@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { buildAssetDownloadHref, getAssetBySlug, getAssetFormatLabel } from "@/lib/assets";
 import { CodeBlock } from "@/components/lesson/CodeBlock";
+import { VerificationBlock } from "@/components/lesson/VerificationBlock";
 import { getLesson } from "@/lib/mdx";
 
 interface LessonContentProps {
@@ -110,6 +111,11 @@ function renderBlock(block: string, index: number) {
         </div>
       </section>
     );
+  }
+
+  const verifyMatch = block.match(/<VerificationBlock[\s\S]*?deliverable="([^"]*)"[\s\S]*?verifyCheck="([^"]*)"[\s\S]*?\/>/);
+  if (verifyMatch) {
+    return <VerificationBlock key={index} deliverable={verifyMatch[1]} verifyCheck={verifyMatch[2]} />;
   }
 
   if (block.startsWith("```")) {

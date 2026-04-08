@@ -97,6 +97,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
       recommendedAssets={recommendedAssets}
       supportGuideTitles={support.guides.slice(0, 2).map((guide) => guide.title)}
       testedOnEnvironments={support.compatibility.slice(0, 2).map((entry) => entry.environment)}
+      tutorPreload={lesson.tutorPreload}
+      modeBalance={lesson.modeBalance}
     >
       <LessonContent pathSlug={pathSlug} lessonSlug={lessonSlug} />
     </LessonPlayer>

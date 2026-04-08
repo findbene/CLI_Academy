@@ -1,0 +1,43 @@
+---
+title: "Complete the first tiny project"
+lessonNumber: "1.3.1"
+chapterNumber: "1.3"
+pathNumber: "1"
+tutorPreload: "Explain exactly what this command will do in my current folder before I press Enter."
+verifyType: "terminal_output"
+---
+
+# Complete the first tiny project
+
+## Objective
+
+It's time for your first real win! We are going to prove that your workspace is set up correctly by writing a tiny configuration file, completely from scratch.
+
+By doing this manually once, you'll understand exactly *where* AI agents are putting files when they start doing this automatically for you.
+
+## Walkthrough
+
+1. Open your Terminal (or Command Prompt / PowerShell).
+2. Use the terminal to navigate into your new workspace. If you made the folder in your `Documents`, you would type:
+```bash
+cd Documents/cli-academy/projects
+```
+3. Let's create a tiny text file. Type the following command and hit **Enter**:
+```bash
+echo "workspace_status=ready" > config.txt
+```
+4. Now, let's verify it worked by asking the terminal to read the file back to us:
+```bash
+cat config.txt
+```
+*(On Windows Command Prompt, use `type config.txt` instead).*
+
+If the terminal prints `workspace_status=ready`, congratulations! You just completed your first technical configuration using a command-line interface!
+
+> [!TIP]
+> Did the terminal print an error like `cd: no such file or directory`? Open the **Floating Tutor** and tell it exactly what you typed and what the error says. The Tutor is built to handle this!
+
+<VerificationBlock 
+  deliverable="A neatly organized downloads or notes folder using manual CLI steps plus AI explanation."
+  verifyCheck="The folder contents match the target layout and the learner writes what each command did."
+/>

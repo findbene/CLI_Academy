@@ -144,6 +144,14 @@ At minimum, consider:
 - `docs/TRD.md`
 - `docs/ZERO_TO_CLAUDE_MASTER_BLUEPRINT.md`
 
+## Content Authoring Rules
+
+When replacing `*TBD*` blocks inside newly generated MDX files, follow these guidelines:
+- **Tone**: Hugely encouraging, direct, and zero-jargon. Optimize for removing fear.
+- **Tutor Teaming**: Explicitly instruct the user to ask the Floating Tutor if they get stuck.
+- **Verification Alignment**: The walkthrough must result in the exact technical state demanded by the `<VerificationBlock>`.
+- Use the provided `tutorPreload` to inform what concepts to teach vs. what concepts the Tutor should handle dynamically.
+
 ## Definition of Done
 
 A change is done when:

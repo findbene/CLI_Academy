@@ -10,14 +10,23 @@ function sanitizeNextPath(nextValue: string | null) {
   return nextValue;
 }
 
+function getLoginDestination(nextValue: string | null) {
+  const loginUrl = new URL("/login", getAppUrl());
+
+  if (nextValue) {
+    loginUrl.searchParams.set("next", nextValue);
+  }
+
+  return loginUrl;
+}
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const requestedNext = sanitizeNextPath(url.searchParams.get("next"));
-  const fallbackDestination = requestedNext ?? "/onboarding";
   const supabaseContext = await createSupabaseServerClient();
 
   if (!supabaseContext) {
-    return NextResponse.redirect(new URL(fallbackDestination, getAppUrl()));
+    return NextResponse.redirect(getLoginDestination(requestedNext));
   }
 
   const code = url.searchParams.get("code");
@@ -32,7 +41,7 @@ export async function GET(request: NextRequest) {
   let destination = requestedNext ?? "/dashboard";
 
   if (!user) {
-    destination = "/login";
+    return applySupabaseHeaders(NextResponse.redirect(getLoginDestination(requestedNext)), supabaseContext.responseHeaders);
   } else {
     const { data: profile } = await supabaseContext.supabase
       .from("profiles")
