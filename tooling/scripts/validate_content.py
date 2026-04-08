@@ -33,7 +33,7 @@ import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-CONTENT_DIR = Path(__file__).parent.parent / "content" / "paths"
+CONTENT_DIR = Path(__file__).parent.parent.parent / "content" / "paths"
 
 REQUIRED_FIELDS: dict[str, type] = {
     "title": str,

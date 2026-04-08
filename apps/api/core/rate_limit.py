@@ -7,7 +7,6 @@ deployment; swap for Redis-backed storage when scaling horizontally.
 
 import time
 from collections import defaultdict
-from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 
