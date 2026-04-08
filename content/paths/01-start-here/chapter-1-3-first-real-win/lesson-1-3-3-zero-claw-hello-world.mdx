@@ -1,0 +1,207 @@
+---
+slug: "zero-claw-hello-world"
+title: "ZeroClaw Hello World – Your First Agent in Under 10 Minutes"
+description: "Experience the magic of running your very first local AI agent. No complex setup, no frustration—just an agent saying hello and working for you."
+lesson_number: 3
+chapterNumber: 3
+pathNumber: 1
+estimated_minutes: 10
+tier_required: "free"
+last_reviewed_at: "2026-04-08"
+has_safety_warning: false
+tutorPreload: "{\"context\": \"User is attempting their first ZeroClaw setup. Common errors: Node version. Help them debug gently.\", \"starter_prompts\": [\"Help me fix a permissions error\", \"I don't understand the API key step\", \"Can you explain the code snippet?\"]}"
+modeBalance: "guided"
+verifyType: "lab"
+---
+
+Welcome to the **First Real Win** of CLI Academy! 
+
+You've learned the safety rules, you've grasped the fundamentals of the terminal. Now, it's time for the payoff. Today, you are going to run your first real, functioning AI agent on your own machine. We will be using **ZeroClaw** — an ultra-lightweight, beginner-friendly spin-off of OpenClaw designed exactly for this moment.
+
+By the end of this 10-minute lesson, you will have a local agent that can greet you, summarize your text, and interact with you. 
+
+<Screenshot
+  src="/assets/placeholders/zero_claw_hero.png"
+  alt="A clean terminal showing the ZeroClaw agent greeting the user."
+  caption="This is what success looks like! Minimalist, clean, and entirely yours."
+/>
+
+---
+
+## The Guided Path: Your First Run
+
+Follow these exact steps to get your agent running safely. We’ll provide the code, you provide the execution. 
+
+### Step 1: Install ZeroClaw
+
+Open your terminal. Make sure you are in a safe directory (like your Desktop or a dedicated `CLI_Academy_Projects` folder). Run the following command:
+
+<TerminalSimulation
+  command="npm i -g @openclaw/zeroclaw"
+  output="+ @openclaw/zeroclaw@1.0.0
+added 42 packages in 3s"
+  status="success"
+/>
+
+<Screenshot
+  src="/assets/placeholders/install_success.png"
+  alt="NPM successfully installing ZeroClaw globally."
+  caption="ZeroClaw installs rapidly since it is dependency-light."
+/>
+
+### Step 2: Set Up Your API Key Environment
+
+Before ZeroClaw can talk to the LLM (Large Language Model), it needs a way to authenticate. 
+
+*On Windows (PowerShell):*
+<CodeBlock language="powershell">
+$env:ANTHROPIC_API_KEY="your-api-key-here"
+</CodeBlock>
+
+*On macOS / Linux:*
+<CodeBlock language="bash">
+export ANTHROPIC_API_KEY="your-api-key-here"
+</CodeBlock>
+
+<Hint title="API Key Safety Recap">
+Never type your API key directly into a script file if you plan to share it! Using environment variables (like we did above) keeps the key safely in your current terminal session and out of your source code.
+</Hint>
+
+### Step 3: Write the Agent Script
+
+In your terminal, you can download the starter files directly, or create a brand new file inside your project folder called `hello_agent.js`.
+
+**Download Asset:** [Starter Code Folder](/assets/labs/zero_claw_hello_world/starter/)
+
+Open the `hello_agent.js` file in your editor and paste the following code:
+
+<CodeBlock language="javascript" title="hello_agent.js">
+import { ZeroClaw } from '@openclaw/zeroclaw';
+
+async function run() {
+  console.log("🤖 Booting ZeroClaw...");
+
+  const agent = new ZeroClaw({
+    model: 'claude-3-haiku-20240307',
+    system: "You are a friendly, enthusiastic agent welcoming a user to CLI Academy."
+  });
+
+  const response = await agent.prompt("Say a short hello and introduce yourself!");
+  
+  console.log("\nAgent says:");
+  console.log(response.text);
+}
+
+run().catch(console.error);
+</CodeBlock>
+
+<Screenshot
+  src="/assets/placeholders/vscode_hello_agent.png"
+  alt="The hello_agent.js code comfortably residing in VS Code."
+  caption="Notice how little code is required to instantiate the agent."
+/>
+
+### Step 4: Run It!
+
+Back in your terminal, it's time to execute the script!
+
+<TerminalSimulation
+  command="node hello_agent.js"
+  output="🤖 Booting ZeroClaw...
+
+Agent says:
+Hello there! I'm your ZeroClaw assistant, and I couldn't be more thrilled to welcome you to CLI Academy! Let's get building!"
+  status="success"
+/>
+
+**Congratulations!** You just orchestrated an AI agent on your own machine. Take a moment to celebrate. This is the foundation of everything that comes next.
+
+---
+
+## Hint-Based Scaffolding: Leveling Up
+
+Your agent can say hello, but let's make it work for you. Let's give it a task: summarizing a long sentence.
+
+<Hint title="How to adjust your script">
+Instead of asking it to "Say a short hello", try changing the `agent.prompt(...)` text to pass in a hard-coded paragraph of text, and instruct the agent to "Summarize the following text in one sentence: [YOUR TEXT HERE]". 
+</Hint>
+
+<Screenshot
+  src="/assets/placeholders/summarize_diff.png"
+  alt="A diff showing the change from a greeting prompt to a summarize prompt."
+  caption="Small prompt tweaks yield completely different agent behaviors."
+/>
+
+---
+
+## Independent Challenge: Echo & List
+
+Now it is your turn to fly solo. We challenge you to create a new script named `file_agent.js`.
+
+**The Goal:**
+1. Start ZeroClaw.
+2. Ask the user for input via the standard node `readline` module (or just hardcode a directory path).
+3. Have the agent list the files in the directory by utilizing a basic tool integration.
+
+*Wait! Tool integration? ZeroClaw has a `tools` parameter you can pass during instantiation.*
+
+<CodeSandbox
+  title="ZeroClaw Tool Snippet"
+  code="
+  const agent = new ZeroClaw({
+    tools: [
+      {
+        name: 'list_files',
+        description: 'Lists files in the current directory.',
+        execute: async () => {
+          // Can you figure out how to return an array of filenames here?
+        }
+      }
+    ]
+  });"
+/>
+
+If you get stuck, feel free to download the [Solution Code Folder](/assets/labs/zero_claw_hello_world/solution/) to see how we built it.
+
+---
+
+## Verification & Badge Unlock
+
+Ready to prove your skills and claim your **"Agent Initiator"** badge? Use the checklist below to verify your work.
+
+<VerificationChecklist
+  items={[
+    { id: "install", label: "Successfully installed @openclaw/zeroclaw globally" },
+    { id: "env", label: "Set the ANTHROPIC_API_KEY environment variable securely" },
+    { id: "run", label: "Successfully executed node hello_agent.js without errors" },
+    { id: "challenge", label: "Attempted the Independent Echo & List challenge" }
+  ]}
+  onCompleteAction="unlockBadge"
+  badgeId="agent_initiator"
+/>
+
+<Screenshot
+  src="/assets/placeholders/badge_unlock.png"
+  alt="A shiny Agent Initiator badge unlocking on the user's screen."
+  caption="Wear it as a badge of honor."
+/>
+
+---
+
+## Next Steps
+
+**You did it.** Take a deep breath. 
+
+If you are feeling mentally fatigued, we highly recommend heading over to the **[Agent Lounge](/lounge)**. Grab a virtual coffee, read some light, relaxing articles on the future of OpenClaw, and unwind. 
+
+When you are ready to continue your journey, your next target is learning about core [Agentic Memory Patterns](/paths/02-terminal-and-file-system-foundations-for-normal-people/lesson-1).
+
+<div className="mt-8 p-6 bg-gradient-to-r from-[#00D4FF]/10 to-[#5CE1E6]/5 rounded-2xl border border-white/5 backdrop-blur-md">
+  <h3 className="text-xl font-semibold mb-2">Want to Go Pro?</h3>
+  <p className="text-gray-300">
+    The free tier is just the beginning. Our Pro capstones dive into creating fully autonomous orchestrators that can research, write, and deploy applications while you sleep.
+  </p>
+  <a href="/pricing" className="mt-4 inline-block px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+    Explore Pro Capstones
+  </a>
+</div>

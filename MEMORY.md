@@ -26,3 +26,6 @@
 - do not scatter memory notes across hidden directories
 - do not break frontend Light/Dark mode contrasts by hardcoding tailwind text/bg colors (always use `var(--color-bg-panel)`, etc.)
 - do not let structural migrations land without also updating root status docs and handoff notes
+- do not overlook Next.js's sticky router cache in `.next/`; always nuke the folder when executing heavy structural route renames to avoid 500 crashes.
+- do not pipe content blindly into raw text files (e.g. `requirements.txt`) in Windows PowerShell without explicitly handling UTF-16 encodings/BOMs, which cause critical packaging failures.
+- always aggressively verify environments before determining an app is broken; terminal sessions cache old path references that hide newly installed libraries.

@@ -61,7 +61,7 @@ export default async function HomePage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 drop-shadow-[0_0_25px_rgba(45,212,191,0.8)]">The Agentic Era.</span>
           </h1>
           <p className="font-light text-[1.15rem] tracking-wide text-[rgba(255,255,255,0.95)] mt-2 [text-shadow:_0_0_15px_rgba(255,255,255,0.3)]">
-            Go from absolute beginner to a Certified AI Developer. Automate your boring tasks, build a world-class portfolio, and learn to solve society's complex problems using AI Agents.
+            Master autonomous agents, automate the mundane, and engineer the future.
           </p>
           <div className="hero-actions flex-wrap gap-4 mt-8">
             <Link

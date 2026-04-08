@@ -10,6 +10,7 @@ import {
 import { getPublishedCatalogPaths, type CatalogPath } from "@/lib/catalog";
 import { getServerViewer } from "@/lib/viewer";
 import { FreeTierShowcase } from "@/components/marketing/FreeTierShowcase";
+import { AlumniHub } from "@/components/dashboard/AlumniHub";
 
 function getRecommendedPaths(input: {
   catalogPaths: CatalogPath[];
@@ -136,7 +137,7 @@ export default async function DashboardPage() {
     tier: viewer.profile.tier,
   });
 
-  const [{ count: completedLessonsCount }, { data: enrollments }, { data: usage }] = await Promise.all([
+  const [{ count: completedLessonsCount }, { data: enrollments }, { data: usage }, { data: progress }, { data: alumni }, { data: achievements }] = await Promise.all([
     viewer.supabaseContext.supabase
       .from("lesson_progress")
       .select("id", { count: "exact", head: true })
@@ -152,6 +153,20 @@ export default async function DashboardPage() {
       .eq("user_id", viewer.user.id)
       .eq("used_at", today)
       .maybeSingle(),
+    viewer.supabaseContext.supabase
+      .from("user_progress")
+      .select("*")
+      .eq("user_id", viewer.user.id)
+      .maybeSingle(),
+    viewer.supabaseContext.supabase
+      .from("alumni_status")
+      .select("*")
+      .eq("user_id", viewer.user.id)
+      .maybeSingle(),
+    viewer.supabaseContext.supabase
+      .from("achievements")
+      .select("id")
+      .eq("user_id", viewer.user.id)
   ]);
 
   const pathIds = [...new Set((enrollments ?? []).map((enrollment) => enrollment.path_id))];
@@ -197,13 +212,11 @@ export default async function DashboardPage() {
         {isFreeTier ? (
           <FreeTierShowcase userName={viewer.user.email ?? "Learner"} />
         ) : (
-          <section className="panel p-6">
-            <div className="eyebrow">Dashboard</div>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight">Welcome back, {viewer.user.email ?? "learner"}</h1>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">
-              Your progress, enrollments, and tutor usage are tracked here. Pick up where you left off or explore a new path.
-            </p>
-          </section>
+          <AlumniHub 
+            streak={progress?.current_streak || 0} 
+            clearanceLevel={alumni?.clearance_level || "Initiate"} 
+            badgesCompleted={achievements?.length || 0} 
+          />
         )}
 
         <section className="grid gap-5 md:grid-cols-3">
