@@ -1,0 +1,103 @@
+---
+slug: "nemoclaw-simulation"
+title: "NVIDIA NemoClaw: Infinite Memory Swarm"
+description: "Build an enterprise-grade, memory-persistent RAG swarm inspired by NVIDIA's NemoClaw architecture to tackle a massive climate dataset."
+lesson_number: 1
+chapterNumber: 1
+pathNumber: 19
+estimated_minutes: 45
+tier_required: "pro"
+last_reviewed_at: "2026-04-08"
+has_safety_warning: true
+tutorPreload: "[SYSTEM] User is building a multi-agent swarm with NemoClaw for climate data aggregation. If they struggle with recursion or memory management, gently explain chunking strategies and suggest simplifying the agent count first."
+verifyType: "checkAlumniStatus"
+---
+
+# NVIDIA NemoClaw: Infinite Memory Swarm
+
+The biggest roadblock for AI developers today isn't intelligence—it's **Limits**. Context windows cap out at 200K or 1 Million tokens. If you feed an agent a gigabyte of raw climate data, it will crash.
+
+To solve this, Enterprise leaders like NVIDIA use Swarm Architectures combining robust RAG (Retrieval-Augmented Generation) with aggressive memory compression. We call this framework **NemoClaw**.
+
+By the end of this Capstone, you will build a multi-agent routing loop that ingests data, compresses its own memory, and never crashes.
+
+![Architecture Diagram: A Supervisor Agent distributing data to Worker Nodes](https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800)
+
+> **⚠️ SAFETY WARNING**
+> This lab involves parallel processing. If you write an infinite recursive loop by accident, you will lock up your machine's CPU. Proceed with caution.
+
+---
+
+## Hybrid Project Files 
+Because this is a dense architectural build, we highly recommend pulling down the starter code rather than typing every line from scratch.
+
+<Hint title="Download Hybrid Starter Files">
+  Download the isolated environment here: `/assets/labs/nemoclaw_simulation/starter/nemo_swarm.py`
+</Hint>
+
+---
+
+## Phase 1: Guided Build (The Supervisor Setup)
+
+In an enterprise swarm, you never let the AI process data randomly. You build a `Supervisor` agent that enforces explicit memory boundaries. 
+
+```python
+class NemoClawAgent:
+    def __init__(self, role, memory_limit=1024):
+        self.role = role
+        self.memory = []
+        self.memory_limit = memory_limit
+    
+    def process_data(self, dataset):
+        print(f"[{self.role}] Processing data block of size {len(dataset)}...")
+        
+        # Simulated RAG memory limit enforcement
+        if len(self.memory) + len(dataset) > self.memory_limit:
+            print(f"[ERROR {self.role}] Context Window Overflow! Chunking required...")
+            self._compress_memory()
+            
+        self.memory.extend(dataset)
+        return f"Processed {len(dataset)} data points."
+```
+
+The magic here is `self._compress_memory()`. Instead of crashing, the agent actively recognizes it is running out of tokens and triggers a compression sub-routine.
+
+---
+
+## Phase 2: Hint-Based Checkpoint (The Compression Routine)
+
+Your task: Implement the `_compress_memory(self)` function inside the `NemoClawAgent` class.
+The function should delete all but the first 100 entries of the agent's memory to simulate a summarized state (RAG extraction).
+
+<Hint title="I'm stuck. How do I truncate a list in Python?">
+  You can slice a list in Python using `self.memory = self.memory[:100]`. This throws away the excess tokens while keeping the foundational memory!
+</Hint>
+
+<br/>
+
+<Hint title="Show me the full Compression Logic!">
+```python
+    def _compress_memory(self):
+        print(f"[SYSTEM {self.role}] Running RAG summarization to compress memory.")
+        self.memory = self.memory[:100] # Keep only structural highlights
+        time.sleep(1) # Simulate the API call to Claude
+```
+</Hint>
+
+---
+
+## Phase 3: Independent Challenge & Certification
+
+You now have a brilliant, self-managing agent block. 
+
+Your final independent challenge is to initialize **two** agents in your file: a `Supervisor` (limit: 2000) and a `Data Parser` (limit: 500). Pass a massive array of 1000 items directly to the parser and ensure it compresses its memory without crashing.
+
+> **💡 Check Your Work**
+> Review the enterprise-grade solution here: `/assets/labs/nemoclaw_simulation/solution/nemo_swarm_final.py`
+
+### 🎓 Capstone Verification: The Agentic Alumni Network
+
+Running this successfully in your terminal completes your final Pro Trial milestone. 
+By completing this Capstone, you have technically mastered Swarm Orchestration.
+
+Click **"Verify Completion"** below to authorize your backend validation hook (`checkAlumniStatus`). Once verified, you will unlock the **"Agentic Ops Specialist"** LinkedIn badge!

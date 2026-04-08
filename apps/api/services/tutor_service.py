@@ -87,6 +87,31 @@ def _sse_raw(value: str) -> str:
     return f"data: {value}\n\n"
 
 # ---------------------------------------------------------------------------
+# "NemoClaw-Style" Orchestrator / Routing Supervisor
+# ---------------------------------------------------------------------------
+
+def _supervisor_analysis(messages: list[dict], user_id: str) -> str:
+    """
+    A lightweight internal orchestrator that scans the conversation array
+    and injects dynamic 'ZeroClaw/NemoClaw' style context before generation.
+    """
+    if not messages:
+        return ""
+        
+    last_msg = str(messages[-1]["content"]).lower()
+    injected_context = ""
+    
+    # Advanced MLOps / DevOps Routing
+    if any(keyword in last_msg for keyword in ["mlops", "aws", "redis", "vercel", "deploy"]):
+        injected_context += "\n\n[ROUTING SUPERVISOR]: User is triggering deployment concepts. Shift persona to 'AI Infrastructure Engineer'. If relevant, reference enterprise architecture case studies like NVIDIA's NemoClaw to explain memory limits."
+    
+    # Troubleshooting / Patient Mentor Routing
+    elif any(keyword in last_msg for keyword in ["error", "bug", "stuck", "infinite loop", "hallucination"]):
+        injected_context += "\n\n[ROUTING SUPERVISOR]: User is hitting a technical wall. Shift persona to 'Patient AI Co-Founder'. Prioritize explaining *why* the bug (like context overflow) is happening conceptually, before handing them the terminal command fix."
+        
+    return injected_context
+
+# ---------------------------------------------------------------------------
 # Streaming generator
 # ---------------------------------------------------------------------------
 
@@ -96,6 +121,11 @@ async def stream_tutor(request: TutorStreamRequest, user_id: str) -> AsyncGenera
 
     # Convert internal message models to the format anthropic SDK expects.
     messages = [{"role": m.role, "content": m.content} for m in request.messages]
+    
+    # Inject Agentic Routing Rules into system prompt
+    dynamic_routing = _supervisor_analysis(messages, user_id)
+    if dynamic_routing:
+        system_prompt += dynamic_routing
 
     client = anthropic.Anthropic(timeout=_request_timeout)
 

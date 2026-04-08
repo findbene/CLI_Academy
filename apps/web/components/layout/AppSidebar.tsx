@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Library, Download, Settings, Compass } from "lucide-react";
+import { LayoutDashboard, Library, Download, Settings, Compass, Newspaper } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { SearchTrigger } from "@/components/ui/search-dialog";
 import { LogoMark } from "@/components/ui/LogoMark";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/lounge", label: "Agentic Era", icon: Newspaper },
   { href: "/resources", label: "Resources", icon: Library },
   { href: "/downloads", label: "Downloads", icon: Download },
   { href: "/settings", label: "Settings", icon: Settings },

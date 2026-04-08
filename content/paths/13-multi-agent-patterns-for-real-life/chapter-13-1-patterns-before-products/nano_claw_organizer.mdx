@@ -1,0 +1,116 @@
+---
+slug: "nano-claw-organizer"
+title: "NanoClaw: The Micro-Tasker"
+description: "Build your very first lightweight AI agent to automate organizing your messy desktop in under 15 minutes."
+lesson_number: 1
+chapterNumber: 1
+pathNumber: 13
+estimated_minutes: 12
+tier_required: "free"
+last_reviewed_at: "2026-04-08"
+has_safety_warning: false
+tutorPreload: "[SYSTEM] The user is writing the NanoClaw OS.listdir() script. If they hit a permission error or OS error, prompt them to check their local Admin rights or check if the Desktop path is resolved correctly for their OS."
+verifyType: "basic"
+---
+
+# NanoClaw: The Micro-Tasker
+
+Welcome to your very first step into the Claw-Verse! 🚀 
+
+Right now, you probably have dozens (or hundreds) of screenshots cluttering your Desktop. Manually dragging them into folders is exactly the kind of boring, repetitive task we are going to train an AI agent to do for us.
+
+By the end of this 12-minute lab, you will have built a **NanoClaw**—a hyper-lightweight Python script that acts autonomously to clean up your computer.
+
+![Before and After: A messy desktop vs an AI-organized desktop](https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&q=80&w=800)
+
+---
+
+## The Hybrid Setup: Choose Your Path
+You can write the code directly into a new file on your computer, or you can download our pre-built starter folder to get moving instantly.
+
+<Hint title="Download Hybrid Starter Files">
+  Want to run this locally right now? 
+  Download the starter packet here: `/assets/labs/nano_claw_organizer/starter/organize_screenshots.py`
+</Hint>
+
+---
+
+## Phase 1: Guided Build (Follow Along)
+
+Let's write the core brain of our NanoClaw agent. Open up your favorite code editor (or just stick around in the terminal) and create a file called `nano_agent.py`.
+
+Here is the exact code you need to start:
+
+```python
+import os
+import shutil
+
+# Step 1: Tell the agent where to look
+DESKTOP_PATH = os.path.expanduser("~/Desktop")
+ORGANIZE_FOLDER = os.path.join(DESKTOP_PATH, "AI_Organized_Screenshots")
+
+def init_nano_agent():
+    print("🤖 NanoClaw Agent Initialized. Scanning Desktop...")
+    
+    # Step 2: Ensure our target folder exists
+    if not os.path.exists(ORGANIZE_FOLDER):
+        os.makedirs(ORGANIZE_FOLDER)
+        print(f"[NanoClaw] Created new directory: {ORGANIZE_FOLDER}")
+
+if __name__ == "__main__":
+    init_nano_agent()
+```
+
+<Hint title="What is os.path.expanduser doing?">
+  This is a safe way to let your code find the Desktop path regardless of whether you are on a Mac, Windows, or Linux machine. Always trust the `os` library over hardcoding file paths!
+</Hint>
+
+---
+
+## Phase 2: Hint-Based Checkpoint (Try It Yourself)
+
+Now that the agent knows *where* to look, we need to teach it *how* to move files. 
+
+Your challenge: Write a loop that checks every file on the Desktop. If the file is a `.png` image that starts with the word "Screenshot", move it into the `ORGANIZE_FOLDER`.
+
+**Try to write this loop yourself before checking the answer!**
+
+<Hint title="Need a hint for the loop?">
+  Use `for filename in os.listdir(DESKTOP_PATH):` to iterate over everything on the desktop. Use `if filename.endswith(".png"):` to check the file type.
+</Hint>
+
+<br/>
+
+<Hint title="Show me the full Agent Logic code!">
+```python
+    count = 0
+    for filename in os.listdir(DESKTOP_PATH):
+        if filename.startswith("Screenshot") and filename.endswith(".png"):
+            source = os.path.join(DESKTOP_PATH, filename)
+            destination = os.path.join(ORGANIZE_FOLDER, filename)
+            
+            # Agent action taking place!
+            shutil.move(source, destination)
+            count += 1
+            print(f"[NanoClaw] Task Complete: Moved {filename}")
+```
+</Hint>
+
+---
+
+## Phase 3: Independent Challenge & Verification
+
+You have the code. You have the logic.
+
+**Your final challenge:** Run your NanoClaw agent in your terminal.
+`python nano_agent.py`
+
+Watch your desktop clear up in real-time. It feels like magic, doesn't it? That is the power of Agentic automation.
+
+> **💡 Check Your Work**
+> If you got stuck, or want to compare your code against our Master architecture, download the final solution here: `/assets/labs/nano_claw_organizer/solution/organize_screenshots_final.py`
+
+### You Did It!
+You just built your first autonomous agent. If you enjoyed this, wait until we chain *multiple* agents together to solve massive real-world problems. 
+
+Ready to level up to the **NemoClaw** architecture? Click next to enter the Swarm.

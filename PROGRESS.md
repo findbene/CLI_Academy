@@ -2,31 +2,30 @@
 
 ## Current phase
 
-Post-normalization verification and documentation alignment.
+Zero-To-Mastery (ZTM) Infrastructure & Pedagogy Implementation.
 
 ## Completed
 
-- Defined the normalized top-level scaffold and operating-document set
-- Moved the frontend from `app/` to `apps/web/`
-- Moved the backend from `backend/` to `apps/api/`
-- Renamed `infrastructure/` to `infra/`
-- Moved scripts into `tooling/scripts/`
-- Consolidating active agent-control material into `.claude/`
-- Architecting the complete `Content Swarm Pipeline` multi-agent automation using `.agents/` workflows
-- Launching "The Terminal Tavern" (Agent Lounge) via a dedicated Next.js `/lounge` route with isolated MDX parsing
-- Resolving visibility and contrast bugs on the Floating Tutor Mode dropdown
-- Upgrading the homepage WebGL aurora background to a mathematical, multi-chromatic (Purple/Blue/Pink) luxury gradient
-- Stabilizing the Auth flow with a server-side logout route that forcibly clears caching
+- **The ZTM Strategic Pivot:** Overhauled marketing pages and value propositions to highlight *Agentic Alumni Networks*, *Gamified Milestones*, and *Case Studies* (like NVIDIA NemoClaw).
+- **Backend Architecture Re-write:**
+  - Scaled up the rate limiter (`rate_limit.py`) using Redis caching and sliding windows to prevent horizontal bottlenecks.
+  - Injected `python-json-logger` to format API telemetry automatically for Datadog/ELK parsing.
+  - Enhanced the AI Tutor Agent with a dynamic "NemoClaw-Style" Orchestrator that intercepts system prompts and adapts its personality based on user conversation history (e.g., "Patient Mentor" vs "Infra Engineer").
+  - Built the `gamification.py` backend endpoint to validate user JWT constraints before awarding daily streaks.
+- **Curriculum Authoring (Phase 1):**
+  - Fully authored the MDX payloads for `nano_claw_organizer.mdx` (Free Tier) and `nemoclaw_simulation.mdx` (Pro Capstone).
+  - Adopted the Hybrid Model: Integrated code snippets directly in the MDX text *alongside* fully executable Python starter/solution files packed in `public/assets/labs/`.
+- **System Normalization:** 
+  - Complete restructuring mapping frontend to `apps/web/` and backend to `apps/api/`.
 
 ## In progress
 
-- Verifying CI/CD paths, deployment references, and env assumptions after the `apps/` migration
-- Identifying shared lesson, tutor, and content-loading logic that should move into `packages/`
-- Auditing legacy path references and leftover compatibility risks from the old layout
+- Authoring the final foundational Free Tier modules to solidify the top-of-funnel acquisition.
+- Connecting the mock UI gamification states (Streaks/Badges) rigidly to Supabase authentication DB rows.
+- Designing the secure "Alumni Command Center" protected dashboard route.
 
 ## Next
 
-1. Update any remaining CI, deployment, or automation references that still assume the old root layout.
-2. Add package boundaries under `packages/` where reuse is already real.
-3. Create `docs/architecture/` migration notes for the normalized repo.
-4. Decide the long-term strategy for `content/paths_old/`.
+1. Draft the `ZeroClaw Hello World` MDX lesson to complete the 3 Free Entry points block.
+2. Formally connect the Authentication Database endpoints.
+3. Rapid prototype the "Alumni Command Center" (UI Dashboard).

@@ -7,19 +7,24 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from routers import health, tutor
+from routers import health, tutor, gamification
 
 # Load environment variables from .env before anything else reads them.
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# Logging
+# Structured Observability / Logging
 # ---------------------------------------------------------------------------
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-8s  %(name)s  %(message)s",
+from pythonjsonlogger import jsonlogger
+
+logHandler = logging.StreamHandler()
+formatter = jsonlogger.JsonFormatter(
+    "%(asctime)s %(levelname)s %(name)s %(module)s %(funcName)s %(message)s"
 )
+logHandler.setFormatter(formatter)
+
+logging.basicConfig(level=logging.INFO, handlers=[logHandler])
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -74,6 +79,7 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(tutor.router)
+app.include_router(gamification.router)
 
 
 # ---------------------------------------------------------------------------

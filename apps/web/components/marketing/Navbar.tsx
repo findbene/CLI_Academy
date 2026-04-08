@@ -39,6 +39,7 @@ export function Navbar({ signedIn = false }: NavbarProps) {
     ? [
         { href: "/dashboard", label: "Dashboard" },
         { href: "/paths", label: "Paths" },
+        { href: "/lounge", label: "Agentic Era" },
         { href: "/resources", label: "Resources" },
         { href: "/downloads", label: "Downloads" },
         { href: "/trust", label: "Trust" },
@@ -47,6 +48,7 @@ export function Navbar({ signedIn = false }: NavbarProps) {
       ]
     : [
         { href: "/paths", label: "Paths" },
+        { href: "/lounge", label: "Agentic Era" },
         { href: "/resources", label: "Resources" },
         { href: "/troubleshooting", label: "Troubleshooting" },
         { href: "/trust", label: "Trust" },

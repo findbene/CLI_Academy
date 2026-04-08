@@ -62,6 +62,33 @@ function renderBlock(block: string, index: number) {
     return <CodeBlock key={index} language={language}>{code}</CodeBlock>;
   }
 
+  // Raw HTML embedding (videos, iframes, wrappers)
+  if (block.startsWith("<video") || block.startsWith("<iframe") || block.startsWith("<div")) {
+    return (
+      <div 
+        key={index} 
+        className="my-8 overflow-hidden rounded-xl shadow-2xl border border-white/5 bg-black"
+        dangerouslySetInnerHTML={{ __html: block }} 
+      />
+    );
+  }
+
+  // Markdown Images: ![alt](url)
+  const imageMatch = block.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+  if (imageMatch) {
+    const [, alt, src] = imageMatch;
+    return (
+      <figure key={index} className="my-10 relative overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-2xl">
+        <img src={src} alt={alt || "Article illustration"} className="w-full h-auto object-cover" loading="lazy" />
+        {alt && (
+          <figcaption className="p-3 text-center text-xs text-slate-500 font-serif italic border-t border-white/5">
+            {alt}
+          </figcaption>
+        )}
+      </figure>
+    );
+  }
+
   if (block === "---") {
     return <hr key={index} className="my-8 border-white/10" />;
   }

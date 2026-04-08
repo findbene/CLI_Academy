@@ -102,11 +102,11 @@ const ShaderBackground = () => {
 
         line = line + circle;
 
-        // Dynamic Premium Multi-chromatic Gradient (Mathematically pure for WebGL compilation)
+        // Dynamic Premium Blue Gradient (Mathematically pure for WebGL compilation)
         float tColor = normalizedLineIndex - iTime * 0.2;
-        vec4 col1 = vec4(0.576, 0.200, 0.917, 1.0); // Purple
-        vec4 col2 = vec4(0.231, 0.510, 0.964, 1.0); // Blue
-        vec4 col3 = vec4(0.882, 0.113, 0.282, 1.0); // Pink
+        vec4 col1 = vec4(0.000, 0.400, 0.900, 1.0); // Deep Blue
+        vec4 col2 = vec4(0.000, 0.600, 1.000, 1.0); // Bright Blue
+        vec4 col3 = vec4(0.000, 0.800, 1.000, 1.0); // Cyan Blue
         
         // Blend colors smoothly using continuous trigonometric functions
         vec4 dynamicColor = mix(col1, col2, sin(tColor * 6.28) * 0.5 + 0.5);

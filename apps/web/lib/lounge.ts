@@ -8,6 +8,7 @@ export interface LoungeMeta {
   date: string;
   type: "article" | "video" | "graphic" | string;
   tags: string[];
+  summary?: string;
   image?: string;
 }
 
@@ -90,6 +91,7 @@ function toLoungeRecord(filePath: string, source: string): LoungeRecord {
     date: String(parsed.date ?? new Date().toISOString().split('T')[0]),
     type: String(parsed.type ?? "article"),
     tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+    summary: parsed.summary ? String(parsed.summary) : undefined,
     image: parsed.image ? String(parsed.image) : undefined,
     body,
     sourcePath: filePath,

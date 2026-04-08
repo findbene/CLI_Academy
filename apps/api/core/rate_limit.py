@@ -1,101 +1,93 @@
 """
-Lightweight in-process rate limiter for the CLI Academy backend.
-
-Uses a sliding-window counter stored in memory. Fine for a single-process
-deployment; swap for Redis-backed storage when scaling horizontally.
+Redis-backed rate limiter for the CLI Academy backend.
+Uses a sliding-window counter in Redis for horizontal scalability.
+Falls back to in-memory dictionary if Redis is unavailable.
 """
 
 import time
+import os
+import logging
 from collections import defaultdict
+import redis
 
 from fastapi import Depends, HTTPException, Request
-
 from core.auth import verify_supabase_jwt
 
+logger = logging.getLogger(__name__)
+
 # ---------------------------------------------------------------------------
-# Storage
+# Storage Configuration
 # ---------------------------------------------------------------------------
 
-# Keyed by (user_id, window_start_minute) → request count
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+try:
+    redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+    redis_client.ping()
+    _use_redis = True
+except redis.ConnectionError:
+    logger.warning("Redis not available. Falling back to in-memory rate limiting.")
+    _use_redis = False
+
+# Fallback in-memory storage
 _counters: dict[str, list[float]] = defaultdict(list)
 
-# Evict entries older than this many seconds to prevent unbounded growth.
-_EVICT_AFTER = 300  # 5 minutes
+def _check_and_increment(key: str, now: float, window: int, limit: int) -> bool:
+    """Returns True if request is allowed, False if rate limited."""
+    if _use_redis:
+        try:
+            cutoff = now - window
+            pipeline = redis_client.pipeline()
+            pipeline.zremrangebyscore(key, 0, cutoff)
+            pipeline.zadd(key, {str(now): now})
+            pipeline.zcard(key)
+            pipeline.expire(key, window)
+            _, _, count, _ = pipeline.execute()
+            return count <= limit
+        except Exception as e:
+            logger.error("Redis rate limiting error: %s", e)
+            # Fall through to memory logic if redis fails mid-flight
+            pass
 
-
-def _prune(key: str, now: float, window: int) -> None:
-    """Remove timestamps older than the window from the counter list."""
+    # In-memory fallback logic
     cutoff = now - window
     _counters[key] = [t for t in _counters[key] if t > cutoff]
-    # If the list is empty, clean up the key entirely.
-    if not _counters[key]:
-        _counters.pop(key, None)
-
+    if len(_counters[key]) >= limit:
+        return False
+    _counters[key].append(now)
+    return True
 
 # ---------------------------------------------------------------------------
 # Dependency factories
 # ---------------------------------------------------------------------------
 
-
-def rate_limit(
-    requests_per_window: int = 20,
-    window_seconds: int = 60,
-):
-    """
-    Return a FastAPI dependency that enforces a per-user sliding-window
-    rate limit.
-
-    Usage::
-
-        @router.post("/stream")
-        async def tutor_stream(
-            ...,
-            _rl: None = Depends(rate_limit(requests_per_window=20, window_seconds=60)),
-        ):
-    """
-
+def rate_limit(requests_per_window: int = 20, window_seconds: int = 60):
     async def _limiter(
         request: Request,
         user_id: str = Depends(verify_supabase_jwt),
     ) -> None:
-        now = time.monotonic()
-        key = f"user:{user_id}"
+        key = f"rate_limit:user:{user_id}"
+        now = time.time()
 
-        _prune(key, now, window_seconds)
-
-        if len(_counters[key]) >= requests_per_window:
+        allowed = _check_and_increment(key, now, window_seconds, requests_per_window)
+        if not allowed:
             raise HTTPException(
                 status_code=429,
                 detail="Rate limit exceeded. Please wait before sending another request.",
             )
 
-        _counters[key].append(now)
-
     return _limiter
 
-
-def ip_rate_limit(
-    requests_per_window: int = 60,
-    window_seconds: int = 60,
-):
-    """
-    Return a FastAPI dependency that enforces a per-IP sliding-window
-    rate limit for unauthenticated endpoints (e.g. health).
-    """
-
+def ip_rate_limit(requests_per_window: int = 60, window_seconds: int = 60):
     async def _limiter(request: Request) -> None:
-        now = time.monotonic()
         client_ip = request.client.host if request.client else "unknown"
-        key = f"ip:{client_ip}"
+        key = f"rate_limit:ip:{client_ip}"
+        now = time.time()
 
-        _prune(key, now, window_seconds)
-
-        if len(_counters[key]) >= requests_per_window:
+        allowed = _check_and_increment(key, now, window_seconds, requests_per_window)
+        if not allowed:
             raise HTTPException(
                 status_code=429,
                 detail="Too many requests. Please slow down.",
             )
-
-        _counters[key].append(now)
 
     return _limiter

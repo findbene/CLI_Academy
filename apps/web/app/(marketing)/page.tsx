@@ -53,15 +53,15 @@ export default async function HomePage() {
         <div className="hero-content">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-400/50 bg-teal-400/10 shadow-[0_0_20px_rgba(45,212,191,0.4)] px-4 py-1.5 text-sm text-[rgba(255,255,255,0.85)]">
             <Zap className="h-3.5 w-3.5 text-teal-400" />
-            Beginner-first tech education
+            No coding experience required
           </div>
           <h1 className="text-white [text-shadow:_0_0_30px_rgba(255,255,255,0.4)]">
-            Master Claude Code.
+            Zero To Mastery:
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 drop-shadow-[0_0_25px_rgba(45,212,191,0.8)]">Build with confidence.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 drop-shadow-[0_0_25px_rgba(45,212,191,0.8)]">The Agentic Era.</span>
           </h1>
           <p className="font-light text-[1.15rem] tracking-wide text-[rgba(255,255,255,0.95)] mt-2 [text-shadow:_0_0_15px_rgba(255,255,255,0.3)]">
-            Stop typing syntax. Start orchestrating autonomous AI engineers to build your future.
+            Go from absolute beginner to a Certified AI Developer. Automate your boring tasks, build a world-class portfolio, and learn to solve society's complex problems using AI Agents.
           </p>
           <div className="hero-actions flex-wrap gap-4 mt-8">
             <Link
@@ -72,7 +72,7 @@ export default async function HomePage() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/lounge" className="hero-cta-secondary border-fuchsia-500/50 text-fuchsia-100 hover:bg-fuchsia-500/10 hover:shadow-[0_0_20px_rgba(217,70,239,0.2)]">
-              ☕ The Terminal Tavern
+              📰 The Agentic Era
             </Link>
             <Link href="/paths" className="hero-cta-secondary hidden sm:flex">
               <BookOpen className="h-4 w-4" />
@@ -112,34 +112,34 @@ export default async function HomePage() {
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
-              icon: Terminal,
-              title: "Setup-First Paths",
-              desc: "Step-by-step guides for Windows, macOS, and Linux. No assumptions about prior experience.",
+              icon: GraduationCap,
+              title: "Industry Certifications",
+              desc: "Don't just learn. Graduate as a 'Certified Prompt Architect' or 'AI Infrastructure Engineer'. Stand out to employers immediately.",
             },
             {
-              icon: ShieldCheck,
-              title: "Safety Warnings Built In",
-              desc: "Every risky command is flagged. Every deployment lesson has visible safety blocks. Trust first.",
+              icon: Zap,
+              title: "Real-Time Agent Simulations",
+              desc: "Watch live, interactive visualizations of autonomous Swarms communicating in real-time right from your dashboard.",
             },
             {
               icon: MessageCircle,
-              title: "AI Tutor",
-              desc: "A floating tutor powered by Claude that understands your current lesson, OS, and skill level.",
+              title: "Live AI Co-Piloting",
+              desc: "An embedded AI Co-founder watches your code. If a term like 'Context Window' confuses you, it explains it instantly and perfectly.",
             },
             {
-              icon: Download,
-              title: "Downloads Center",
-              desc: "Checklists, starter templates, and reference guides in PDF, Markdown, CSV, and JSON.",
+              icon: Plug,
+              title: "The Claw-Verse Ecosystem",
+              desc: "Deep-dive setup, configuration, and troubleshooting for the ENTIRE ecosystem: OpenClaw, PicoClaw, ZeroClaw, NanoClaw, and AutoClaw.",
             },
             {
-              icon: GraduationCap,
-              title: "Role-Based Tracks",
-              desc: "Paths designed for founders, marketers, analysts, students, and developers. Learn what matters to you.",
+              icon: Terminal,
+              title: "Solve Complex Societal Problems",
+              desc: "We skip boring 'To-Do' apps. Our labs teach you how to deploy agent teams that tackle massive, real-world challenges.",
             },
             {
               icon: CheckCircle2,
-              title: "Verified Progress",
-              desc: "Lab verification, quiz tracking, and completion evidence. Know you actually learned it.",
+              title: "The Agentic Alumni Network",
+              desc: "Join an elite community of builders. Participate in gamified community challenges, climb the leaderboards, and launch apps together.",
             },
           ].map((item, index) => (
             <div

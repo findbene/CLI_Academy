@@ -22,7 +22,7 @@ export interface LessonRecord extends LessonMeta {
   sourcePath: string;
 }
 
-const CONTENT_ROOT = path.resolve(process.cwd(), "..", "content", "paths");
+const CONTENT_ROOT = path.resolve(process.cwd(), "..", "..", "content", "paths");
 
 function parseScalar(value: string) {
   const trimmed = value.trim();
