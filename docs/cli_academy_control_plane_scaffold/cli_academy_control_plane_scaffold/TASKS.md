@@ -2,14 +2,14 @@
 
 ## P0
 
-- [x] create migration branch for repo normalization
-- [x] move `app/` to `apps/web/`
-- [x] move `backend/` to `apps/api/`
-- [x] rename `infrastructure/` to `infra/`
-- [x] move `scripts/` to `tooling/scripts/`
-- [x] consolidate hidden agent folders into `.claude/`
-- [x] move `_communication/` to `docs/archive/communication/`
-- [x] move `_design_backup/` to `docs/archive/design-backup/`
+- [ ] create migration branch for repo normalization
+- [ ] move `app/` to `apps/web/`
+- [ ] move `backend/` to `apps/api/`
+- [ ] rename `infrastructure/` to `infra/`
+- [ ] move `scripts/` to `tooling/scripts/`
+- [ ] consolidate hidden agent folders into `.claude/`
+- [ ] move `_communication/` to `docs/archive/communication/`
+- [ ] move `_design_backup/` to `docs/archive/design-backup/`
 
 ## P1
 

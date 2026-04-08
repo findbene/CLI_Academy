@@ -1,0 +1,14 @@
+{
+  "read_order": [
+    "README.md",
+    "CLAUDE.md",
+    "PRIMER.md",
+    "TASKS.md",
+    "PROGRESS.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "forbidden_top_level_folders_without_approval": true,
+  "require_handoff_updates_for_material_changes": true,
+  "prefer_narrow_context_loading": true,
+  "archive_instead_of_mixing_history": true
+}

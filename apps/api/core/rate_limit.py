@@ -11,7 +11,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 
-from auth import verify_supabase_jwt
+from core.auth import verify_supabase_jwt
 
 # ---------------------------------------------------------------------------
 # Storage

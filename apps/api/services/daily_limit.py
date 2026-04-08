@@ -23,7 +23,7 @@ from datetime import date
 import httpx
 from fastapi import Depends, HTTPException
 
-from auth import verify_supabase_jwt
+from core.auth import verify_supabase_jwt
 
 logger = logging.getLogger(__name__)
 

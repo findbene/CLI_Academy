@@ -9,9 +9,9 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from auth import verify_supabase_jwt
-from daily_limit import enforce_daily_tutor_limit
-from rate_limit import rate_limit
+from core.auth import verify_supabase_jwt
+from services.daily_limit import enforce_daily_tutor_limit
+from core.rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
 
