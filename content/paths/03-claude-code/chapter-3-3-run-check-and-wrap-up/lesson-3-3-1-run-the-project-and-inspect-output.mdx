@@ -10,10 +10,44 @@ verifyType: "terminal_output"
 # Run the project and inspect output
 
 ## Objective
-*TBD*
+
+Your objective in this lesson is to successfully run or preview your project locally after making a change, verifying that your updates are working as expected. You'll learn how to safely execute your project's code and inspect its output to confirm success.
 
 ## Walkthrough
-*TBD*
+
+It's time to see your changes in action! We'll run your project locally and then carefully observe its output to make sure everything is perfect.
+
+1.  **Navigate to your Project Directory:**
+    If you're not already there, use the `cd` command to change into your project's main directory. This ensures you're running commands from the correct location.
+    ```bash
+    cd your-project-name
+    ```
+    *Why this is safe:* `cd` only changes your current location in the file system; it doesn't modify any files or affect your system.
+
+2.  **Run or Preview Your Project:**
+    Most projects have a specific command to run them. This might be a simple script execution or starting a local development server. Choose the command that best fits your project type. Here are some common examples:
+
+    *   **For a Python script:**
+        ```bash
+        python your_script.py
+        ```
+    *   **For a Node.js project (often a web server or application):**
+        ```bash
+        npm start
+        ```
+    *   **For a simple shell script:**
+        ```bash
+        bash your_script.sh
+        ```
+    *   **For other project types:** Look for a `run` or `start` command in your project's documentation, or try `make run` if a `Makefile` is present.
+
+    *Why this is safe:* These commands are designed for local development. They typically execute your code or start a server that's only accessible on your computer (e.g., `localhost`). They don't typically modify core system files or make your project accessible to the outside world unless explicitly configured to do so.
+
+3.  **Inspect the Output:**
+    *   **In the Terminal:** Carefully read the output in your terminal. Look for any success messages indicating your change worked, or specific values you expected to see printed. Pay close attention to any warnings or error messages – these will be crucial if something didn't go as planned.
+    *   **In a Web Browser (if applicable):** If your project starts a local web server (often on `http://localhost:3000` or `http://localhost:5000`), open your web browser and navigate to that address. Verify that your changes are visible on the webpage.
+
+If you encounter any unexpected output or errors, don't worry! That's a normal part of development, and we'll help you figure it out.
 
 <VerificationBlock 
   deliverable="A successful local run or preview after Claude’s change."

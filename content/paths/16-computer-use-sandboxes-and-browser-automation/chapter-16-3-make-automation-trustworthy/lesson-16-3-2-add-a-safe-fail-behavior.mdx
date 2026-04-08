@@ -10,10 +10,70 @@ verifyType: "terminal_output"
 # Add a 'safe fail' behavior
 
 ## Objective
-*TBD*
+
+In your journey through the command line, situations will arise where a command might not go as planned. Instead of letting your script guess what to do next (which can sometimes lead to unexpected or even destructive results!), you'll learn how to implement a "safe fail" behavior. This means that if a critical step fails, your script will stop and ask you for explicit instructions, ensuring you always remain in control and can make informed decisions.
 
 ## Walkthrough
-*TBD*
+
+Let's create a simple script that attempts an operation and, if it fails, pauses to ask for your guidance before proceeding.
+
+1.  **Create a new script file:**
+    Open your terminal and type `nano safe_fail.sh` (or use `vim`, `code`, etc., if you prefer). This creates an empty file where we'll write our safe-fail logic.
+
+2.  **Add the script content:**
+    Paste the following lines into your `safe_fail.sh` file:
+
+    ```bash
+    #!/bin/bash
+
+    echo "🚀 Attempting a critical operation..."
+
+    # --- Start of the Safe Fail Logic ---
+    # We'll use the 'false' command to simulate a command that fails.
+    # In a real script, this would be your actual command (e.g., 'cp', 'mv', 'mkdir').
+    # The 'if' statement checks if the command was successful.
+    if false; then # 'false' always signals failure, `true` always signals success.
+        echo "✅ Critical operation succeeded!"
+    else
+        # If the 'if' condition is false (meaning our simulated command failed):
+        echo "🚨 WARNING: A critical step failed! This might affect subsequent actions."
+        read -p "Do you want to proceed despite this error? (y/N) " -n 1 -r
+        echo # This adds a new line for better readability after your input.
+
+        # Check if the user's reply was 'y' or 'Y'.
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "🛑 Operation aborted by user. Exiting safely."
+            exit 1 # This command stops the script immediately with an error status.
+                   # It's safe because it prevents any further, potentially unwanted, actions.
+        else
+            echo "➡️ Proceeding as requested. Please be aware of the prior failure."
+        fi
+    fi
+    # --- End of the Safe Fail Logic ---
+
+    echo "✨ This message will only show if the critical operation succeeded OR if you chose to proceed after a failure."
+    ```
+
+3.  **Save and exit your editor.**
+    - If using `nano`, press `Ctrl+O` (to write out), then `Enter`, then `Ctrl+X` (to exit).
+
+4.  **Make the script executable:**
+    Before you can run a script, you need to give it permission to execute.
+    ```bash
+    chmod +x safe_fail.sh
+    ```
+    This command is safe because it only changes the permissions of your file, allowing the system to run it as a program. It doesn't modify the content or perform any system operations.
+
+5.  **Run the script and observe the safe fail:**
+    ```bash
+    ./safe_fail.sh
+    ```
+    - You will see the "WARNING" message and be prompted.
+    - Try typing `n` (or any other key) and press `Enter`. The script should stop and exit safely.
+    - Run the script again: `./safe_fail.sh`
+    - This time, type `y` and press `Enter`. The script will acknowledge your choice and continue to the end.
+
+This simple `if/else` structure combined with `read -p` and `exit 1` provides a powerful, user-friendly "safe fail" mechanism, putting you squarely in control of your workflow's direction.
 
 <VerificationBlock 
   deliverable="A fallback that stops and asks instead of improvising."

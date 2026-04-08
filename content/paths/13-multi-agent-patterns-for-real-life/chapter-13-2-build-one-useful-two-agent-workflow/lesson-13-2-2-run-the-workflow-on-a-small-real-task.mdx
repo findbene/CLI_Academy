@@ -10,10 +10,20 @@ verifyType: "terminal_output"
 # Run the workflow on a small real task
 
 ## Objective
-*TBD*
+Today, you'll put your understanding of agent workflows into practice. We'll run a two-agent system on a small, contained task. Your goal is to successfully execute this task, collect all the output and logs, and prepare to analyze how the agents collaborated (or where they might have struggled) to achieve their objective. This is a crucial step towards understanding and troubleshooting agent systems.
 
 ## Walkthrough
-*TBD*
+
+1.  **Prepare Your Workspace**: First, let's ensure we have a safe environment for our agents. In your terminal, navigate to your project directory. The tools we use for agent interaction are designed to operate strictly within your current directory, preventing any unintended changes elsewhere on your system.
+2.  **Assign a Two-Part Task**: We'll give our agents a focused task that requires a clear handoff: "Create a Python script named `hello.py` that prints 'Hello, CLI Academy!' and then execute this script, reporting its output." This encourages one agent to create and another to execute.
+3.  **Initiate the Agent Workflow**: Now, let's tell our agents to get to work! In your terminal, type the following command:
+    ```bash
+    your_agent_tool run --agents 2 --task "Create a Python script named hello.py that prints 'Hello, CLI Academy!' and then execute this script, reporting its output."
+    ```
+    *Safety First*: This command is designed with safety in mind. It will only create a new file (`hello.py`) and then execute *that specific script* within your current project directory. It will not modify any system files or access sensitive data, keeping your environment secure.
+4.  **Observe the Interaction**: As the workflow runs, you'll see a stream of logs in your terminal. This output details the agents' thought processes, their communication, and their actions. Pay attention to how they collaborate and how the task is passed between them.
+5.  **Verify the Task Completion**: Once the run completes, you should see the output from the executed Python script. You can also manually confirm the agent's work by typing `ls` to see `hello.py` and `cat hello.py` to view its contents.
+6.  **Capture the Full Run**: For the next step with your AI Tutor, please copy all the text from your terminal (the entire log of the agent run, from start to finish). This complete record of the agents' interaction is your deliverable!
 
 <VerificationBlock 
   deliverable="A completed two-agent run with logs and outputs."

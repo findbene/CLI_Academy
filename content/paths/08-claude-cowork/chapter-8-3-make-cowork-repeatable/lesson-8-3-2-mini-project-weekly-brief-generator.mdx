@@ -10,10 +10,39 @@ verifyType: "terminal_output"
 # Mini project: weekly brief generator
 
 ## Objective
-*TBD*
+
+In this mini-project, you will build a repeatable workflow to generate a weekly brief from your source files using `cowork`. Our goal is to create a clear, concise summary of your week's activities, while ensuring you remain fully in control of the process and the final output. This skill will help you streamline reporting and reflective practices.
 
 ## Walkthrough
-*TBD*
+
+Let's set up your weekly brief generator. Remember, `cowork` is an AI assistant that helps you in your terminal, always asking for your explicit permission before performing any actions that modify your system. This means you are always in the driver's seat!
+
+1.  **Create Your Project Folder:**
+    Start by creating a dedicated space for your weekly briefs. This keeps your files organized.
+    ```bash
+    mkdir weekly-briefs
+    cd weekly-briefs
+    ```
+    *Safety Check:* `mkdir` only creates an empty folder, and `cd` only changes your location. Both are completely safe operations.
+
+2.  **Gather Your Source Files:**
+    Inside `weekly-briefs`, create a sub-folder called `sources`. This is where you'll place all the notes, meeting summaries, or other documents you want `cowork` to analyze for your brief.
+    ```bash
+    mkdir sources
+    ```
+    *Safety Check:* Again, just creating an empty folder. You'll manually copy your actual content into this `sources` directory.
+
+3.  **Generate Your Weekly Brief:**
+    Now, let's ask `cowork` to draft your summary. Ensure your source files are in the `sources/` directory.
+    ```bash
+    cowork "Using the files in the 'sources/' directory, please generate a concise weekly summary. Focus on key achievements, challenges, and next steps. Title it 'Weekly Brief - [Current Date]' and use markdown format." > "weekly_brief_$(date +%Y-%m-%d).md"
+    ```
+    *Safety Check:*
+    *   `cowork` will read the files but *will not modify them*.
+    *   It will present you with its proposed summary directly in your terminal. You can review and edit it *before* it gets saved.
+    *   The `> "weekly_brief_$(date +%Y-%m-%d).md"` part redirects `cowork`'s output to a new file with the current date. This means `cowork` isn't touching existing files; it's creating a brand new one. If a file with that exact name already exists, it would be overwritten, but since we're using a date, this is unlikely and you'll always have a fresh brief.
+
+    After `cowork` presents its draft, review it carefully. You can then refine it further in your favorite text editor if needed. To generate a new brief next week, simply update the files in your `sources/` directory and re-run the `cowork` command from step 3!
 
 <VerificationBlock 
   deliverable="A repeatable workflow for creating a weekly summary from source files."

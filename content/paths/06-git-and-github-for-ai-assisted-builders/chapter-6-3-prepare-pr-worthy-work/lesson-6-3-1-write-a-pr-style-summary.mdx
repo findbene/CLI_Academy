@@ -10,10 +10,47 @@ verifyType: "terminal_output"
 # Write a PR-style summary
 
 ## Objective
-*TBD*
+By the end of this lesson, you will create `pr-summary.md`, a markdown file to effectively communicate a hypothetical code change to reviewers. It will include key sections for problem, change, verification, and risks.
 
 ## Walkthrough
-*TBD*
+Providing a clear summary of your code changes is essential for collaborators. This is often called a Pull Request (PR) summary. Let's create one.
+
+1.  **Create your summary file:**
+    First, create an empty markdown file for your summary:
+    ```bash
+    touch pr-summary.md
+    ```
+    *Why this is safe:* The `touch` command is very gentle. It simply creates a new, empty file if one doesn't exist. If `pr-summary.md` already existed, `touch` would only update its last modified date without changing any content.
+
+2.  **Open the file for editing:**
+    Next, open `pr-summary.md` using `nano`, a beginner-friendly text editor:
+    ```bash
+    nano pr-summary.md
+    ```
+    *Why this is safe:* `nano` is a text editor. It only allows you to type and save text within the specific file you opened. It won't execute commands or modify anything else on your system.
+
+3.  **Add the summary structure:**
+    Inside `nano`, add the following structure:
+    ```markdown
+    # PR Summary
+
+    ## Problem
+    [Describe the problem this change addresses. Why was this change needed?]
+
+    ## Change
+    [Explain what specific changes were made. How does this solve the problem?]
+
+    ## Verification
+    [Detail the steps to test and verify that the change works correctly.]
+
+    ## Risks
+    [Identify any potential risks, side effects, or areas that might be impacted.]
+    ```
+
+4.  **Save and exit `nano`:**
+    Save (`Ctrl+O`, then `Enter`) and exit `nano` (`Ctrl+X`).
+
+You've created a structured template for your PR summary!
 
 <VerificationBlock 
   deliverable="A `pr-summary.md` with problem, change, verification, risks."

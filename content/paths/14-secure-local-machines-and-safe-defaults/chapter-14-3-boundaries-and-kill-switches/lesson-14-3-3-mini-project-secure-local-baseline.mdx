@@ -10,10 +10,42 @@ verifyType: "terminal_output"
 # Mini project: secure local baseline
 
 ## Objective
-*TBD*
+
+In this lesson, you'll embark on your first security project: building a fundamental, secure local environment using the command line. We'll empower you to understand your system's security posture and implement simple, yet impactful, safe practices. By the end, you'll have a foundational "security baseline package" configured for your machine, giving you greater confidence and control.
 
 ## Walkthrough
-*TBD*
+
+Let's carefully secure your local environment, one safe step at a time. Remember, your safety is our top priority!
+
+1.  **Understand Your Identity:**
+    *   First, let's see who you are on your system. Type `id` and press Enter. This command displays your user ID and the groups you belong to. It's completely safe, as it only reads information about your current session, helping you understand your system privileges.
+    *   Next, try `whoami`. This simply tells you your current username. Again, it's a safe, read-only command.
+
+2.  **Inspect Your Shell Configuration:**
+    *   Your shell configuration files (like `~/.bashrc` or `~/.zshrc`) are critical. Let's safely inspect their permissions. Type `ls -l ~/.bashrc ~/.zshrc` (use the one relevant to your shell, usually `bashrc`). This command lists the file permissions, ownership, and size. It's read-only and safe, helping you confirm these important files are owned by you.
+
+3.  **Secure Your Command History:**
+    *   Your command history can contain sensitive information. Let's configure it to be safer.
+    *   Open your shell configuration file with a text editor: `nano ~/.bashrc` (or `nano ~/.zshrc`). `nano` is a user-friendly and safe text editor.
+    *   Scroll to the end and add or modify these lines:
+        ```bash
+        HISTSIZE=2000        # Limit history entries in RAM
+        HISTFILESIZE=4000    # Limit history entries saved to disk
+        HISTIGNORE="ls:cd:pwd:exit:clear" # Ignore common, non-sensitive commands
+        ```
+    *   Press `Ctrl+S` to save, then `Ctrl+X` to exit.
+    *   Apply the changes: `source ~/.bashrc` (or `source ~/.zshrc`). This command reloads your configuration safely, applying the changes without restarting your terminal.
+
+4.  **Implement Safer Aliases:**
+    *   Aliases can prevent accidental mistakes. Let's create a safer `rm` (remove) command.
+    *   Open your shell configuration file again: `nano ~/.bashrc` (or `nano ~/.zshrc`).
+    *   Add this line: `alias rm='rm -i'`. This makes `rm` always ask for confirmation (`-i`) before deleting files.
+    *   Save (`Ctrl+S`), exit (`Ctrl+X`), and `source ~/.bashrc` (or `source ~/.zshrc`) again. Now, `rm` will prompt you, adding a crucial layer of safety.
+
+5.  **Keep Your System Up-to-Date:**
+    *   The most critical security step is regular updates.
+    *   Type `sudo apt update && sudo apt upgrade -y` (if you're on a Debian/Ubuntu-based system). If you're on Fedora/RHEL, use `sudo dnf update -y`.
+    *   `sudo` temporarily grants administrative privileges, *which is necessary for system updates*. `apt update` refreshes the list of available packages, and `apt upgrade -y` downloads and installs all available security and feature updates. This command is absolutely safe and essential, as it protects your system from known vulnerabilities by installing official, verified software updates.
 
 <VerificationBlock 
   deliverable="A complete local security baseline package."

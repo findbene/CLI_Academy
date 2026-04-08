@@ -10,10 +10,40 @@ verifyType: "terminal_output"
 # Add a tiny feature with guardrails
 
 ## Objective
-*TBD*
+
+In this lesson, you'll learn how to add a very small, harmless feature to your command line environment. We'll focus on doing this safely, understanding what changes you're making, and ensuring you can easily undo them. Think of this as putting up guardrails before you even start driving—it's all about building confidence and knowing you're in control. By the end, you'll have a tiny new command that feels real, added with care and caution.
 
 ## Walkthrough
-*TBD*
+
+Let's add a super simple custom command using your shell's configuration file. This is a great way to start because changes are isolated and easy to revert.
+
+1.  **Choose your shell's configuration file:**
+    *   If you're using `bash` (common default), open `~/.bashrc`.
+    *   If you're using `zsh` (common on macOS), open `~/.zshrc`.
+    *   **Why this is safe:** These files load custom settings *for your user only*. Mistakes here won't affect other users or core system functionality, and you can easily edit them back.
+    *   Open it with a text editor. For example: `nano ~/.bashrc` (or `~/.zshrc`).
+
+2.  **Add your tiny new command:**
+    *   Scroll to the very bottom of the file and add these lines:
+        ```bash
+        # My first custom CLI Academy command!
+        greetme() {
+          echo "Hello from your new custom command! You did it!"
+        }
+        ```
+    *   **Why this is safe:** We're defining a simple shell *function* named `greetme`. The `echo` command only prints text to your screen; it doesn't modify any files or system settings, making it incredibly safe. The `#` line is a comment, completely ignored by your shell.
+    *   Save the file and exit your text editor (e.g., `Ctrl+X`, then `Y`, then `Enter` for `nano`).
+
+3.  **Load your changes safely:**
+    *   In your terminal, run: `source ~/.bashrc` (or `source ~/.zshrc`).
+    *   **Why this is safe:** The `source` command tells your *current* terminal session to re-read and apply the changes from your config file. It doesn't permanently alter anything or require a restart. If you made a mistake, you'd only see an error in this specific session, and it wouldn't be saved or break anything globally.
+
+4.  **Test your new command:**
+    *   Type `greetme` and press Enter.
+    *   You should see: "Hello from your new custom command! You did it!"
+
+5.  **Understanding the Guardrail (and how to undo):**
+    *   If you ever want to remove or disable this command, simply re-open your `~/.bashrc` (or `~/.zshrc`), delete the lines you added, save, and `source` the file again. It's that simple to revert! This ability to easily undo changes is your most powerful guardrail.
 
 <VerificationBlock 
   deliverable="A tiny new command, page, or script added safely."

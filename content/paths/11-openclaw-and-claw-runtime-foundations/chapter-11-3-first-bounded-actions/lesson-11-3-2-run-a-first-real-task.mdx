@@ -10,10 +10,30 @@ verifyType: "terminal_output"
 # Run a first real task
 
 ## Objective
-*TBD*
+In this lesson, you'll bravely execute your very first low-risk, real-world task using the command line! We'll guide you to safely capture a quick note, demonstrating how the CLI can be a valuable tool for everyday productivity, from request to verification.
 
 ## Walkthrough
-*TBD*
+It's exciting to move from exploring to *doing*! Let's accomplish a simple, harmless task together: capturing a quick thought or reminder. This is a common and incredibly safe way to interact with your system.
+
+1.  **Prepare your thought:** Think of a short reminder or note you'd like to "save" in the CLI. For example: "Remember to drink water!" or "First CLI task completed!"
+
+2.  **Execute the command:**
+    Type the following into your terminal, replacing the text inside the quotes with your own message, then press `Enter`:
+    ```bash
+    echo "My first real CLI Academy note!" >> my_first_note.txt
+    ```
+    *   **Why this is safe:**
+        *   `echo`: This command simply *displays* text. It doesn't modify anything on your system by itself.
+        *   `>>`: This is a "redirection operator" that *appends* the output of `echo` to a file. If `my_first_note.txt` doesn't exist, it safely *creates* it in your current directory. It won't overwrite existing system files unless you explicitly tell it to, and we're choosing a unique, new file name.
+
+3.  **Verify your work:**
+    To confirm your note was saved, let's display its content. Type this and press `Enter`:
+    ```bash
+    cat my_first_note.txt
+    ```
+    You should see your note printed back to the screen!
+
+You've just performed your first meaningful task in the CLI: creating a new file and storing information in it. Fantastic job! This tiny step opens the door to countless possibilities.
 
 <VerificationBlock 
   deliverable="A completed bounded task such as reminder, folder check, or note capture."

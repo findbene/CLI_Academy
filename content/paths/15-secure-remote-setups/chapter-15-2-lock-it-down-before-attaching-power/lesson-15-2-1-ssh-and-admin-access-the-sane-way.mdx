@@ -10,10 +10,49 @@ verifyType: "terminal_output"
 # SSH and admin access the sane way
 
 ## Objective
-*TBD*
+Our goal is to establish a secure and password-free way to log into a remote server using SSH keys. This method is much safer than passwords, as it relies on cryptographic pairs instead of something that can be guessed or brute-forced.
 
 ## Walkthrough
-*TBD*
+
+### 1. Generate SSH Keys on Your Local Machine
+First, let's create your unique SSH key pair.
+*   Open your local terminal.
+*   Run the following command:
+    ```bash
+    ssh-keygen -t ed25519 -C "your_email@example.com"
+    ```
+    *   **Why this is safe:**
+        *   `ssh-keygen` creates a pair of cryptographic keys: a private key (which you must keep secret) and a public key (which you can safely share).
+        *   `-t ed25519` specifies a modern, highly secure algorithm for your keys.
+        *   `-C "your_email@example.com"` adds a comment to your public key, making it easy to identify later. You can use any descriptive text here.
+    *   When prompted for a file to save the key, press Enter to accept the default location (`~/.ssh/id_ed25519`).
+    *   **Crucially, enter a strong passphrase when prompted!** This adds an extra layer of security; even if someone gets your private key, they can't use it without the passphrase.
+
+### 2. Copy Your Public Key to the Remote Server
+Now, we need to place your public key on the remote server you want to access.
+*   Use the `ssh-copy-id` command:
+    ```bash
+    ssh-copy-id user@remote_host
+    ```
+    *   Replace `user` with your username on the remote server (e.g., `ubuntu`, `root`).
+    *   Replace `remote_host` with the IP address or hostname of your server.
+    *   **Why this is safe:** This command securely appends *only* your public key (the part safe to share) to the `~/.ssh/authorized_keys` file on the remote server. It never transfers your private key. You'll be prompted for the remote user's password *one last time* to authorize the copy.
+
+### 3. Test Your New SSH Access
+Let's make sure everything worked!
+*   Try logging in without a password:
+    ```bash
+    ssh user@remote_host
+    ```
+    *   You should now be prompted for your SSH key's passphrase (if you set one), but not the remote server's password. If you log in, congratulations!
+
+### 4. Notes for the AI Tutor
+Here's my remote access setup summary for you to review:
+*   I generated an `ed25519` SSH key pair on my local machine.
+*   I used `ssh-copy-id` to place my public key on the remote server.
+*   I intend to disable password authentication on the server's SSH configuration (e.g., in `/etc/ssh/sshd_config`) as a next step, leaving only key-based authentication.
+
+Review my remote access setup and tell me the biggest risk.
 
 <VerificationBlock 
   deliverable="A secure access setup with notes."

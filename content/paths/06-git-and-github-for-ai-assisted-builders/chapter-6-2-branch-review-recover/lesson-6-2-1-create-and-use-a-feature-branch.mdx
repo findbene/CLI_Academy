@@ -10,10 +10,31 @@ verifyType: "terminal_output"
 # Create and use a feature branch
 
 ## Objective
-*TBD*
+
+In this lesson, you'll learn how to create a dedicated space for your work using a "feature branch." This is a fundamental skill that keeps your main project safe and organized. By the end, you'll have successfully created and switched to a new branch, ready to develop a specific feature or fix a bug without impacting your team's stable codebase.
 
 ## Walkthrough
-*TBD*
+
+It's common practice to isolate your work on a separate branch. This means any changes you make won't affect the main project until you're ready to merge them. Think of it like making a copy of a document to edit, while the original stays untouched.
+
+1.  **Check Your Current Branch:**
+    Before creating a new branch, let's make sure we're starting from the `main` branch (or `master`, if your project uses that name).
+    ```bash
+    git switch main
+    ```
+    *Why this is safe:* `git switch main` simply moves you to the `main` branch. It doesn't delete any work or modify your files, only points your focus to the main line of development. If you have uncommitted changes, Git will warn you and prevent the switch to keep your changes safe.
+
+2.  **Create and Switch to a New Branch:**
+    Now, let's create a new branch for your task. Imagine your task is to "add a login button to the homepage."
+
+    ```bash
+    git switch -c feature/add-login-button
+    ```
+    *Why this is safe:* The `git switch -c` command is a powerful shortcut. It *creates* a brand new branch based on where you currently are (your `main` branch) and then immediately *switches* you to it. Your `main` branch remains completely unchanged and protected. Any work you do from this point forward will be on `feature/add-login-button`, leaving `main` stable.
+
+    *Important Naming Tip:* Notice the branch name `feature/add-login-button`. Real teams use clear, descriptive names. For features, `feature/` is common. For bug fixes, `bugfix/` might be used (e.g., `bugfix/fix-homepage-typo`). Choose a name that clearly indicates the purpose of your branch!
+
+You're now on your new feature branch, ready to work safely and independently!
 
 <VerificationBlock 
   deliverable="A working branch for a single task."

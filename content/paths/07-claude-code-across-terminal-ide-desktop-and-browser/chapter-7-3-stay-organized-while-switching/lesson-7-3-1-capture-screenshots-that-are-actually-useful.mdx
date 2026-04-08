@@ -10,10 +10,39 @@ verifyType: "terminal_output"
 # Capture screenshots that are actually useful
 
 ## Objective
-*TBD*
+
+By the end of this lesson, you will be able to capture screenshots that are genuinely helpful for debugging and collaboration. You'll organize these valuable images into a new `screenshots/` folder, giving them clear names and helpful annotations, so they tell a complete story without needing extra explanation.
 
 ## Walkthrough
-*TBD*
+
+It's easy to take a screenshot, but it takes a little thought to capture one that's truly useful. Let's practice creating evidence that helps solve problems!
+
+1.  **Create a dedicated space:** First, let's make a new folder to keep our screenshots organized. This is a safe and simple step that helps keep your project tidy.
+
+    ```bash
+    mkdir screenshots
+    ```
+
+    *   **Why this is safe:** `mkdir` (make directory) simply creates an empty folder. It doesn't modify existing files or system settings, so there's no risk to your system. It's like adding a new, empty drawer to a cabinet.
+
+2.  **Identify what to capture:** Before you press the capture button, pause and think: What specific detail, error message, or unexpected behavior do you need to show? Don't just grab a general view; focus on the *problem area* and its immediate context.
+
+3.  **Take the screenshot:** Use your operating system's built-in tools to capture a screenshot.
+    *   **Windows:** `Print Screen` key (often `PrtScn`), `Windows key + Shift + S` for selective capture.
+    *   **macOS:** `Shift + Command + 3` for full screen, `Shift + Command + 4` for selection.
+    *   **Linux (GNOME):** `PrtSc` key, or search for "Screenshot" in your applications.
+    *   **Safety:** These are standard, safe tools designed for capturing your screen content without affecting your system.
+
+4.  **Save your capture:** After taking the screenshot, save it directly into the `screenshots/` folder you just created. For example, if your screenshot tool saves to your Desktop, simply drag it into the `screenshots/` folder.
+
+5.  **Give it a descriptive name:** A name like `IMG_001.png` isn't very helpful. Rename your screenshot to something meaningful that describes what it shows.
+    *   **Example:** If it's an error during login, name it `error-login-incorrect-credentials.png`. If it's the expected output of a command, `successful-command-output.png`. This helps you (and others) understand its purpose instantly.
+
+6.  **Annotate for clarity (optional but recommended):** Open your saved screenshot with a basic image editor (like Paint on Windows, Preview on macOS, or GIMP/Krita on Linux). Use simple tools to:
+    *   **Circle or highlight** the exact error message or unexpected element.
+    *   **Add an arrow** pointing to the relevant part.
+    *   **Type a brief note** if necessary, explaining what you expected versus what happened.
+    *   **Why annotate?** It directs attention, prevents misinterpretation, and makes your evidence much more effective for debugging or explaining an issue. Save the annotated version.
 
 <VerificationBlock 
   deliverable="A `screenshots/` folder with named, annotated evidence."

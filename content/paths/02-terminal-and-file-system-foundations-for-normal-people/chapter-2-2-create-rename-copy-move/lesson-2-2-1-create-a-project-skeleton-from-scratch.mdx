@@ -10,10 +10,32 @@ verifyType: "terminal_output"
 # Create a project skeleton from scratch
 
 ## Objective
-*TBD*
+Learn how to create new folders and empty files entirely from the terminal, building a structured project skeleton without ever touching your mouse.
 
 ## Walkthrough
-*TBD*
+
+It's time to become a creator! Instead of right-clicking and selecting "New Folder", you can do it ten times faster using terminal commands.
+
+**Step 1: Make a Directory (Folder)**
+To create a new folder, we use `mkdir`, which stands for **Make Directory**.
+Type: `mkdir tiny-agent-project` and press Enter.
+
+*Safety tip*: If a folder already exists with that name, the terminal will politely tell you and refuse to overwrite it. It is entirely safe.
+
+**Step 2: Step into your new creation**
+Use your moving skills to step into the folder you just made:
+`cd tiny-agent-project`
+
+**Step 3: Create empty files**
+Now let's create a few empty files to act as our project starter files.
+- On Mac/Linux: Use the `touch` command. Type `touch README.md` and press Enter.
+- On Windows (PowerShell): Use `New-Item README.md` or simply `ni README.md`.
+
+Try creating two more files inside this folder: `app.py` and `notes.txt`.
+
+**Your Task:**
+Create the `tiny-agent-project/` folder in your workspace. Step into it. Then create three files inside it: `README.md`, `app.py`, and `notes.txt`. 
+Finally, run `ls` (or `dir`) inside that folder, copy the output, and paste it here for your tutor to verify!
 
 <VerificationBlock 
   deliverable="A `tiny-agent-project/` with subfolders and starter files."

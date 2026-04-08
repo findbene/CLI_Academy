@@ -10,10 +10,50 @@ verifyType: "terminal_output"
 # Define the extraction schema first
 
 ## Objective
-*TBD*
+Before diving into any data extraction, we'll learn the crucial first step: **defining a clear extraction schema**. This means planning exactly *what* information you want to pull out of your files and *how* it should look. Think of it as drawing a map before you start a journey – it helps you stay safe, avoid getting lost, and ensures you reach your destination efficiently without rework. By the end of this lesson, you will have designed a sensible schema sheet, complete with column names and example data, laying a solid foundation for your extraction tasks.
 
 ## Walkthrough
-*TBD*
+
+**1. Understand Why a Schema is Your Safety Net**
+Starting any extraction without a schema is like driving without a destination. You might collect *some* data, but it's often incomplete, inconsistent, or not what you actually needed. Defining a schema *first* helps you:
+*   **Prevent Errors:** By knowing what you're looking for, you reduce the chance of extracting incorrect or irrelevant data.
+*   **Ensure Consistency:** All extracted data will follow a predictable structure.
+*   **Save Time:** Planning now avoids costly rework later when you discover your data isn't usable.
+
+**2. Envision Your Source Files and Desired Output**
+Imagine the files you'll be working with (e.g., log files, configuration files, reports). What key pieces of information would you want to extract from them? For instance, if you're looking at system logs, perhaps you'd want `Timestamp`, `Severity`, `Message`.
+
+**3. Identify Potential Columns and Their Types**
+Brainstorm the different categories of information you need. For each category, think about:
+*   **Column Name:** A clear, descriptive name (e.g., `Date`, `ErrorType`).
+*   **Expected Data Type:** What kind of information will be in this column (e.g., `TEXT`, `INTEGER`, `DATETIME`, `BOOLEAN`)?
+*   **Example Value:** What's a typical piece of data you'd expect to see here? This is incredibly helpful for clarification.
+
+**4. Create Your Schema Sheet**
+You can use a simple text file (like `schema.txt`) or even a spreadsheet for this. The goal is to list your planned columns and examples clearly.
+
+Here's an example structure you can adapt:
+
+```
+# Data Extraction Schema
+# This schema defines the structure for extracted data.
+
+Column Name | Data Type | Example Value
+------------|-----------|--------------
+LogTimestamp| DATETIME  | 2023-10-27 14:35:01
+LogLevel    | TEXT      | ERROR
+SourceFile  | TEXT      | app.log
+ProcessID   | INTEGER   | 12345
+Message     | TEXT      | Failed to connect to database 'prod_db'.
+```
+
+**Step-by-step Action:**
+1.  Open your preferred text editor (e.g., `nano`, `vim`, or any graphical editor).
+2.  Create a new file, for example, named `schema.txt`.
+3.  Based on the conceptual files you envision, fill out the `Column Name`, `Data Type`, and `Example Value` for your specific extraction task. Think about what's most relevant to *your* goals.
+4.  Save the `schema.txt` file.
+
+This document is your guide. You haven't touched any live data yet, making this a completely safe and foundational step in your extraction journey!
 
 <VerificationBlock 
   deliverable="A schema sheet with columns and examples."

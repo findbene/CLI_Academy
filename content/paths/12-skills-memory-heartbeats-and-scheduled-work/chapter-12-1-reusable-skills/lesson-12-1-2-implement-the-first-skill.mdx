@@ -10,10 +10,44 @@ verifyType: "terminal_output"
 # Implement the first skill
 
 ## Objective
-*TBD*
+In this lesson, you will safely implement your very first skill. We'll start with something incredibly simple, like a "hello world" equivalent, to ensure it integrates correctly into your CLI environment without any risk. This foundational step will give you a working piece of functionality within your application.
 
 ## Walkthrough
-*TBD*
+
+1.  **Create your skill file:**
+    First, navigate to your project's `skills/` directory (e.g., `cd skills/`). Then, we'll create a new, empty file for our skill.
+    ```bash
+    touch my_first_skill.py
+    ```
+    *Safety First:* The `touch` command is very safe. It merely creates an empty file if it doesn't exist, or updates its timestamp if it does. It never runs any code or alters your system in a risky way.
+
+2.  **Add basic skill code:**
+    Open `my_first_skill.py` in your favorite text editor. We'll add a minimal skill definition that just prints a message.
+    ```python
+    # my_first_skill.py
+    def hello_skill():
+        """A simple skill that says hello."""
+        print("Hello from your first skill!")
+    ```
+    *Safety First:* We're adding a `print` statement, which is one of the safest operations in programming. It just displays text to your console and has no side effects on your system. This code is purely for demonstration and verification.
+
+3.  **Integrate the skill:**
+    Now, tell your CLI application to recognize this new skill. The exact command varies by platform, but it's often a `reload` or `register` command. For instance:
+    ```bash
+    your_cli_app reload skills
+    ```
+    *Safety First:* This command instructs your application to scan for and load newly added skill definitions. It doesn't execute the skill itself, nor does it make any permanent changes to your system outside of your application's immediate state.
+
+4.  **Test your new skill:**
+    Let's run your skill to confirm it's working!
+    ```bash
+    your_cli_app hello_skill
+    ```
+    You should see:
+    ```
+    Hello from your first skill!
+    ```
+    *Safety First:* By explicitly invoking `hello_skill`, you are running the safe `print` statement we defined. This confirms successful integration without any broad or risky operations.
 
 <VerificationBlock 
   deliverable="One working skill integrated into the runtime."

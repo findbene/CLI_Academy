@@ -11,13 +11,16 @@
 ## Structural invariants
 
 - Root docs define the operating model.
+- `apps/web/` and `apps/api/` are the canonical runtime locations.
 - `apps/` holds deployable software.
 - `content/` holds the curriculum source of truth.
 - `.claude/` holds agent control-plane materials.
 - historical material belongs in `docs/archive/`.
+- `README.md`, `PROGRESS.md`, and `SESSION_HANDOFF.md` should describe the live repo state, not an outdated migration plan.
 
 ## Things not to regress
 
 - do not reintroduce overlapping root folders for the same concern
 - do not scatter memory notes across hidden directories
 - do not mix backup/design/history material with active product code
+- do not let structural migrations land without also updating root status docs and handoff notes

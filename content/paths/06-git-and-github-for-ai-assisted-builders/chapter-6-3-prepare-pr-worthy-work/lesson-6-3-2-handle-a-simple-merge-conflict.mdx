@@ -10,10 +10,78 @@ verifyType: "terminal_output"
 # Handle a simple merge conflict
 
 ## Objective
-*TBD*
+
+In this lesson, you'll learn what a "merge conflict" is in Git and, more importantly, how to safely resolve a simple one. We'll create a practice scenario where two branches modify the same line in a file, intentionally causing a conflict. By the end, you'll have resolved this conflict and committed the solution, gaining confidence in a common Git challenge.
 
 ## Walkthrough
-*TBD*
+
+Let's set up a small, safe practice area:
+
+1.  **Create a new directory and initialize Git:**
+    ```bash
+    mkdir my-conflict-repo
+    cd my-conflict-repo
+    git init
+    ```
+    *This is safe:* `mkdir` creates an empty folder, `cd` navigates into it, and `git init` simply sets up an empty Git repository *within that folder*. It doesn't affect anything outside of `my-conflict-repo`.
+
+2.  **Create an initial file and commit:**
+    ```bash
+    echo "Hello from the beginning." > message.txt
+    git add message.txt
+    git commit -m "Initial message"
+    ```
+    *This is safe:* `echo` writes text to a file, `git add` stages that file for the *next* commit, and `git commit` saves it as a historical point. You're just recording changes in your new, empty repo.
+
+3.  **Make a change on the `main` branch:**
+    ```bash
+    echo "Hello from the main branch." > message.txt
+    git add message.txt
+    git commit -m "Updated message on main"
+    ```
+    *This is safe:* You're modifying the existing file and committing that change. Git tracks this version.
+
+4.  **Create a new branch and make a *conflicting* change:**
+    ```bash
+    git checkout -b feature-branch
+    echo "Hello from the feature branch." > message.txt
+    git add message.txt
+    git commit -m "Updated message on feature branch"
+    ```
+    *This is safe:* `git checkout -b` creates a new branch (`feature-branch`) and switches to it. Your changes are isolated to this branch until you merge. You've now committed a *different* change to the *same line* of `message.txt` on this new branch.
+
+5.  **Attempt to merge and observe the conflict:**
+    ```bash
+    git checkout main
+    git merge feature-branch
+    ```
+    *This is where the conflict happens:* `git checkout main` switches you back to the `main` branch. `git merge feature-branch` attempts to combine `feature-branch`'s changes into `main`. Git can't automatically decide which "Hello..." line to keep, so it *stops* and tells you there's a conflict! It will not automatically commit anything in this state.
+
+6.  **Resolve the conflict manually:**
+    Now, open `message.txt` in any text editor (like VS Code, Notepad, Sublime Text, or even `cat` to view it). You'll see something like this:
+    ```
+    <<<<<<< HEAD
+    Hello from the main branch.
+    =======
+    Hello from the feature branch.
+    >>>>>>> feature-branch
+    ```
+    * `<<<<<<< HEAD` marks the beginning of the conflicting change from your current branch (`main`).
+    * `=======` separates the two conflicting versions.
+    * `>>>>>>> feature-branch` marks the end of the conflicting change from the branch you're merging (`feature-branch`).
+
+    Edit `message.txt` to reflect the final version you want. For example, change it to:
+    ```
+    Hello from the main and feature branches, now resolved!
+    ```
+    Save the file. *This is safe:* You're just editing a text file. You have full control over the final content.
+
+7.  **Commit the resolved conflict:**
+    ```bash
+    git add message.txt
+    git commit -m "Resolved merge conflict between main and feature-branch"
+    ```
+    *This is safe:* `git add message.txt` stages your *resolved* version of the file. `git commit` then saves this resolution as a new commit, completing the merge. Git now knows how to combine these histories.
 
 <VerificationBlock 
   deliverable="A resolved practice conflict in a toy repo."

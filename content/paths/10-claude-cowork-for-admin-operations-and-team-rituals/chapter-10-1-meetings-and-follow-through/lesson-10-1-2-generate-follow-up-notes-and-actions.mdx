@@ -10,10 +10,31 @@ verifyType: "terminal_output"
 # Generate follow-up notes and actions
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to transform a collection of messy meeting notes or a verbose transcript into a clear, actionable tracker. By the end, you will have a neatly organized list of concrete action items, making it easy to see who needs to do what, by when. This saves time, reduces confusion, and ensures important tasks don't get lost in the details!
 
 ## Walkthrough
-*TBD*
+
+Let's use our CLI's AI capabilities to clean up those notes and extract only what truly matters: the actions!
+
+1.  **Prepare Your Notes:** First, make sure your meeting notes or transcript are saved in a plain text file. For example, let's call it `meeting_notes.txt`.
+
+2.  **Understand the Request:** We want the AI to be very specific. We're asking it to "Extract *only concrete action items* from this meeting material and present them as a clean, numbered list." This precise request helps the AI focus.
+
+3.  **Execute the Command (Safely!):** Now, let's combine displaying your notes with asking the AI to process them.
+
+    ```bash
+    cat meeting_notes.txt | ai "Extract only concrete action items from this meeting material and present them as a clean, numbered list."
+    ```
+
+    *   **Why this is safe:**
+        *   The `cat meeting_notes.txt` command simply *displays* the content of your file to your screen. It does not modify, delete, or upload your original file anywhere. It's like reading the file aloud.
+        *   The `|` (pipe) symbol takes that displayed content and sends it directly as input to the `ai` command. Your `meeting_notes.txt` file remains untouched.
+        *   The `ai` command then reads this input and generates *new* output based on your instructions. It also does not modify your original files or system. You are generating a new, helpful summary.
+
+4.  **Review the Output:** The AI will then present you with a numbered list of action items, ready for you to copy and use in your task manager or follow-up email.
+
+This process quickly gives you a clear, concise action tracker without manual sifting, ensuring you never miss a follow-up again!
 
 <VerificationBlock 
   deliverable="A clean action tracker from messy notes or transcript."

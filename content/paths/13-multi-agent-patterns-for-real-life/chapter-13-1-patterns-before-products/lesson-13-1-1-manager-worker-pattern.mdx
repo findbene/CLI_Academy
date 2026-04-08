@@ -10,10 +10,44 @@ verifyType: "terminal_output"
 # Manager-worker pattern
 
 ## Objective
-*TBD*
+In this lesson, you'll discover the "manager-worker" pattern, a powerful way to organize tasks, especially when dealing with many similar items. We'll explore how this pattern can make your workflows more efficient and safer by breaking down complex jobs. You'll then apply this pattern to one of your own routine tasks, creating a clear "pattern card" and a conceptual "toy implementation plan" to solidify your understanding.
 
 ## Walkthrough
-*TBD*
+
+Let's demystify the manager-worker pattern together and apply it to a task you're familiar with.
+
+1.  **Understand the Core Idea:**
+    Imagine you have a long list of tasks (e.g., processing many files, checking many websites). Instead of doing them one by one yourself, you delegate. The "manager" handles the list, assigns individual tasks, and collects results. The "workers" each take one task, complete it, and report back. This makes the overall job faster and more organized!
+
+2.  **Identify *Your* Workflow:**
+    Think about a task you often do on your computer that involves processing multiple, similar items. This could be:
+    *   Renaming many files.
+    *   Processing log entries from several files.
+    *   Performing a specific analysis on a list of data inputs.
+    *   *Choose one specific task you know well.*
+
+3.  **Create Your Pattern Card:**
+    Now, let's create a simple card to describe how the manager-worker pattern applies to *your chosen workflow*. Grab a pen and paper, or open a text editor.
+
+    *   **Pattern Name:** Manager-Worker
+    *   **Problem Solved (in your context):** How does this pattern help you with *your specific task*? (e.g., "Efficiently processing X number of Y files.")
+    *   **Manager Role (in your workflow):** What part of your task would be the "manager"? (e.g., "Script that finds all files, then loops to pass each filename to a worker, and gathers output.")
+    *   **Worker Role (in your workflow):** What would a "worker" do? (e.g., "A small script that takes a single filename, performs the specific action, and returns a result.")
+    *   **Example Flow (for your task):** Briefly describe the steps from start to finish using this pattern for *your task*. (e.g., "Manager lists all .log files, passes each to a worker. Worker processes one .log file and extracts errors. Manager collects all error reports.")
+
+4.  **Develop Your Toy Implementation Plan:**
+    This isn't about writing actual code, but sketching out the *commands or conceptual steps* you'd use if you were to implement this pattern for your chosen task.
+
+    *   **Manager's Conceptual Steps/Commands:**
+        *   How would the manager get the list of items to process? (e.g., `ls *.csv`, `cat items.txt`)
+        *   How would the manager *give* an item to a worker? (e.g., "Loop through list, passing each item as an argument to a worker script.")
+        *   How would the manager collect results? (e.g., "Write worker output to a file, then combine files.")
+    *   **Worker's Conceptual Steps/Commands:**
+        *   What input would the worker expect for a single item? (e.g., "Receives a filename as `$1`.")
+        *   What specific commands would the worker run on that single item? (e.g., `grep "ERROR" $1`, `sed -i 's/old/new/' $1`).
+        *   What output would the worker produce? (e.g., "Prints filtered lines to standard output," "modifies the file in place.")
+
+    *   **Safety Reminder:** Always remember that when working with real commands like `sed -i` (in-place modification) or `rm` (remove), they are powerful! Your toy plan is a safe thought exercise. When you do write scripts later, always test them on copies of your files first to prevent accidental data loss. We're planning safely here!
 
 <VerificationBlock 
   deliverable="A pattern card and toy implementation plan."

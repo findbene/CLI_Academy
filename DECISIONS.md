@@ -23,3 +23,9 @@
 **Decision:** Put historical communication and design backup material under `docs/archive/`.
 
 **Why:** Backups and one-off coordination docs should not compete with production code.
+
+## ADR-005 — Root status docs must reflect the live repo
+
+**Decision:** Treat `README.md`, `PROGRESS.md`, and `SESSION_HANDOFF.md` as canonical descriptions of the current repository state, not as aspirational migration notes.
+
+**Why:** After structural moves, stale root docs create bad assumptions for both humans and agents and increase the risk of edits landing against the wrong paths.

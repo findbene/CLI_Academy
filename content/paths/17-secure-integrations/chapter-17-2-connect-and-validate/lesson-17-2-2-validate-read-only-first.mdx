@@ -10,10 +10,30 @@ verifyType: "terminal_output"
 # Validate read-only first
 
 ## Objective
-*TBD*
+The objective of this lesson is to empower you to safely inspect the current state of an integration using read-only commands. By the end, you will be able to retrieve a summary or list of an integration's details without making any modifications, which is a critical first step in any safe operation.
 
 ## Walkthrough
-*TBD*
+
+Before you make any changes, it's incredibly important to validate the current state of your integration. This "look before you leap" approach is fundamental to safe CLI practices.
+
+1.  **Understand Read-Only Commands:**
+    Many CLI tools offer commands specifically designed to retrieve information without altering anything. These are your best friends for validation. They typically include words like `list`, `get`, `describe`, or `pull`.
+
+2.  **Safely Inspect Your Integration:**
+    Let's imagine you want to understand the current configuration of an integration, perhaps named `my-prod-service`. You need to see its details without accidentally changing it.
+
+    You would use a command that is explicitly designed for read-only access. A common pattern looks like this:
+
+    ```bash
+    yourcli integration list my-prod-service
+    ```
+
+    *   **Why this is safe:** Commands like `list` or `get` are inherently read-only. They only *request* information from the system and display it to you. They do not send any instructions to create, modify, or delete resources. You can run these commands as many times as you like without any risk of unintended changes.
+
+3.  **Review the Output:**
+    The command will output details about `my-prod-service`. This might be a detailed JSON object, a human-readable table, or a concise summary, depending on the tool. This output *is* your safe read-only validation result. Look for key information like its current status, configured settings, or associated resources.
+
+    By successfully getting this output, you've completed a crucial part of your safe read-only validation plan for your integration. Always validate what you're working with before proceeding with any action that could make changes!
 
 <VerificationBlock 
   deliverable="A read-only validation result such as list, summary, or pull."

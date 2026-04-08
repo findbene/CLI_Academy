@@ -8,8 +8,8 @@ export function getAppUrl() {
 }
 
 export function getPublicSupabaseEnv() {
-  const url = getEnv("NEXT_PUBLIC_SUPABASE_URL");
-  const anonKey = getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
   if (!url || !anonKey) {
     return null;
@@ -21,11 +21,11 @@ export function getPublicSupabaseEnv() {
 export function getPublicSupabaseConfigMessage() {
   const missing: string[] = [];
 
-  if (!getEnv("NEXT_PUBLIC_SUPABASE_URL")) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()) {
     missing.push("NEXT_PUBLIC_SUPABASE_URL");
   }
 
-  if (!getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) {
     missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
 

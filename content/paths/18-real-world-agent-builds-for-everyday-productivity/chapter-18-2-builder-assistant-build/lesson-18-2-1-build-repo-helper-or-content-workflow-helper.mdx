@@ -10,10 +10,56 @@ verifyType: "terminal_output"
 # Build: repo helper or content workflow helper
 
 ## Objective
-*TBD*
+By the end of this lesson, you will create your very own CLI helper script. This script will be a safe, bounded tool designed to draft routine project artifacts like handoff notes or meeting summaries. We'll start with a safe first version that outputs directly to your screen, ensuring you're always in complete control of what it does and where it goes.
 
 ## Walkthrough
-*TBD*
+
+Let's build a simple script that helps you draft handoff notes.
+
+1.  **Create your script file:**
+    ```bash
+    touch my_handoff_helper.sh
+    ```
+    The `touch` command is a safe way to create an empty file. It doesn't modify any existing content or folders, just prepares a new, blank canvas for our script.
+
+2.  **Add the basic script structure:**
+    Open `my_handoff_helper.sh` with your favorite text editor (e.g., `nano my_handoff_helper.sh` or `code my_handoff_helper.sh`). Add the following content:
+
+    ```bash
+    #!/bin/bash
+
+    echo "--- Draft Handoff Notes Helper ---"
+    echo "Please provide a summary of your work:"
+    read SUMMARY
+
+    echo "What are the next steps for this item?"
+    read NEXT_STEPS
+
+    echo -e "
+--- DRAFT HANDOFF NOTES ---
+"
+    echo "Summary: $SUMMARY"
+    echo "Next Steps: $NEXT_STEPS"
+    echo -e "
+Remember to review and save these notes where appropriate!
+"
+    ```
+    The `#!/bin/bash` line tells your system to execute the script using Bash. `echo` is a very safe command—it simply prints text to your terminal. `read` securely takes input from you and stores it in a temporary variable within the script, without touching any files.
+
+3.  **Make your script executable:**
+    ```bash
+    chmod +x my_handoff_helper.sh
+    ```
+    The `chmod +x` command makes your script runnable. It's a safe operation because it only changes the permissions of *your specific file* to allow execution; it doesn't alter its content or affect any other files on your system.
+
+4.  **Run your new helper!**
+    ```bash
+    ./my_handoff_helper.sh
+    ```
+    Watch as your script prompts you for input and then neatly formats your responses into draft notes, displaying them directly in your terminal. This basic version is safe because all output is to your screen (standard output); it doesn't write to, modify, or delete any files. You can copy the generated text and paste it wherever you need it.
+
+5.  **Looking Ahead (Safely!):**
+    For a later version, you could expand this script to write the output to a specific file using `>>` (e.g., `echo "..." >> notes.txt`). However, always build cautiously! When modifying files, ensure your script explicitly asks for confirmation, perhaps using a `read -p "Save to file? (y/n): "` prompt, to maintain full control and prevent unintended changes.
 
 <VerificationBlock 
   deliverable="A bounded helper that drafts handoff notes, summaries, or routine project artifacts."

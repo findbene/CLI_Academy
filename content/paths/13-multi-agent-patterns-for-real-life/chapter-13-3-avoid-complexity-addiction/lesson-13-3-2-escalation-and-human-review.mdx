@@ -10,10 +10,53 @@ verifyType: "terminal_output"
 # Escalation and human review
 
 ## Objective
-*TBD*
+
+In multi-agent workflows, automation is powerful, but human oversight is crucial for safety and accuracy. By the end of this lesson, you will have defined a foundational *review policy* for your multi-agent work. This policy will specify clear triggers for when a human should pause the automated process and conduct a manual review, ensuring you maintain control and prevent unintended outcomes.
 
 ## Walkthrough
-*TBD*
+
+It's exciting to see agents work together, but even the smartest systems need a safety net. Let's create a simple document outlining when *you* step in to review.
+
+1.  **Understand the Need for Review:**
+    Imagine a scenario where agents are collaborating on a task. What if one agent expresses uncertainty, or proposes an action that seems high-risk? This is where human review becomes indispensable. It's your personal safety switch.
+
+2.  **Create Your Review Policy Document:**
+    We'll start by creating a simple markdown file to document your policy. This isn't a command you run, but a living document for *your* workflow.
+    ```bash
+    touch review_policy.md
+    ```
+    *Why `touch` is safe:* The `touch` command simply creates an empty file if it doesn't exist, or updates its modification timestamp if it does. It doesn't modify any existing content or run any programs, making it a very safe command for file management.
+
+3.  **Open and Edit Your Policy:**
+    Now, open `review_policy.md` using your preferred text editor (e.g., `nano`, `vi`, VS Code).
+    ```bash
+    nano review_policy.md
+    ```
+    *Why `nano` is safe:* `nano` is a simple, user-friendly text editor. It only allows you to edit the content of the specified file. It won't execute any commands or scripts on its own, ensuring your system's safety while you write your policy.
+
+4.  **Define Your Review Triggers:**
+    Inside `review_policy.md`, add the following content, thinking about how *you* would want to be alerted. Feel free to customize this:
+
+    ```markdown
+    # Multi-Agent Workflow Human Review Policy
+
+    This policy outlines the conditions under which a human operator must pause the multi-agent workflow and conduct a manual review.
+
+    ## Review Triggers:
+
+    A human review is mandatory if any of the following conditions are met:
+
+    1.  **Agent Expresses Uncertainty:** An agent's output contains phrases like "I am not sure," "I need clarification," "This might be risky," or similar expressions of doubt.
+    2.  **High-Impact Actions Proposed:** An agent proposes an action that could lead to significant data loss, system changes (e.g., deleting files, modifying core configurations), or financial implications.
+    3.  **Unexpected Output/Behavior:** The workflow produces an output that seems illogical, deviates significantly from the expected path, or appears to be stuck in a loop.
+    4.  **Specific Keywords Detected:** Any agent's output contains predefined keywords indicating sensitive operations, such as "production," "delete all," "reset database," or similar high-consequence terms.
+    5.  **User-Defined Checkpoints:** At pre-determined stages in a complex workflow (e.g., after initial planning, before execution of major steps).
+    ```
+
+5.  **Save Your Policy:**
+    If you're using `nano`, press `Ctrl+S` (or `^S`) to save, then `Ctrl+X` (or `^X`) to exit.
+
+You've now successfully defined a review policy, complete with specific triggers for human intervention. This document is a crucial step towards safely and effectively managing your multi-agent systems.
 
 <VerificationBlock 
   deliverable="A review policy for multi-agent work."

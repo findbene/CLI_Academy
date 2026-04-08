@@ -10,10 +10,27 @@ verifyType: "terminal_output"
 # Build, pilot, and collect evidence
 
 ## Objective
-*TBD*
+In this lesson, you'll conduct a safe, controlled "pilot" run of a simple CLI task. You will collect evidence of its execution, log potential risks, and record feedback on the experience. This prepares you to share your work and decide if it's ready for wider use.
 
 ## Walkthrough
-*TBD*
+
+Welcome! It's completely normal to feel a bit cautious when trying new things, especially with the command line. We'll take this step by step, focusing on safety.
+
+1.  **Define Your Pilot Task:** Let's pick a very simple, safe command you've learned. For this pilot, use `ls` to list files in your current directory. It doesn't change anything; it just shows you information.
+2.  **Perform the Pilot Run and Capture Evidence:**
+    *   Open your terminal.
+    *   Run the command and redirect its output to a new file, which will serve as your evidence.
+    *   Type: `ls -l > pilot_evidence.txt`
+    *   **Safety Check:** The `>` symbol redirects the output of `ls -l` into a file named `pilot_evidence.txt`. If `pilot_evidence.txt` doesn't exist, it creates it. If it *does* exist, it will **overwrite** its contents. For this lesson, creating a new file is perfectly safe, but always be mindful of this when using `>` with existing files.
+    *   You can view your evidence file with `cat pilot_evidence.txt`.
+3.  **Create a Simple Risk Log:** Think about what could go wrong or be confusing with your `ls` command, however minor.
+    *   Type: `echo "Risk 1: Output might be too long." > pilot_risks.txt`
+    *   Type: `echo "Risk 2: User might not understand file permissions." >> pilot_risks.txt`
+    *   **Safety Check:** We used `>` for the first line (creating/overwriting) and `>>` for the second. `>>` appends to the file, which is safer when you want to add content without losing existing information.
+4.  **Gather Feedback:** What was your experience like?
+    *   Type: `echo "Feedback: The 'ls -l' command was straightforward." > pilot_feedback.txt`
+    *   Type: `echo "Feedback: Understanding columns like permissions (rwx) is still a bit new." >> pilot_feedback.txt`
+5.  **Review Your Pack:** You now have three files: `pilot_evidence.txt`, `pilot_risks.txt`, and `pilot_feedback.txt`. These form your pilot evidence pack. Take a moment to review them using `cat filename.txt` for each.
 
 <VerificationBlock 
   deliverable="A pilot run with evidence pack, risk log, and feedback."

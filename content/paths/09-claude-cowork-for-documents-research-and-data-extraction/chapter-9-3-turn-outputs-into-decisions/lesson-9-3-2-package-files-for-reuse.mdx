@@ -10,10 +10,42 @@ verifyType: "terminal_output"
 # Package files for reuse
 
 ## Objective
-*TBD*
+
+Organizing your work is crucial for productivity and collaboration. When you complete a task, having a standard structure makes your findings easily understandable and reusable. In this lesson, you'll learn how to create a clean, organized `deliverable` package for your work, which is a common practice in many professional settings. You will construct a `deliverable` folder containing specific subfolders for `raw` data, `cleaned` data, and a `summary` of your findings, alongside a `notes.txt` file for any important observations.
 
 ## Walkthrough
-*TBD*
+
+Let's create this standardized `deliverable` package step-by-step:
+
+1.  **Create the main deliverable folder:**
+    We'll start by making a new folder to hold all our work.
+    ```bash
+    mkdir deliverable
+    ```
+    *   **Why this is safe:** The `mkdir` command stands for "make directory." It only creates a *new* folder with the name you provide. It won't delete or overwrite any existing files or folders. If a folder named `deliverable` already exists, it will simply tell you it cannot create it, without causing any harm.
+
+2.  **Move into your new folder:**
+    To organize files *inside* `deliverable`, we need to navigate into it.
+    ```bash
+    cd deliverable
+    ```
+    *   **Why this is safe:** The `cd` command stands for "change directory." It simply changes your current location in the file system. It doesn't modify, delete, or create any files or folders, making it completely safe.
+
+3.  **Create subfolders for your data:**
+    Now, let's create the specific subfolders to categorize our data.
+    ```bash
+    mkdir raw
+    mkdir cleaned
+    mkdir summary
+    ```
+    *   **Why this is safe:** Just like before, `mkdir` creates new, empty folders. Even though we're inside `deliverable`, these commands will only add new folders within it, without touching anything else.
+
+4.  **Create a notes file:**
+    Finally, let's create an empty file where you can jot down any important notes about your project.
+    ```bash
+    touch notes.txt
+    ```
+    *   **Why this is safe:** The `touch` command is primarily used to create empty files. If `notes.txt` doesn't exist, it creates it. If it *does* exist, `touch` simply updates its last modified timestamp without changing its content. It will not delete or overwrite your notes.
 
 <VerificationBlock 
   deliverable="A deliverable folder with raw, cleaned, summary, and notes."

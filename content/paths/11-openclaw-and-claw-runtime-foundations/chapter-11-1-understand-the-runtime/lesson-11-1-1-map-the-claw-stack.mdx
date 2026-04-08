@@ -10,10 +10,74 @@ verifyType: "terminal_output"
 # Map the Claw stack
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to create a clear map of your "Claw stack" – the core components that make up your AI command-line interface environment. By the end, you'll have a file named `claw-stack-map.md` that defines your specific **model**, **runtime**, **channel**, **skills**, **memory**, and **machine**, helping you understand how these pieces work together.
 
 ## Walkthrough
-*TBD*
+
+Let's break down your setup step-by-step.
+
+### Step 1: Create your map file
+
+First, we'll create an empty file where you'll document your Claw stack.
+
+```bash
+touch claw-stack-map.md
+```
+
+*   **Why this is safe:** The `touch` command is very gentle! It simply creates an empty file named `claw-stack-map.md` in your current directory. If the file already exists, it just updates its modification timestamp without changing its content. It doesn't modify any system settings or delete anything.
+
+### Step 2: Open the file for editing
+
+Now, open `claw-stack-map.md` using your preferred text editor (like `nano`, `vim`, `code .` if you have VS Code, or any other).
+
+```bash
+# Example if using nano:
+nano claw-stack-map.md
+# Or if using VS Code:
+code claw-stack-map.md
+```
+
+### Step 3: Map your Claw stack
+
+Inside `claw-stack-map.md`, we'll identify and describe each part of your setup. Fill in the details based on *your specific environment*.
+
+```markdown
+# My Claw Stack Map
+
+This map describes the components of my CLI AI setup.
+
+## Model
+*   **What it is:** The actual AI "brain" that processes language and generates responses.
+*   **My setup:** [e.g., GPT-4 via OpenAI API, Llama 2 7B GGUF, Mistral via Ollama]
+*   **How it's different from Runtime/Channel:** The model is the intelligence itself, not how it runs or how I talk to it.
+
+## Runtime
+*   **What it is:** The software that executes or serves the model. It's the engine that makes the model run.
+*   **My setup:** [e.g., `ollama`, `llama.cpp`, OpenAI's API infrastructure (if using their cloud service)]
+*   **How it's different from Model/Channel:** The runtime provides the environment for the model to operate, distinct from the model's intelligence or the interface I use.
+
+## Channel
+*   **What it is:** The specific interface or command-line tool you use to interact with the runtime and model. It's how you send your prompts and receive responses.
+*   **My setup:** [e.g., `ollama run <model_name>`, `lm-cli`, `openai-cli`, a custom Python script]
+*   **How it's different from Model/Runtime:** The channel is the communication method, the specific command or script you type to talk to the AI, which uses the runtime to access the model.
+
+## Skills
+*   **What it is:** Any additional capabilities or tools your AI setup can access or execute (e.g., internet search, code execution, file system access).
+*   **My setup:** [e.g., No specific external skills configured yet, uses `curl` for web, integrated Python interpreter]
+
+## Memory
+*   **What it is:** How your AI remembers past interactions within a session.
+*   **My setup:** [e.g., Relies on the context window of the model for short-term recall, uses `lm-cli`'s session history]
+
+## Machine
+*   **What it is:** The physical or virtual computer where your Claw stack components are running.
+*   **My setup:** [e.g., My MacBook Pro, a remote Linux server, my desktop PC]
+```
+
+### Step 4: Save your file
+
+Once you've filled in all the sections, save `claw-stack-map.md` and close your editor. You now have a clear understanding of your CLI AI environment!
 
 <VerificationBlock 
   deliverable="A `claw-stack-map.md` showing model, runtime, channel, skills, memory, and machine."

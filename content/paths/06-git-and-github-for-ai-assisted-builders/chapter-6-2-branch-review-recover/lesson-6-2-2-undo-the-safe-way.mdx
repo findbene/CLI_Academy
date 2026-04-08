@@ -10,10 +10,59 @@ verifyType: "terminal_output"
 # Undo the safe way
 
 ## Objective
-*TBD*
+
+In this lesson, you will learn how to safely undo changes in your Git repository, focusing on techniques that preserve your project's history and are safe for collaboration. We'll specifically practice using `git revert` to undo a committed change, ensuring you can recover from mistakes without fear.
 
 ## Walkthrough
-*TBD*
+
+It's completely normal to make mistakes – the key is knowing how to fix them safely! Let's simulate a scenario and practice our recovery.
+
+1.  **Set up a safe space:** Open your terminal and create a brand new, empty Git repository. This ensures we're not messing with any important projects.
+
+    ```bash
+    mkdir my-safe-undo-practice
+    cd my-safe-undo-practice
+    git init
+    ```
+
+2.  **Make a "good" commit:** Let's start with a normal change.
+
+    ```bash
+    echo "Initial content for app.js" > app.js
+    git add app.js
+    git commit -m "Add initial app.js file"
+    ```
+
+3.  **Make a "mistake" commit:** Now, let's pretend we accidentally added a file we didn't want, or made a change that broke something.
+
+    ```bash
+    echo "This is a temporary, unwanted file." > temp-debug-log.txt
+    git add temp-debug-log.txt
+    git commit -m "ACCIDENTAL: Added a temporary debug file"
+    ```
+
+4.  **Identify the mistake:** Use `git log` to see your commit history. You'll see both commits. Copy the full commit hash (the long string of letters and numbers) of the "ACCIDENTAL" commit.
+
+    ```bash
+    git log --oneline
+    ```
+
+5.  **Undo the mistake the safe way:** We'll use `git revert`. This command creates a *new* commit that undoes the changes of the specified commit. It doesn't rewrite history, making it very safe for shared repositories.
+
+    ```bash
+    git revert <the-hash-of-your-ACCIDENTAL-commit>
+    ```
+
+    *   A text editor (like Vim or Nano) will likely pop up, allowing you to edit the commit message for the revert. The default message is usually good, explaining what was reverted. Save and close the editor.
+    *   **Why is `git revert` safe?** Unlike other undo commands that might erase or rewrite history (which can cause issues, especially when collaborating), `git revert` adds a *new* commit. This new commit contains changes that perfectly reverse the problematic commit. Your project's history remains intact and clear, showing both the original "mistake" and the "undo" commit.
+
+6.  **Verify the recovery:**
+    *   Check your files: `ls`
+        The `temp-debug-log.txt` file should now be gone from your working directory.
+    *   Check your log again: `git log --oneline`
+        You'll see a new commit that says something like "Revert 'ACCIDENTAL: Added a temporary debug file'". This new commit is your undo!
+
+You've successfully recovered from a "mistake" safely!
 
 <VerificationBlock 
   deliverable="A recovery practice with restore or revert on a test mistake."

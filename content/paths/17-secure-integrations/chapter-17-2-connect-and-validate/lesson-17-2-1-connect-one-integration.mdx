@@ -10,10 +10,25 @@ verifyType: "terminal_output"
 # Connect one integration
 
 ## Objective
-*TBD*
+Welcome! Today, we'll take our first step into the world of integrations by establishing a secure connection to a service using your CLI. Our goal is to successfully connect one integration and, crucially, to carefully document the authentication details involved. This documentation will be a safe, temporary record for us to review together, ensuring you understand what credentials are used and how to handle them responsibly.
 
 ## Walkthrough
-*TBD*
+
+1.  **Choose Your Integration:** Pick a service you'd like to connect. Common choices include `github`, `slack`, `aws`, or `gcp`. For this lesson, let's assume you've chosen one.
+
+2.  **Initiate the Connection:**
+    *   In your terminal, run the command: `cli connect <your_integration_name>`
+    *   *Why this is safe:* The `connect` command is designed to be interactive and guided. It will usually open a web browser to the service's authorization page, where you can grant access securely without directly exposing your credentials in the terminal. Follow the prompts in your browser and terminal to complete the authorization flow.
+
+3.  **Capture Your Auth Notes:**
+    *   As you go through the authorization process, pay close attention to any details about how authentication is handled. Did you use an API key? An OAuth token? Did you authorize via a web page?
+    *   **Crucially:** In a *separate, secure scratchpad* (like a local text editor, not your terminal history!), jot down notes about what kind of authentication mechanism was used, any keys or tokens shown (even briefly), or if you simply clicked "Authorize." Don't worry about perfect formatting; just capture the raw details for now. This step is vital for our security review.
+
+4.  **Confirm the Connection:**
+    *   After the `connect` command finishes, you should see a success message. You can often verify your active connections with: `cli integrations ls`
+    *   This command is safe; it simply lists your configured integrations without exposing sensitive data.
+
+You've now made your first connection and, more importantly, started developing the critical habit of noting authentication details for review. Your next step is to share these notes with the AI Tutor for a security check.
 
 <VerificationBlock 
   deliverable="One working connection with captured auth notes."

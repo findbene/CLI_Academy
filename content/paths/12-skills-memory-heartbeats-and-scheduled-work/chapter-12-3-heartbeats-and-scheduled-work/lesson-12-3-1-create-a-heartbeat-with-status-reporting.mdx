@@ -10,10 +10,50 @@ verifyType: "terminal_output"
 # Create a heartbeat with status reporting
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to create a simple, *observational* heartbeat. This means we'll set up a way for your system to regularly check on something and report its status, *without taking any risky or automated actions*. Think of it like a friendly check-in: "Hello, just checking in, everything looks good here!" or "Hey, I noticed something a little off, but I'm not touching anything." We prioritize safety, so we'll only observe and report, building a foundation before any active management.
 
 ## Walkthrough
-*TBD*
+
+### Step 1: Crafting Your Safe Observation Command
+
+First, let's create a command that simply *observes* and *reports*. We'll check the status of a common system service, like `systemd-journald` (which handles system logs). Checking its status is completely safe because it only *queries* information; it doesn't change anything.
+
+1.  **Open your terminal.**
+2.  **Run this command:**
+    ```bash
+    systemctl is-active systemd-journald
+    ```
+    *   **Why this is safe:** The `systemctl is-active` command simply asks "Is this service active right now?" It's like asking a question; it has no side effects and makes no changes to your system.
+3.  **Observe the output.** You'll likely see `active` if the service is running, or `inactive` if it's not. The command also exits with a status code (0 for active, non-zero for inactive) which is useful for scripting.
+
+### Step 2: Adding a Friendly Report Message
+
+Now, let's make the output more descriptive so it clearly states what's happening. We'll use `echo` to print a message.
+
+1.  **Try this command:**
+    ```bash
+    if systemctl is-active systemd-journald; then
+      echo "Heartbeat: systemd-journald is ACTIVE. All good!"
+    else
+      echo "Heartbeat: WARNING! systemd-journald is INACTIVE."
+    fi
+    ```
+    *   **Why this is safe:** We're combining our safe `systemctl` check with `if`/`else` statements and `echo`. The `echo` command only prints text to your screen (or to a file if redirected), making no changes to your system. This entire block is purely for observation and reporting.
+
+### Step 3: Simulating a Heartbeat Check
+
+While we won't fully schedule this with `cron` in *this specific* lesson (as the next lesson will dive into scheduling safely), you now have a command that *could* be scheduled. For this deliverable, the focus is on the safe, reporting command itself. Running it manually verifies our safe heartbeat logic.
+
+1.  **Run the full reporting command again:**
+    ```bash
+    if systemctl is-active systemd-journald; then
+      echo "Heartbeat: systemd-journald is ACTIVE. All good!"
+    else
+      echo "Heartbeat: WARNING! systemd-journald is INACTIVE."
+    fi
+    ```
+    You've successfully created a command that observes system status and reports on it without taking any action. This is the core of a safe, observational heartbeat!
 
 <VerificationBlock 
   deliverable="A heartbeat job that reports health without taking risky action."

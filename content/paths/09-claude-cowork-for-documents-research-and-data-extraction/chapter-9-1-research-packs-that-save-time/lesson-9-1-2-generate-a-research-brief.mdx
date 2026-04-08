@@ -10,10 +10,32 @@ verifyType: "terminal_output"
 # Generate a research brief
 
 ## Objective
-*TBD*
+
+By the end of this lesson, you will be able to leverage CLI AI tools to transform raw research inputs into a structured research brief. Your brief will feature clear sections, explicit statements of uncertainty, open questions for further investigation, and concise evidence notes, all generated efficiently from the command line.
 
 ## Walkthrough
-*TBD*
+
+1.  **Prepare Your Research Inputs:** First, gather the information you want to turn into a brief. For this exercise, you can imagine some research notes or even type out a few sentences about a hypothetical topic. The goal is to feed this raw information to our AI tool.
+
+2.  **Introducing the `llm` Command:** We'll use the `llm` command, which is a powerful and safe way to interact with AI models directly from your terminal. It takes your text input, processes it, and outputs text. Crucially, `llm` *does not* modify any files on your system unless you specifically redirect its output (e.g., `llm "..." > brief.md`). You're just asking it to generate text.
+
+3.  **Crafting Your Brief Request:** The magic happens when you tell `llm` exactly what kind of brief you need. We'll provide clear instructions to ensure the output includes sections, open questions, and notes.
+    Type the following command into your terminal. When you see `[PASTE YOUR RESEARCH NOTES HERE]`, replace it with your actual notes (you can type a few sentences or paste a larger block of text).
+
+    ```bash
+    llm "Based on the following research notes, please generate a comprehensive research brief.
+    Your brief should be structured with the following explicit sections:
+    1.  **Summary:** A concise overview of the key points.
+    2.  **Key Findings & Evidence:** Detail the main discoveries, including specific notes or phrases from the input as evidence.
+    3.  **Explicit Uncertainties & Open Questions:** Clearly state what information is missing, unclear, or requires further investigation. Frame these as specific questions.
+    4.  **Next Steps:** Suggest actionable questions or areas for future research.
+
+    ---
+    [PASTE YOUR RESEARCH NOTES HERE, e.g., 'The new project launch showed a 15% increase in user engagement during the first week. However, retention rates for new users are still below target, only 30% after one month. We suspect onboarding friction.']
+    ---"
+    ```
+
+4.  **Review the Output:** After `llm` processes your request, it will display the generated brief directly in your terminal. Take a moment to read through it. Does it have all the sections? Are the uncertainties and open questions clear? This is your brief!
 
 <VerificationBlock 
   deliverable="A brief with sections, open questions, and evidence notes."

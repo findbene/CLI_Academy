@@ -10,10 +10,41 @@ verifyType: "terminal_output"
 # Open your first practice repo
 
 ## Objective
-*TBD*
+By the end of this lesson, you will have successfully cloned your very first practice repository from GitHub onto your local machine. This repository will be your safe space for experimentation, ready for you to begin working with Claude Code without any risk to your system.
 
 ## Walkthrough
-*TBD*
+
+It's perfectly normal to feel a little hesitant when running new commands. We'll take it one safe step at a time, making sure you understand what each command does.
+
+1.  **Create a dedicated space for your projects:**
+    It's a great habit to keep your coding projects organized. Let's create a new folder just for your practice repositories.
+    ```bash
+    mkdir practice-repos
+    ```
+    *   **Safety check:** The `mkdir` command (make directory) simply creates a new, empty folder in your current location. It's completely safe and doesn't affect any existing files or system settings.
+
+2.  **Move into your new projects folder:**
+    Now, let's navigate inside the folder we just created.
+    ```bash
+    cd practice-repos
+    ```
+    *   **Safety check:** The `cd` command (change directory) moves your current terminal location. It's like double-clicking a folder to open it. This command is also perfectly safe and only changes where your terminal is "looking."
+
+3.  **Clone your first practice repository:**
+    We'll use a widely recognized, simple repository from GitHub called "Spoon-Knife." It's designed for new users and is completely harmless.
+    ```bash
+    git clone https://github.com/octocat/Spoon-Knife.git
+    ```
+    *   **Safety check:** The `git clone` command downloads a copy of a remote repository to your computer. It creates a *new folder* (`Spoon-Knife` in this case) with all the project files inside. It *only reads* from GitHub and *only writes* into this new folder on your machine. It will not modify any existing files or execute any code automatically. It's a fundamental and very safe operation.
+
+4.  **Enter your newly cloned repository:**
+    The `git clone` command created a new folder named `Spoon-Knife`. Let's go into it.
+    ```bash
+    cd Spoon-Knife
+    ```
+    *   **Safety check:** Again, `cd` just changes your terminal's location. Safe!
+
+You are now inside your `Spoon-Knife` repository! This is your safe practice environment. You should see something like `your_path/practice-repos/Spoon-Knife` in your prompt, indicating your current directory.
 
 <VerificationBlock 
   deliverable="A cloned or starter repo ready for Claude Code work."

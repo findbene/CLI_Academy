@@ -15,8 +15,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { next } = await searchParams;
 
   return (
-    <main className="page-shell">
-      <AuthCard mode="login" nextHref={next ?? null} />
-    </main>
+    <AuthCard mode="login" nextHref={next ?? null} />
   );
 }

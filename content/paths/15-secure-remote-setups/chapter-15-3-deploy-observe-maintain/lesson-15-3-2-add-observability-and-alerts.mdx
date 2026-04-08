@@ -10,10 +10,42 @@ verifyType: "terminal_output"
 # Add observability and alerts
 
 ## Objective
-*TBD*
+
+In this lesson, you'll establish a foundational routine for observing your remote runtime's health and receiving basic alerts. By the end, you will be able to review critical log information and set up a simple, real-time alerting mechanism using standard command-line tools, giving you immediate insight into potential issues.
 
 ## Walkthrough
-*TBD*
+
+Let's set up a simple log review and alerting routine for your remote runtime. We'll use common Linux tools that are safe, as they only read information and don't make any changes.
+
+1.  **Start with Log Review:**
+    First, let's look at a log file in real-time. Imagine your application writes to a file like `my_app.log`.
+    ```bash
+    tail -f my_app.log
+    ```
+    *   `tail`: This command shows the end of a file.
+    *   `-f`: Stands for "follow." It continuously displays new lines added to the file, perfect for watching live activity.
+    *   *Safety Note*: `tail` is a read-only command. It just displays file content, making no modifications to your system or files. Press `Ctrl+C` to stop following the log.
+
+2.  **Search for Specific Log Entries:**
+    While `tail -f` is great for live viewing, you often need to find specific messages like errors.
+    ```bash
+    grep "ERROR" my_app.log
+    ```
+    *   `grep`: This powerful command searches for patterns in text files. Here, we're looking for the word "ERROR".
+    *   *Safety Note*: `grep` is also a read-only command. It simply filters and displays lines that match your search pattern.
+
+3.  **Set Up a Simple Real-time Alert:**
+    Now, let's combine these to create a basic "alert" that continuously checks for critical messages and updates on your screen.
+    ```bash
+    watch -n 5 'tail -n 100 my_app.log | grep -i "error\|fail"'
+    ```
+    *   `watch`: This command repeatedly executes a command and displays its output on your terminal.
+    *   `-n 5`: This option tells `watch` to refresh every 5 seconds.
+    *   `'tail -n 100 my_app.log | grep -i "error\|fail"'`: This is the command `watch` will run. It takes the last 100 lines of `my_app.log` and pipes (`|`) them to `grep`, which then searches for "error" or "fail" (case-insensitive).
+    *   *Safety Note*: `watch` is a read-only command. It just runs other commands and displays their output, having no impact on your system's state. Any errors will pop up on your screen.
+
+4.  **Stop the Monitoring:**
+    To stop the `watch` command, simply press `Ctrl+C`. This will exit the `watch` loop and return you to your regular terminal prompt.
 
 <VerificationBlock 
   deliverable="A simple alerting and log review routine."

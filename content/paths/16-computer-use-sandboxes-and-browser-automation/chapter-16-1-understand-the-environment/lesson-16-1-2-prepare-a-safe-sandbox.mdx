@@ -10,10 +10,34 @@ verifyType: "terminal_output"
 # Prepare a safe sandbox
 
 ## Objective
-*TBD*
+It's exciting to jump into automation, but first, let's create a safe, isolated space where you can experiment without worry. In this lesson, you will learn to set up your very own 'sandbox' – a dedicated directory where you can practice new commands and automation scripts without accidentally affecting important files on your system. Your goal is to have a completely safe environment ready for your CLI journey.
 
 ## Walkthrough
-*TBD*
+Ready to build your safe space? Let's go step-by-step. Remember, we're focusing on commands that keep you in control and your system protected.
+
+1.  **Open your Terminal:** This is where all the magic happens!
+2.  **Create your sandbox directory:**
+    ```bash
+    mkdir cli-sandbox
+    ```
+    *   **Why this is safe:** The `mkdir` command *only* creates a new, empty folder. It doesn't touch any existing files or change system settings. By default, it creates this new folder in your current location (usually your home directory), which is your personal, safe space.
+3.  **Step inside your new sandbox:**
+    ```bash
+    cd cli-sandbox
+    ```
+    *   **Why this is safe:** The `cd` command *only* changes your current working directory. You're simply moving your "focus" to the `cli-sandbox` folder. This ensures that anything you create or modify from now on will stay neatly contained within this designated practice area.
+4.  **Verify your safe space (optional, but good practice):**
+    ```bash
+    pwd
+    ```
+    *   **Why this is safe:** `pwd` (Print Working Directory) *only* displays your current location. It's a read-only command that helps you confirm you're exactly where you intend to be – inside your `cli-sandbox`.
+5.  **Take a peek inside:**
+    ```bash
+    ls
+    ```
+    *   **Why this is safe:** The `ls` command *only* lists the contents of your current directory. It's also a read-only command and makes no changes to your system. Since you just created it, your sandbox should be empty right now!
+
+You've now successfully set up a safe, isolated environment. Great job!
 
 <VerificationBlock 
   deliverable="A practice sandbox or lab environment ready for automation."

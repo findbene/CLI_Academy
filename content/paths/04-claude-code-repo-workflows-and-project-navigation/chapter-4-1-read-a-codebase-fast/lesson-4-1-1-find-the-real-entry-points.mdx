@@ -10,10 +10,57 @@ verifyType: "terminal_output"
 # Find the real entry points
 
 ## Objective
-*TBD*
+
+In this lesson, you'll learn a crucial skill for navigating any project: identifying its "entry points" and the "smallest safe surface area" for making changes. This helps you understand where to start and how to make modifications without accidentally breaking other parts of the system. Your goal is to create an `entrypoints.md` file mapping these key areas in your practice repository.
 
 ## Walkthrough
-*TBD*
+
+It's natural to feel a bit unsure when looking at a new codebase. Our goal is to build your confidence by giving you a clear, safe approach to understanding where to begin.
+
+1.  **Gently Explore Your Repository:**
+    Before making any changes, it's a great idea to get a feel for your practice repository.
+    *   Open your terminal.
+    *   Navigate into your practice repository directory. (If you don't have one, just `mkdir practice-repo` and `cd practice-repo` for this exercise!)
+    *   Run `ls -F`. This command lists the contents of your current directory and adds a forward slash `/` to directories. It's completely safe; it only shows you what's there and doesn't modify anything. Take a moment to look at the file names and directory structure.
+
+2.  **Imagine a Simple Change:**
+    Let's think about a common task. Imagine you need to add a very simple "Hello, CLI Academy!" message that prints when the main application starts.
+
+3.  **Identify the "Entry Point":**
+    Based on your exploration and the change you just imagined, ask yourself:
+    *   "Where would I start if I wanted to make this simple change?"
+    *   Is there a file named `main.py`, `index.js`, `app.rb`, `program.cs`, or something similar that looks like the primary starting point for the application? This is your *entry point* – the file or script that kicks off the whole process.
+
+4.  **Identify the "Smallest Safe Surface Area":**
+    Now, think about what else *must* be touched for your simple "Hello, CLI Academy!" change, and what can safely be left alone.
+    *   "Besides the entry point, what other files, if any, *absolutely need* to be modified for this tiny change to work?"
+    *   "What's the bare minimum I need to interact with to achieve this change without affecting unrelated parts?"
+    This minimal set of files is your *smallest safe surface area*. Keeping changes contained here reduces the risk of unintended side effects.
+
+5.  **Create Your Entry Points Map (`entrypoints.md`):**
+    Now, let's document your findings.
+    *   In your terminal, run `touch entrypoints.md`. This command safely creates an empty file named `entrypoints.md`. It won't overwrite existing files or cause any harm.
+    *   Now, open `entrypoints.md` using your favorite text editor (e.g., `code entrypoints.md` if you use VS Code, or `nano entrypoints.md` directly in the terminal).
+    *   Add your notes, clearly stating:
+        *   **Your Practice Repository's Primary Entry Point:** (e.g., `main.py`)
+        *   **Reasoning:** Why you believe this is the entry point.
+        *   **Smallest Safe Surface Area for a "Hello, CLI Academy!" change:** (e.g., `main.py` only, or `main.py` and `utils/messages.py`)
+        *   **Reasoning:** Explain why you chose these files and why you think it's the smallest safe area.
+
+    Here's an example of what you might write:
+
+    ```markdown
+    # Entry Points Map for My Practice Repo
+
+    ## Primary Application Entry Point
+    *   **Identified File:** `main.py`
+    *   **Reasoning:** Looking at the file names, `main.py` seems like the most logical starting point for any Python-based application. It's often where execution begins.
+
+    ## Smallest Safe Surface Area for "Hello, CLI Academy!" Feature
+    *   **Identified Files:** `main.py`
+    *   **Reasoning:** For a simple print statement, I believe I can add `print("Hello, CLI Academy!")` directly in `main.py` without needing to modify any other files. This keeps the change isolated and minimal.
+    ```
+    Save and close the file. You've successfully created your first entry points map! This kind of documentation is incredibly valuable for yourself and others.
 
 <VerificationBlock 
   deliverable="An `entrypoints.md` map for a practice repo."

@@ -10,10 +10,44 @@ verifyType: "terminal_output"
 # Create a session context packet
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to create a simple yet powerful "context packet" file. This file will capture key information about our current session, making it easy for us (or another AI assistant) to pick up exactly where we left off, ensuring smooth task continuation without losing valuable progress.
 
 ## Walkthrough
-*TBD*
+
+Welcome! Sometimes, we need to pause a task or move our work to a different tool. A context packet is like a helpful summary you can bring along. Let's create one safely!
+
+1.  **Review Your Recent Commands:**
+    Before we create our packet, it's good to see what we've been doing.
+    ```bash
+    history
+    ```
+    The `history` command is a safe and helpful tool. It simply displays a list of commands you've recently executed in your current session, allowing you to review your steps without making any changes to your system.
+
+2.  **Save Your Session History:**
+    Now, let's save this history into a file for our context packet.
+    ```bash
+    history > my_session_context.txt
+    ```
+    We're using `>` to redirect the output of `history` into a new file named `my_session_context.txt`. This is safe because it only creates or updates a file *within your current working directory*. It won't touch any system files. Choosing a descriptive, unique filename helps avoid accidentally overwriting important files.
+
+3.  **Add Custom Notes (Optional but Recommended!):**
+    The `history` is great, but a few manual notes can make the context even clearer.
+    ```bash
+    echo "--- Task Summary ---" >> my_session_context.txt
+    echo "Current Goal: Exploring data analysis options for project X." >> my_session_context.txt
+    echo "Next Steps: Need to identify suitable datasets." >> my_session_context.txt
+    ```
+    The `echo` command simply prints text to your terminal, and it's completely safe. We use `>>` here to *append* this text to our `my_session_context.txt` file. `>>` is safer than `>` when you want to add content to a file without erasing its previous content. Feel free to replace the example text with your own task summary and next steps.
+
+4.  **Inspect Your Context Packet:**
+    To ensure your context packet looks just right, you can safely inspect its contents.
+    ```bash
+    cat my_session_context.txt
+    ```
+    The `cat` command displays the contents of a file directly in your terminal. Like `history` and `echo`, `cat` is a read-only command, meaning it won't make any changes to your file or system.
+
+You now have a robust `my_session_context.txt` file that captures your recent actions and important notes. You can share this file with another Claude instance or refer to it yourself to quickly re-establish your working context!
 
 <VerificationBlock 
   deliverable="A reusable context packet for task continuation."

@@ -10,10 +10,36 @@ verifyType: "terminal_output"
 # Use Claude Code for code review on your own work
 
 ## Objective
-*TBD*
+By the end of this lesson, you will be able to leverage Claude Code to perform a rigorous self-review of your local code changes. You will generate a clear diff, prompt Claude for feedback focusing on clarity, risk, and overreach, and use its suggestions to refine your code, ultimately producing a self-review checklist and a cleaned diff.
 
 ## Walkthrough
-*TBD*
+
+### Step 1: Generate Your Code Diff
+First, let's see what changes you've made in your local repository.
+1.  Navigate to your project directory in the terminal.
+2.  To see all uncommitted changes you currently have, use the command:
+    ```bash
+    git diff
+    ```
+    *   **Safety Note:** This command is completely safe! It only *shows* you the differences between your current working directory and your last commit; it makes no changes to your files or repository.
+3.  Review the output to ensure it covers the code you want reviewed.
+
+### Step 2: Copy the Diff Output
+1.  Carefully select and copy the entire output from the `git diff` command in your terminal. This is the raw code comparison you'll feed to Claude.
+
+### Step 3: Get a Senior Engineer Review from Claude
+1.  Open Claude Code (or your preferred Claude interface).
+2.  Paste the diff you copied into the chat.
+3.  Add the following prompt *above* your diff:
+    ```
+    Review this diff like a strict senior engineer focused on clarity, potential risks, and any instances of overreach (e.g., doing too much in one place). Provide your feedback as a clear checklist of issues and suggestions, and then show me an improved version of this diff.
+    ```
+    *   This prompt directs Claude to act as a seasoned reviewer, giving you structured, actionable feedback specifically targeting crucial code quality aspects.
+
+### Step 4: Review Claude's Feedback and Deliver
+1.  Carefully read through Claude's generated checklist of issues and suggestions.
+2.  Examine the "improved diff" it provides.
+3.  The checklist and the improved diff are your deliverables for this lesson! Use them to understand areas for improvement in your own code.
 
 <VerificationBlock 
   deliverable="A self-review checklist and cleaned diff."

@@ -10,10 +10,33 @@ verifyType: "terminal_output"
 # Move between folders the safe way
 
 ## Objective
-*TBD*
+Learn how to safely step into and out of folders using `cd` without getting lost or overwhelmed.
 
 ## Walkthrough
-*TBD*
+
+Now that you know how to figure out where you are (`pwd` or `cd`) and what's around you (`ls` or `dir`), it's time to actually move!
+
+We use a command called `cd`, which stands for **Change Directory**. 
+
+**Step 1: Stepping "Into" a folder**
+If you see a folder when you list the files around you, you can walk inside it.
+Type `cd ` (don't forget the space!) followed by the folder's name.
+
+Example: If you see a folder named `Documents`, type:
+`cd Documents`
+Press Enter. You've now "walked" into the Documents room! Always run your "Where am I?" command here to prove you've moved.
+
+**Step 2: Stepping "Out" of a folder**
+What if you walked into the wrong room and want to go back?
+To step backwards (out of the current folder and into the one containing it), you use a special shortcut: `..` (two dots).
+
+Type `cd ..`
+Press Enter. You have now taken one step backwards!
+
+*Safety tip*: If you ever try to `cd` into a folder that doesn't exist, the terminal will just give you an honest error. It won't break anything. 
+
+**Your First Task:**
+Use `cd` to step into a folder you know exists on your computer, verify your location, and then use `cd ..` to step back out. Copy your terminal output and paste it here so the tutor can verify your navigation drill!
 
 <VerificationBlock 
   deliverable="A completed folder navigation challenge."

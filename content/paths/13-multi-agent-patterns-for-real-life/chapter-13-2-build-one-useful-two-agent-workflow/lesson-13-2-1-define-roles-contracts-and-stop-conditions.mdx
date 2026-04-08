@@ -10,10 +10,71 @@ verifyType: "terminal_output"
 # Define roles, contracts, and stop conditions
 
 ## Objective
-*TBD*
+
+In this lesson, you'll learn to define clear, distinct roles for your AI agents and establish a simple contract between them. This is a crucial step towards building predictable and safe autonomous systems, ensuring agents work together efficiently without duplicating effort or causing confusion. By the end, you will have created a Python file outlining a two-agent contract with specific responsibilities.
 
 ## Walkthrough
-*TBD*
+
+Let's create a foundational contract file where two agents have well-defined, non-overlapping roles. This approach prevents redundancy and enhances accountability, making your AI systems much safer and easier to manage.
+
+1.  **Create your contract file:**
+    Open your terminal. We'll start by creating an empty Python file for our contract.
+    ```bash
+    touch my_first_contract.py
+    ```
+    *Why `touch` is safe:* The `touch` command simply creates an empty file with the given name. If the file already exists, it only updates its timestamp without altering its contents. It's a very safe way to begin a new file.
+
+2.  **Open the file for editing:**
+    Now, let's open `my_first_contract.py` to add our agent definitions. We'll use `nano`, a beginner-friendly text editor.
+    ```bash
+    nano my_first_contract.py
+    ```
+    *Why `nano` is safe:* `nano` is a terminal-based text editor. It only modifies the file you explicitly open. You are in control of what you type and save. When you're done, press `Ctrl+X`, then `Y` to save, and `Enter` to confirm the filename.
+
+3.  **Define your two-agent contract:**
+    Inside `nano`, copy and paste the following Python code. Pay close attention to the `system_message` for each agent; this is where we define their unique roles and responsibilities to minimize overlap and maximize accountability.
+
+    ```python
+    import autogen
+
+    # Agent 1: The Researcher
+    # Role: Focus solely on gathering information and presenting raw data.
+    researcher = autogen.AssistantAgent(
+        name="Researcher",
+        llm_config={"config_list": autogen.config_list_from_json(
+            "OAI_CONFIG_LIST",
+            filter_dict={
+                "model": ["gpt-4o", "gpt-4", "gpt-3.5-turbo"],
+            },
+        )},
+        system_message="You are a meticulous researcher. Your sole task is to gather factual information on the given topic and present it clearly. Do NOT analyze or summarize; just provide the raw, relevant data.",
+    )
+
+    # Agent 2: The Analyzer
+    # Role: Focus solely on analyzing data provided by the Researcher and providing insights.
+    analyzer = autogen.AssistantAgent(
+        name="Analyzer",
+        llm_config={"config_list": autogen.config_list_from_json(
+            "OAI_CONFIG_LIST",
+            filter_dict={
+                "model": ["gpt-4o", "gpt-4", "gpt-3.5-turbo"],
+            },
+        )},
+        system_message="You are a brilliant analyst. Your sole task is to critically analyze the raw data provided by the Researcher and extract key insights, trends, and conclusions. Do NOT gather new information.",
+    )
+
+    # User Proxy Agent (to facilitate interaction between human and AI agents)
+    user_proxy = autogen.UserProxyAgent(
+        name="User_Proxy",
+        human_input_mode="NEVER", # For this basic contract, we'll keep human input out
+        max_consecutive_auto_reply=10,
+        is_termination_msg=lambda x: x.get("content", "").rstrip().endswith("TERMINATE"),
+        code_execution_config={"work_dir": "coding"},
+    )
+    ```
+    After pasting, press `Ctrl+X`, then `Y`, and `Enter` to save the file.
+
+    You've successfully created a contract file where your `Researcher` and `Analyzer` agents have distinct, non-overlapping responsibilities defined in their `system_message`. This clarity is key to making them more accountable and preventing wasted effort!
 
 <VerificationBlock 
   deliverable="A two-agent contract file."

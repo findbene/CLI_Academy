@@ -10,10 +10,35 @@ verifyType: "terminal_output"
 # Trace one feature across files
 
 ## Objective
-*TBD*
+You will learn to trace a specific feature's journey through a codebase, from how it's initiated (like a button click or a request) to its final output. This skill is like being a detective for code, helping you understand complex systems and prepare for debugging! Your deliverable will be a feature trace sheet documenting this flow.
 
 ## Walkthrough
-*TBD*
+
+It can feel a bit like exploring a new city without a map at first, but we'll take it one step at a time.
+
+1.  **Choose Your Feature & Starting Point:**
+    *   Pick a very small, specific feature you can clearly see or understand. For instance, if it's a web app, maybe the text "Welcome back, [username]!" on a dashboard. If it's a command-line tool, perhaps how a specific error message is generated.
+    *   Your starting point will be the most visible part of this feature—the actual text, a specific URL path, or a command-line argument. This will be your first search term.
+
+2.  **Start Your Search (Safely!):**
+    *   Open your terminal and navigate to the root directory of the codebase you want to explore.
+    *   We'll use the `grep` command. Think of `grep` as a super-fast search engine for text inside your project's files. It's a read-only command, meaning it *only looks* at files and *never changes* them, so it's perfectly safe to use!
+    *   Type: `grep -r "Your search term goes here" .`
+        *   Replace `"Your search term goes here"` with the exact text or keyword you chose in Step 1.
+        *   `-r` means "recursive," telling `grep` to search through all subdirectories.
+        *   `.` tells `grep` to search in the current directory and all its subfolders.
+
+3.  **Follow the Trail:**
+    *   `grep` will output lines of code and the file paths where your search term was found.
+    *   Examine the results. Read the code surrounding your search term. What happens next? Is there a function being called? A variable being assigned a value? An import statement pointing to another file?
+    *   This next piece of information (e.g., a function name, another unique string) becomes your *next search term*.
+
+4.  **Document Your Journey:**
+    *   As you move from one file to the next, create a simple trace sheet. For each step, note:
+        *   The file path you just came from.
+        *   The line of code that led you to the next step.
+        *   Your new search term and why you chose it.
+    *   Continue this process, using `grep` with your new search terms, until you've followed the feature from its initial request or display all the way to its core logic or data source. This sheet is your deliverable!
 
 <VerificationBlock 
   deliverable="A feature trace sheet from UI/request to output."

@@ -10,10 +10,70 @@ verifyType: "terminal_output"
 # Build: daily brief assistant
 
 ## Objective
-*TBD*
+By the end of this lesson, you will have built your very own daily brief assistant! This assistant will be a simple script that gathers key information from a few approved sources and presents it to you as a single, concise summary directly in your terminal. This is your first step towards automating your morning routine, giving you control over your information flow.
 
 ## Walkthrough
-*TBD*
+
+Let's create a small script that fetches headlines from a couple of RSS feeds.
+
+1.  **Create your script file:**
+    We'll create a new file where our commands will live.
+
+    ```bash
+    touch daily_brief.sh
+    ```
+    The `touch` command safely creates an empty file. It doesn't modify existing files.
+
+2.  **Open and edit your script:**
+    Open this file using `nano`.
+
+    ```bash
+    nano daily_brief.sh
+    ```
+    `nano` is a user-friendly text editor. Press `Ctrl+X` to exit.
+
+3.  **Add the script content:**
+    Paste the following lines.
+
+    ```bash
+    #!/bin/bash
+
+    echo "--- Your Daily Brief ---"
+    echo "Date: $(date)"
+    echo ""
+
+    echo "== News Headlines =="
+    curl -s 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml' | grep -E -o '<title>[^<]+</title>' | head -n 3 | sed -E 's/<title>//;s/<\/title>//'
+    echo ""
+
+    echo "== Tech Updates =="
+    curl -s 'https://www.theverge.com/rss/index.xml' | grep -E -o '<title>[^<]+</title>' | head -n 3 | sed -E 's/<title>//;s/<\/title>//'
+    echo "----------------------"
+    ```
+    *   `#!/bin/bash`: Defines the script interpreter.
+    *   `echo`, `$(date)`: Safely prints text and the current date.
+    *   `curl -s 'URL'`: Safely fetches content from a web address (`-s` for silent). It's a read-only command.
+    *   `|`: Pipes output from one command to the next.
+    *   `grep -E -o '<title>[^<]+</title>'`: Safely searches for and extracts title tags.
+    *   `head -n 3`: Safely takes only the first 3 lines of output, making it concise.
+    *   `sed -E 's/<title>//;s/<\/title>//'`: Safely removes the `<title>` and `</title>` tags.
+
+4.  **Make your script executable:**
+    Give your script permission to run.
+
+    ```bash
+    chmod +x daily_brief.sh
+    ```
+    `chmod +x` safely adds execute permission. It doesn't alter file content.
+
+5.  **Run your daily brief:**
+
+    ```bash
+    ./daily_brief.sh
+    ```
+    This executes your script.
+
+You now have a functional, basic daily brief assistant!
 
 <VerificationBlock 
   deliverable="A daily brief assistant that gathers from approved sources and outputs one summary."

@@ -10,10 +10,47 @@ verifyType: "terminal_output"
 # Build your personal default workflow
 
 ## Objective
-*TBD*
+
+By the end of this lesson, you will have designed your very own personal default workflow and documented it in a file named `my-default-workflow.md`. This workflow will describe how you typically *start*, *switch between*, and *stop* your work sessions, tailored to your current skill level and device setup.
 
 ## Walkthrough
-*TBD*
+
+It's completely normal to feel a bit lost when you first start using the command line, and that's why we're going to build a simple, personal workflow. Think of it as your own gentle guide to navigating your computer day.
+
+1.  **Create your workflow file:**
+    First, let's create a new file where you'll write down your workflow. We'll use the `touch` command.
+
+    ```bash
+    touch my-default-workflow.md
+    ```
+
+    *Why this is safe:* The `touch` command is very safe! It simply creates an empty file if one doesn't exist, or updates its modification timestamp if it does. It will not delete files, overwrite content without your explicit instruction, or cause any harm to your system.
+
+2.  **Open the file for editing:**
+    Now that you've created the file, let's open it using a simple text editor called `nano`.
+
+    ```bash
+    nano my-default-workflow.md
+    ```
+
+    *Why this is safe:* `nano` is a user-friendly text editor. It opens the specified file and allows you to type and edit text. It doesn't execute commands or modify system settings unless *you* specifically tell it to save changes to a file *you* are editing.
+
+3.  **Describe your workflow:**
+    Inside `nano`, start by describing your personal default workflow. There's no right or wrong answer here; just think about what feels natural for *you*. Here are some guiding questions to help you get started:
+
+    *   **Start:** What do you usually do when you first sit down at your computer and open your terminal? (e.g., "I open my web browser," "I check my email," "I navigate to my project folder.")
+    *   **Switch:** How do you typically switch between tasks or projects? (e.g., "I open a new terminal tab," "I close my current program," "I use `cd` to move to a different directory.")
+    *   **Stop:** How do you usually end your work session? (e.g., "I close all my terminal windows," "I save my work and shut down my computer.")
+
+    Keep it simple and focus on what you actually do or what you'd like to try doing.
+
+4.  **Save and exit:**
+    Once you're happy with your description, save your changes and exit `nano`.
+    *   Press `Ctrl+X` (hold down the `Ctrl` key and press `X`).
+    *   `nano` will ask "Save modified buffer?" Type `Y` for Yes.
+    *   Press `Enter` to confirm the filename.
+
+Congratulations! You've just created your first personal workflow document. This file will be a great reference as you continue your journey with the command line.
 
 <VerificationBlock 
   deliverable="A `my-default-workflow.md` describing start, switch, and stop points."

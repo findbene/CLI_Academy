@@ -10,10 +10,44 @@ verifyType: "terminal_output"
 # Draft a lightweight SOP
 
 ## Objective
-*TBD*
+By the end of this lesson, you will be able to transform a repeated, manual task into a clear, step-by-step Standard Operating Procedure (SOP). This will help you perform tasks consistently, reduce errors, and build confidence in your command-line workflow.
 
 ## Walkthrough
-*TBD*
+We all have those simple tasks we do over and over again. Turning these into a "dead-simple" SOP helps us ensure consistency and makes things feel much more manageable. Let's walk through drafting an SOP for a common task: "Daily Project Sync and Commit."
+
+1.  **Identify Your Repeated Task**: For this example, our task is to update our local project with any remote changes, save our own work, and commit it.
+2.  **Break It Down into Steps**:
+    *   Open terminal.
+    *   Navigate to your project directory.
+    *   Pull any new changes from the remote (if applicable).
+    *   Check what files you've changed.
+    *   Stage all your changes.
+    *   Commit your changes with a message.
+
+3.  **Draft Your SOP with Checkpoints and Commands**:
+    Here's what a lightweight SOP might look like, complete with safety notes for each command:
+
+    **My Simple SOP: Daily Project Sync and Commit**
+
+    *   **Checkpoint 1: Enter your project's workspace.**
+        *   `cd /path/to/my/awesome-project`
+        *   *Why this is safe*: The `cd` command (change directory) only navigates your location within the file system. It does not modify any files or system settings, so you can safely explore.
+
+    *   **Checkpoint 2: Fetch any new updates from the cloud.**
+        *   `git pull`
+        *   *Why this is safe*: `git pull` fetches and merges changes from the remote repository. While it updates your local files, Git's version control system ensures you can always review or revert changes if something unexpected happens. For personal projects, it's a solid way to stay current.
+
+    *   **Checkpoint 3: Review your recent work.**
+        *   `git status`
+        *   *Why this is safe*: `git status` is purely informational. It displays the current state of your repository and changes you've made, without modifying anything. It's like taking a snapshot to see where you stand.
+
+    *   **Checkpoint 4: Prepare your changes for saving.**
+        *   `git add .`
+        *   *Why this is safe*: `git add .` stages all new and modified files, preparing them for the *next* commit. It doesn't permanently save them yet, allowing you to review before the final commit. It's a reversible preparation step.
+
+    *   **Checkpoint 5: Permanently save your progress.**
+        *   `git commit -m "Daily progress: Implemented feature X"`
+        *   *Why this is safe*: `git commit` creates a permanent record of your staged changes in your local project history. Git is designed for safely tracking changes, so you can always go back to previous versions if needed.
 
 <VerificationBlock 
   deliverable="A step-by-step SOP from repeated work."

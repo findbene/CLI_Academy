@@ -10,10 +10,54 @@ verifyType: "terminal_output"
 # Mini project: dossier builder
 
 ## Objective
-*TBD*
+To build a complete research dossier by extracting key information from provided source files and compiling it into a final brief. This project will introduce you to essential CLI tools for text processing and file management in a safe and controlled environment.
 
 ## Walkthrough
-*TBD*
+
+Let's get started on your first dossier! We'll use some powerful but very safe commands to achieve our goal.
+
+1.  **Explore the Source Material**:
+    First, let's see what raw data we have to work with. Use `ls` to list the files in your current directory.
+    ```bash
+    ls
+    ```
+    This command *lists* the files and directories in your current location. It doesn't change anything, so it's perfectly safe to use as much as you like!
+
+    Now, let's peek inside a source file to understand its content.
+    ```bash
+    cat source_file_name.txt
+    ```
+    Replace `source_file_name.txt` with an actual file name you found with `ls`. `cat` (short for concatenate) simply *displays* the contents of a file to your screen. It never modifies the original file, making it very safe for viewing.
+
+2.  **Extract Key Facts with `grep`**:
+    Imagine you're looking for specific keywords or names. `grep` is your go-to tool. Let's try to find mentions of a key term (e.g., "project name" or a specific "person").
+    ```bash
+    grep "keyword" source_file_name.txt
+    ```
+    `grep` *searches* for text patterns within files and outputs matching lines. Like `cat`, it only reads the file and never alters your files, so it's completely safe for analysis.
+
+3.  **Compile Your Findings**:
+    You'll want to save your extracted facts. We can combine `grep` with output redirection to create a new file.
+    ```bash
+    grep "keyword" source_file_name.txt > extracted_facts.txt
+    ```
+    The `>` symbol redirects the output of `grep` from your screen into a new file called `extracted_facts.txt`. Be mindful: if `extracted_facts.txt` already exists, `>` will *overwrite* it. For this lesson, we're creating new files, so it's safe! You can `cat extracted_facts.txt` to confirm its contents.
+
+4.  **Draft the Final Brief**:
+    Now, let's write your summary brief using a simple text editor.
+    ```bash
+    nano final_brief.txt
+    ```
+    `nano` is a friendly, command-line text editor. It opens `final_brief.txt` (creating it if it doesn't exist) allowing you to type in your summary. You can freely edit the content. If you make a mistake, you can always exit without saving by pressing `Ctrl+X` and then `N`. When you're happy, save by pressing `Ctrl+X`, then `Y` to confirm saving, and `Enter` for the filename.
+
+5.  **Review Your Dossier**:
+    Finally, take a moment to review your complete dossier.
+    ```bash
+    ls
+    cat extracted_facts.txt
+    cat final_brief.txt
+    ```
+    This ensures all components are present and correctly filled. Great job!
 
 <VerificationBlock 
   deliverable="A full research dossier with extracted facts and final brief."

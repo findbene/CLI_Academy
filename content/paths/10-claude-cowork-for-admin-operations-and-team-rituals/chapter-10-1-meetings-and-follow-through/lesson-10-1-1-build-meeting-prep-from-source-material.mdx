@@ -10,10 +10,38 @@ verifyType: "terminal_output"
 # Build meeting prep from source material
 
 ## Objective
-*TBD*
+
+In this lesson, we'll learn a super valuable skill: how to quickly craft a concise, one-page meeting brief from various source documents using the command line. This isn't about automating every step, but about using simple, safe CLI tools to efficiently gather information and build a clear summary that respects everyone's time – including yours! By the end, you'll have a ready-to-share brief.
 
 ## Walkthrough
-*TBD*
+
+Let's get started on building that effective meeting brief!
+
+1.  **Inspect Your Source Files:**
+    First, we need to see what information we're working with. Imagine you have files like `project_update.txt` and `customer_feedback.md`.
+    Type: `cat project_update.txt`
+    Then: `cat customer_feedback.md`
+    *Why this is safe:* The `cat` command is very safe! It only *displays* the contents of a file to your screen; it never changes or deletes your files. It's like peeking inside a folder without touching anything. Take a moment to read through these files and identify the core topics, decisions, and action items.
+
+2.  **Identify Key Information:**
+    Now that you've viewed the source material, mentally (or jot down on a scratchpad) the most critical points that need to be in your brief. Focus on what the meeting attendees absolutely *must* know.
+
+3.  **Create Your Brief File:**
+    We need a new, empty file to put your condensed brief into. Let's call it `meeting_brief.md`.
+    Type: `touch meeting_brief.md`
+    *Why this is safe:* The `touch` command is also very safe! If the file `meeting_brief.md` doesn't exist, `touch` simply creates a new, empty file. If it already exists, `touch` just updates its last modified date – it doesn't change its content.
+
+4.  **Populate Your Brief:**
+    Now, let's put your key information into the `meeting_brief.md` file. For beginners, a simple text editor is the easiest way to do this.
+    Type: `nano meeting_brief.md`
+    *Why this is safe:* `nano` is a user-friendly text editor. It opens your file, allows you to type, paste, and edit content, and then you save your changes. It's safe because *you* control what goes into the file and when it's saved.
+    Inside `nano`, type or paste your condensed meeting brief. Structure it clearly with headings for agenda, key updates, discussion points, and next steps.
+    When you're done, press `Ctrl + O` (to Write Out, then Enter to confirm filename), then `Ctrl + X` (to Exit).
+
+5.  **Review Your Brief:**
+    Finally, let's take a look at your finished one-page brief.
+    Type: `cat meeting_brief.md`
+    *Why this is safe:* Once again, `cat` just displays your work. This is your chance to proofread and ensure it's clear, concise, and ready to go!
 
 <VerificationBlock 
   deliverable="A one-page meeting brief."

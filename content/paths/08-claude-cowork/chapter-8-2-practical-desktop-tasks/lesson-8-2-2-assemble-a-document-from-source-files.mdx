@@ -10,10 +10,47 @@ verifyType: "terminal_output"
 # Assemble a document from source files
 
 ## Objective
-*TBD*
+You'll learn how to combine information from several different text files into a single, organized document using your command line. This skill is fantastic for assembling reports, compiling research, or bringing together different notes into one cohesive "brief", making it easy to see where every piece of information originated.
 
 ## Walkthrough
-*TBD*
+
+1.  **Prepare your source files:**
+    First, let's create a few small text files that will serve as our "source material."
+    ```bash
+    echo "## Introduction" > intro.txt
+    echo "This brief summarizes key findings from various reports. We will cover main points and conclusions." >> intro.txt
+    echo "" >> intro.txt # Add a newline for readability
+
+    echo "### Key Finding 1" > finding1.txt
+    echo "The first source highlighted a significant trend in market growth, showing a 15% increase year-over-year." >> finding1.txt
+    echo "Source: Report Alpha (2023)" >> finding1.txt
+    echo "" >> finding1.txt
+
+    echo "### Key Finding 2" > finding2.txt
+    echo "Another report indicated a shift in consumer preferences towards sustainable products in Q3." >> finding2.txt
+    echo "Source: Survey Beta (2024)" >> finding2.txt
+    echo "" >> finding2.txt
+
+    echo "## Conclusion" > conclusion.txt
+    echo "In summary, market growth continues, and consumer preferences are evolving. Further investigation into sustainable product impact is recommended." >> conclusion.txt
+    echo "Source: Synthesis from all documents" >> conclusion.txt
+    echo "" >> conclusion.txt
+    ```
+    *   **Safety Note:** The `echo` command simply prints text. The `>` symbol directs that text into a file. If the file doesn't exist, it creates it. If it *does* exist, `>` will safely overwrite it with the new content (this is why we use it for the first line of each new file). The `>>` symbol *appends* text to the end of a file without overwriting any existing content, making it safe for adding lines to a file.
+
+2.  **Assemble your brief:**
+    Now, let's combine these source files into a single document called `report_brief.md`. We'll use the `cat` command, which stands for "concatenate" and simply reads files and prints their content.
+    ```bash
+    cat intro.txt finding1.txt finding2.txt conclusion.txt > report_brief.md
+    ```
+    *   **Safety Note:** `cat` is a very safe command! It only *reads* the content of your input files (`intro.txt`, etc.) and prints it out. It never modifies your original source files. The `>` then takes the combined output of `cat` and directs it into a *new* file called `report_brief.md`. If `report_brief.md` already existed, `>` would overwrite it, but since we're creating it here, it's perfectly safe.
+
+3.  **Review your assembled brief:**
+    To see the final result, you can use `cat` again to display the contents of your new brief:
+    ```bash
+    cat report_brief.md
+    ```
+    You'll see a single document containing all the information, structured with headings and clearly attributing where each point came from.
 
 <VerificationBlock 
   deliverable="A short report or brief created from multiple files."

@@ -10,10 +10,33 @@ verifyType: "terminal_output"
 # Install Claude Code the right way
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to confidently install a new command-line tool called `Claude Code` and then safely verify that it's working correctly and that we know which version we have. A solid installation is the foundation for a smooth learning experience, and knowing your version helps tremendously with troubleshooting!
 
 ## Walkthrough
-*TBD*
+
+Let's get `Claude Code` installed and ready to go. We'll prioritize safety and understanding every step of the way.
+
+1.  **Install Claude Code:**
+    To get `Claude Code` on your system, we'll use a common package manager. For many CLI tools, `npm` (Node Package Manager) is used, especially if the tool is built with JavaScript. Don't worry if you don't have `npm` yet; the AI Tutor will guide you through getting it setup for your operating system first. Once `npm` is ready, you'll typically use a command like this:
+
+    ```bash
+    npm install -g claude-code
+    ```
+
+    *Why is this command safe?* `npm` is a widely trusted package manager that handles downloading and placing software in designated system locations. The `-g` flag means "global," making the `claude-code` command available from any directory in your terminal. It's designed to manage software installations reliably without interfering with other parts of your system.
+
+2.  **Verify the Installation:**
+    Once the installation finishes, it's crucial to confirm everything is in place *before* trying to use `Claude Code` for anything complex. We'll ask `Claude Code` directly for its version:
+
+    ```bash
+    claude-code --version
+    ```
+
+    *Why is this command safe?* This command simply asks the newly installed `claude-code` program to report its version number. It doesn't modify any files, delete anything, or send information outside your computer. It's a read-only operation designed specifically for verification.
+
+3.  **Capture Your Version:**
+    Take note of the version number displayed in your terminal after running `claude-code --version`. Copy this exact output into your personal notes. This is a vital piece of information that helps confirm your setup and can be very useful if you ever need to look up documentation or troubleshoot.
 
 <VerificationBlock 
   deliverable="A verified Claude Code install with version captured in notes."

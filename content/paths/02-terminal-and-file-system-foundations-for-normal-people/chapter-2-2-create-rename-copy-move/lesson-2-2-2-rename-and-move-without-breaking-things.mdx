@@ -10,10 +10,29 @@ verifyType: "terminal_output"
 # Rename and move without breaking things
 
 ## Objective
-*TBD*
+Master the art of moving and renaming files in the terminal without destroying your work or losing files by accident.
 
 ## Walkthrough
-*TBD*
+
+Ah, the `mv` command. In the terminal, **Move** and **Rename** are actually the exact same action! You are essentially "moving" a file from its old name to its new name.
+
+**Step 1: Renaming a file**
+To use the `mv` command, you type `mv`, then the *current* name, then the *new* name.
+Let's say you want to rename `notes.txt` to `brainstorming.txt`.
+Type: `mv notes.txt brainstorming.txt`
+Press Enter. 
+
+*Safety Hazard:* If you already have a file called `brainstorming.txt`, `mv` will silently overwrite it and destroy the old one! Always look before you move by running `ls` first to ensure the new name is perfectly empty and available.
+
+**Step 2: Moving a file into a folder**
+If the second argument you provide is the name of an existing *folder*, `mv` will pluck your file up and drop it inside that folder.
+
+Let's make a folder called `docs` using what we learned: `mkdir docs`
+Now move your text file inside it: `mv brainstorming.txt docs/`
+*(Notice the slash trailing the folder? That is good practice to remind yourself it is a folder!)*
+
+**Your Task:**
+Using your `tiny-agent-project` from the last lesson, rename `README.md` to `INSTRUCTIONS.md`. Then create a folder called `src` and move `app.py` into it. Once you finish, paste your terminal output showing what you did so your tutor can verify the final folder structure!
 
 <VerificationBlock 
   deliverable="A cleaned-up folder structure after a naming refactor."

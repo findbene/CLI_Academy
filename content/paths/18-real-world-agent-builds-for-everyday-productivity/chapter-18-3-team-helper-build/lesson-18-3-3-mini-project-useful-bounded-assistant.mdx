@@ -10,10 +10,71 @@ verifyType: "terminal_output"
 # Mini project: useful bounded assistant
 
 ## Objective
-*TBD*
+
+Our mission today is to build a small, helpful command-line assistant that can perform a specific task for you or your team. This "bounded" assistant will focus on one thing, do it well, and be ready for a controlled test run. By the end, you'll have a fully functional script, packaged and documented for a safe initial pilot. This project will reinforce your understanding of basic shell scripting and the lifecycle of a small CLI tool.
 
 ## Walkthrough
-*TBD*
+
+Let's create a simple project setup assistant. This script will ask for a project name and then create a new directory for it, along with some common subdirectories.
+
+1.  **Set up your project workspace**: Start by creating a dedicated directory for your assistant and moving into it.
+    ```bash
+    mkdir my-first-assistant
+    cd my-first-assistant
+    ```
+    *Safety note*: `mkdir` creates a new folder. `cd` changes your current location. Both are safe, organizing files within your user space.
+
+2.  **Create your assistant script**: We'll use `nano`, a friendly text editor, to write our script.
+    ```bash
+    nano project-setup.sh
+    ```
+    *Safety note*: `nano` lets you edit text files safely without running any commands.
+
+3.  **Write the script's code**: Inside `nano`, type the following:
+    ```bash
+    #!/bin/bash
+    echo "Welcome to your Project Setup Assistant!"
+    read -p "Enter the new project name: " project_name
+
+    if [ -z "$project_name" ]; then
+        echo "Error: Project name cannot be empty. Aborting."
+        exit 1
+    fi
+
+    echo "Creating project '$project_name'..."
+    mkdir "$project_name"
+    cd "$project_name" || exit
+    mkdir src public docs assets
+    echo "# Project: $project_name" > README.md
+
+    echo "Project '$project_name' created successfully!"
+    echo "You are now in the '$project_name' directory."
+    ```
+    *Safety note*: `#!/bin/bash` tells the system to use Bash. `echo` displays text. `read -p` securely gathers user input into a variable without executing it. `mkdir` creates directories. `>` safely creates/overwrites files with text. All these actions are confined and non-destructive to your system.
+
+4.  **Save and exit `nano`**: Press `Ctrl+O` (write out), then `Enter`, then `Ctrl+X` (exit).
+
+5.  **Make your script executable**: We need to give your script permission to run.
+    ```bash
+    chmod +x project-setup.sh
+    ```
+    *Safety note*: `chmod +x` makes *your* script runnable. This is safe because you wrote the script and understand its safe operations.
+
+6.  **Run and test your assistant**:
+    ```bash
+    ./project-setup.sh
+    ```
+    Follow the prompts. Use `ls` and `ls <your-project-name>` to confirm the structure was created.
+    *Safety note*: `./` tells your shell to run the script from the current directory.
+
+7.  **Add a simple `README` for packaging**: A `README.md` helps explain your assistant.
+    ```bash
+    echo "## Project Setup Assistant" > README.md
+    echo "This script automates creating new project directories with standard subfolders. To use: `./project-setup.sh`" >> README.md
+    ```
+    *Safety note*: We're using `echo` and redirection (`>` to create, `>>` to append) to safely create this documentation file.
+
+Congratulations! You've built, packaged, and documented a useful bounded assistant, ready for its controlled pilot.
 
 <VerificationBlock 
   deliverable="One fully packaged personal or team assistant ready for controlled pilot."

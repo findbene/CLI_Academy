@@ -10,10 +10,50 @@ verifyType: "terminal_output"
 # Resume work in a new surface
 
 ## Objective
-*TBD*
+The objective is to understand how to seamlessly transition your work when you need to switch between different terminal windows or "surfaces" while keeping your progress intact. You'll start a task in one terminal, save your progress, and then pick it up exactly where you left off in another terminal.
 
 ## Walkthrough
-*TBD*
+
+Let's imagine you're drafting an important note and need to move to a different terminal surface (perhaps a new tab or window) without losing your work.
+
+1.  **Surface 1: Start your work.**
+    *   First, let's create a new, safe directory for our practice. Type:
+        ```bash
+        mkdir cli_work_transition
+        cd cli_work_transition
+        ```
+        *Why this is safe:* `mkdir` creates a new folder, and `cd` moves you into it. We're keeping our practice files separate, so there's no risk of accidentally changing important system files.
+    *   Now, let's start writing a note. Type:
+        ```bash
+        nano my_important_note.txt
+        ```
+        *Why this is safe:* `nano` is a user-friendly text editor. It won't execute commands or harm your system; it just lets you type text.
+    *   Inside `nano`, type the following line:
+        ```
+        This is the first part of my very important note.
+        ```
+    *   **Crucial Step: Save your partial work!** Press `Ctrl + S` (or `^S`) to save the file. You'll see a confirmation at the bottom.
+    *   Press `Ctrl + X` (or `^X`) to exit `nano`. Your work is saved!
+
+2.  **Surface 2: Resume your work.**
+    *   Open a brand new terminal window or tab. This is your "new surface."
+    *   **Context Check:** It's vital to be in the *same location* as your file. In your *new* terminal, type:
+        ```bash
+        cd cli_work_transition
+        ```
+        *How to carry context:* The key piece of information you need to "carry over" when switching surfaces is **your current working directory**. You can always type `pwd` in the first terminal before switching to remind yourself of the full path if you forget.
+    *   Now, let's pick up where you left off. Type:
+        ```bash
+        nano my_important_note.txt
+        ```
+    *   You'll see your original line of text. Add another line:
+        ```
+        This is the first part of my very important note.
+        Now, adding the second part in a new surface!
+        ```
+    *   Save your changes again (`Ctrl + S`) and exit (`Ctrl + X`).
+
+You've successfully started a task in one terminal and completed it in another, carrying your context (the saved file and the directory) with you!
 
 <VerificationBlock 
   deliverable="A completed task started in one surface and finished in another."

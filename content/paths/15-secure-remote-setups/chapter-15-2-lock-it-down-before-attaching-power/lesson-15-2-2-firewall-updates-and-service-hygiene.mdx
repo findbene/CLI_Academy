@@ -10,10 +10,35 @@ verifyType: "terminal_output"
 # Firewall, updates, and service hygiene
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to transform your host into a more secure fortress by shrinking its attack surface. We'll achieve this by ensuring your system is up-to-date, configuring a basic firewall, and disabling any unnecessary services that might be running. This significantly reduces the points an attacker could potentially exploit.
 
 ## Walkthrough
-*TBD*
+
+Before we proceed, remember that securing a system is about making thoughtful choices, not just typing commands. Always understand what a command does.
+
+1.  **Keep Your System Updated:**
+    *   First, refresh your package lists: `sudo apt update`
+        *   *Safety Note:* This command only downloads information about available updates; it doesn't change your system. It's safe to run.
+    *   Next, upgrade your installed packages: `sudo apt upgrade`
+        *   *Safety Note:* This command will install updates. It will usually prompt you for confirmation before making changes. Keeping your software current patches known vulnerabilities.
+
+2.  **Enable Your Firewall (Critical First Step: Allow SSH!):**
+    *   We'll use `ufw` (Uncomplicated Firewall) for ease of use. The most critical step is to allow your current SSH connection *before* enabling the firewall to avoid locking yourself out!
+    *   Allow SSH: `sudo ufw allow ssh`
+        *   *Safety Note:* This creates a rule that permits incoming connections on the SSH port (usually 22). This is vital to maintain access.
+    *   Enable the firewall: `sudo ufw enable`
+        *   *Safety Note:* This activates the firewall. You'll likely be asked to confirm, as it might disrupt existing connections.
+    *   Verify its status: `sudo ufw status verbose`
+        *   *Safety Note:* This command simply displays the current firewall rules and status; it makes no changes.
+
+3.  **Review and Disable Unnecessary Services:**
+    *   Many systems run services by default that aren't essential for their purpose (e.g., a printer service on a server). We want to disable these to reduce exposure.
+    *   List currently running services: `systemctl list-units --type=service --state=running`
+        *   *Safety Note:* This command is read-only and simply shows information about active services. It's completely safe.
+    *   **Cautiously disable services:** Examine the list. If you see a service you're certain is not needed (e.g., `cups.service` if this isn't a printing server), you can disable it.
+        *   `sudo systemctl disable <service-name>`
+        *   *Safety Note:* This command prevents the specified service from starting automatically on future reboots. It *does not* stop the service immediately. **Always be cautious and research a service before disabling it, as disabling critical services can impair your system.**
 
 <VerificationBlock 
   deliverable="A hardened host with only needed services exposed."

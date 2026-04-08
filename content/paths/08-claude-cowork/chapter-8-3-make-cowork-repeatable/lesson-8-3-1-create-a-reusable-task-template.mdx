@@ -10,10 +10,26 @@ verifyType: "terminal_output"
 # Create a reusable task template
 
 ## Objective
-*TBD*
+You've just completed a task and have a great structure in your notes! This lesson will guide you through creating a reusable template from that successful file, helping you standardize your workflow and save time next week.
 
 ## Walkthrough
-*TBD*
+Ready to turn your success into a repeatable process? Let's create a template!
+
+1.  **Copy your successful task file:** First, let's make a copy of your recent `cowork-notes.md` file. This is a very safe step because `cp` (copy) creates a duplicate, leaving your original file completely untouched and safe.
+    ```bash
+    cp cowork-notes.md cowork-task-template.md
+    ```
+2.  **Open your new template for editing:** Now, let's open `cowork-task-template.md` in a text editor to make it generic. We'll use `nano`, a beginner-friendly editor. Remember, any changes you make in `nano` only become permanent when you explicitly save, giving you full control.
+    ```bash
+    nano cowork-task-template.md
+    ```
+3.  **Genericize the content:** Inside `nano`, you'll see the content of your `cowork-notes.md`.
+    *   Carefully delete specific dates, names, or task details.
+    *   Replace them with placeholders like `[DATE]`, `[TASK_NAME]`, `[NOTES]` to guide you when using the template next time.
+    *   For example, change `Meeting with Jane about Project X (2023-10-26)` to `Meeting with [NAME] about [PROJECT] ([DATE])`.
+4.  **Save and Exit:** When you're happy with your template, press `Ctrl+X` to exit, then `Y` to confirm saving, and `Enter` to write to the current filename.
+
+You've now created a reusable `cowork-task-template.md`! You can copy it next week and fill in the blanks, making your future tasks smoother.
 
 <VerificationBlock 
   deliverable="A reusable `cowork-task-template.md`."

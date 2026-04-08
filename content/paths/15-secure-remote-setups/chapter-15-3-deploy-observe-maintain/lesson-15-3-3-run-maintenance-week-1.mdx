@@ -10,10 +10,39 @@ verifyType: "terminal_output"
 # Run maintenance week 1
 
 ## Objective
-*TBD*
+In this lesson, you'll learn the essential steps for your first week of system maintenance. Building good habits early helps keep your system running smoothly and securely. By the end, you'll have a clear checklist of foundational tasks to perform regularly, focusing on safety and understanding.
 
 ## Walkthrough
-*TBD*
+Welcome to your first maintenance week! Just like tending a garden, a little regular care keeps your system healthy. Don't worry, these initial steps are safe and easy, focusing on checking your system's well-being without making drastic changes.
+
+### Step 1: Check for System Updates
+Keeping your software up-to-date is crucial for security and performance.
+*   First, we'll fetch the latest information about available packages:
+    `sudo apt update`
+    This command *only* downloads lists of new software versions; it doesn't install anything. Using `sudo` grants temporary administrative power, which `apt` needs to access system package information. It's completely safe.
+*   Next, let's install any available updates:
+    `sudo apt upgrade`
+    This command safely installs updates for your installed software. `apt` is designed to handle this gracefully, keeping your system stable. Again, `sudo` is needed for system-wide changes, and it's a standard, safe operation.
+
+### Step 2: Monitor Disk Space
+Running out of disk space can cause problems. Let's check how much you have:
+`df -h`
+This command shows disk space usage in a human-readable format (`-h`). It *only* displays information, making it perfectly safe. It helps you see if you're getting close to full.
+
+### Step 3: Check System Uptime and Load
+Understanding how busy your system is can be helpful for troubleshooting.
+`uptime`
+This command shows how long your system has been running and its current load average. It's a read-only command, making it perfectly safe, and gives you a quick snapshot of your system's activity.
+
+---
+### Your Week 1 Maintenance Checklist:
+Here's a simple checklist you can use:
+*   [ ] Run `sudo apt update`
+*   [ ] Run `sudo apt upgrade`
+*   [ ] Run `df -h`
+*   [ ] Run `uptime`
+
+Great job! You've just performed your first set of essential system checks. This checklist is a solid foundation for regular system health.
 
 <VerificationBlock 
   deliverable="A first-week maintenance checklist."

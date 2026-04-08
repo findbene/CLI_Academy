@@ -10,10 +10,61 @@ verifyType: "terminal_output"
 # Build and verify the workflow
 
 ## Objective
-*TBD*
+
+In this lesson, your goal is to confidently establish a simple command-line workflow. You'll learn to create a basic script, run it, capture its output into a dedicated log file, and then verify that everything worked as intended. This hands-on experience will build a foundational understanding of how commands work together to achieve a specific outcome, all while keeping safety and clarity as our top priorities.
 
 ## Walkthrough
-*TBD*
+
+Let's build your first workflow step-by-step:
+
+1.  **Create your project directory:**
+    ```bash
+    mkdir my_first_workflow
+    ```
+    This command is very safe. `mkdir` (make directory) simply creates an empty folder on your computer to keep your project organized. It doesn't modify any existing files or system settings.
+
+2.  **Navigate into your new directory:**
+    ```bash
+    cd my_first_workflow
+    ```
+    `cd` (change directory) moves you into the folder you just created. This is also safe, as it only changes your current location in the file system, not any files themselves.
+
+3.  **Create a simple script:**
+    We'll use `nano`, a beginner-friendly text editor, to create a shell script.
+    ```bash
+    nano welcome_script.sh
+    ```
+    This command opens `nano` and either creates a new file named `welcome_script.sh` or opens it if it already exists. Creating a new file is safe; it's like opening a blank document. Inside `nano`, type the following:
+    ```bash
+    #!/bin/bash
+    echo "Welcome to your first CLI workflow!"
+    date
+    ```
+    Press `Ctrl+O` to save, then `Enter` to confirm the filename, and `Ctrl+X` to exit `nano`.
+
+4.  **Make your script executable:**
+    ```bash
+    chmod +x welcome_script.sh
+    ```
+    `chmod +x` changes the file's permissions to allow it to be run as a program. This is safe because it only modifies *how* your operating system treats the file, not the content of the file itself. It gives your script the "permission to execute."
+
+5.  **Run your script and capture its output:**
+    ```bash
+    ./welcome_script.sh > workflow.log
+    ```
+    Here, `./welcome_script.sh` executes your script. The `>` symbol is a powerful but safe redirection operator. It takes all the output that `welcome_script.sh` normally prints to your screen and instead writes it into a file named `workflow.log`. If `workflow.log` doesn't exist, it creates it. If it does exist, it safely overwrites its contents.
+
+6.  **Verify your log file:**
+    ```bash
+    cat workflow.log
+    ```
+    `cat` (concatenate and print files) displays the entire content of `workflow.log` right in your terminal. This is a read-only operation and perfectly safe, as it only shows you the file's contents without making any changes.
+
+7.  **List your project files:**
+    ```bash
+    ls -l
+    ```
+    `ls -l` (list long format) shows you all the files in your current directory, along with details like permissions and file size. This is a read-only command, offering a safe way to confirm that both your script and your log file are present.
 
 <VerificationBlock 
   deliverable="A working local workflow with logs and outputs."

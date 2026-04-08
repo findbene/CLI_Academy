@@ -10,10 +10,55 @@ verifyType: "terminal_output"
 # Create a revoke-and-rotate playbook
 
 ## Objective
-*TBD*
+You'll learn to create a quick "revoke-and-rotate" playbook using CLI commands. This playbook will act as an emergency plan to swiftly disable a potentially compromised integration and issue new credentials, helping you secure your systems quickly and confidently.
 
 ## Walkthrough
-*TBD*
+
+**Step 1: Understand the Goal – Speed and Safety**
+When an integration might be compromised, the priority is to stop unauthorized access *immediately* (revoke) and then restore functionality safely with new credentials (rotate). Your playbook will be a script or a clear sequence of commands to do this without hesitation.
+
+**Step 2: Identify Revocation Commands**
+First, you need the command to disable or revoke the current credentials for your integration.
+*   **Example (generic):** `your-cli-tool integration revoke --id <integration_id> --key <access_key_to_revoke>`
+    *   *Why this is safe:* This command specifically targets the *old*, potentially compromised key, disabling its access. It doesn't affect other integrations or system settings. Always confirm the exact syntax with your tool's documentation (e.g., `your-cli-tool integration revoke --help`).
+
+**Step 3: Identify Rotation Commands**
+Next, you'll need the command to generate new credentials.
+*   **Example (generic):** `your-cli-tool integration create-key --id <integration_id> --output json`
+    *   *Why this is safe:* This command creates *new*, pristine credentials. It does not re-enable the old key or expose existing secrets. The `--output json` helps capture the new key easily.
+
+**Step 4: Assemble Your Playbook**
+Combine these commands into a simple script. Use comments (`#`) to explain each step and placeholders (`<...>` ) for information you'll fill in during an emergency.
+
+```bash
+#!/bin/bash
+# revoke_rotate_playbook.sh
+
+# This playbook helps quickly disable and re-enable an integration with new credentials.
+# IMPORTANT: Replace placeholders like <INTEGRATION_ID> before running in a real scenario.
+# ALWAYS test this playbook in a safe, non-production environment first!
+
+# Step 1: Revoke the old, potentially compromised credentials.
+echo "Revoking old credentials for integration: <INTEGRATION_ID>..."
+# Replace `your-cli-tool` with your actual CLI tool name.
+# Replace `<INTEGRATION_ID>` and `<ACCESS_KEY_TO_REVOKE>` with the actual values.
+your-cli-tool integration revoke --id <INTEGRATION_ID> --key <ACCESS_KEY_TO_REVOKE>
+# Always double-check the command output to confirm revocation was successful.
+
+# Step 2: Generate new credentials.
+echo "Generating new credentials for integration: <INTEGRATION_ID>..."
+# Capture the output, which will contain your new access key/secret.
+# Replace `your-cli-tool` with your actual CLI tool name.
+NEW_CREDENTIALS=$(your-cli-tool integration create-key --id <INTEGRATION_ID> --output json)
+
+echo "New credentials generated. IMPORTANT: Securely store these and update your application!"
+echo "$NEW_CREDENTIALS"
+
+# Step 3: (Optional, but highly recommended) Update your application/service with the NEW_CREDENTIALS.
+# This step depends on your specific application and configuration.
+echo "Remember to update your application configuration with these new credentials."
+# Example: If your application reads from a specific file, you might replace it:
+# cp <path_to_new_credentials_file> <path_to_application_credentials_file>
 
 <VerificationBlock 
   deliverable="A playbook for disabling the integration quickly."

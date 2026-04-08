@@ -10,10 +10,58 @@ verifyType: "terminal_output"
 # Audit a routine for failure points
 
 ## Objective
-*TBD*
+
+Understanding how a routine or system *could* fail is a fundamental skill that helps you build stronger, more reliable tools. It's about thinking proactively to make systems safer and more robust. In this lesson, we'll practice auditing a common operational workflow, identifying potential failure points, and documenting them in a simple risk register. This isn't about breaking anything; it's about learning to analyze and anticipate to protect valuable data and ensure smooth operations.
 
 ## Walkthrough
-*TBD*
+
+Let's imagine a common, simple daily task: "Archiving old system logs." We'll break down this routine and think about what could go wrong at each step.
+
+1.  **Define the Workflow:** For this exercise, our routine is:
+    *   **Step 1:** Locate yesterday's system logs.
+    *   **Step 2:** Compress these log files.
+    *   **Step 3:** Move the compressed archives to a long-term storage directory.
+    *   **Step 4:** Delete the original, uncompressed log files.
+
+2.  **Start Your Risk Register:** Open a new text file to document your findings. You can use a safe command like `touch` to create it and then `nano` (or your preferred text editor) to open it:
+    *   `touch risk_register.md`
+    *   `nano risk_register.md`
+    *   *Safety Note:* `touch` simply creates an empty file if it doesn't exist, and `nano` is a text editor that only modifies the file you open. Neither command can harm your system or existing files without explicit, separate instructions from you.
+
+3.  **Audit Each Step for Failure Points:** Go through each step of the workflow above and ask yourself: "What could possibly go wrong here?"
+
+    *   **Step 1: Locate yesterday's system logs.**
+        *   *Example failure:* What if the log path is wrong? What if the logs weren't generated? What if the script doesn't have permission to read them?
+    *   **Step 2: Compress these log files.**
+        *   *Example failure:* What if the disk is full and compression fails? What if the log files are corrupt and can't be compressed?
+    *   **Step 3: Move the compressed archives to a long-term storage directory.**
+        *   *Example failure:* What if the long-term storage is full or unreachable? What if the script lacks write permissions to the destination? What if the move fails mid-way, leaving a partial file?
+    *   **Step 4: Delete the original, uncompressed log files.**
+        *   *Crucial failure point:* What if the move (Step 3) failed, but we delete the originals anyway? This would lead to permanent data loss!
+
+4.  **Document Your Findings:** In your `risk_register.md` file, list each step and the potential failure points you identified. For example:
+
+    ```markdown
+    # Risk Register: Daily System Log Archiving Workflow
+
+    ## Step 1: Locate yesterday's system logs
+    *   Risk: Log files not found (e.g., incorrect path, logs not generated).
+    *   Impact: Subsequent steps fail, logs not archived.
+
+    ## Step 2: Compress these log files
+    *   Risk: Insufficient disk space for compressed files.
+    *   Impact: Compression fails, old logs not moved.
+
+    ## Step 3: Move the compressed archives to a long-term storage directory
+    *   Risk: Destination storage full or unreachable.
+    *   Impact: Archives remain in temporary location, potentially consuming critical space.
+
+    ## Step 4: Delete the original, uncompressed log files
+    *   Risk: Original logs deleted *before* successful compression and move.
+    *   Impact: Irreversible data loss of yesterday's logs. (High Severity!)
+    ```
+
+5.  **Save Your Register:** Once you've documented your findings, save the file in `nano` by pressing `Ctrl+O`, then `Enter`, and finally `Ctrl+X` to exit. You now have a basic risk register!
 
 <VerificationBlock 
   deliverable="A risk register for an operational workflow."

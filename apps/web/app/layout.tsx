@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sora, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { SearchDialog } from "@/components/ui/search-dialog";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
+import { FloatingTutor } from "@/components/tutor/FloatingTutor";
 import "./globals.css";
 
 const sora = Sora({
@@ -70,6 +71,7 @@ export default function RootLayout({
         </a>
         <ThemeProvider>
           <SearchDialog />
+          <FloatingTutor />
           {children}
         </ThemeProvider>
       </body>

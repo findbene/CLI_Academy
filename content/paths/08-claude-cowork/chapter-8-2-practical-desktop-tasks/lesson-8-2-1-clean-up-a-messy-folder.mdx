@@ -10,10 +10,64 @@ verifyType: "terminal_output"
 # Clean up a messy folder
 
 ## Objective
-*TBD*
+
+Welcome to a crucial lesson in keeping your digital space tidy and safe! Our goal today is to tackle a messy folder, making it clean and organized without any risk of losing important files. You will learn how to sort files into clear categories—what to *keep*, what might be a *duplicate*, and what's a *candidate for deletion*. By the end, your folder will be sorted, and you'll have a clear summary of everything, all while ensuring no files are permanently deleted during this initial cleanup. Safety first!
 
 ## Walkthrough
-*TBD*
+
+Let's begin our safe folder cleanup journey, taking it one careful step at a time.
+
+1.  **Peek at the Mess (Safely!):**
+    First, let's just look at what's in your messy folder without changing anything.
+    ```bash
+    ls -F
+    ```
+    *Why this is safe:* The `ls` command simply *lists* the contents of your current directory. The `-F` option adds helpful indicators (like `/` for folders or `*` for executable files). It's like looking through a window—nothing is touched or changed.
+
+2.  **Create Your Sorting Bins:**
+    Now, let's make some new, empty folders to help us sort. These will be our "staging areas."
+    ```bash
+    mkdir keep duplicates delete_candidates
+    ```
+    *Why this is safe:* The `mkdir` command creates *new* directories. It doesn't interact with your existing files, so there's no risk of accidental deletion or modification.
+
+3.  **Move Your Keepers:**
+    Identify files you definitely want to hold onto and move them into your `keep` folder.
+    ```bash
+    mv your_important_document.pdf keep/
+    ```
+    *Why this is safe:* The `mv` command moves a file from one location to another. It does *not* delete the original file; it merely changes its path. Think of it as carefully shifting a book from one shelf to another. Repeat this for all files you wish to keep.
+
+4.  **Quarantine Duplicate Candidates:**
+    If you see files that look like copies or older versions you *might* not need, move them to the `duplicates` folder for later review.
+    ```bash
+    mv old_report_copy.docx duplicates/
+    ```
+    *Why this is safe:* Again, `mv` just moves the file. Nothing is deleted. These files are simply set aside for you to decide their fate later.
+
+5.  **Isolate Deletion Candidates:**
+    For any files you're reasonably sure you don't need, move them to the `delete_candidates` folder.
+    ```bash
+    mv temporary_log.tmp delete_candidates/
+    ```
+    *Why this is safe:* These files are *not* deleted! They are simply moved to a separate folder, giving you one last chance to review them before any permanent action is taken.
+
+6.  **Generate Your Cleanup Summary:**
+    Finally, let's see your newly organized folder and get a summary of where everything landed.
+    ```bash
+    echo "--- Keepers ---"
+    ls -l keep/
+    echo ""
+    echo "--- Duplicates Identified ---"
+    ls -l duplicates/
+    echo ""
+    echo "--- Deletion Candidates ---"
+    ls -l delete_candidates/
+    echo ""
+    echo "--- Original Folder (Remaining Files) ---"
+    ls -l
+    ```
+    *Why this is safe:* `echo` simply prints text to your screen, and `ls -l` lists files with more details. Neither command makes any changes to your files or folders, providing a perfect, safe overview of your hard work!
 
 <VerificationBlock 
   deliverable="A sorted folder plus summary of duplicates, deletions, and keepers."

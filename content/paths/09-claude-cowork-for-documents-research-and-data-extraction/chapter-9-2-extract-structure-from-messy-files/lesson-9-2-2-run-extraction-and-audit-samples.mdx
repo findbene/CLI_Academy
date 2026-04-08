@@ -10,10 +10,48 @@ verifyType: "terminal_output"
 # Run extraction and audit samples
 
 ## Objective
-*TBD*
+
+In this lesson, we'll learn how to safely extract a small sample of data from a larger file and begin a quality audit. This is a crucial step to ensure the data you're working with is accurate and reliable before you proceed with bigger tasks. Your goal is to create a small data file and document initial audit findings.
 
 ## Walkthrough
-*TBD*
+
+Let's get started by extracting a sample and then checking it for common issues.
+
+1.  **Extract a Small Sample:**
+    We'll use the `head` command to grab the first few lines of your data file. This command is very safe because it *only reads* from the file and doesn't make any changes to it.
+    Let's assume your data file is named `your_data.csv`. We'll extract the first 11 lines (to include a potential header row plus 10 data rows) and save them to a *new* file named `audit_sample.csv`.
+
+    ```bash
+    head -n 11 your_data.csv > audit_sample.csv
+    ```
+
+    *   `head -n 11`: This tells `head` to show the first 11 lines.
+    *   `your_data.csv`: Replace this with the actual name of your data file.
+    *   `>`: This symbol is important! It redirects the output of `head` into a *new* file. If `audit_sample.csv` doesn't exist, it will be created. If it *does* exist, it will be overwritten. We're using a new filename here to be safe and avoid overwriting any existing work.
+
+2.  **Review Your Sample:**
+    You can quickly view the contents of your new `audit_sample.csv` file using `cat` (safe, only reads) or by opening it in a text editor or spreadsheet program.
+
+    ```bash
+    cat audit_sample.csv
+    ```
+
+3.  **Perform Your Audit:**
+    Now, open `audit_sample.csv` in your preferred text editor or spreadsheet program. Your task is to select **10 data rows** (excluding the header) to thoroughly inspect.
+
+    As you look at these 10 rows, here are some common errors to look for first:
+    *   **Missing Data:** Are there any empty cells or fields where data should clearly be?
+    *   **Incorrect Format:** Do dates look like dates (e.g., `YYYY-MM-DD`)? Do numbers look like numbers? Is text garbled?
+    *   **Typos/Inconsistencies:** Are names or categories spelled differently when they should be the same (e.g., "New York" vs. "NY")?
+
+4.  **Record Your Audit Notes:**
+    Create a separate text file or document (e.g., `audit_notes.txt`) and write down your findings. Note which rows (e.g., "row 3, column 'city'") had issues and describe the problem. For example:
+
+    ```
+    Audit Notes for audit_sample.csv:
+    - Row 3: 'city' column is empty.
+    - Row 5: 'date' column formatted as 'DD/MM/YY', expected 'YYYY-MM-DD'.
+    - Row 7: 'product' column has a typo, 'Applle' instead of 'Apple'.
 
 <VerificationBlock 
   deliverable="A populated CSV/JSON plus quality audit notes."

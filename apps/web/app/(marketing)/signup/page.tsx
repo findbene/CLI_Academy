@@ -15,8 +15,6 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   const { next } = await searchParams;
 
   return (
-    <main className="page-shell">
-      <AuthCard mode="signup" nextHref={next ?? null} />
-    </main>
+    <AuthCard mode="signup" nextHref={next ?? null} />
   );
 }

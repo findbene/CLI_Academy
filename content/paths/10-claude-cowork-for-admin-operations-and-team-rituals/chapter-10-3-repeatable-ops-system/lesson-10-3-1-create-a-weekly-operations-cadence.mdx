@@ -10,10 +10,29 @@ verifyType: "terminal_output"
 # Create a weekly operations cadence
 
 ## Objective
-*TBD*
+Welcome! Our goal today is to help you establish a reliable weekly operations cadence using Cowork task templates. This means creating a structured way to handle your routine tasks, ensuring nothing important slips through the cracks and all critical decisions are surfaced and tracked effectively. By the end, you'll have a clear, actionable weekly checklist that leverages Cowork for visibility and accountability.
 
 ## Walkthrough
-*TBD*
+Let's build your weekly operations cadence step-by-step, focusing on safety and clarity.
+
+1.  **Identify Your Weekly Rituals:** First, think about the tasks you need to perform every week. These could be "Review system logs," "Update project status," or "Check database backups." Jot down 2-3 examples relevant to your work.
+
+2.  **Create Cowork Task Templates:** Now, let's create a template in Cowork for each of your identified tasks. This makes them reusable and ensures consistency.
+    ```bash
+    cowork template create "Weekly System Health Check" --description "Review all key system metrics and health indicators."
+    cowork template create "Weekly Log Review" --description "Scan critical system logs for anomalies and errors."
+    ```
+    *Why this is safe:* The `cowork template create` command only *defines* a template within the Cowork system. It doesn't execute any commands on your system or make immediate changes. It simply sets up a blueprint for future tasks.
+
+3.  **Build Your Weekly Checklist:** You now have templates! Your weekly checklist will be a simple reminder to instantiate these tasks. You could keep this in a markdown file or a simple script. For instance:
+
+    ```markdown
+    # Weekly Operations Checklist
+    ## Monday Morning:
+    - [ ] Create: Weekly System Health Check (run `cowork task create --from-template "Weekly System Health Check"`)
+    - [ ] Create: Weekly Log Review (run `cowork task create --from-template "Weekly Log Review"`)
+    ```
+    Each week, you'll use the `cowork task create --from-template` commands listed in your checklist. This instantly generates trackable tasks in Cowork, making sure progress is visible, and any issues or decisions arising from these checks are properly documented and not hidden. Cowork's built-in tracking ensures nothing is overlooked.
 
 <VerificationBlock 
   deliverable="A weekly checklist tied to Cowork task templates."

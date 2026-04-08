@@ -10,10 +10,47 @@ verifyType: "terminal_output"
 # Mini project: two-agent weekly brief
 
 ## Objective
-*TBD*
+In this lesson, you will build the foundational structure for a simple two-agent workflow designed to create a weekly brief. You'll learn how to define distinct roles—a "gatherer" and an "editor"—and set up a basic script to orchestrate their interaction. This project will deepen your understanding of how to break down complex tasks into manageable agent-specific responsibilities within a CLI environment.
 
 ## Walkthrough
-*TBD*
+
+Let's set up the files that will represent our agents and their workflow.
+
+1.  **Create your project directory:**
+    First, we'll make a dedicated space for our brief project.
+    ```bash
+    mkdir weekly_brief_project
+    ```
+    *Why this is safe:* `mkdir` (make directory) simply creates a new folder. It doesn't modify existing files or system settings, making it a very safe command for organizing your work.
+
+2.  **Navigate into your new directory:**
+    ```bash
+    cd weekly_brief_project
+    ```
+    *Why this is safe:* `cd` (change directory) moves your current location within the file system. It doesn't alter any files or data, so it's completely safe to use.
+
+3.  **Create the Gatherer Agent's file:**
+    This file will represent the "gatherer" agent, responsible for collecting raw information.
+    ```bash
+    touch gatherer_agent.sh
+    ```
+    *Why this is safe:* `touch` creates an empty file if it doesn't exist, or updates its modification timestamp if it does. It's safe because it doesn't write any content into the file, nor does it delete anything.
+
+4.  **Create the Editor Agent's file:**
+    This file will represent the "editor" agent, responsible for refining and summarizing the gathered information.
+    ```bash
+    touch editor_agent.sh
+    ```
+    *Why this is safe:* Just like before, `touch` is a safe command that only creates an empty placeholder file.
+
+5.  **Create the Main Briefing Workflow file:**
+    This file will orchestrate the interaction between our gatherer and editor.
+    ```bash
+    touch brief_workflow.sh
+    ```
+    *Why this is safe:* Another use of `touch`, creating a safe, empty file for our main script.
+
+You've now successfully set up the conceptual files for your two-agent weekly brief workflow! In a real scenario, you would fill these `.sh` files with commands and logic for your agents.
 
 <VerificationBlock 
   deliverable="A weekly brief workflow with separate gatherer and editor roles."

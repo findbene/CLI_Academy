@@ -10,10 +10,34 @@ verifyType: "terminal_output"
 # Add one tiny protective test
 
 ## Objective
-*TBD*
+
+You've encountered a bug or an unexpected edge case in your code. Instead of diving straight into fixing it, we'll first write a very small, focused test that specifically captures this issue. This test acts as a safety net, ensuring that when you do fix the bug, it stays fixed, and that future changes don't accidentally reintroduce it. Our goal is to write the *smallest possible test* that would fail *only* when the bug is present, without overcomplicating it.
 
 ## Walkthrough
-*TBD*
+
+1.  **Understand the Bug:** Take a moment to clearly define the exact behavior that is wrong or missing. What specific input causes the problem? What is the expected output versus the actual output? This clarity will guide your test.
+
+2.  **Locate Your Test Files:** Most projects have a dedicated `tests/` directory or similar structure. Use a command like `ls -F tests/` or `find . -name "*test*"` to explore where existing tests live. This helps you understand the project's testing conventions. Don't worry, these commands are just for looking; they won't change anything in your project.
+
+3.  **Choose or Create a Test File:**
+    *   **Option 1 (Preferred):** If there's an existing test file closely related to the code where the bug occurs (e.g., `user_profile_test.py` for a bug in `user_profile.py`), open that file.
+    *   **Option 2:** If the bug is in a new area, you might need to create a new test file. For example, use `touch new_feature_test.py`. Remember to follow your project's naming conventions for tests.
+
+4.  **Write the Tiny Test:** Inside your chosen test file, add a new test case that specifically triggers *only* the bug you identified.
+    *   **Keep it minimal:** Focus on just the problematic input and the specific failing output. Don't test other functionalities.
+    *   **Use your project's existing testing framework** (like `pytest`, `jest`, `unittest`, etc.).
+    *   **Example (Conceptual):**
+        ```python
+        # If your bug is that a 'divide' function fails on zero
+        def test_divide_by_zero_raises_error():
+            with pytest.raises(ValueError): # Expect this specific error
+                divide(10, 0)
+        ```
+
+5.  **Run Your New Test (and Watch it Fail!):**
+    *   Execute your project's test runner command (e.g., `pytest`, `npm test`, `go test`). This command is generally safe; it runs code to check assertions but won't modify your project's data or files.
+    *   **Crucially, confirm that your new test *fails*.** A failing test means it correctly identifies the bug. If it passes, either the bug isn't reproducible by your test, or the bug is already fixed.
+    *   If many tests are failing, try to run just your specific new test, if your framework supports it (e.g., `pytest path/to/your_test_file.py::test_divide_by_zero_raises_error`).
 
 <VerificationBlock 
   deliverable="A new test covering the bug or edge case."

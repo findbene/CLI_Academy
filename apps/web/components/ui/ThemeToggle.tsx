@@ -2,9 +2,19 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ui/ThemeProvider";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <button type="button" className="flex size-9 items-center justify-center rounded-xl text-transparent" disabled />;
+  }
 
   return (
     <button

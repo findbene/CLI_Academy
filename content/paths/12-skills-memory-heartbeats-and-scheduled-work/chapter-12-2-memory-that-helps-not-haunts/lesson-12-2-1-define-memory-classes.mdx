@@ -10,10 +10,52 @@ verifyType: "terminal_output"
 # Define memory classes
 
 ## Objective
-*TBD*
+To understand and create a basic memory policy for an AI assistant that clearly defines how different types of information should be handled, with a strong focus on user privacy and data security. You will define categories for short-term, long-term, and do-not-store memory.
 
 ## Walkthrough
-*TBD*
+In the world of AI assistants, thinking about how memory is managed is a critical step for privacy and trust. We're going to create a simple text file that outlines these rules. This isn't just about functionality; it's about being a responsible digital citizen!
+
+1.  **Understand Memory Classes:**
+    *   **Short-term:** This is like our own working memory. It holds the immediate context of a conversation so the assistant can respond coherently. It's usually discarded after the conversation ends.
+    *   **Long-term:** This is for information the assistant needs to remember across sessions, like your preferences or frequently asked questions, to provide a more personalized experience. This is stored persistently and requires clear user consent.
+    *   **Do-not-store:** This is for highly sensitive information or data you explicitly state should never be saved. The assistant processes it but discards it immediately without any retention.
+
+2.  **Create your Memory Policy File:**
+    We'll use `nano`, a friendly text editor, to create a file called `memory_policy.txt`. This is a safe command that just opens a text editor directly in your terminal.
+    ```bash
+    nano memory_policy.txt
+    ```
+
+3.  **Define Your Policy:**
+    Inside `nano`, type (or copy-paste) the following guidelines. This structure helps clarify how data should be treated.
+    ```text
+    # AI Assistant Memory Policy
+
+    ## Short-Term Memory (Ephemeral Context)
+    - **Purpose:** To maintain conversational flow within a single interaction.
+    - **Data Stored:** Current conversation turns, immediate user queries, temporary variables.
+    - **Retention:** Discarded at the end of the conversation session or after a short timeout (e.g., 5-10 minutes of inactivity).
+    - **Privacy Note:** Minimal personal identifiable information (PII) to be stored; focus on contextual understanding.
+
+    ## Long-Term Memory (Persistent Preferences)
+    - **Purpose:** To personalize user experience across multiple sessions.
+    - **Data Stored:** User-explicit preferences (e.g., preferred units, name if provided for personalization), frequently accessed information (if opted-in).
+    - **Retention:** Stored persistently until user explicitly requests deletion or changes preferences. Requires explicit user consent.
+    - **Privacy Note:** All data must be encrypted at rest. Users must have clear control and options to view, modify, or delete their long-term data.
+
+    ## Do-Not-Store Memory (Immediate Discard)
+    - **Purpose:** To process and immediately discard highly sensitive or user-designated ephemeral information.
+    - **Data Stored:** Explicitly sensitive PII (e.g., credit card numbers, health data), information preceded by a "do not remember" command.
+    - **Retention:** Processed in memory for immediate response generation, then immediately purged without being written to any storage.
+    - **Privacy Note:** This data should never touch persistent storage. Implement robust mechanisms to prevent accidental retention.
+    ```
+
+4.  **Save and Exit:**
+    *   Press `Ctrl + O` (that's the letter O, for "Write Out").
+    *   Press `Enter` to confirm the filename.
+    *   Press `Ctrl + X` to exit `nano`.
+
+You've just created a fundamental policy for how your assistant should handle information. This is a crucial step in building a private and secure AI!
 
 <VerificationBlock 
   deliverable="A memory policy covering short-term, long-term, and do-not-store."

@@ -10,10 +10,59 @@ verifyType: "terminal_output"
 # Make decisions explicit
 
 ## Objective
-*TBD*
+
+As you navigate the command line, you'll constantly make small decisions: which tool to use, how to phrase a command, what tradeoffs you're accepting. These choices can feel overwhelming at first, but recording them is a powerful way to solidify your learning and build confidence. In this lesson, we'll practice capturing these "behind-the-scenes" thoughts. Your goal is to create a file called `decisions.md` that acts as your personal log, making your decision-making process explicit and visible. This will help you transform messy conversations or thoughts into a clear, structured record.
 
 ## Walkthrough
-*TBD*
+
+Let's create your first decision log file.
+
+1.  **Create your `decisions.md` file:**
+    The `touch` command is a super safe way to create a brand new, empty file. If the file already exists, `touch` simply updates its modification time, without changing any content inside. It's a gentle way to get started.
+    ```bash
+    touch decisions.md
+    ```
+    This command will create an empty markdown file in your current directory.
+
+2.  **Open the file for editing:**
+    We'll use `nano`, a friendly text editor that's great for beginners. It shows you clearly what you're doing and even prompts you before saving, making it safe to experiment without fear of accidentally losing work.
+    ```bash
+    nano decisions.md
+    ```
+    You'll see a simple editor appear in your terminal.
+
+3.  **Add your first decision entry:**
+    Inside `nano`, type or paste the following. This is just an example; feel free to customize it later!
+    ```markdown
+    # Decision Log
+
+    ## 2023-10-27 - Initial Setup
+
+    **Context:** Deciding how to create and edit my first markdown file on the CLI.
+
+    **Chosen Tool:** `touch` for creation, `nano` for editing.
+
+    **Prompts/Commands Used:**
+    - `touch decisions.md`
+    - `nano decisions.md`
+
+    **Tradeoffs/Notes:**
+    - `touch` is simple for creating empty files, but I'll need `nano` or similar to add content.
+    - `nano` is user-friendly for beginners, but more advanced editors like `vim` or `emacs` offer more power (and a steeper learning curve). Sticking with `nano` for now to prioritize ease of use.
+    ```
+
+4.  **Save your changes and exit `nano`:**
+    - Press `Ctrl+X` (that's the Control key and the `x` key at the same time).
+    - `nano` will ask "Save modified buffer?" Type `Y` for Yes.
+    - It will then ask "File Name to Write: decisions.md". Just press `Enter` to confirm the filename.
+    You'll be returned to your regular command line prompt.
+
+5.  **Verify your file content:**
+    The `cat` command (short for concatenate) is a read-only command. It simply displays the entire content of a file directly in your terminal, without altering anything. It's a safe way to quickly check what's inside a file.
+    ```bash
+    cat decisions.md
+    ```
+    You should see the markdown content you just typed displayed on your screen. Congratulations, you've started making your decisions explicit!
 
 <VerificationBlock 
   deliverable="A `decisions.md` that records chosen tools, prompts, and tradeoffs."

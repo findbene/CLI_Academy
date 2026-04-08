@@ -10,10 +10,40 @@ verifyType: "terminal_output"
 # Define red-line actions
 
 ## Objective
-*TBD*
+Understand and define critical "red-line" actions that require explicit approval before execution. You'll create a markdown file listing these actions to ensure you always have a clear, safe reference point, empowering you to work confidently and responsibly. This file will be a living document you can evolve with your AI Tutor.
 
 ## Walkthrough
-*TBD*
+
+1.  **Understand Red-Line Actions:** In any new environment, especially when learning command-line tools, some actions have significant, irreversible impact. We call these "red-line" actions – they're like a stop sign, indicating you *must* get explicit approval or double-check with your supervisor/team before proceeding. Identifying these upfront is a cornerstone of safe practice.
+
+2.  **Create Your Red-Line File:** We'll create a new file named `never-do-without-approval.md`. This file will serve as your personal safety checklist.
+    *   To create it, type: `touch never-do-without-approval.md`
+    *   *Why this is safe:* The `touch` command simply creates an empty file if it doesn't exist, or updates its timestamp if it does. It never deletes or modifies existing content without explicit instructions, making it a very safe way to start a new file.
+
+3.  **Add Initial Content:** Now, let's put some important guidance into your new file. We'll use `echo` to send text directly into the file. The `>` symbol means "redirect the output to this file" (overwriting if it exists). The `>>` symbol appends to the file.
+
+    *   First, add a title:
+        ```bash
+        echo "# Red-Line Actions: Never Do Without Approval" > never-do-without-approval.md
+        ```
+        *Why this is safe:* We just created an empty file, so there's no content to lose. This is a common and safe way to start content for a new file.
+
+    *   Next, add the prompt for your AI Tutor and some placeholder examples:
+        ```bash
+        echo "Help me write concrete red-line actions for this setup." >> never-do-without-approval.md
+        echo "" >> never-do-without-approval.md
+        echo "Example Red-Line Actions (to be refined with AI Tutor):" >> never-do-without-approval.md
+        echo "- [ ] Permanently delete any files or directories (e.g., `rm -rf`)" >> never-do-without-approval.md
+        echo "- [ ] Make system-wide configuration changes (e.g., `/etc/`)" >> never-do-without-approval.md
+        echo "- [ ] Modify production data" >> never-do-without-approval.md
+        ```
+        *Why this is safe:* The `>>` command appends text to the end of a file. It won't overwrite existing content, only add new lines. This makes it a very safe way to add to a file.
+
+4.  **Review Your File:** To see what you've created, you can use the `cat` command:
+    ```bash
+    cat never-do-without-approval.md
+    ```
+    You should see your objective and the example red-line items. This file is now ready for you to build upon with your AI Tutor!
 
 <VerificationBlock 
   deliverable="A `never-do-without-approval.md` file."

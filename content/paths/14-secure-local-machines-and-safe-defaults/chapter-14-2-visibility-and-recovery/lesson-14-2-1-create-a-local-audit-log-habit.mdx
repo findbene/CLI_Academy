@@ -10,10 +10,56 @@ verifyType: "terminal_output"
 # Create a local audit log habit
 
 ## Objective
-*TBD*
+
+Our goal is to build a helpful habit: creating a personal audit log for your CLI work. By the end of this lesson, you will have set up a simple `audit-log.md` file and learned a straightforward convention for documenting the commands you run and their outcomes. This will help you remember what you did, troubleshoot issues, and learn more effectively from your CLI explorations.
 
 ## Walkthrough
-*TBD*
+
+It's easy to forget commands or what they were for. Let's create a clear log!
+
+1.  **Choose a home for your log:**
+    Navigate to a project folder or a general `learning/` directory where you want to start tracking your work.
+    ```bash
+    # Example: If you have a 'my-project' folder
+    cd my-project
+    ```
+    This `cd` command (change directory) simply moves you to a different location in your file system. It's safe and doesn't alter any files.
+
+2.  **Create your audit log file:**
+    We'll make an empty markdown file named `audit-log.md`. Markdown is great because it's human-readable and easy to format.
+    ```bash
+    touch audit-log.md
+    ```
+    The `touch` command safely creates an empty file if it doesn't exist, or updates its modification time if it does. It will *not* overwrite any existing content.
+
+3.  **Define a simple logging format:**
+    Let's decide on a clean structure for each entry. A good format includes:
+    *   Date and Time
+    *   The task or purpose
+    *   The command(s) you ran
+    *   The outcome or any notes
+
+4.  **Add your first log entry:**
+    Imagine you just used the `pwd` command to see your current directory. Let's log that.
+    ```bash
+    echo "## $(date '+%Y-%m-%d %H:%M') - Check current directory" >> audit-log.md
+    echo "- Command: pwd" >> audit-log.md
+    echo "- Outcome: Confirmed I was in $(pwd)." >> audit-log.md
+    echo "" >> audit-log.md # Adds an empty line for readability between entries
+    ```
+    Here's what each part does:
+    *   `echo "..."`: This command simply prints text to your terminal.
+    *   `>> audit-log.md`: This is the crucial part! The `>>` operator appends (adds) the output of `echo` to the end of `audit-log.md`. It's very safe because it *never* overwrites existing content in the file; it only adds new lines.
+    *   `$(date '+%Y-%m-%d %H:%M')` and `$(pwd)`: These are command substitutions. They run the `date` and `pwd` commands and insert their output directly into the `echo` string, giving you precise timestamps and directory names.
+
+5.  **Review your log:**
+    To see what you've written, you can display the file's content:
+    ```bash
+    cat audit-log.md
+    ```
+    The `cat` command displays the content of files to your terminal. It's a read-only command and perfectly safe, as it doesn't modify any files.
+
+You now have a simple, clean audit log ready for your CLI journey! Remember to append to it regularly.
 
 <VerificationBlock 
   deliverable="A simple `audit-log.md` or log folder convention."

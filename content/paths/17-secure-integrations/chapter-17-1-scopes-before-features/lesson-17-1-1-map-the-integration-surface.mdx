@@ -10,10 +10,27 @@ verifyType: "terminal_output"
 # Map the integration surface
 
 ## Objective
-*TBD*
+Welcome! In this lesson, we'll learn to "map the integration surface" of a digital service. This means identifying all the ways an application, like Gmail or your calendar, can connect and share information with other tools. Our goal is to create a simple text-based map that helps us understand these connections and, most importantly, highlight any potential "dangerous surfaces" where your data or privacy might be at risk. This foundational step is crucial for working safely in the command line.
 
 ## Walkthrough
-*TBD*
+Let's build your first integration map!
+
+1.  **Choose Your Service:** Pick *one* service you use daily: Gmail, your calendar, a file storage service (like Google Drive), or a chat application.
+2.  **Open Your Map:** We'll create a simple text file. Type `nano integration-map.txt` and press Enter.
+    *   **Why `nano` is safe:** `nano` is a friendly, text-based editor. It won't run complex commands or access anything without your explicit input. This command simply opens a new file (or an existing one) for editing.
+3.  **List Core Functions:** Inside `nano`, start by listing what your chosen service *does*.
+    *   *Example for Gmail:* "Send email, receive email, manage contacts, organize labels, search mail."
+4.  **Identify Integration Points:** For each function, think about how another application could *interact* with it. This is your "integration surface."
+    *   *Example for Gmail (Send email):* "API for sending automated emails, sharing drafts with other apps."
+    *   *Example for Gmail (Receive email):* "Notifications to other apps, parsing email content for tasks."
+5.  **Highlight Dangerous Surfaces:** This is critical. For *each* integration point, ask yourself:
+    *   What sensitive data could be accessed or shared?
+    *   Could this allow unauthorized deletion or modification of my data?
+    *   What privacy implications exist?
+    *   Mark these with a clear warning, like "⚠️ DANGER: Can delete all emails!" or "⚠️ DANGER: Exposes private contact info."
+6.  **Save Your Map:** When you're done, press `Ctrl+X`. `nano` will ask if you want to save. Type `Y` for Yes, then press Enter to confirm the filename.
+
+You've just created a valuable security tool!
 
 <VerificationBlock 
   deliverable="An integration map for Gmail, calendar, files, or chat."

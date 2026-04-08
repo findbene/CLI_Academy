@@ -13,6 +13,7 @@
 
 ## P1
 
+- [ ] verify CI/CD, deployment, and env references after the `apps/` migration
 - [ ] add package boundaries under `packages/`
 - [ ] move reusable lesson/tutor logic out of app-specific code when justified
 - [ ] create `docs/architecture/` migration notes

@@ -10,10 +10,47 @@ verifyType: "terminal_output"
 # Know when not to use Cowork
 
 ## Objective
-*TBD*
+By the end of this lesson, you will be able to thoughtfully decide when to perform a task manually in the CLI, use a tool like Cowork for assistance, or leverage raw AI code generation (like from Claude). You will create a personal decision card to guide your future choices, prioritizing safety and efficiency.
 
 ## Walkthrough
-*TBD*
+
+**Step 1: Choose a practice task.**
+Think of a simple-to-moderately complex task you might do in your terminal. For example:
+*   Creating a new directory and navigating into it.
+*   Finding all `.txt` files in a specific folder.
+*   Renaming a group of files.
+*   Setting up a basic alias.
+
+**Step 2: Consider the "Manual" approach.**
+*   **Question:** Could you easily perform this task yourself using commands you already know, or could learn quickly with a `man` page?
+*   **Safety:** Performing tasks manually gives you full control and helps build your foundational understanding. It's often the safest choice for simple or unfamiliar commands.
+*   **Example:** For "creating a new directory and navigating into it," `mkdir my_folder` and `cd my_folder` are clear, safe, and effective.
+
+**Step 3: Consider the "Cowork" approach.**
+*   **Context:** Imagine Cowork is an intelligent assistant within your terminal. It can suggest commands, explain them, or even execute them after you confirm. It's designed to make complex tasks more accessible and efficient *with your oversight*.
+*   **Question:** Would Cowork help you accomplish this task more efficiently, perhaps by generating a multi-step command sequence, but still keeping you in the loop and asking for confirmation before acting?
+*   **Safety:** Cowork is designed to assist safely. It aims to reduce errors by providing well-formed commands and requiring your approval, making it a good bridge for slightly more complex tasks.
+*   **Example:** For "finding all `.txt` files modified in the last 24 hours and compressing them," Cowork might suggest a `find` and `tar` command, explaining each part before executing.
+
+**Step 4: Consider the "Claude Code" approach (raw AI generation).**
+*   **Context:** This means directly asking an AI (like Claude) to generate a complex script or a series of commands for you, which you then copy-paste into your terminal.
+*   **Question:** Is the task so complex or outside your current expertise that you need a fully generated solution, understanding that you would need to *thoroughly review and test* this code yourself before running it?
+*   **Safety:** *High caution is needed here.* Raw AI-generated code might be efficient but requires diligent review for correctness, security, and unintended side effects. It’s best for generating starting points for complex, non-critical tasks where you have time for rigorous validation.
+*   **Example:** For "writing a custom `awk` script to parse specific log patterns and extract data," you might ask Claude for a starting script.
+
+**Step 5: Create your personal 'use / don’t use' decision card.**
+Open your terminal and use `echo` to create a simple text file summarizing your thoughts for your chosen task. Replace `[Your Task]` and `[Your Reasoning]` with your specifics.
+
+```bash
+echo "--- Decision Card for '[Your Task]' ---" > my_decision_card.txt
+echo "Preferred Method: [Manual / Cowork / Claude Code]" >> my_decision_card.txt
+echo "Reasoning:" >> my_decision_card.txt
+echo "- [Explain why you chose this method, considering complexity, familiarity, and safety.]" >> my_decision_card.txt
+echo "- [Explain why you *didn't* choose the other methods for this specific task.]" >> my_decision_card.txt
+cat my_decision_card.txt
+```
+
+*   **Safety Explanation:** `echo` simply prints text to the terminal or a file. The `>` redirects output, creating or overwriting `my_decision_card.txt`. The `>>` appends to it. `cat` displays the file's contents. These commands are perfectly safe for creating simple text files and reviewing their content.
 
 <VerificationBlock 
   deliverable="A personal 'use / don’t use' decision card."

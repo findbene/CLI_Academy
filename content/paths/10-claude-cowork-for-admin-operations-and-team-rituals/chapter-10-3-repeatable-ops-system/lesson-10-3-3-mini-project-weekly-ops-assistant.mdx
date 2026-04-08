@@ -10,10 +10,71 @@ verifyType: "terminal_output"
 # Mini project: weekly ops assistant
 
 ## Objective
-*TBD*
+In this mini-project, you will craft a small but complete operational workflow package ready for deployment. This involves creating a dedicated directory, a simple bash script to automate a routine weekly task (like a reminder or log entry), and a `README.md` to document its purpose. By the end, you'll have a self-contained unit that, while simple, represents a deployable component, laying foundational understanding for a "Cowork-powered" workflow.
 
 ## Walkthrough
-*TBD*
+
+Let's build a simple "Weekly Ops Assistant" that generates a quick report or reminder.
+
+1.  **Create your project directory safely.**
+    It's always best to keep projects isolated.
+
+    ```bash
+    mkdir weekly-ops-assistant
+    cd weekly-ops-assistant
+    ```
+    *   `mkdir weekly-ops-assistant`: Safely creates a *new folder* for your project.
+    *   `cd weekly-ops-assistant`: Changes your working directory into this new, isolated space.
+
+2.  **Create your weekly task script.**
+    We'll create a simple script for a weekly status reminder.
+
+    ```bash
+    echo '#!/bin/bash' > weekly_report_reminder.sh
+    echo 'echo "--- Weekly Ops Reminder ---"' >> weekly_report_reminder.sh
+    echo 'echo "Date: $(date +%Y-%m-%d)"' >> weekly_report_reminder.sh
+    echo 'echo "Remember to: "' >> weekly_report_reminder.sh
+    echo 'echo "- Review last week''s tickets"' >> weekly_report_reminder.sh
+    echo 'echo "- Plan for next week''s sprints"' >> weekly_report_reminder.sh
+    echo 'echo "---------------------------"' >> weekly_report_reminder.sh
+    ```
+    *   `echo ... > weekly_report_reminder.sh`: Creates (or overwrites) this file in your project folder.
+    *   `echo ... >> weekly_report_reminder.sh`: Appends content to the file. Both are safe as they only affect files within your isolated project.
+
+3.  **Make the script executable.**
+    For the shell to run our script, we need to give it permission.
+
+    ```bash
+    chmod +x weekly_report_reminder.sh
+    ```
+    *   `chmod +x weekly_report_reminder.sh`: Grants execute permission *only* to this specific script. It doesn't affect other files or system-wide permissions.
+
+4.  **Test your assistant!**
+    Let's see your script in action.
+
+    ```bash
+    ./weekly_report_reminder.sh
+    ```
+    *   `./weekly_report_reminder.sh`: Executes the script directly from your current directory. Safe because you control the code being run.
+
+5.  **Document your workflow package.**
+    A crucial part of any operational workflow is documentation, especially for "go-live" readiness with tools like Cowork.
+
+    ```bash
+    echo '# Weekly Ops Assistant' > README.md
+    echo '' >> README.md
+    echo 'This directory contains a simple script `weekly_report_reminder.sh` designed to generate a weekly operations reminder.' >> README.md
+    echo 'It''s intended to be run weekly, potentially as part of an automated workflow (e.g., via cron or a Cowork job).' >> README.md
+    echo '' >> README.md
+    echo '## Usage' >> README.md
+    echo 'Run the script from this directory: `./weekly_report_reminder.sh`' >> README.md
+    echo '' >> README.md
+    echo '## Go-Live Checklist Notes (for AI Tutor)' >> README.md
+    echo 'This package is a self-contained unit with a clear purpose and usage instructions. It demonstrates basic file organization and an executable script, which are foundational for a small Cowork-powered ops workflow.' >> README.md
+    ```
+    *   Creating `README.md` with `echo >` and `echo >>` is safe, as it only creates/modifies a file within your isolated project folder. This documentation is vital for a "go-live" workflow.
+
+Congratulations! You've created a basic but functional operational workflow package, complete with an executable script and documentation, ready for further integration into an automated system.
 
 <VerificationBlock 
   deliverable="A small but real operational workflow package."

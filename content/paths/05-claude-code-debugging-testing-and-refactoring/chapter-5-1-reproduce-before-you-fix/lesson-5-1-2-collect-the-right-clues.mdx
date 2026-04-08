@@ -10,10 +10,35 @@ verifyType: "terminal_output"
 # Collect the right clues
 
 ## Objective
-*TBD*
+
+You know that feeling when something breaks, and you're not sure where to start? It's okay, we've all been there! In this lesson, you'll learn how to systematically gather critical information when you encounter an error. Your goal is to create a complete "debugging evidence pack" containing error logs, screenshots, and any files you suspect might be involved. This pack is your secret weapon for understanding problems better and getting help efficiently, turning frustration into clarity.
 
 ## Walkthrough
-*TBD*
+
+Here's how to build your debugging evidence pack, step by step:
+
+1.  **Capture the Error Output (Logs):**
+    *   When an error appears in your terminal, copy the text directly.
+    *   If the error is within a file (e.g., `application.log`), display its contents using `cat application.log`.
+        *   **Safety Check:** `cat` is a very safe command! It only reads and displays file content; it makes no changes to your system. Copy the full output.
+
+2.  **Take Relevant Screenshots:**
+    *   Capture images that clearly show the error message, any related graphical user interface (GUI) elements, or your terminal window with the error. More context is always better!
+
+3.  **Identify and Copy Suspected Files:**
+    *   Consider what files might be related to the issue (e.g., a script you just ran, a configuration file you recently edited).
+    *   Use `ls -l` to list files in a directory and help locate them.
+        *   **Safety Check:** `ls` is another extremely safe command. It only lists directory contents; it never modifies any files or folders.
+    *   Once identified, *copy* these files into a new, dedicated folder for your evidence pack. Example: `cp my_bad_config.toml debugging_evidence/my_bad_config.toml`
+        *   **Safety Check:** `cp` (copy) creates a duplicate, leaving the original file untouched. Always copy (`cp`), do not move (`mv`), to preserve your original work.
+
+4.  **Package Your Evidence:**
+    *   First, create a folder for all your findings: `mkdir debugging_evidence`
+    *   Place all your collected logs, screenshots, and copied suspected files into this `debugging_evidence` folder.
+    *   Finally, bundle everything into one neat file using `tar`: `tar -czvf evidence_pack.tar.gz debugging_evidence/`
+        *   **Safety Check:** `tar` (tape archive) creates an archive file. It does not modify your original files or delete the source directory unless you explicitly tell it to.
+
+This will give you a single file (`evidence_pack.tar.gz`) containing all the clues needed to diagnose your problem effectively.
 
 <VerificationBlock 
   deliverable="A debugging evidence pack with logs, screenshots, and suspected files."

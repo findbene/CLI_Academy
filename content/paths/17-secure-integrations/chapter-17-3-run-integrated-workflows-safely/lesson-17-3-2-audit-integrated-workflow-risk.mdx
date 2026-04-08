@@ -10,10 +10,35 @@ verifyType: "terminal_output"
 # Audit integrated workflow risk
 
 ## Objective
-*TBD*
+In this lesson, you'll learn a critical skill: how to identify and document potential risks in new automated workflows. It's like being a detective for potential problems! Our goal is to create a clear, structured risk table for a new integration. By understanding these risks upfront, we can help protect our systems and data, ensuring everything runs smoothly and safely. This proactive approach is a cornerstone of responsible system administration.
 
 ## Walkthrough
-*TBD*
+Let's imagine a new script that automatically transfers important data from one system to another every night. While automation is powerful, it's super important to pause and think about what could go wrong *before* it happens.
+
+1.  **Identify Key Integration Points:** Consider our hypothetical integration: a daily script pulls user data (System A), processes it (Script Logic), and uploads to a cloud platform (System B).
+2.  **Brainstorm Potential Risks:** For each point, what could fail? E.g., for System A: authentication failure, data corruption. For Script Logic: bugs, invalid parameters. For System B: API limits, downtime.
+3.  **Prepare Your Risk Document:** We'll use `nano`, a friendly text editor, to create a file for our risk table.
+    ```bash
+    nano workflow_risks.md
+    ```
+    This command is safe because `nano` only lets you create and edit text files in your current folder. It won't change any important system settings.
+4.  **Populate Your Risk Table:** Inside `nano`, define columns like `Component`, `Potential Risk`, `Impact`, `Likelihood`. Then, list your identified risks. For example:
+    ```
+    | Component       | Potential Risk           | Impact                     | Likelihood |
+    |-----------------|--------------------------|----------------------------|------------|
+    | Script Logic    | Incorrect data transformation | Inaccurate reports         | Medium     |
+    | Cloud Platform  | API rate limits reached  | Data upload delayed/failed | Low        |
+    ```
+    *Hint:* Use spaces to align columns for readability.
+5.  **Save Your Work:**
+    Press `Ctrl+O` (that's Control key and 'O'), then `Enter` to confirm the filename.
+6.  **Exit `nano`:**
+    Press `Ctrl+X` (Control key and 'X').
+7.  **Review Your Table:** You can view your created file using `cat`:
+    ```bash
+    cat workflow_risks.md
+    ```
+    This command safely displays the file's content to your screen without altering it.
 
 <VerificationBlock 
   deliverable="A workflow risk table for the new integration."

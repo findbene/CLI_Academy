@@ -10,10 +10,45 @@ verifyType: "terminal_output"
 # Deploy the bounded runtime
 
 ## Objective
-*TBD*
+You're taking a significant step today! You will launch a simple application onto a remote server and configure it to perform a health check. This ensures your service is not just running, but truly *responsive* and ready to serve users. It's a foundational skill for building reliable applications.
 
 ## Walkthrough
-*TBD*
+
+Let's get your first remote service up and running with a safety net! For this lesson, we'll use Fly.io, a platform known for its developer-friendliness.
+
+1.  **Launch a new application:**
+    We'll tell Fly.io to create a space for your new service.
+    ```bash
+    fly launch
+    ```
+    This command is safe because it's interactive, asking for details like an app name and region, allowing you to confirm before resources are created. Choose an app name and a region close to you; Fly.io will deploy a placeholder app.
+
+2.  **Add a health check to your configuration:**
+    `fly launch` created a `fly.toml` file. Open this file and add a section to tell Fly.io how to confirm your app is healthy.
+    Add the following lines to the end of your `fly.toml`:
+    ```toml
+    [checks]
+      [checks.app_health]
+        port = 8080 # The port your app listens on
+        path = "/"  # The path Fly.io will request
+        interval = "15s"
+        timeout = "2s"
+    ```
+    This configuration is safe; it only *monitors* your application's responsiveness, providing vital operational status without altering its behavior. Fly.io will attempt to connect to your app on port `8080` at the root path (`/`) every 15 seconds.
+
+3.  **Deploy your changes:**
+    Now, let's push this updated configuration to your remote service.
+    ```bash
+    fly deploy
+    ```
+    This command is designed for safety. Fly.io performs a "rolling deployment," bringing up new instances with the updated configuration *before* taking down old ones. If the new deployment fails, it can automatically roll back to the previous stable version, minimizing disruption.
+
+4.  **Verify your service's health:**
+    Let's check the status of your deployed service, focusing on the health checks.
+    ```bash
+    fly status
+    ```
+    Look for a "Checks" section in the output. You should see `app_health` listed with a `passing` status. If it shows `passing`, congratulations! Your remote service is not only running but also actively reporting its health. This command is purely informational and safe.
 
 <VerificationBlock 
   deliverable="A running remote service with health check."

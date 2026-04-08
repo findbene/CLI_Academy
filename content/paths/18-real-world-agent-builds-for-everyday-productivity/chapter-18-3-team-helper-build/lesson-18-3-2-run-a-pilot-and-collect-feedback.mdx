@@ -10,10 +10,62 @@ verifyType: "terminal_output"
 # Run a pilot and collect feedback
 
 ## Objective
-*TBD*
+
+Well done on running your pilot! Now it's time to gather all that valuable feedback and turn it into actionable improvements. In this lesson, we'll create a structured review note in your terminal. This note will help you organize feedback into categories like "what went well," "what could be improved," and "bugs encountered," making it easy to see what needs attention next. By the end, you'll have a clear document to guide your next steps.
 
 ## Walkthrough
-*TBD*
+
+First, let's create a file for your pilot review notes using the `touch` command. This command is super safe! It just creates an empty file or updates its timestamp if it already exists. It won't modify any existing content.
+
+1.  **Create your review file:**
+    ```bash
+    touch pilot_review_notes.md
+    ```
+
+2.  **Open the file in a text editor:** We'll use `nano`, a friendly text editor right in your terminal. It's safe because it only changes the file you tell it to open, and it gives you clear prompts to save or discard changes before exiting.
+    ```bash
+    nano pilot_review_notes.md
+    ```
+
+3.  **Add the following structure to your file.** Remember to replace the bracketed `[ ]` information with details from your pilot. As you fill out the "What Could Be Improved?" and "Bugs / Issues Encountered" sections, think about how much impact each item had on your pilot users.
+    ```markdown
+    # Pilot Review Notes - [Your Project/Feature Name]
+
+    Date: YYYY-MM-DD
+    Pilot Participants: [List names or groups, e.g., Alice, Bob, Marketing Team]
+
+    ---
+
+    ### 1. What Went Well? (Successes & Positives)
+    *   [Example: The core functionality was easy to understand.]
+    *   [Example: Users found the data visualization helpful.]
+
+    ### 2. What Could Be Improved? (Areas for Enhancement & Challenges)
+    *   [Example: The navigation menu was confusing, causing users to get lost.]
+    *   [Example: Certain error messages were too technical and unhelpful.]
+
+    ### 3. New Ideas / Feature Requests
+    *   [Example: A "remember me" option for login would be great.]
+    *   [Example: Can we add a quick export button to CSV?]
+
+    ### 4. Bugs / Issues Encountered
+    *   [Example: The app crashed when trying to upload files over 5MB.]
+    *   [Example: Data in the summary report was incorrect for specific date ranges.]
+
+    ---
+
+    ### Next Steps / Proposed Changes:
+    *   [Prioritize key improvements here. E.g., Redesign the navigation menu.]
+    *   [E.g., Rewrite error messages to be user-friendly.]
+    *   [E.g., Implement a size check before file uploads.]
+    ```
+
+4.  **Save and exit `nano`:**
+    *   Press `Ctrl + O` (to Write Out, or save).
+    *   Press `Enter` to confirm the filename.
+    *   Press `Ctrl + X` (to eXit).
+
+You now have a structured pilot review note ready to guide your project's next phase!
 
 <VerificationBlock 
   deliverable="A pilot review note with feedback categories and next changes."

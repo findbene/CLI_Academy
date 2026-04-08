@@ -10,10 +10,69 @@ verifyType: "terminal_output"
 # Mini project: personal daily review agent
 
 ## Objective
-*TBD*
+You'll build a simple, automated daily review system right from your command line! This mini-project will combine a "skill" (a script to ask you questions), "memory" (a log file to record your answers), and a "heartbeat" (a scheduled task to run it automatically). By the end, you'll have a personal agent that gently prompts you to reflect each day.
 
 ## Walkthrough
-*TBD*
+
+Let's create your daily review agent step-by-step:
+
+### Step 1: Craft Your Review Script (Your Agent's "Skill")
+First, we'll create a script that asks your review questions and logs your answers.
+1.  **Create folder and script file:**
+    ```bash
+    mkdir -p ~/daily_review_agent && cd ~/daily_review_agent
+    nano daily_review.sh
+    ```
+    *   `mkdir -p`: Safely creates a directory if it doesn't exist.
+    *   `cd`: Changes your current directory.
+    *   `nano`: A user-friendly text editor. It's safe; you can exit without saving (`Ctrl+X`, `N`).
+2.  **Paste this content into `nano`:**
+    ```bash
+    #!/bin/bash
+    LOG_FILE="$HOME/daily_review_agent/review_log.txt"
+    echo "--- Daily Review $(date +"%Y-%m-%d %H:%M:%S") ---" | tee -a "$LOG_FILE"
+    echo "What's one good thing that happened today?"
+    read -r POSITIVE_THOUGHT
+    echo "Good thing: $POSITIVE_THOUGHT" | tee -a "$LOG_FILE"
+    echo "" | tee -a "$LOG_FILE" # Add blank line for readability
+    ```
+    *   This script asks a question, then uses `tee -a` to both display your input and safely append (`-a`) it to `review_log.txt`. If the log file doesn't exist, `tee` will create it for you.
+3.  **Save and exit `nano`**: Press `Ctrl+X`, then `Y` (for Yes), then `Enter`.
+4.  **Make the script executable:**
+    ```bash
+    chmod +x daily_review.sh
+    ```
+    *   `chmod +x`: This safely adds "execute" permission to your script, allowing it to be run as a program. It does not run the script itself.
+
+### Step 2: Test Your Script (Verifying "Memory")
+Let's run your script once to ensure it works and logs your responses.
+```bash
+./daily_review.sh
+```
+*   Answer the prompt. After it finishes, check your log file:
+    ```bash
+    cat review_log.txt
+    ```
+    *   `cat`: Safely displays the contents of `review_log.txt` without modifying it. You should see your review entry!
+
+### Step 3: Schedule Your Agent (The "Heartbeat")
+Finally, we'll schedule your script to run automatically using `cron`.
+1.  **Open your crontab editor:**
+    ```bash
+    crontab -e
+    ```
+    *   `crontab -e`: This safely opens your personal `crontab` file, where you can schedule automated tasks.
+2.  **Add this line at the end of the file:**
+    ```cron
+    0 9 * * * /home/your_username/daily_review_agent/daily_review.sh
+    ```
+    *   **Crucial:** Replace `/home/your_username/` with your actual home directory path (you can find it with `echo $HOME`).
+    *   This line tells your system: "At 9 minutes past 0 AM (9:00 AM), every day, run this script."
+    *   The five asterisks (`* * * * *`) represent minute, hour, day of month, month, and day of week.
+3.  **Save and exit `crontab`**: (Usually `Ctrl+X`, `Y`, `Enter` if using `nano`).
+    *   You should see a message confirming your `crontab` has been updated.
+
+Congratulations! Your personal daily review agent is now set up. It will gently prompt you for reflection each morning at 9 AM (or your chosen time), and your thoughts will be safely recorded in `review_log.txt`.
 
 <VerificationBlock 
   deliverable="A small daily review system using skills + memory + heartbeat."

@@ -10,10 +10,28 @@ verifyType: "terminal_output"
 # Implement the fix and rerun checks
 
 ## Objective
-*TBD*
+By the end of this lesson, you will have successfully applied a proposed bug fix to the codebase and verified its effectiveness by re-running automated checks. This process is crucial for ensuring your changes solve the problem without introducing new issues, providing concrete evidence of your fix.
 
 ## Walkthrough
-*TBD*
+It's time to put your proposed fix into action! We'll carefully apply the change and then immediately check our work to confirm it's resolved.
+
+1.  **Open the problematic file:** Use your preferred text editor to open the file identified as the source of the bug. For instance, if the file is `buggy_function.js`, you might type:
+    ```bash
+    nano buggy_function.js
+    ```
+    *Safety note:* Opening a file with an editor like `nano` is a safe operation. It allows you to view and modify the file's content without executing any code, giving you full control over your changes.
+
+2.  **Implement the fix:** Carefully make the specific change we discussed earlier. Remember to change *only* what is necessary for the fix. Small, focused changes are generally safer and easier to review or revert if needed.
+
+3.  **Save your changes:** Once you've implemented the fix, save the file. In `nano`, this is typically `Ctrl+O` (to Write Out) followed by `Enter`, and then `Ctrl+X` (to eXit).
+    *Safety note:* Saving your changes will overwrite the existing file with your modifications. This is the expected and necessary step to apply your fix.
+
+4.  **Rerun the checks/tests:** Now, it's critical to verify your fix. Run the same checks or tests that initially flagged the bug.
+    ```bash
+    npm test
+    ```
+    (Replace `npm test` with the actual command for your project's tests, e.g., `pytest`, `make test`, etc.)
+    *Safety note:* Running tests is a fundamental and safe way to confirm your changes. It executes a predefined set of checks designed to catch errors and regressions, ensuring your fix works as intended and hasn't inadvertently broken anything else. If all tests pass, congratulations! If any tests fail, that's valuable information, and we'll investigate further.
 
 <VerificationBlock 
   deliverable="A verified bug fix with test evidence."

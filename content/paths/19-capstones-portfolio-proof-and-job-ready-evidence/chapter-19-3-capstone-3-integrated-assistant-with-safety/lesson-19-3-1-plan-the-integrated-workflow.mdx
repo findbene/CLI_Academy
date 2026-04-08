@@ -10,10 +10,37 @@ verifyType: "terminal_output"
 # Plan the integrated workflow
 
 ## Objective
-*TBD*
+
+In this lesson, you will gently begin to outline your final capstone project. Our goal here isn't to build anything yet, but to thoughtfully *plan* how different services will integrate. You will create a high-level, integration-first capstone plan that details necessary permissions (scopes), strategies for test data, and crucially, a clear path for revoking or undoing your integration safely. This planning phase is paramount for ensuring your project is secure and manageable.
 
 ## Walkthrough
-*TBD*
+
+It’s exciting to think about building, but a solid, safety-conscious plan is your best first step. Let's outline your capstone project together.
+
+1.  **Define Your Integration's Core Purpose:**
+    *   What single, clear goal does your capstone integration aim to achieve? Keep it simple and focused.
+    *   *Example:* "Automatically create a new task in a project management tool whenever a specific type of email arrives in my inbox."
+    *   *Safety Note:* Starting with a narrow purpose reduces complexity and potential error.
+
+2.  **Identify Services and Required Scopes (Permissions):**
+    *   List the services involved in your integration (e.g., Email service, Project Management service).
+    *   For each service, carefully consider the *absolute minimum* permissions (scopes) your integration would need.
+        *   *Email service example:* "Read inbox," "Filter by label." Not "Send emails," unless explicitly required.
+        *   *Project Management example:* "Create task," "Read project list." Not "Delete project."
+    *   *Why this is safe:* Always ask for *least privilege*. Giving an integration only the permissions it truly needs significantly reduces the risk if something goes wrong or if the integration is compromised.
+
+3.  **Plan Your Test Data Strategy:**
+    *   How will you generate or prepare *non-sensitive, dummy data* for testing your integration?
+    *   *Example:* Create a dedicated "test" email address, a "sandbox" project in your project management tool, or use placeholder text like "TEST_SUBJECT_CLI_ACADEMY".
+    *   *Why this is safe:* **Never** use real, sensitive, or production data for initial integration testing. This protects your privacy and prevents accidental changes to important information.
+
+4.  **Outline Your Revocation (Undo) Path:**
+    *   This is vital for safety. Imagine you need to stop your integration immediately. How would you do it?
+    *   List the steps to:
+        *   Disconnect the integration between services.
+        *   Clean up any test data created by your integration.
+        *   Revoke any API keys or access tokens granted.
+    *   *Why this is safe:* Having a clear revocation plan means you can quickly and cleanly shut down your integration if it's not working as expected, or if you simply decide to remove it, without leaving lingering connections or data.
 
 <VerificationBlock 
   deliverable="An integration-first capstone plan with scopes, test data, and revoke path."

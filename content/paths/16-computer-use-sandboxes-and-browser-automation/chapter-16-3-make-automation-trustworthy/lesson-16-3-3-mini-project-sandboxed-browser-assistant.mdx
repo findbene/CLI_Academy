@@ -10,10 +10,73 @@ verifyType: "terminal_output"
 # Mini project: sandboxed browser assistant
 
 ## Objective
-*TBD*
+
+In this lesson, you will build a *mini browser assistant* that operates within clear boundaries. Our goal is to create a safe, controlled automation workflow that includes explicit human approval and generates clear evidence of its actions. You'll learn how to set up a simple browser automation script using common tools, focusing on trust and safety principles, which are paramount when automating interactions with the web. This is your first step towards building dependable, auditable CLI tools.
 
 ## Walkthrough
-*TBD*
+
+Let's create a small script that navigates to a specific website, captures a screenshot, and then asks for your approval before proceeding (conceptually).
+
+1.  **Prepare your project:**
+    ```bash
+    mkdir browser-assistant
+    cd browser-assistant
+    npm init -y # Initializes a Node.js project configuration. This is safe as it only creates a 'package.json' file.
+    npm install playwright # Installs Playwright, a tool to control web browsers. It's safe because we'll configure it to run securely.
+    ```
+    *Why safe?* We're setting up a local project. `npm install` places software only within your project's `node_modules` folder, avoiding system-wide changes.
+
+2.  **Create the browser task script:**
+    Save the following as `browser-task.js`:
+    ```javascript
+    const { chromium } = require('playwright');
+
+    (async () => {
+      const browser = await chromium.launch({ headless: true }); // headless: true runs the browser invisibly for safety.
+      const page = await browser.newPage();
+      const targetUrl = 'https://www.example.com'; // We choose a known, safe URL for demonstration.
+
+      console.log(`Navigating to: ${targetUrl}`);
+      await page.goto(targetUrl);
+      const screenshotPath = 'evidence_screenshot.png';
+      await page.screenshot({ path: screenshotPath }); // Takes a screenshot as evidence.
+      console.log(`Screenshot saved to ${screenshotPath}`);
+      console.log(`Page title: "${await page.title()}"`);
+      await browser.close();
+    })();
+    ```
+    *Why safe?* This script uses `headless: true` to prevent visual interaction and restricts navigation to a pre-defined, harmless URL. It only captures a screenshot, providing evidence without performing sensitive actions.
+
+3.  **Create an approval wrapper script:**
+    Save the following as `run-assistant.sh`:
+    ```bash
+    #!/bin/bash
+    echo "--- Browser Assistant Workflow ---"
+    echo "Running browser automation task..."
+    node browser-task.js # Executes our safe Node.js script.
+    TASK_STATUS=$? # Captures the script's exit status.
+
+    if [ "$TASK_STATUS" -ne 0 ]; then
+        echo "ERROR: Browser task failed. Aborting workflow."
+        exit 1
+    fi
+    echo "Task completed. Review 'evidence_screenshot.png' and output."
+
+    read -p "Do you approve of the task's outcome? (yes/no): " approval # Human approval step.
+    if [[ "$approval" == "yes" ]]; then
+        echo "Approval granted. Trustworthy automation complete."
+    else
+        echo "Approval denied. Stopping workflow. Review and approve for safety."
+    fi
+    ```
+    *Why safe?* This script orchestrates the workflow, ensures the browser task runs successfully (`TASK_STATUS`), and most importantly, adds a `read -p` command for explicit human approval, creating a bounded, auditable process.
+
+4.  **Make executable and run:**
+    ```bash
+    chmod +x run-assistant.sh # Grants permission to run the script you just created.
+    ./run-assistant.sh
+    ```
+    *Why safe?* You are giving execute permission to a script you just wrote and understand. Run it, review the `evidence_screenshot.png` file, and interact with the approval prompt. This demonstrates a trustworthy, bounded automation: limited action, evidence, and your explicit consent.
 
 <VerificationBlock 
   deliverable="A bounded browser workflow with approvals and evidence."

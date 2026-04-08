@@ -10,10 +10,61 @@ verifyType: "terminal_output"
 # Make your first tiny edit
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to make a super small, safe, and entirely local change to a file in your project, then "save" that change with Git. Think of it like taking a snapshot of your work. This helps you get comfortable with the basic flow of editing and saving changes using Git, without any risk of affecting others.
 
 ## Walkthrough
-*TBD*
+
+Let's make a tiny edit and commit it locally. Remember, all these steps are happening only on your computer, so there's no way to accidentally break anything for anyone else!
+
+1.  **Check your project's status (safely!):**
+    ```bash
+    git status
+    ```
+    This command is your best friend! It just *shows* you information; it never changes anything. You should see `nothing to commit, working tree clean`, which means everything is currently saved.
+
+2.  **Find a file to gently improve:**
+    We're looking for a file that's easy to edit and won't break anything. A `README.md` file (which often introduces the project) is perfect, or perhaps a configuration file (`.json`, `.yml`, etc.) or even a simple text file. Look for something obvious in your project's root directory.
+
+3.  **Open the file:**
+    Use your preferred text editor to open one of these files. If you're comfortable, you can often do this directly from the terminal if your editor is set up (e.g., `code README.md` for VS Code, or `nano README.md` for a simple terminal editor).
+
+4.  **Make a super tiny, safe edit:**
+    *   **Fix a typo:** The easiest and safest!
+    *   **Add a period:** At the end of a sentence.
+    *   **Add a sentence:** "This project is awesome." or "Hello, CLI Academy!"
+    *   **Add an extra space:** Between two words.
+    *   **Change a single word:** E.g., "The CLI is neat." to "The CLI is cool."
+    The key is: *tiny* and *harmless*.
+
+5.  **Save your changes** in your text editor.
+
+6.  **See your change with Git:**
+    ```bash
+    git status
+    ```
+    Now, Git should tell you that you have "Changes not staged for commit" and list the file you just edited. This means Git *noticed* your change.
+
+7.  **Stage your change:**
+    ```bash
+    git add <your-filename-here>
+    ```
+    (Replace `<your-filename-here>` with the actual name, like `README.md`).
+    The `git add` command tells Git, "Hey, I want to include *these specific changes* in my next snapshot." It doesn't commit anything yet, it just prepares the change. It's like putting an item in your shopping cart before checking out. You can always un-add it later if you change your mind, so it's very safe.
+
+8.  **Confirm staging:**
+    ```bash
+    git status
+    ```
+    You should now see your file listed under "Changes to be committed." Great!
+
+9.  **Commit your change (locally!):**
+    ```bash
+    git commit -m "My first tiny improvement"
+    ```
+    The `git commit` command takes everything you've "staged" and creates a permanent snapshot (a "commit") of it in your project's history *on your local machine*. The `-m` flag lets you quickly write a short, descriptive message about what you did. This commit is *only* on your computer and isn't shared with anyone else until you explicitly `git push` (which we won't do today!). So, it's totally safe to experiment here.
+
+Congratulations! You've just made your first local edit and committed it.
 
 <VerificationBlock 
   deliverable="A small README, config, or UI text improvement committed locally."

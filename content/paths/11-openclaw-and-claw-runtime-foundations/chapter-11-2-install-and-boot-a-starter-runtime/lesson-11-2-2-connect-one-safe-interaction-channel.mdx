@@ -10,10 +10,48 @@ verifyType: "terminal_output"
 # Connect one safe interaction channel
 
 ## Objective
-*TBD*
+
+In this lesson, your goal is to set up and connect to a single, secure chat or control channel *specifically for testing*. We'll focus on safety, ensuring you understand the components of your connection before you initiate it. This is about taking a cautious first step into interacting with external services from your command line.
 
 ## Walkthrough
-*TBD*
+
+It's crucial to approach external connections with caution, especially when you're just starting out. We'll outline a safe process for connecting your first channel.
+
+1.  **Choose Your Test Channel Wisely (Safety First!):**
+    *   **Recommendation:** Select a well-known chat platform like Discord, Slack, or even a simple IRC test server.
+    *   **Crucial Safety Step:** **Create a brand new, dedicated account or test server/channel** for this purpose. Do NOT use your primary personal accounts or production environments. This isolates any potential misconfigurations to a disposable testing space.
+
+2.  **Understand Your Connection Method:**
+    *   For many modern chat platforms, a common way to send messages from the command line is via **webhooks**. A webhook is a unique URL provided by the platform that allows you to send data (like a message) to a specific channel.
+    *   **Action:** If your chosen platform supports webhooks, navigate to your *test channel's* settings and create a new webhook. Copy the provided URL. Keep this URL private and only use it for your testing!
+
+3.  **Prepare Your Connection Command (DO NOT EXECUTE YET):**
+    *   We'll use the `curl` command, a very common and safe tool for making network requests.
+    *   Here's a template for sending a simple text message to a Discord or Slack webhook:
+
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{"content": "Hello from CLI Academy test channel!"}' YOUR_WEBHOOK_URL_HERE
+    ```
+
+    *   **Understanding the command (Why it's safe):**
+        *   `curl`: This is a data transfer tool. It's not inherently dangerous on its own; its safety depends on *what* URL you send data to and *what* data you send.
+        *   `-X POST`: This tells `curl` to send data to the server (rather than just requesting data).
+        *   `-H "Content-Type: application/json"`: This sets a "header" that tells the server the format of the data we're sending (JSON). This helps the server understand our message.
+        *   `-d '{"content": "Hello from CLI Academy test channel!"}'`: This is the actual data (our message) we're sending. It's enclosed in single quotes to treat it as a single string.
+        *   `YOUR_WEBHOOK_URL_HERE`: **This is the critical part.** This is where your unique webhook URL goes. Ensure it's for your *test channel* only.
+
+4.  **Present for Review:**
+    *   Before you connect, please provide the following details to ensure your setup is safe:
+        *   The **name of the chat platform/service** you've chosen (e.g., "Discord," "Slack").
+        *   Confirmation that you've set up a **new, dedicated test account or channel** for this purpose.
+        *   Your **prepared `curl` command**, with `YOUR_WEBHOOK_URL_HERE` as a placeholder (do NOT paste your actual webhook URL here initially for security).
+
+    Your AI Tutor will review this information for any obvious security concerns before you proceed.
+
+5.  **Connect Your Channel (After Approval):**
+    *   Once your setup is approved, replace `YOUR_WEBHOOK_URL_HERE` in your `curl` command with your actual, private webhook URL.
+    *   Execute the command in your terminal.
+    *   Check your test channel on the chat platform to confirm that "Hello from CLI Academy test channel!" appeared successfully.
 
 <VerificationBlock 
   deliverable="A single approved chat/control channel connected for testing."

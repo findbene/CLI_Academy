@@ -36,6 +36,7 @@ export function Navbar({ signedIn = false }: NavbarProps) {
         { href: "/downloads", label: "Downloads" },
         { href: "/trust", label: "Trust" },
         { href: "/pricing", label: "Pricing" },
+        { href: "/login", label: "Log in" },
       ]
     : [
         { href: "/paths", label: "Paths" },

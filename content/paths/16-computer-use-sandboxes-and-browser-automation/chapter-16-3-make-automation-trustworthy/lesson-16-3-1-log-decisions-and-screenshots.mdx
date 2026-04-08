@@ -10,10 +10,38 @@ verifyType: "terminal_output"
 # Log decisions and screenshots
 
 ## Objective
-*TBD*
+When working in the CLI, it's incredibly helpful to keep a record of what you did, why you did it, and what happened. This "evidence pack" helps you remember, debug, and even show others your work. Today, we'll learn how to safely log your decisions and take screenshots to create a clear, retained record of a single command run.
 
 ## Walkthrough
-*TBD*
+
+1.  **Create a dedicated directory:** First, let's make a new, safe space for our evidence.
+    ```bash
+    mkdir evidence_pack_run1
+    cd evidence_pack_run1
+    ```
+    *Safety note:* `mkdir` (make directory) creates a new folder. `cd` (change directory) moves you into it. These commands only affect directory structures and don't modify any existing files outside of creating a new, empty folder for you.
+
+2.  **Run a command and capture its output:** We'll run a simple command and save its results directly to a file.
+    ```bash
+    ls -l > output.txt
+    ```
+    *Safety note:* `ls -l` lists files in a detailed format; it only *reads* information and never modifies files. The `>` symbol redirects the command's output from your screen directly into a new file called `output.txt`. If `output.txt` didn't exist, it's created. If it did, it's overwritten – making it safe here since we're in a new directory.
+
+3.  **Log your decision:** It's good practice to record *why* you ran a command.
+    ```bash
+    echo "Decision: I ran 'ls -l' to list the contents of this new directory." > decision.txt
+    ```
+    *Safety note:* `echo` simply displays text. Again, `>` redirects this text into `decision.txt`, creating or overwriting it safely within our dedicated folder.
+
+4.  **Capture a screenshot:** Visual evidence is incredibly powerful.
+    Use your system's screenshot tool (e.g., Print Screen key, Snipping Tool on Windows; Cmd+Shift+4 on macOS; `gnome-screenshot` on Linux) to capture a clear image of your terminal window. Specifically, try to capture the terminal showing the `ls -l > output.txt` command and your prompt. Save this image as `command_screenshot.png` (or `.jpg`) inside your `evidence_pack_run1` directory.
+    *Why:* Screenshots capture the exact visual state of your terminal, including colors, prompts, and any interactive elements that text logs might miss.
+
+5.  **Verify your evidence pack:** Let's see what's in your pack.
+    ```bash
+    ls
+    ```
+    You should see `command_screenshot.png` (or `.jpg`), `decision.txt`, and `output.txt`. Congratulations, you've created your first evidence pack!
 
 <VerificationBlock 
   deliverable="A retained evidence pack for one run."

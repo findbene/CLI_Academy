@@ -10,10 +10,13 @@ function isProtectedRoute(pathname: string): boolean {
 }
 
 function setSecurityHeaders(response: NextResponse): void {
+  const isProd = process.env.NODE_ENV === "production";
+  const scriptSrc = isProd ? "'self' 'unsafe-inline'" : "'self' 'unsafe-inline' 'unsafe-eval'";
+
   response.headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline'; " +
+      `script-src ${scriptSrc}; ` +
       "style-src 'self' 'unsafe-inline'; " +
       "img-src 'self' data: https:; " +
       "font-src 'self' data:; " +

@@ -10,10 +10,34 @@ verifyType: "terminal_output"
 # Make a safe text edit
 
 ## Objective
-*TBD*
+Learn the iron-clad rule of safe editing: **always make a backup**, and then safely modify a text file.
 
 ## Walkthrough
-*TBD*
+
+Eventually, you have to edit a configuration file or a script. When that time comes, there is a golden rule that separates professionals from beginners: professionals always duplicate the file *before* editing it.
+
+**Step 1: The Backup Copy (`cp`)**
+We use the `cp` command (**Copy**) to make a duplicate. 
+The syntax is `cp <existing_file> <new_file>`.
+
+Let's say you have a file named `config.txt`. Before opening it, you make a backup copy:
+`cp config.txt config.txt.backup`
+If your edit completely breaks the file later, you can effortlessly restore the old one and breathe a sigh of relief!
+
+**Step 2: Safe Text Editing**
+Since you made your backup, you can now safely add text to your file! 
+A safe way to *append* text to a file in the terminal without opening an editor is using `echo` with two arrows `>>`. 
+
+Watch out! Single arrow `>` will completely overwrite your file. Double arrow `>>` will gently add text to the bottom. Let's add a line safely:
+`echo "Server=Online" >> config.txt`
+
+Now, if you want a complete text editor, you can always open your file in VS Code or Notepad. But doing small tweaks directly in the terminal makes you incredibly fast.
+
+**Your Task:**
+Create a file named `settings.ini`. 
+1. Make a backup copy called `settings.ini.backup` using `cp`.
+2. Use `echo "Mode=Developer" >> settings.ini` to append the setting.
+Display the directory using `ls` to show both files, and display the contents of `settings.ini` using `cat`. Send the terminal output so your tutor can verify the backup pattern!
 
 <VerificationBlock 
   deliverable="A corrected markdown or config file with backup copy."

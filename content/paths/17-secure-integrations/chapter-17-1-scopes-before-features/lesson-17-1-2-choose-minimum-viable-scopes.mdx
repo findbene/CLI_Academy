@@ -10,10 +10,53 @@ verifyType: "terminal_output"
 # Choose minimum viable scopes
 
 ## Objective
-*TBD*
+
+In the world of Command Line Interfaces, especially when working with cloud services or API tokens, you'll often encounter the concept of "scopes" or "permissions." These define what actions a tool or token is allowed to perform. Granting too many permissions is a common security risk, like giving a house key to someone who only needs to pick up a package from your porch.
+
+Your objective in this lesson is to learn the crucial practice of choosing *minimum viable scopes*. This means only granting the exact permissions needed for a specific task, and no more. It's a critical safety measure to protect your data and prevent unintended actions. By the end, you'll create a simple "scope decision sheet" to help you identify and shrink potential scopes for your workflows.
 
 ## Walkthrough
-*TBD*
+
+Let's create your scope decision sheet. This isn't about running a command, but about thoughtful planning – a skill just as vital for secure CLI use.
+
+1.  **Identify a Workflow:** Think of a specific task you perform with a CLI tool that might involve permissions (e.g., deploying a web app, interacting with a specific cloud service, automating a GitHub task).
+    *   *Example:* "My CLI tool needs to push code to a GitHub repository and create a new pull request."
+
+2.  **Break Down the Workflow into Actions:** List every distinct action your CLI tool or script performs within that workflow.
+    *   *Example Actions:* Read repository information, write/push commits, create new branches, create a pull request.
+
+3.  **Research Minimum Scopes for Each Action:** For each action, consult the documentation of the service you're using (e.g., GitHub's API docs, AWS IAM documentation, etc.) to find the *absolute minimum* scope or permission required.
+    *   *Safety Note:* Always err on the side of less access. If a scope covers "read, write, delete," and you only need "read," actively search for a more granular "read-only" scope.
+
+4.  **Consolidate Your Minimum Scopes:** Combine the individual minimum scopes into a single list. This is your "scope decision sheet." Fill it out, reflecting on your findings.
+
+    ```
+    # Scope Decision Sheet: [Your Workflow Name]
+
+    ## Workflow Description:
+    [Briefly describe the workflow you're analyzing]
+
+    ## Required Actions & Minimum Scopes:
+
+    1.  Action: [Description of action]
+        Minimum Scope: [Identified minimum scope]
+        (Source: [Link to documentation, if helpful])
+
+    2.  Action: [Description of action]
+        Minimum Scope: [Identified minimum scope]
+        (Source: [Link to documentation, if helpful])
+
+    ... (continue for all actions) ...
+
+    ## Final Consolidated Minimum Scopes:
+    [List of unique, combined minimum scopes]
+
+    ## Reflection:
+    [Add any notes about potential risks or further scope shrinking opportunities]
+    ```
+    *   *Context for AI Tutor:* This sheet demonstrates your ability to "Shrink these scopes to the minimum needed for my workflow."
+
+Don't worry if this feels complex at first! This careful planning is a hallmark of secure and responsible CLI usage.
 
 <VerificationBlock 
   deliverable="A scope decision sheet."

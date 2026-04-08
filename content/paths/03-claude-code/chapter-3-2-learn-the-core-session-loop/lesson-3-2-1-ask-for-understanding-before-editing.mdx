@@ -10,10 +10,42 @@ verifyType: "terminal_output"
 # Ask for understanding before editing
 
 ## Objective
-*TBD*
+
+Before diving into making changes, it's crucial to first understand the codebase you're working with. In this lesson, you'll learn how to approach an unfamiliar repository safely by summarizing its purpose, identifying potential areas for improvement, and outlining a plan—all before touching a single line of code. This practice ensures you build a solid foundation of understanding and minimize risks, preparing you to answer the AI Tutor's request for a codebase summary and the safest first improvement.
 
 ## Walkthrough
-*TBD*
+
+It's natural to want to jump straight into fixing things, but patience is key! Our first step is always to understand, not to change.
+
+1.  **Create your `session-notes.md` file:**
+    Type `touch session-notes.md` and press Enter.
+    *   **Why this is safe:** The `touch` command simply creates an empty file if it doesn't exist, or updates its modification timestamp if it does. It never alters existing content or runs any code, making it a completely harmless operation. This file will be your personal workspace for notes and planning.
+
+2.  **Open `session-notes.md` in your preferred editor:**
+    Use a command like `nano session-notes.md` (or `code session-notes.md` if you have VS Code CLI tools installed).
+
+3.  **Add the following sections to `session-notes.md`:**
+
+    ```markdown
+    # Session Notes
+
+    ## Codebase Summary
+    [Briefly describe what this repository appears to do and its main components.]
+
+    ## Affected Files
+    [List any files you anticipate might be relevant for a potential improvement, and why.]
+
+    ## Safest First Improvement Plan
+    [Describe a very small, low-risk improvement you could make, explaining why it's safe and beneficial.]
+    ```
+
+4.  **Fill in the sections:**
+    Based on your initial exploration of the repository (e.g., by listing files with `ls -F`, reading a `README.md` if present, or just thinking about common project structures), populate these sections thoughtfully. Remember, the goal isn't to be perfect, but to demonstrate your thinking process.
+
+5.  **Save and exit your editor:**
+    If using `nano`, press `Ctrl+O` (to write out/save), then `Enter`, then `Ctrl+X` (to exit).
+
+You've now created a clear plan and summary, showing you've taken the time to understand before making any changes. This is a critical habit for any developer!
 
 <VerificationBlock 
   deliverable="A `session-notes.md` with codebase summary, affected files, and plan."

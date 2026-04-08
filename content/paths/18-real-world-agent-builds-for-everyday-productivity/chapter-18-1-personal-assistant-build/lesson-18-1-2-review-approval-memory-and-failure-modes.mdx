@@ -10,10 +10,52 @@ verifyType: "terminal_output"
 # Review: approval, memory, and failure modes
 
 ## Objective
-*TBD*
+Welcome back, careful operator! In this lesson, we'll equip you with the skills to audit a system with a critical eye, focusing on how it handles **approval**, retains **memory**, and copes with **failure modes**. Your goal is to compile a "review pack" for a simulated daily brief assistant, demonstrating your ability to inspect its inner workings like a true professional. Don't worry, we'll guide you through safely exploring files without making any changes.
 
 ## Walkthrough
-*TBD*
+Let's put on our investigator hats and delve into our daily brief assistant! We'll start by simulating its environment, then carefully inspect its files to understand its behavior.
+
+1.  **Set up our simulated assistant:** We'll create some example files in your home directory to simulate the assistant's configuration, memory, and logs. This is a completely safe operation, creating new files without affecting existing ones.
+
+    ```bash
+    mkdir -p ~/brief-assistant/config ~/brief-assistant/memory ~/brief-assistant/logs
+    echo "approval_required=true
+email_on_failure=admin@example.com" > ~/brief-assistant/config/settings.conf
+    echo "Last successful brief: 2023-10-26 08:00 UTC" > ~/brief-assistant/memory/state.txt
+    echo "[ERROR] 2023-10-25 03:00 UTC: Brief generation failed due to API timeout." > ~/brief-assistant/logs/error.log
+    ```
+    *   `mkdir -p`: Safely creates directories, including any necessary parent folders.
+    *   `echo ... > file`: Safely creates a new file or overwrites an existing one with the given text. Here, we're intentionally creating our test environment.
+
+2.  **Inspect for Approval Settings:** Does the assistant require approval? Let's check its configuration.
+    ```bash
+    cat ~/brief-assistant/config/settings.conf
+    ```
+    *   `cat`: This command is safe; it only displays a file's content to your terminal, making no modifications. Look for `approval_required`.
+
+3.  **Check its Memory:** How does our assistant remember past actions?
+    ```bash
+    cat ~/brief-assistant/memory/state.txt
+    ```
+    *   `cat` is safe for viewing. Observe the last successful brief entry.
+
+4.  **Investigate Failure Modes:** What happens when things go wrong?
+    ```bash
+    cat ~/brief-assistant/logs/error.log
+    ```
+    *   Use `cat` to safely review the error log for signs of failure.
+
+5.  **Compile Your Review Pack:** Now, let's create our "review pack" document based on your observations. We'll store it in your home directory.
+    ```bash
+    echo "--- Daily Brief Assistant Review Pack ---" > ~/review_pack.txt
+    echo "Observation 1 (Approval): 'approval_required=true' found. Assistant requires approval." >> ~/review_pack.txt
+    echo "Observation 2 (Memory): Last successful brief recorded on 2023-10-26." >> ~/review_pack.txt
+    echo "Observation 3 (Failure Mode): Error log shows 'Brief generation failed' on 2023-10-25." >> ~/review_pack.txt
+    ```
+    *   `echo ... > file`: This creates a new `review_pack.txt` file (or overwrites if it existed) with the title.
+    *   `echo ... >> file`: This safely **appends** your observations to the end of the `review_pack.txt` file without deleting its existing content.
+
+You've successfully audited a simulated system and created a concise review pack! This is a fundamental skill for any careful operator.
 
 <VerificationBlock 
   deliverable="A review pack for the daily brief assistant."

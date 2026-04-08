@@ -10,10 +10,48 @@ verifyType: "terminal_output"
 # Build: shared weekly brief or intake assistant
 
 ## Objective
-*TBD*
+We'll create a foundational command-line workflow for team tasks like preparing a weekly brief or tidying intake notes. Our goal is a simple, shared process that everyone can use reliably and safely, ensuring clear ownership from the start.
 
 ## Walkthrough
-*TBD*
+
+1.  **Create a Safe Workspace:**
+    First, let's create a dedicated folder to safely build our tool without affecting existing files.
+    ```bash
+    mkdir cli-team-brief
+    cd cli-team-brief
+    ```
+    *Why this is safe:* `mkdir` creates an empty folder; `cd` changes your location. No existing files are modified.
+
+2.  **Start Your Workflow File:**
+    Create an empty file for our workflow instructions.
+    ```bash
+    touch weekly-brief.sh
+    ```
+    *Why this is safe:* `touch` creates a new, empty file or updates its modification time. It never overwrites content.
+
+3.  **Add Your First Instructions (Placeholder):**
+    Add a simple message to confirm the script works before adding complex logic.
+    ```bash
+    echo '#!/bin/bash' > weekly-brief.sh
+    echo 'echo "Hello Team! This is our weekly brief/intake assistant."' >> weekly-brief.sh
+    ```
+    *Why this is safe:* `echo` prints text. `>` and `>>` safely write to *our own* file in *our safe folder*.
+
+4.  **Make it Executable:**
+    Allow your system to run this script like a command.
+    ```bash
+    chmod +x weekly-brief.sh
+    ```
+    *Why this is safe:* `chmod +x` only adds "executable" permission to *this specific file*, not affecting other files or system settings.
+
+5.  **Run Your Workflow:**
+    Time to see our assistant in action!
+    ```bash
+    ./weekly-brief.sh
+    ```
+    *What to expect:* You'll see "Hello Team! This is our weekly brief/intake assistant." This confirms your basic workflow is running.
+
+This script is your starting point. When shared with a team, ensure it's in a controlled environment (like a version control repository) and its purpose and owner are clearly documented.
 
 <VerificationBlock 
   deliverable="A team-facing workflow that prepares a weekly brief or cleans intake material."

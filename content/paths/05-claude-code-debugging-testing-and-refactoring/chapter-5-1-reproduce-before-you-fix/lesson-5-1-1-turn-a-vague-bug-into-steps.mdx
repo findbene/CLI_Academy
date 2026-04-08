@@ -10,10 +10,61 @@ verifyType: "terminal_output"
 # Turn a vague bug into steps
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to transform a confusing, vague problem description into a clear, step-by-step bug report. By the end, you'll have a `bug-report.md` file that precisely outlines how someone else can reproduce the issue, what should happen, and what actually happens. This skill is crucial for effective communication in any project!
 
 ## Walkthrough
-*TBD*
+
+Imagine a developer tells you, "The `mycli` command is broken when I try to list files!" That's a bit vague, right? Let's turn it into something useful.
+
+1.  **Understand the Vague Problem:**
+    The original issue is: "The `mycli` command is broken when I try to list files!"
+
+2.  **Ask Guiding Questions (Mentally):**
+    To make a bug report useful, we need answers to three key questions:
+    *   What exactly did you **do**? (These become your **Reproduction Steps**)
+    *   What did you **expect** to happen? (This is your **Expected Result**)
+    *   What **actually** happened? (This is your **Actual Result**)
+
+3.  **Develop the Reproduction Steps:**
+    Think about the absolute first thing someone would do.
+    *   "First, I opened my terminal."
+    *   "Then, I typed `mycli list`."
+    *   "Finally, I pressed Enter."
+
+4.  **Define the Expected Result:**
+    If the command *wasn't* broken, what would `mycli list` normally do?
+    *   "The `mycli` tool should display a list of files."
+
+5.  **Describe the Actual Result:**
+    What *really* showed up on the screen when the problem happened? Be specific about any error messages.
+    *   "The terminal outputted: `Error: Command 'list' not found.`"
+
+6.  **Create Your `bug-report.md` File:**
+    Now, let's put it all together into a markdown file. We'll use the `cat` command, which is safe for creating new files or adding text to them. Type the following directly into your terminal, and press Enter after each line. When you're done, press `Ctrl+D` (or `Cmd+D` on macOS) to save and exit.
+
+    ```bash
+    cat > bug-report.md << EOF
+    ## Bug Report: 'mycli list' command not found
+
+    ### Description
+    The 'mycli list' command is not working as expected; it reports that the command is not found.
+
+    ### Reproduction Steps
+    1. Open your terminal.
+    2. Type \`mycli list\`.
+    3. Press Enter.
+
+    ### Expected Result
+    The 'mycli' tool should display a list of files, similar to how it typically functions.
+
+    ### Actual Result
+    The terminal outputted: \`Error: Command 'list' not found.\`
+    EOF
+    ```
+    *   **Safety Note on `cat > bug-report.md`**: This command creates a new file named `bug-report.md` (or overwrites it if it already exists). The `<< EOF` and `EOF` tell `cat` to take all the lines in between as input until it sees `EOF` again. This is a very safe way to create a multi-line text file directly from the terminal without accidentally executing any commands within the content.
+
+    Now, you have a professional, reproducible bug report ready to share!
 
 <VerificationBlock 
   deliverable="A `bug-report.md` with reproduction steps, expected result, and actual result."

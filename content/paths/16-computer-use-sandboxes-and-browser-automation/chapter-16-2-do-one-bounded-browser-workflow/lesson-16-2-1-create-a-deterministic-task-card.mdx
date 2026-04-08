@@ -10,10 +10,56 @@ verifyType: "terminal_output"
 # Create a deterministic task card
 
 ## Objective
-*TBD*
+
+Welcome to a crucial lesson on making your tasks clear, reliable, and safe to test! As you begin your journey with the Command Line Interface (CLI), you'll learn that precision is key. Today, we'll learn how to create a "deterministic task card." This means taking a task you might do in a browser and breaking it down into super clear, unambiguous steps that anyone (or even a computer!) could follow every single time, with the same result. This skill is fundamental for writing reliable scripts and understanding how automation works. It reduces confusion, prevents errors, and makes testing much easier and safer.
 
 ## Walkthrough
-*TBD*
+
+Let's create a simple task card using a basic text editor available in your terminal. We'll imagine a browser task and make it deterministic.
+
+1.  **Open a text editor in your terminal:**
+    We'll use `nano`, a friendly text editor. It's a safe choice because it only allows you to type text; it doesn't execute any commands or change your system files without your explicit save action.
+
+    ```bash
+    nano my_task_card.md
+    ```
+
+    Press `Enter`. You'll see a new, empty screen where you can type.
+
+2.  **Define your task card components:**
+    Inside `nano`, type the following, replacing the example with your own detailed steps. Remember, the goal is clarity and specificity!
+
+    ```markdown
+    # Task: Subscribe to the CLI Academy Newsletter
+
+    ## URL
+    https://www.cli.academy/newsletter
+
+    ## Steps
+    1. Navigate directly to the specified URL: `https://www.cli.academy/newsletter`.
+    2. Locate the input field labeled "Email Address" (or with `id="email-input"`).
+    3. Type `your_test_email@example.com` into this field.
+    4. Locate the button labeled "Subscribe" (or with `id="subscribe-button"`).
+    5. Click the "Subscribe" button.
+
+    ## Success Criteria
+    - A confirmation message stating "Thanks for subscribing!" appears on the page.
+    - The browser redirects to `https://www.cli.academy/newsletter/success`.
+
+    ## Failure Rules
+    - An error message appears (e.g., "Invalid email format" or "Email already subscribed").
+    - The page does not change, or an unexpected page loads after clicking "Subscribe."
+    - The browser displays a network error or crash.
+    ```
+
+    *Self-correction tip:* Notice how we've moved from "go to the website" to a specific URL, and "fill out the form" to explicit field labels and button actions. This makes the task deterministic!
+
+3.  **Save your task card:**
+    When you're happy with your task card, save the file.
+    *   Press `Ctrl + S` (Control and S together) to save. You'll see a message at the bottom confirming the write.
+    *   Press `Ctrl + X` (Control and X together) to exit `nano`.
+
+You've just created your first deterministic task card in the CLI! This structured approach is incredibly valuable for ensuring clarity, safety, and testability in all your future CLI adventures.
 
 <VerificationBlock 
   deliverable="A task card with URL, steps, success criteria, and failure rules."

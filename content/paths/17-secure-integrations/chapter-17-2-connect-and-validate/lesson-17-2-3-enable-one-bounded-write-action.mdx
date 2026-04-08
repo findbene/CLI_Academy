@@ -10,10 +10,45 @@ verifyType: "terminal_output"
 # Enable one bounded write action
 
 ## Objective
-*TBD*
+
+You will learn to make a single, specific change to a file using the command line. Our focus will be on understanding *exactly* what your command does and how to begin thinking about reversing any change you make. This approach builds confidence and control when working in the terminal.
 
 ## Walkthrough
-*TBD*
+
+1.  **Create a practice file:**
+    ```bash
+    echo "Hello World" > safe_edit.txt
+    ```
+    We're creating a simple, temporary file named `safe_edit.txt`. This is your safe sandbox where you can experiment without worrying about affecting important system files.
+
+2.  **Review the file's content:**
+    ```bash
+    cat safe_edit.txt
+    ```
+    Take a quick look to confirm its current content before we make any modifications.
+
+3.  **Perform a bounded edit:**
+    ```bash
+    sed -i 's/World/CLI Academy/' safe_edit.txt
+    ```
+    This command makes a precise, "bounded" change to your file.
+    *   `sed`: Stands for "stream editor." It's a powerful tool for text transformations.
+    *   `-i`: This flag tells `sed` to edit the file *in place*, meaning it modifies the original `safe_edit.txt` directly. For beginners, it's crucial to understand that `-i` is powerful; that's why we're using it on a temporary file. Always know what files you're targeting!
+    *   `'s/World/CLI Academy/'`: This is the core instruction.
+        *   `s`: Means "substitute".
+        *   `/World/`: This is the pattern `sed` will search for (the text "World").
+        *   `/CLI Academy/`: This is what `sed` will replace "World" with.
+        *   The final `/` closes the substitution command.
+    This command is designed to only change the *first occurrence* of "World" to "CLI Academy" in `safe_edit.txt` and nothing else. This is what we mean by a "bounded" write.
+
+4.  **Verify the change:**
+    ```bash
+    cat safe_edit.txt
+    ```
+    Confirm that "World" has been replaced by "CLI Academy".
+
+5.  **Reflect on reversibility:**
+    You've successfully made a controlled change! Now, take a moment to consider this: If `safe_edit.txt` were a critical configuration file, and you needed to undo this specific change, how might you go about it? Think about what you could do *before* running the `sed` command to make reversal easy. This habit of pre-thinking reversibility is a cornerstone of safe command-line operations.
 
 <VerificationBlock 
   deliverable="A single bounded write/edit with rollback note."

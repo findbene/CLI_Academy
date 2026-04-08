@@ -10,10 +10,33 @@ verifyType: "terminal_output"
 # Design a narrow skill
 
 ## Objective
-*TBD*
+
+Welcome to a crucial step in building powerful CLI tools! Our goal today is to learn how to **design a narrow, specific skill**. This might sound simple, but it's essential for safety, testability, and avoiding frustration. By the end of this lesson, you will create a concise, one-page "skill specification" that outlines a tiny, well-defined task with clear inputs, outputs, potential tools, and, most importantly, strict limits. This will help us build safely, one small step at a time.
 
 ## Walkthrough
-*TBD*
+
+Let's break down how to narrow a skill to make it safe and manageable.
+
+1.  **Pick a Tiny Idea:** Think of a very simple, everyday task you might do on your computer. For instance, "find a file," "count lines in a file," or "display today's date." Don't aim for anything complex yet!
+2.  **Define the Input:** What *exact* information does your skill need to do its job? Be as specific and minimal as possible.
+    *   *Example:* If your skill is "count lines in a file," the input is `a single file path`. Not a folder, not multiple files, just one.
+3.  **Define the Output:** What *exact* result should your skill produce? Again, keep it minimal.
+    *   *Example:* For "count lines in a file," the output is `a single number representing the line count`. Not the file content, just the number.
+4.  **List Potential Tools (Brainstorm Safely):** What common, safe CLI commands (like `cat`, `grep`, `wc`, `ls`, `date`) *might* you use to achieve this? Just list them for now; we won't execute them. When we do execute, we'll always ensure they're used non-destructively (e.g., reading files, not deleting them).
+5.  **Set Strict Limits:** This is the most critical step for safety and manageability. What *won't* your skill do? What complexities will it explicitly avoid?
+    *   *Example:* For "count lines in a file":
+        *   "This skill will *not* handle non-existent files; it assumes the file path is valid."
+        *   "It will *not* handle multiple files or directories."
+        *   "It will *not* modify any files; it only reads."
+    These limits protect you by narrowing the scope to something truly testable and safe.
+6.  **Write It Down:** Create a new text file (e.g., `my_skill.md`) and write down your "skill spec" with these headings:
+    *   **Skill Name:** (e.g., "Line Counter")
+    *   **Input:**
+    *   **Output:**
+    *   **Potential Tools:**
+    *   **Limits:**
+
+By defining these elements clearly, you've created a safe, foundational blueprint for your first tiny CLI skill!
 
 <VerificationBlock 
   deliverable="A one-page skill spec with input, output, tools, and limits."

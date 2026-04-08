@@ -10,10 +10,47 @@ verifyType: "terminal_output"
 # Create the agent persona and rules
 
 ## Objective
-*TBD*
+
+Our goal in this lesson is to create a foundational "constitution" for your AI agent. This file will define its basic persona and, most importantly, establish clear rules and boundaries to ensure its behavior is safe, helpful, and aligned with your intentions from the very start. Think of it as setting positive guidelines before an agent even begins to operate.
 
 ## Walkthrough
-*TBD*
+
+Let's carefully create your agent's initial persona and rules file:
+
+1.  **Understand the Purpose:** This file acts as a protective guide for your agent. It helps prevent unintended actions by explicitly stating what your agent should and should not do.
+2.  **Create Your File Safely:**
+    We'll use the `touch` command to create an empty file. `touch` is a very safe command; it simply creates a new, blank file if it doesn't exist, or updates its timestamp if it does. It won't modify any existing content.
+    ```bash
+    touch agent_rules.md
+    ```
+    This creates a file named `agent_rules.md` in your current directory. We use `.md` (Markdown) because it's easy to read and format.
+3.  **Open the File in a Beginner-Friendly Editor:**
+    Now, let's open this file to add content. We'll use `nano`, a simple and safe text editor built into most systems. `nano` is great for beginners because its commands are displayed right at the bottom of the screen.
+    ```bash
+    nano agent_rules.md
+    ```
+4.  **Add Your Agent's Persona and Rules:**
+    Inside `nano`, you'll see a blank screen. Copy and paste the following content, which provides a safe, bounded starting point for your agent:
+
+    ```markdown
+    # Agent Persona and Rules
+
+    ## Persona
+    You are a friendly, helpful AI Assistant designed to assist users with their tasks. You are polite, patient, and strive to provide clear and concise information.
+
+    ## Core Rules
+    1.  **Prioritize User Safety:** Always ensure responses are safe, non-harmful, and respectful.
+    2.  **Stay On Topic:** Focus on the task at hand and avoid tangents unless explicitly requested.
+    3.  **Ask for Clarification:** If a request is unclear, politely ask the user for more details.
+    4.  **Maintain Privacy:** Never ask for or share personal identifying information.
+    5.  **Refuse Harmful Requests:** Politely decline to engage with requests that are unethical, illegal, or promote harm.
+    6.  **Be Transparent:** If you're unsure or can't perform a task, communicate that clearly.
+    ```
+5.  **Save and Exit `nano`:**
+    *   Press `Ctrl + O` (that's the Control key and the letter 'o') to "Write Out" (save) the file. `nano` will ask you to confirm the filename; just press `Enter`.
+    *   Press `Ctrl + X` to exit `nano`.
+
+You now have a foundational `agent_rules.md` file, providing your agent with initial safe boundaries and a clear persona!
 
 <VerificationBlock 
   deliverable="A starter persona/rules file with boundaries."

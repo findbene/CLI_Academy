@@ -10,10 +10,53 @@ verifyType: "terminal_output"
 # Baseline the host
 
 ## Objective
-*TBD*
+
+Welcome to your first step in host security! In this lesson, you'll learn how to establish a "baseline" for your system. Think of a baseline as a snapshot of your host's normal, healthy state. By completing this, you'll have a reference point to understand your system better and spot anything unusual later on. You'll accomplish this by observing your system's current configuration safely, without making any changes.
 
 ## Walkthrough
-*TBD*
+
+It's natural to feel a bit cautious when starting with the command line, but rest assured, the commands we'll use today are completely safe. They only *read* information about your system; they don't modify anything. We'll gather some key pieces of information to form your initial baseline checklist.
+
+1.  **Understand Your System's Identity:**
+    *   First, let's find out your hostname. This is like your computer's name on the network.
+        ```bash
+        hostname
+        ```
+        *Why it's safe:* This command simply displays the current hostname and makes no changes.
+    *   Next, let's get some basic OS information.
+        ```bash
+        uname -a
+        ```
+        *Why it's safe:* `uname -a` (stands for "unix name - all") reports kernel name, version, and hardware architecture. It's purely informational.
+    *   For more detailed distribution info:
+        ```bash
+        cat /etc/os-release
+        ```
+        *Why it's safe:* `cat` (concatenate) is used here to display the contents of a file (`/etc/os-release`), which contains operating system identification data. It only reads the file.
+
+2.  **Check Your Network Information:**
+    *   Let's see your network interfaces and IP addresses. This helps you know how your computer connects to other devices.
+        ```bash
+        ip a
+        ```
+        *Why it's safe:* `ip a` (stands for "IP address") shows network interface configuration. It only reads current network settings.
+
+3.  **Identify Your User Context:**
+    *   It's important to know which user you're currently logged in as.
+        ```bash
+        whoami
+        ```
+        *Why it's safe:* `whoami` simply tells you the username of the current effective user. It's purely informational.
+
+4.  **Complete Your Baseline Checklist:**
+    *   Now, combine the output from these commands into a simple text document or note. This is your initial baseline checklist!
+        *   Host Name: (output of `hostname`)
+        *   OS Info (Kernel/Arch): (output of `uname -a`)
+        *   OS Distribution: (output of `cat /etc/os-release`)
+        *   Network Interfaces: (output of `ip a`)
+        *   Current User: (output of `whoami`)
+
+Present your completed baseline checklist to your AI Tutor.
 
 <VerificationBlock 
   deliverable="A host baseline checklist completed."

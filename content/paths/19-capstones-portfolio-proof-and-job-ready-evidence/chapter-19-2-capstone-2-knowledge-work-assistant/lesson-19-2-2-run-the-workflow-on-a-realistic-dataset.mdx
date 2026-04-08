@@ -10,10 +10,48 @@ verifyType: "terminal_output"
 # Run the workflow on a realistic dataset
 
 ## Objective
-*TBD*
+By the end of this lesson, you will have successfully run your data processing workflow on a more realistic dataset, producing raw, cleaned, and final data artifacts. Crucially, you'll learn how to package all these output files into a single, reproducible archive, making it easy to share your work with others. This ensures anyone can reproduce your results!
 
 ## Walkthrough
-*TBD*
+
+Time to run your workflow on real-world data and package everything neatly for sharing!
+
+1.  **Place Your Realistic Dataset:**
+    Assume you have a realistic dataset (e.g., `large_sales.csv`) ready. Move it into your project's raw data directory.
+    ```bash
+    mv ~/Downloads/large_sales.csv data/raw/
+    ```
+    *This `mv` command is safe: it only moves a file from one specified location to another within your own system. It won't modify the file's content.*
+
+2.  **Run Your Workflow Script:**
+    Execute your main workflow script, specifying the raw data file to process.
+    ```bash
+    bash process_data.sh data/raw/large_sales.csv
+    ```
+    *Running a `bash` script like `process_data.sh` is safe because it executes commands *you* wrote or understand. Always be cautious with scripts from unknown sources, but for your own, you're in control.*
+
+3.  **Verify the Output:**
+    Confirm your script created the cleaned and final data files.
+    ```bash
+    ls data/cleaned/
+    ls data/final/
+    ```
+    *The `ls` command is very safe! It simply lists directory contents; it never modifies, deletes, or creates files.* You should see new files reflecting your processed data.
+
+4.  **Package Your Entire Output:**
+    Create a single archive containing all your raw, cleaned, and final data for reproducibility and easy sharing.
+    ```bash
+    tar -czvf output_package.tar.gz data/
+    ```
+    *The `tar` command is a safe tool for bundling files into a compressed archive.*
+    *   `-c`: **c**reates a new archive.
+    *   `-z`: compresses using gzip.
+    *   `-v`: shows **v**erbose output.
+    *   `-f output_package.tar.gz`: specifies the output **f**ilename.
+    *   `data/`: includes the entire `data/` directory.
+    *This command collects copies of your `data/` directory files and bundles them. It does not modify your original files.*
+
+You now have a complete, reproducible output package!
 
 <VerificationBlock 
   deliverable="A finished output package with raw, cleaned, and final artifacts."

@@ -10,10 +10,29 @@ verifyType: "terminal_output"
 # Read files like a developer
 
 ## Objective
-*TBD*
+Learn how to peek inside text files directly from your terminal so you can read instructions and configurations without opening another application.
 
 ## Walkthrough
-*TBD*
+
+You now know how to navigate folders and create files. But what if you want to read those files?
+
+A developer's favorite tool for reading files quickly is the `cat` command. 
+`cat` is short for **concatenate** (which means linking things together), but most people just use it to dump the text of a file straight onto their screen.
+
+**Step 1: Reading a file safely**
+Imagine someone gave you a file called `instructions.txt`. You want to read it, but you are afraid of accidentally modifying it. 
+Using `cat` is purely read-only. It is impossible to accidentally ruin a file using just `cat file.txt`.
+
+Let's practice reading. If you have a file in your directory called `README.md`, you read it by typing:
+`cat README.md`
+(On Windows PowerShell, `cat` is aliased to `Get-Content`, so it does exactly the same thing!)
+
+*Safety Tip:* If the file is extremely long, `cat` will dump the whole thing, causing it to scroll violently. That's harmless, but it can be annoying!
+
+**Your Task:**
+Use the `echo` command to put some text into a file, like this:
+`echo "Welcome to the academy!" > welcome.txt`
+Then, use `cat welcome.txt` to read the file out loud to the terminal. Copy the output and paste it here so the tutor can verify your developer reading skills!
 
 <VerificationBlock 
   deliverable="A filled troubleshooting worksheet based on a config file."

@@ -10,10 +10,30 @@ verifyType: "terminal_output"
 # Where am I and what is here?
 
 ## Objective
-*TBD*
+Learn to confidently figure out exactly where you are in the terminal and see what files are around you, without accidentally changing anything.
 
 ## Walkthrough
-*TBD*
+
+When you open a terminal, it always drops you into a specific folder on your computer. Before you do *anything*, the safest habit you can build is figuring out exactly where you are. 
+
+Think of it like looking at a map in a mall and finding the "You are here" star. 
+
+**Step 1: Ask "Where am I?"**
+Depending on your system, you can use a simple command to print your current location:
+- On Mac/Linux (or Git Bash): Type `pwd` (Print Working Directory) and press Enter.
+- On Windows (Command Prompt/PowerShell): Type `cd` and press Enter, or use `Get-Location`.
+
+*Safety Tip:* Running `pwd` or `cd` by itself is 100% safe. It only reads information; it doesn't change or move anything.
+
+**Step 2: Ask "What is here?"**
+Once you know what folder you are in, you probably want to see what is inside it. 
+- On Mac/Linux: Type `ls` (List) and press Enter.
+- On Windows: Type `dir` (Directory) and press Enter.
+
+*Safety Tip:* Just like looking around a room, listing files is completely safe. You're just observing.
+
+**Your First Task:**
+Open your terminal. Run the command to check your current folder, then run the command to list the files inside it. Copy the output you see, and save it to a file called `directory_map.txt` so your tutor can verify you've mastered observation!
 
 <VerificationBlock 
   deliverable="A directory map of the workspace."

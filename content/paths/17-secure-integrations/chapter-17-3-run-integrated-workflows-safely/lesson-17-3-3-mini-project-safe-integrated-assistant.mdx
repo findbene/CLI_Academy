@@ -10,10 +10,49 @@ verifyType: "terminal_output"
 # Mini project: safe integrated assistant
 
 ## Objective
-*TBD*
+You'll build a mini assistant that performs a simple action, but with critical safety checks! We'll integrate with your file system, requiring your explicit approval before making changes. You'll also learn how to undo (rollback) actions if needed, ensuring you're always in control and can safely experiment.
 
 ## Walkthrough
-*TBD*
+
+1.  **Set up your workspace safely:**
+    *   First, create a new directory for this project: `mkdir cli-assistant-project`
+    *   Then, move into it: `cd cli-assistant-project`
+    *   *Safety note*: Working in a fresh, dedicated directory means any changes we make are contained and won't unexpectedly affect other files or parts of your system.
+
+2.  **Define and plan your assistant's action:**
+    *   Our assistant will create a simple status report file. We'll show you what it plans to do before acting.
+
+3.  **Implement approval before execution:**
+    *   Let's create a small script that first explains its action and then asks for your permission. Type these commands one by one, or paste them into your terminal:
+        ```bash
+        echo "Assistant: I propose to create a file named 'system_status.txt' in this directory."
+        read -p "Assistant: Do you approve this action? (type 'yes' to proceed): " approval_response
+        ```
+    *   *Safety note*: The `read -p` command is a crucial safety mechanism. It pauses the script and waits for *your direct input*, giving you the power to review and explicitly approve or deny any proposed changes before they occur.
+
+4.  **Execute if approved, or explicitly cancel:**
+    *   Now, we'll add logic to proceed only if you approved.
+        ```bash
+        if [ "$approval_response" == "yes" ]; then
+            echo "Assistant: Approval granted. Proceeding to create 'system_status.txt'..."
+            echo "Status Report: All systems nominal at $(date)" > system_status.txt
+            echo "Assistant: 'system_status.txt' created successfully."
+        else
+            echo "Assistant: Action not approved. Cancelling operation."
+            echo "Assistant: No changes were made to your file system."
+        fi
+        ```
+    *   *Safety note on `echo >`*: The `echo` command simply prints text. When combined with `> system_status.txt`, it safely redirects that text *into* the file `system_status.txt`. It creates the file if it doesn't exist, or overwrites it if it does. This doesn't run commands from the text, making it a controlled way to write data.
+
+5.  **Practice rollback (undoing changes):**
+    *   If you approved the action, you now have `system_status.txt`. Let's learn how to undo it.
+        ```bash
+        echo "Assistant: If you ever need to undo a change, you can remove the file we just created."
+        rm system_status.txt
+        echo "Assistant: 'system_status.txt' has been removed."
+        ls
+        ```
+    *   *Safety note on `rm`*: The `rm` command deletes files, and it's powerful! Always use `rm` with extreme caution, and double-check with `ls` (list files) to confirm what you're about to delete. In this exercise, we are safely removing a file we *just* created in our isolated project directory, so it's a safe place to practice.
 
 <VerificationBlock 
   deliverable="A bounded workflow using one real integration plus approval and rollback."

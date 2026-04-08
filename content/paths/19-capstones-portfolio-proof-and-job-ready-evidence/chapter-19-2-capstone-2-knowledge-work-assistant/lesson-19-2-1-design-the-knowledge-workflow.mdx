@@ -10,10 +10,68 @@ verifyType: "terminal_output"
 # Design the knowledge workflow
 
 ## Objective
-*TBD*
+
+Welcome to designing your first structured workflow! In this lesson, you'll learn how to map out a clear process, which is a foundational skill for understanding and eventually automating tasks in the CLI. Your goal is to create a "workflow brief"—a simple document outlining the steps, inputs, outputs, quality checks, and review process for a common knowledge task. This exercise helps us build a foundation for clear, traceable work, ensuring everyone understands what needs to be done and how to verify its success.
 
 ## Walkthrough
-*TBD*
+
+It's completely normal to feel a bit unsure when structuring something new, but we'll take it one safe step at a time. You'll primarily be working with text, so there's no risk of accidental system changes.
+
+1.  **Create your workflow brief file:**
+    First, let's create a new file where your workflow design will live.
+    ```bash
+    touch my_first_workflow.md
+    nano my_first_workflow.md
+    ```
+    *   **Safety Check:** `touch` is a very safe command; it only creates an empty file if it doesn't already exist, or updates its timestamp if it does. It never modifies existing content. `nano` is a simple text editor. Whatever you type stays within this file, and your changes are only saved when *you* explicitly choose to save.
+
+2.  **Define your workflow's purpose:**
+    Inside `nano`, let's start by giving your workflow a clear name and a brief description. Think of a simple task you perform regularly, like "Writing a Meeting Summary" or "Creating a Project Status Update."
+
+    ```markdown
+    # Workflow: [Your Chosen Workflow Name, e.g., "Drafting a Project Status Update"]
+
+    ## Description
+    This workflow outlines the process for [briefly describe the purpose of the workflow].
+    ```
+
+3.  **Identify Inputs:**
+    What information, data, or resources do you *need* to start this task? List them clearly.
+    ```markdown
+    ## Inputs
+    *   [Example: Project management software updates]
+    *   [Example: Latest team meeting notes]
+    *   [Example: Previous status report]
+    ```
+
+4.  **Define Outputs:**
+    What is the *finished product* of this workflow? What does success look like?
+    ```markdown
+    ## Outputs
+    *   [Example: A concise project status report in Markdown format]
+    *   [Example: Report shared via email to stakeholders]
+    ```
+
+5.  **Establish a Quality Rubric:**
+    How do you know the output is *good*? What criteria must it meet? This is crucial for consistent quality and traceability.
+    ```markdown
+    ## Quality Rubric
+    *   Clarity: Report is easy to understand, no jargon.
+    *   Completeness: All key project areas (progress, blockers, next steps) are covered.
+    *   Accuracy: Information presented is factually correct.
+    *   Conciseness: Report is brief and to the point.
+    ```
+
+6.  **Implement a Review Layer:**
+    Who reviews the output, and how is feedback incorporated? This adds an essential layer of oversight.
+    ```markdown
+    ## Review Layer
+    *   Reviewer: [Example: Project Lead, Peer]
+    *   Process: Reviewer provides feedback via comments; author updates report; final approval.
+    ```
+
+7.  **Save and Exit:**
+    Once you've drafted your workflow brief, save your changes by pressing `Ctrl+O`, then `Enter`, and exit `nano` with `Ctrl+X`. You've successfully created a structured workflow brief!
 
 <VerificationBlock 
   deliverable="A workflow brief with inputs, outputs, quality rubric, and review layer."

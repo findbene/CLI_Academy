@@ -10,10 +10,44 @@ verifyType: "terminal_output"
 # Build a source bundle
 
 ## Objective
-*TBD*
+By the end of this lesson, you will have created a self-contained, clearly named, and described source bundle ready for sharing or archival. This bundle will help tools like Cowork understand your project's context effortlessly.
 
 ## Walkthrough
-*TBD*
+Let's prepare your source files into a neat, descriptive bundle.
+
+1.  **Create a temporary staging directory.**
+    This dedicated folder will organize our files before bundling, keeping your original project untouched.
+    ```bash
+    mkdir my_project_bundle
+    ```
+    *Why this is safe:* `mkdir` only creates a new directory; it doesn't modify or delete existing files.
+
+2.  **Copy your essential source files into the staging directory.**
+    Replace `script.py`, `config.json`, `data.csv` with your actual files you wish to bundle.
+    ```bash
+    cp script.py config.json data.csv my_project_bundle/
+    ```
+    *Why this is safe:* `cp` *copies* files. Your original files remain exactly where they are. We're working with duplicates.
+
+3.  **Add a `README.md` with naming and scope notes.**
+    Navigate inside your staging directory and create a `README.md`. This is crucial for Cowork (and humans!) to understand what's inside.
+    ```bash
+    cd my_project_bundle
+    echo "# My Project Source Bundle" > README.md
+    echo "This bundle contains core source files for the 'My Project' application." >> README.md
+    echo "Scope: Python script, configuration, and sample data relevant to feature X." >> README.md
+    ```
+    *Why this is safe:* `cd` changes your current location. `echo` writes text, and `>` or `>>` redirect that text into a file. We're creating a new `README.md` file *within our temporary directory*, not affecting anything outside it.
+
+4.  **Create the source bundle (a zip archive).**
+    Move back to the parent directory, then compress your staging directory.
+    ```bash
+    cd ..
+    zip -r my_project_source_bundle.zip my_project_bundle/
+    ```
+    *Why this is safe:* `zip` creates a compressed archive. The original `my_project_bundle` directory and its contents are *not* deleted or altered. The `-r` flag ensures it zips the directory recursively.
+
+You now have `my_project_source_bundle.zip`, a clean source bundle with crucial context in its `README.md`!
 
 <VerificationBlock 
   deliverable="A clean source bundle with naming and scope notes."

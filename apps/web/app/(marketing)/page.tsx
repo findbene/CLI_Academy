@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 import { getServerViewer } from "@/lib/viewer";
 import { ALL_RESOURCES, RESOURCE_CATEGORIES } from "@/lib/data/resources";
-import BackgroundScene from "@/components/ui/aurora-section-hero";
+import ShaderBackground from "@/components/ui/shader-background";
 import {
   BookOpen,
   Download,
@@ -49,16 +49,16 @@ export default async function HomePage() {
     <>
       {/* ── Aurora Hero Section ─────────────────────────── */}
       <section className="hero-aurora-wrapper">
-        <BackgroundScene beamCount={60} />
+        <ShaderBackground />
         <div className="hero-content">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--color-accent-ring)] bg-[var(--color-accent-subtle-faint)] px-4 py-1.5 text-sm text-[rgba(255,255,255,0.75)]">
-            <Zap className="h-3.5 w-3.5 text-[var(--color-accent-primary)]" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-400/50 bg-teal-400/10 shadow-[0_0_20px_rgba(45,212,191,0.4)] px-4 py-1.5 text-sm text-[rgba(255,255,255,0.85)]">
+            <Zap className="h-3.5 w-3.5 text-teal-400" />
             Beginner-first tech education
           </div>
           <h1>
             Master Claude Code.
             <br />
-            <span className="text-gradient">Build with confidence.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-500 to-amber-500 drop-shadow-[0_0_20px_rgba(217,70,239,0.5)]">Build with confidence.</span>
           </h1>
           <p>
             The safest, most beginner-friendly way to go from zero to productive with Claude Code,

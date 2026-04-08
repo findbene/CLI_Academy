@@ -10,10 +10,80 @@ verifyType: "terminal_output"
 # Read `git status` like a grown-up
 
 ## Objective
-*TBD*
+
+Welcome, brave traveler, to the foundational skill of reading your project's heartbeat: `git status`! By the end of this lesson, you will not only be able to understand the output of `git status` but also confidently identify the safest next commands to move your project forward, without fear of accidentally losing work. We'll focus on what each line means and why certain commands are gentle on your project.
 
 ## Walkthrough
-*TBD*
+
+Let's get our hands dirty (safely, of course!) and create a simple project to see `git status` in action.
+
+1.  **Start fresh:** First, let's create a brand-new directory for our practice project.
+    ```bash
+    mkdir my_website
+    cd my_website
+    ```
+
+2.  **Initialize Git:** Now, let's tell Git to start tracking changes in this directory.
+    ```bash
+    git init
+    ```
+    *This command is super safe!* It doesn't touch any of your existing files. It just creates a hidden `.git` folder in your current directory where Git will store all its version history magic. You won't even see it unless you look for hidden files.
+
+3.  **Create some files:** Let's imagine we're building a tiny website.
+    ```bash
+    echo "<h1>Hello World</h1>" > index.html
+    echo "body { background-color: lightblue; }" > style.css
+    ```
+    You've just created two new files! Git doesn't know about them yet.
+
+4.  **Check your status (first time!):** Let's ask Git what's going on.
+    ```bash
+    git status
+    ```
+    *This command is completely safe!* `git status` only *reads* information about your project; it never changes anything. You'll likely see a section called "Untracked files." This means Git sees these files but isn't watching them yet.
+
+5.  **Stage `index.html`:** Let's tell Git we're interested in `index.html`.
+    ```bash
+    git add index.html
+    ```
+    *This command is safe!* `git add` doesn't commit anything or make permanent changes to your history. It simply moves a file from "untracked" or "modified" to the "staging area," preparing it for your next commit.
+
+6.  **Check status again:** What does Git say now?
+    ```bash
+    git status
+    ```
+    You should now see `index.html` under "Changes to be committed" and `style.css` still under "Untracked files." See how Git helps you organize?
+
+7.  **Commit `index.html`:** Let's make a snapshot of `index.html`.
+    ```bash
+    git commit -m "Initial commit of index.html"
+    ```
+    *This command is safe (with a message)!* `git commit` takes everything in your staging area and saves a permanent, timestamped snapshot of it in your project's history. The `-m` flag is crucial because it adds a descriptive message, making your history clear.
+
+8.  **Check status (a clean slate):**
+    ```bash
+    git status
+    ```
+    You should now see "nothing to commit, working tree clean" (for `index.html`) and `style.css` still untracked.
+
+9.  **Modify and create more:** Let's make some changes and add a new file.
+    ```bash
+    echo "<p>Welcome to CLI Academy!</p>" >> index.html # Append to index.html
+    rm style.css # Oh no, we deleted style.css! (Don't worry, Git remembers)
+    echo "console.log('Hello from script!');" > script.js # Create a new JS file
+    ```
+
+10. **Your Turn: The Current State:** Now, run `git status` one last time. This is the complex state you'll work with for your deliverable.
+    ```bash
+    git status
+    ```
+    Take a deep breath. Look at the different sections: "Changes not staged for commit," "Untracked files," and potentially "Changes to be committed" if you'd previously staged something. Each section tells you something vital about the differences between your last commit and your current work.
+
+    ---
+
+    **✨ Deliverable:**
+
+    Based on the *current output* of your `git status` command (from step 10), explain what each distinct section means. Then, identify the *safest* next `git` command you could run, and explain why it's safe and what it would accomplish.
 
 <VerificationBlock 
   deliverable="A status worksheet tied to a real repo state."

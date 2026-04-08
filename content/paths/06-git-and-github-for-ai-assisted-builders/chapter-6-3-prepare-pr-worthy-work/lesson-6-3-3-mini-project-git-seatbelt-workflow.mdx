@@ -10,10 +10,72 @@ verifyType: "terminal_output"
 # Mini project: Git seatbelt workflow
 
 ## Objective
-*TBD*
+
+Our goal is to practice a fundamental, safe Git workflow that professionals use daily. You'll learn to isolate your changes, make a commit, summarize your work for review, and understand how your changes would eventually join the main project, all without fear of breaking anything. Think of this as putting on your Git seatbelt!
 
 ## Walkthrough
-*TBD*
+
+1.  **Check Your Status (Your Pre-flight Check):**
+    Always start here. It's safe to run and tells you exactly what's happening.
+    ```bash
+    git status
+    ```
+    *(You should see "On branch main" or similar, indicating a clean state.)*
+
+2.  **Create a New Branch (Your Private Sandbox):**
+    We never work directly on `main` for changes! Creating a branch keeps `main` safe and pristine. You're creating a new, isolated workspace.
+    ```bash
+    git switch -c my-first-feature
+    ```
+    *(`-c` means "create" and "switch". This command is totally safe; it only creates a new pointer to your current code.)*
+
+3.  **Make Your Small Change:**
+    Let's add some content to a file. Create a new file or append to an existing one like `README.md`.
+    ```bash
+    echo "Hello from my first Git feature!" >> README.md
+    ```
+    *(This is a simple change, easily reversible.)*
+
+4.  **Check Status Again (See Your Change):**
+    Confirm Git noticed your modification.
+    ```bash
+    git status
+    ```
+    *(You'll see `README.md` listed under "Untracked files" or "Changes not staged for commit".)*
+
+5.  **Stage Your Change (Prepare for Snapshot):**
+    `git add` tells Git, "Hey, I want to include this file in my next snapshot." It's like putting items in a shopping cart before checkout – still reversible!
+    ```bash
+    git add README.md
+    ```
+    *(This command is safe; it only stages the change, not commits it.)*
+
+6.  **Commit Your Change (Take a Snapshot):**
+    Now, make a permanent record of your staged changes. `-m` provides a descriptive message. This commit is *local* to your machine and your branch – it hasn't affected `main` or anyone else yet.
+    ```bash
+    git commit -m "Add a greeting message to README"
+    ```
+    *(This creates a local snapshot. If you make a mistake, you can always revert this local commit later, so it's very safe.)*
+
+7.  **Review Summary (Simulate a Code Review):**
+    Imagine you're preparing this change for your team. Briefly describe what you did and why.
+    *Type your summary here:* "I added a friendly greeting message to the `README.md` file to introduce my first feature branch."
+
+8.  **Simulate Merge & Cleanup:**
+    In a real project, you'd now push your branch and create a "Pull Request" for others to review. Once approved, it would be merged into `main`. Let's simulate the aftermath:
+    First, switch back to `main`.
+    ```bash
+    git switch main
+    ```
+    *(This is safe; it just changes which branch you're viewing.)*
+
+    Now, we'll delete your local feature branch. This is safe *because* we're simulating that your changes have already been safely merged (e.g., via a Pull Request on a platform like GitHub) and are now part of `main`.
+    ```bash
+    git branch -d my-first-feature
+    ```
+    *(`-d` means "delete". Git will only let you delete a branch if its changes have already been merged elsewhere, preventing accidental data loss.)*
+
+You've successfully navigated a full, safe Git workflow! You created a branch, made a change, committed it, prepared it for review, and cleaned up your local workspace – all without ever touching `main` directly.
 
 <VerificationBlock 
   deliverable="A complete branch -> commit -> review summary -> merge simulation."

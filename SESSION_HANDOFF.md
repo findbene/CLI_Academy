@@ -2,21 +2,23 @@
 
 ## Last known objective
 
-Restructure CLI Academy into a cleaner top-level scaffold with a durable agent control plane.
+Finish the repo normalization follow-through so the new `apps/` layout is fully reflected in docs, handoff state, and deployment-facing references.
 
-## What was established
+## What is now true
 
-- target repo structure
-- root control docs
-- local `CLAUDE.md` strategy for `apps/web` and `apps/api`
-- successfully migrated the entire root level to the new control plane scaffold
+- Repo normalization is complete: runtime code lives under `apps/web` and `apps/api`
+- Root operating docs are the canonical state trackers for the repo
+- Archived communication and design backup material no longer sits beside active runtime code
+- The current remaining work is verification and extraction, not another top-level restructure
 
 ## Continue from here
 
-1. Update CI/CD paths and environment variables for deployment if impacted by the migration.
-2. Address P1 tasks in `TASKS.md` (add package boundaries, move reusable logic).
-3. Test edge cases where backend imports might need adjustment.
+1. Verify GitHub Actions, deployment config, and environment-variable references for any stale pre-migration paths.
+2. Address P1 tasks in `TASKS.md`, starting with package boundaries and reusable lesson/tutor extraction.
+3. Decide how `content/paths_old/` should be handled: retain temporarily, archive, or migrate.
 
 ## Risks to watch
 
-- stale path references in CI configs, scripts, or deployment dashboards.
+- stale path references in CI configs, scripts, tests, or deployment dashboards
+- root docs drifting back into aspirational language instead of describing the live repo state
+- partial extraction into `packages/` that creates duplicated ownership instead of cleaner boundaries

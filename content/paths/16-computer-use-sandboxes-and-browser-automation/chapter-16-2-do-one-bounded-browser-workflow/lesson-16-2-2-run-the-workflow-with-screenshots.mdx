@@ -10,10 +10,35 @@ verifyType: "terminal_output"
 # Run the workflow with screenshots
 
 ## Objective
-*TBD*
+
+In this lesson, you'll learn to execute a simple command-line workflow while capturing essential visual evidence. The goal is to successfully run a series of commands and take screenshots at key moments, allowing you or a tutor to easily review the process and understand exactly what happened at each step. This skill is invaluable for debugging and sharing your CLI journey!
 
 ## Walkthrough
-*TBD*
+
+Let's carefully run a short workflow and grab some screenshots along the way. Remember, it's okay to go slow and double-check your work!
+
+1.  **Check your current location.**
+    Type `pwd` and press Enter.
+    *Why this is safe:* The `pwd` command simply *prints* your working directory (where you currently are). It doesn't modify any files or settings.
+    **Take a screenshot** of the terminal showing your current directory.
+
+2.  **Create a simple text file.**
+    Type `echo "My first CLI workflow step!" > my_workflow.txt` and press Enter.
+    *Why this is safe:* `echo` just displays text. The `>` symbol redirects that text into a new file named `my_workflow.txt` in your current directory. It won't overwrite important system files, and if `my_workflow.txt` already exists, it will be replaced—but since we're creating a new file, there's no risk here.
+    **Take a screenshot** of the command being entered and its (lack of) output, then run `ls` and press Enter to confirm the file's creation and **take another screenshot** of the `ls` output.
+
+3.  **View the content of your new file.**
+    Type `cat my_workflow.txt` and press Enter.
+    *Why this is safe:* The `cat` command displays the *contents* of a file to your terminal. It's a read-only operation and doesn't make any changes to the file or your system.
+    **Take a screenshot** of the command and its output showing "My first CLI workflow step!".
+
+4.  **Acknowledge completion.**
+    Type `echo "Workflow complete!"` and press Enter.
+    *Why this is safe:* Similar to step 2, `echo` just prints text to your screen. It's harmless and helps mark the end of our workflow.
+    **Take a screenshot** of this final command and its output.
+
+5.  **Capture the entire run log.**
+    Now that your workflow is complete, copy the *entire* text from your terminal session, from the very first command (`pwd`) to the last output. This complete log is your final deliverable.
 
 <VerificationBlock 
   deliverable="A successful run log with screenshots at key moments."

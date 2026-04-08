@@ -10,10 +10,53 @@ verifyType: "terminal_output"
 # Test recall and correction
 
 ## Objective
-*TBD*
+In this lesson, you'll learn to confidently use your CLI's memory features to save, recall, update, and forget information. We'll run through a gentle, step-by-step test to ensure you understand how your data is handled, giving you peace of mind that your commands are safe and your data is reliable.
 
 ## Walkthrough
-*TBD*
+
+Let's create a temporary "test note" in your CLI's memory, walk it through its lifecycle, and then safely remove it. This will build your trust in the memory system.
+
+1.  **Save Your First Test Note:**
+    Let's save a simple, harmless phrase.
+    ```bash
+    memory save "trust_test_note" "Hello CLI Academy! This is a safe test note."
+    ```
+    *Why this is safe:* This command only stores the text you provide. It doesn't access any system files or critical data. Think of it like writing on a digital sticky note – isolated and contained.
+
+2.  **Recall Your Test Note:**
+    Now, let's make sure it's actually there.
+    ```bash
+    memory recall "trust_test_note"
+    ```
+    *Why this is safe:* Recalling data is a read-only operation. It simply displays what you've stored without making any changes to your system or the note itself.
+
+3.  **Update Your Test Note:**
+    Imagine you need to change some information. Let's practice that.
+    ```bash
+    memory update "trust_test_note" "Updated: I'm confident in my CLI memory!"
+    ```
+    *Why this is safe:* The `update` command safely overwrites *only* the specific note you targeted. It leaves all other memory entries and system files untouched.
+
+4.  **Confirm the Update:**
+    Let's recall it one more time to see the change.
+    ```bash
+    memory recall "trust_test_note"
+    ```
+    *Why this is safe:* Again, this is a read operation, simply confirming the successful update without any risk.
+
+5.  **Forget (Delete) Your Test Note:**
+    Finally, let's remove our temporary note, ensuring we can clean up after ourselves.
+    ```bash
+    memory forget "trust_test_note"
+    ```
+    *Why this is safe:* This command *only* removes the specific data point you created within the memory system. It does not delete system files or any other unrelated data. It's like recycling your digital sticky note.
+
+6.  **Confirm Deletion:**
+    Try to recall it one last time. You should see a message indicating it's no longer found.
+    ```bash
+    memory recall "trust_test_note"
+    ```
+    *Why this is safe:* This final recall confirms the `forget` command worked as intended, proving you have full, safe control over your stored information.
 
 <VerificationBlock 
   deliverable="A memory test pack showing save, recall, update, and forget flows."

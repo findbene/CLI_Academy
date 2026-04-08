@@ -10,10 +10,43 @@ verifyType: "terminal_output"
 # Review logs and close the loop
 
 ## Objective
-*TBD*
+
+In this lesson, you'll learn a crucial skill for any command-line user: reviewing the output from your previous commands, identifying what worked and what didn't, and documenting your findings. This practice, often called "closing the loop," helps you understand your system better, plan safer next steps, and prevent future issues.
 
 ## Walkthrough
-*TBD*
+
+Let's review the results of your last command and document your observations.
+
+1.  **Examine your previous command's output:**
+    Scroll back in your terminal window to the output of the last command you ran. Take a moment to read through it carefully. What messages did you see? Did it report any `error` or `fail` messages? Did it successfully complete the task you expected?
+
+2.  **Create your review file:**
+    We'll create a new file named `run-review.md` to document your findings.
+    ```bash
+    touch run-review.md
+    ```
+    The `touch` command is very safe! It simply creates an empty file with the given name if it doesn't exist, or updates its modification time if it does. It won't delete or change any existing content.
+
+3.  **Open and edit the `run-review.md` file:**
+    Now, open `run-review.md` using your preferred text editor (e.g., `nano run-review.md` or `code run-review.md` if you use VS Code).
+
+4.  **Document your observations:**
+    Inside `run-review.md`, add the following sections and fill them out based on your review of the logs. Be honest and descriptive!
+
+    ```markdown
+    # Run Review
+
+    ## What happened?
+    (Describe what your last command was trying to do and what you observed in the output. Did it run successfully? Did it produce the expected result?)
+
+    ## What failed?
+    (If anything went wrong, clearly describe it here. Include any error messages you saw. If nothing failed, you can write "No explicit failures detected.")
+
+    ## What changes next?
+    (Based on your review, what do you plan to do differently or try next to resolve any issues or move forward? This helps you plan your next safe step.)
+    ```
+
+    Save and close the file when you're done. You've now officially "closed the loop" on your last run!
 
 <VerificationBlock 
   deliverable="A `run-review.md` with what happened, what failed, and what changes next."

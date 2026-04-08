@@ -1,8 +1,8 @@
 # CLI Academy
 
-CLI Academy is a learner-first SaaS platform for helping normal people go from zero to productive with Claude Code, Claude Cowork, OpenClaw-style runtimes, and safe agentic workflows on real machines.
+CLI Academy is a learner-first product for helping people get from zero to productive with Claude Code, Claude Cowork, OpenClaw-style runtimes, and safe agentic workflows on real machines.
 
-This repository is organized to stay readable for humans and cheap for agents to reason about.
+This repository has already been normalized into a small-root, multi-surface layout so humans and agents can work in it without broad context loading.
 
 ## Repo goals
 
@@ -12,7 +12,7 @@ This repository is organized to stay readable for humans and cheap for agents to
 - Preserve decision history, progress, and handoff state without polluting implementation files.
 - Treat curriculum content as a first-class product surface.
 
-## Target structure
+## Current structure
 
 ```text
 CLI_Academy/
@@ -41,28 +41,27 @@ CLI_Academy/
 └── RULES.md
 ```
 
-## Why this is the right correction
+## Why this structure exists
 
-The current repo has overlapping root responsibilities such as `.agentic`, `.agents`, `.antigravity`, `agents`, `app`, `backend`, `_communication`, and `_design_backup`. That flat shape makes ownership blurry and increases context noise for both humans and agents.
+The repo previously had overlapping root responsibilities and historical runtime folders that made ownership blurry and increased context noise for both humans and agents.
 
-This target structure fixes that by:
+The current structure fixes that by:
 
-- moving the product runtime under `apps/`
+- keeping the product runtime under `apps/`
 - keeping agent policy and memory under `.claude/`
 - keeping shared code under `packages/`
 - keeping curriculum under `content/`
-- moving historical or one-off material under `docs/archive/`
-- moving scripts under `tooling/`
+- keeping historical or one-off material under `docs/archive/`
+- keeping scripts under `tooling/`
 
-## First migration moves
+## Current repo state
 
-1. Move `app/` to `apps/web/`
-2. Move `backend/` to `apps/api/`
-3. Move `scripts/` to `tooling/scripts/`
-4. Rename `infrastructure/` to `infra/`
-5. Merge `.agentic`, `.agents`, and `.antigravity` into `.claude/` where still active
-6. Move `_communication/` and `_design_backup/` into `docs/archive/`
-7. Keep only stable control docs at root
+- Repo normalization is complete.
+- The active frontend lives in `apps/web/`.
+- The active backend lives in `apps/api/`.
+- Curriculum and downloadable assets live in `content/`.
+- Shared extraction work is expected to move gradually into `packages/` when duplication justifies it.
+- The current workstream is post-migration verification: making sure deployment paths, scripts, tests, and docs all point at the normalized layout.
 
 ## Root operating docs
 
@@ -85,6 +84,13 @@ This target structure fixes that by:
 3. Read `PRIMER.md`
 4. Read only the additional files needed for the current task
 5. Update `PROGRESS.md`, `TASKS.md`, and `SESSION_HANDOFF.md` when material work is completed
+
+## Near-term priorities
+
+1. Verify CI/CD, deployment config, and env references after the `apps/` migration.
+2. Add package boundaries under `packages/` where shared code earns extraction.
+3. Document migration notes under `docs/architecture/`.
+4. Decide the long-term handling strategy for legacy `paths_old/` content.
 
 ## Project-level operating files
 

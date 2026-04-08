@@ -10,10 +10,54 @@ verifyType: "terminal_output"
 # Make a clean first commit
 
 ## Objective
-*TBD*
+
+Your goal in this lesson is to make your very first intentional commit in your Git repository. This isn't just about saving changes; it's about starting a good habit! You'll learn how to prepare your files for commit and craft a clear, descriptive message, setting a strong foundation for your project's history.
 
 ## Walkthrough
-*TBD*
+
+Let's get your project off to a great start with a clean first commit.
+
+1.  **Check your current status:**
+    Before making any changes, it's always a good idea to see where you stand.
+    ```bash
+    git status
+    ```
+    This command is completely safe – it just shows you information about your repository. You'll likely see some "untracked files" if you've created any, or perhaps that there's "nothing to commit yet."
+
+2.  **Prepare a file (if you don't have one):**
+    If you don't have any files in your current directory yet (like a `README.md` or `index.html`), let's quickly create a simple `README.md` file. This is a common starting point for most projects.
+    ```bash
+    echo "This is my awesome first project!" > README.md
+    ```
+    This command safely creates a file named `README.md` with some text inside.
+
+3.  **Stage your changes:**
+    Now, tell Git which changes you want to include in your upcoming commit. This is called "staging."
+    ```bash
+    git add .
+    ```
+    The `git add .` command stages *all* new or modified files in your current directory. Don't worry, this doesn't save anything permanently yet! It just moves the files into a temporary "staging area," like putting items in a shopping cart before you go to the checkout. It's a preparatory step.
+
+4.  **Review your staged changes:**
+    It's crucial to confirm what you're about to commit.
+    ```bash
+    git status
+    ```
+    You should now see your `README.md` (or any other files you staged) listed under "Changes to be committed." Take a moment to look at this output carefully. This is the perfect time to ask your AI Tutor to review your staged files and confirm you're ready!
+
+5.  **Make your first commit:**
+    Once you're happy with what's staged, it's time to record it permanently in your project's history.
+    ```bash
+    git commit -m "Initial commit"
+    ```
+    This command creates a new, permanent record (a "commit") in your project's history. The `-m` flag lets you include a short, descriptive message directly. A good commit message explains *what* you did. For a first commit, "Initial commit" is a perfectly acceptable and common message. This action *does* write to your Git repository's history, but only includes the files you *staged* in the previous step, which you just reviewed!
+
+6.  **Verify your commit:**
+    To see your newly created commit, you can check your project's history.
+    ```bash
+    git log --oneline
+    ```
+    This command safely displays a concise history of your commits, confirming that your "Initial commit" is now part of your project!
 
 <VerificationBlock 
   deliverable="One intentional commit with a meaningful message."

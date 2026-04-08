@@ -10,10 +10,36 @@ verifyType: "terminal_output"
 # Apply least privilege
 
 ## Objective
-*TBD*
+In this lesson, you will learn the crucial security principle of **least privilege**. You will practice identifying who needs access to what resources and define the minimum permissions required, creating a clear plan before making any changes. This ensures safety and prevents unintended access.
 
 ## Walkthrough
-*TBD*
+Understanding and applying "least privilege" is a fundamental step in securing your systems. It means giving users, programs, or systems only the bare minimum permissions they need to perform their function, and no more. This significantly reduces the risk if an account is compromised.
+
+Let's create a permissions matrix for a hypothetical scenario. This planning stage is entirely safe as you are not executing any commands, but rather designing a security strategy.
+
+1.  **Identify your "assets"**: Think about what important files, folders, or integrations your project or system uses.
+    *   *Example:* A folder named `user_data/`, a configuration file `app_config.json`, a shell script `backup_script.sh`, and a file `api_key.txt` used for an external integration.
+2.  **Identify "actors"**: Who or what needs to interact with these assets? These could be human users, service accounts, or other scripts.
+    *   *Example:* A `developer` user, a `web_server_process`, and a `backup_scheduler` service.
+3.  **Draw out your matrix**: Create a simple table. List your assets in the rows and your actors in the columns.
+    *   For each intersection, determine the *minimum* necessary access:
+        *   `R` (Read): Can view or copy content.
+        *   `W` (Write): Can modify, create, or delete content.
+        *   `X` (Execute): Can run a file (if it's a script) or traverse/list a directory.
+        *   Leave blank if no access is needed.
+
+    | Asset              | developer | web_server_process | backup_scheduler |
+    | :----------------- | :-------- | :----------------- | :--------------- |
+    | `user_data/`       | R W X     | R W                | R X              |
+    | `app_config.json`  | R W       | R                  |                  |
+    | `backup_script.sh` | R W X     |                    | X                |
+    | `api_key.txt`      |           | R                  |                  |
+
+4.  **Review and refine**: Look critically at your completed matrix. Have you given anyone more access than absolutely necessary? This is a crucial safety check. For instance, does the `backup_scheduler` truly need `R` access to `api_key.txt` if its only job is to execute `backup_script.sh`? If not, remove it. The goal is to minimize risk.
+
+Once you have a matrix you're confident reflects the absolute minimum required permissions, you've successfully planned for least privilege. Present your matrix and ask:
+
+"Help me reduce these permissions to the minimum needed."
 
 <VerificationBlock 
   deliverable="A permissions matrix for files, folders, and integrations."

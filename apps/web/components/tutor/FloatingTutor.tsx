@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Bot, X, Sparkles } from "lucide-react";
 
 interface TutorMessage {
   role: "user" | "assistant";
@@ -15,6 +16,7 @@ interface FloatingTutorProps {
 
 export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guided" }: FloatingTutorProps) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState(learningMode);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<TutorMessage[]>([
@@ -43,7 +45,7 @@ export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guide
           message: question,
           lessonTitle,
           tutorPreload,
-          learningMode,
+          learningMode: mode,
         }),
       });
 
@@ -115,11 +117,13 @@ export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guide
     <>
       <button
         type="button"
-        className="fixed right-4 bottom-4 z-40 rounded-full bg-[var(--color-accent-primary)] px-5 py-3 text-sm font-medium text-white shadow-[var(--shadow-2)] md:right-5 md:bottom-5"
+        className={`fixed right-6 bottom-6 z-40 flex h-14 w-14 lg:h-16 lg:w-16 items-center justify-center rounded-full text-white shadow-[0_0_25px_rgba(45,212,191,0.5)] transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${
+          open ? "bg-slate-800 rotate-90 shadow-none border border-white/10" : "bg-gradient-to-tr from-emerald-400 to-teal-500 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]"
+        }`}
         onClick={() => setOpen((current) => !current)}
         aria-label={open ? "Close AI tutor" : "Open AI tutor"}
       >
-        {open ? "Close tutor" : "Open tutor"}
+        {open ? <X className="h-6 w-6 lg:h-7 lg:w-7" /> : <Bot className="h-7 w-7 lg:h-8 lg:w-8" />}
       </button>
 
       {open ? (
@@ -133,11 +137,25 @@ export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guide
             }
           }}
         >
-          <div className="border-b border-[var(--color-border-subtle)] p-4">
-            <div className="text-sm font-semibold">CLI Academy Tutor</div>
-            <div className="mt-1 text-sm text-[var(--color-fg-muted)]">
-              {lessonTitle ? `Lesson context: ${lessonTitle}` : "Ask me anything"}
+          <div className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-4 flex justify-between items-center rounded-t-[inherit]">
+            <div>
+              <div className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-emerald-400 inline-flex items-center gap-1.5">
+                 <Sparkles className="h-4 w-4 text-emerald-400" /> AI Tutor
+              </div>
+              <div className="mt-1 text-[11px] text-[var(--color-fg-muted)] tracking-wide uppercase font-semibold">
+                {lessonTitle ? `Context: ${lessonTitle}` : "Ask me anything"}
+              </div>
             </div>
+            
+            <select 
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              className="text-xs border border-teal-500/30 rounded-md px-2 py-1.5 bg-teal-500/10 backdrop-blur-md text-white font-medium focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer hover:bg-teal-500/20 transition-colors shadow-[0_0_10px_rgba(45,212,191,0.15)]"
+            >
+               <option value="guided" className="bg-[#0A0D14] text-white">Guided Learning</option>
+               <option value="hint" className="bg-[#0A0D14] text-white">Hint Based</option>
+               <option value="autonomous" className="bg-[#0A0D14] text-white">Autonomous Mode</option>
+            </select>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">

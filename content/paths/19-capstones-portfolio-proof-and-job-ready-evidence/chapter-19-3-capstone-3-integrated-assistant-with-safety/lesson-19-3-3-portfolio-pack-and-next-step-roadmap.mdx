@@ -10,10 +10,57 @@ verifyType: "terminal_output"
 # Portfolio pack and next-step roadmap
 
 ## Objective
-*TBD*
+Welcome to your final capstone! Today, we'll bring together all your hard work into a "portfolio pack" that showcases not just what you can do, but *how you think*. You'll assemble your three case studies and craft a learning roadmap, demonstrating your judgment and growth. This is about empowering you to present your skills confidently.
 
 ## Walkthrough
-*TBD*
+
+Here’s how we'll safely create your portfolio pack:
+
+1.  **Navigate to a Safe Starting Point:**
+    Let's start from your home directory, a familiar and safe place.
+    ```bash
+    cd ~
+    ```
+    *This command simply changes your current location to your home directory (`~`). It's safe because it doesn't modify any files or folders.*
+
+2.  **Create Your Portfolio Folder:**
+    Now, let's make a new, dedicated folder to hold your final portfolio.
+    ```bash
+    mkdir final_portfolio
+    ```
+    *`mkdir` (make directory) creates a new empty folder. It's safe because it only adds a new structure without touching existing files. If a folder with this exact name already exists, it will let you know without causing harm.*
+
+3.  **Enter Your New Portfolio:**
+    Move into the folder you just created.
+    ```bash
+    cd final_portfolio
+    ```
+    *This is another safe navigation command, simply changing your working directory.*
+
+4.  **Gather Your Case Studies:**
+    We'll copy each of your completed case study folders into your `final_portfolio`. This keeps your original case study folders untouched and safe.
+    ```bash
+    cp -r ~/case_study_1 .
+    cp -r ~/case_study_2 .
+    cp -r ~/case_study_3 .
+    ```
+    *`cp` (copy) creates duplicates of files or directories. The `-r` flag tells `cp` to copy directories recursively (including all their contents). `~` refers to your home directory where your original case studies are, and `.` refers to your current directory (`final_portfolio`). This is safe because you are only *copying* files; your original project folders remain intact.*
+
+5.  **Create Your Learning Roadmap File:**
+    Let's create an empty file where you can write your reflections and future plans.
+    ```bash
+    touch learning_roadmap.md
+    ```
+    *`touch` creates a new, empty file if it doesn't exist, or updates its modification timestamp if it does. It's safe and won't overwrite any existing content.*
+
+6.  **Verify Your Portfolio Pack:**
+    Take a quick look to ensure everything is in place.
+    ```bash
+    ls -F
+    ```
+    *`ls -F` lists the contents of your current directory and adds indicators (`/` for directories, `*` for executables) to help you see file types. It's a read-only command, perfectly safe for viewing.*
+
+You now have a `final_portfolio` directory containing your three case studies and a `learning_roadmap.md` file. Edit `learning_roadmap.md` using your favorite text editor to discuss your thought process, challenges, solutions, and next steps in your CLI journey – this is where you show your judgment!
 
 <VerificationBlock 
   deliverable="A final portfolio pack with all three case studies and a learning roadmap."

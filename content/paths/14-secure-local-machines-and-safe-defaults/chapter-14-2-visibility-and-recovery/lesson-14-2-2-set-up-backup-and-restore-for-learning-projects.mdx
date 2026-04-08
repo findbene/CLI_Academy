@@ -10,10 +10,58 @@ verifyType: "terminal_output"
 # Set up backup and restore for learning projects
 
 ## Objective
-*TBD*
+
+Welcome to a crucial lesson in your CLI journey! Today, you'll learn to set up a basic backup and restore process for your learning projects. This isn't just about recovering files; it's about building confidence and a safety net as you explore new commands. You'll create a simple backup routine, perform a backup, and then safely test restoring your files. This skill will empower you to experiment without fear of permanent data loss in your practice environment.
 
 ## Walkthrough
-*TBD*
+
+1.  **Create a Dummy Project:**
+    Let's make a safe space to practice.
+    ```bash
+    mkdir my_first_project_backup_test
+    cd my_first_project_backup_test
+    touch file1.txt file2.txt notes.md
+    echo "Hello CLI Academy!" > file1.txt
+    ```
+    *   `mkdir` (make directory) creates a new folder. It's safe and won't affect existing files.
+    *   `cd` (change directory) moves you into that folder. It's safe.
+    *   `touch` creates empty files. It's safe and won't overwrite unless a file with that name already exists.
+    *   `echo` writes text, and `>` redirects it into `file1.txt`. It's safe within your new file.
+
+2.  **Design and Perform Your First Backup:**
+    Now, let's back it up to a dedicated "backups" folder.
+    ```bash
+    cd .. # Go up one directory
+    mkdir my_project_backups
+    TIMESTAMP=$(date +"%Y%m%d_%H%M%S") # Create a unique timestamp
+    cp -r my_first_project_backup_test my_project_backups/backup_$TIMESTAMP
+    ```
+    *   `cd ..` moves you out of the project folder. Safe.
+    *   `mkdir my_project_backups` creates a new folder for all your backups. Safe.
+    *   `TIMESTAMP=$(date +"%Y%m%d_%H%M%S")` captures the current date and time. It's a variable assignment and is safe.
+    *   `cp -r` (copy recursively) copies your entire project folder and its contents to the backups folder, creating a new, timestamped backup. `cp` is safe because it *copies*, leaving your original files untouched.
+
+3.  **Simulate a "Loss" and Test Restore:**
+    **CAUTION:** The `rm -rf` command is powerful and deletes permanently. We're using it *only* on our dummy project, which we *know* we have backed up. **Never use `rm -rf` casually on files you care about!**
+    ```bash
+    rm -rf my_first_project_backup_test # DANGEROUS, but safe here as we have a backup and it's a dummy project!
+    ls my_first_project_backup_test # This should show "No such file or directory"
+    
+    # Now, restore from your backup
+    LATEST_BACKUP=$(ls -td my_project_backups/backup_* | head -1) # Find your most recent backup
+    cp -r $LATEST_BACKUP my_first_project_backup_test
+    
+    cd my_first_project_backup_test
+    ls
+    cat file1.txt
+    ```
+    *   `rm -rf` (remove, force, recursively) deletes the directory and all its contents without confirmation. We are using it *safely* on our disposable `my_first_project_backup_test` folder only because we just made a backup.
+    *   `ls` lists files/directories. Safe.
+    *   `LATEST_BACKUP=$(...)` finds the most recent backup folder. Safe.
+    *   `cp -r $LATEST_BACKUP my_first_project_backup_test` copies the entire backup back to where your original project was. Safe.
+    *   `cat` displays file content. Safe.
+
+You've successfully backed up your work and performed a restore! This fundamental skill will protect your projects as you learn and grow.
 
 <VerificationBlock 
   deliverable="A backup routine and restore test."

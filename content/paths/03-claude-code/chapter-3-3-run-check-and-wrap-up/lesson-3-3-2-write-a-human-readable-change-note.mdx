@@ -10,10 +10,47 @@ verifyType: "terminal_output"
 # Write a human-readable change note
 
 ## Objective
-*TBD*
+Sometimes, when you've made changes to code or files, the raw technical details can be overwhelming. Your goal in this lesson is to translate those technical details into a clear, concise, and human-friendly explanation that anyone on your team can understand. You'll use your terminal to examine your changes and then write a plain English summary in a new file called `change-summary.md`.
 
 ## Walkthrough
-*TBD*
+
+1.  **See your changes with `git diff`:**
+    Let's first look at the exact differences you've made. Type the following command:
+    ```bash
+    git diff
+    ```
+    Press `Enter`.
+    *Why this is safe:* `git diff` is a read-only command. It simply shows you the differences between your current work and the last committed version. It doesn't change any files or your project history, so it's perfectly safe to run anytime!
+
+    You'll see lines starting with `+` (added) and `-` (removed), along with the file names affected. Don't worry if it looks like a lot of symbols—we're just using it as input.
+
+2.  **Interpret the output for a human:**
+    Scan through the `git diff` output. Focus on:
+    *   **Which files changed?** Look for lines starting with `diff --git a/... b/...`.
+    *   **What was added or removed?** Read the lines with `+` and `-` to get a general sense of *what* you changed.
+    *   **What was the overall intent of your changes?** Why did you make these specific modifications?
+
+3.  **Create your change summary file:**
+    Now, let's create a new file where you'll write your summary.
+    ```bash
+    nano change-summary.md
+    ```
+    Press `Enter`. This command opens a simple text editor right in your terminal, creating `change-summary.md` if it doesn't exist.
+
+4.  **Write your human-readable summary:**
+    Inside the `nano` editor, write a brief explanation (2-3 sentences) of your changes. Imagine you're explaining it to a teammate who isn't familiar with the code. Focus on:
+    *   What problem did you solve or what new feature did you add?
+    *   Which main files were affected?
+    *   Any key things a teammate should know?
+
+    For example: "Updated the main configuration file to reflect new API endpoints. Also removed a deprecated function from `utils.py` that was no longer in use, improving overall code cleanliness."
+
+5.  **Save and exit `nano`:**
+    *   Press `Ctrl + O` (that's the letter O, not zero) to "Write Out" (save).
+    *   Press `Enter` to confirm the filename.
+    *   Press `Ctrl + X` to exit `nano`.
+
+You now have a `change-summary.md` file ready to share!
 
 <VerificationBlock 
   deliverable="A `change-summary.md` the learner could show a teammate."
