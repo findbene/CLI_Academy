@@ -30,7 +30,9 @@ export function GenerativeArtScene() {
       uniforms: {
         time: { value: 0 },
         pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
-        color: { value: new THREE.Color("#2dd4bf") }, // Teal-400 to match the CLI Academy brand!
+        color1: { value: new THREE.Color("#9333ea") }, // Purple
+        color2: { value: new THREE.Color("#3b82f6") }, // Blue
+        color3: { value: new THREE.Color("#e11d48") }, // Pink
       },
       vertexShader: `
                 uniform float time;
@@ -93,8 +95,11 @@ export function GenerativeArtScene() {
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
                 }`,
       fragmentShader: `
-                uniform vec3 color;
+                uniform vec3 color1;
+                uniform vec3 color2;
+                uniform vec3 color3;
                 uniform vec3 pointLightPosition;
+                uniform float time;
                 varying vec3 vNormal;
                 varying vec3 vPosition;
                 
@@ -103,11 +108,19 @@ export function GenerativeArtScene() {
                     vec3 lightDir = normalize(pointLightPosition - vPosition);
                     float diffuse = max(dot(normal, lightDir), 0.0);
                     
-                    // Fresnel effect for the glow
+                    // Fresnel effect for the premium glow
                     float fresnel = 1.0 - dot(normal, vec3(0.0, 0.0, 1.0));
                     fresnel = pow(fresnel, 2.0);
                     
-                    vec3 finalColor = color * diffuse + color * fresnel * 0.5;
+                    // Mix colors based on position and time perfectly to create a luxurious gradient
+                    float mix1 = sin(vPosition.x * 2.5 + time * 0.5) * 0.5 + 0.5;
+                    float mix2 = cos(vPosition.y * 2.5 + time * 0.5) * 0.5 + 0.5;
+
+                    vec3 baseColor = mix(color1, color2, mix1);
+                    baseColor = mix(baseColor, color3, mix2);
+                    
+                    // Boost the fresnel multiplier so the edges glow vibrantly
+                    vec3 finalColor = baseColor * diffuse + baseColor * fresnel * 0.8;
                     
                     gl_FragColor = vec4(finalColor, 1.0);
                 }`,

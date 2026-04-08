@@ -147,15 +147,21 @@ export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guide
               </div>
             </div>
             
-            <select 
-              value={mode}
-              onChange={(e) => setMode(e.target.value)}
-              className="text-xs border border-teal-500/30 rounded-md px-2 py-1.5 bg-teal-500/10 backdrop-blur-md text-white font-medium focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer hover:bg-teal-500/20 transition-colors shadow-[0_0_10px_rgba(45,212,191,0.15)]"
-            >
-               <option value="guided" className="bg-[#0A0D14] text-white">Guided Learning</option>
-               <option value="hint" className="bg-[#0A0D14] text-white">Hint Based</option>
-               <option value="autonomous" className="bg-[#0A0D14] text-white">Autonomous Mode</option>
-            </select>
+            <div className="flex flex-col items-end gap-1">
+              <label htmlFor="tutor-mode-select" className="text-[10px] uppercase tracking-wider text-[var(--color-fg-muted)] font-semibold">
+                Tutor Mode
+              </label>
+              <select 
+                id="tutor-mode-select"
+                value={mode}
+                onChange={(e) => setMode(e.target.value)}
+                className="text-xs border border-[var(--color-border-subtle)] rounded-md px-2 py-1.5 bg-[var(--color-bg-lesson)] text-[var(--color-fg-default)] font-medium focus:outline-none focus:ring-1 focus:ring-[var(--color-accent-primary)] cursor-pointer shadow-sm hover:border-[var(--color-border-strong)] transition-colors"
+              >
+                 <option value="guided">Guided Learning</option>
+                 <option value="hint">Hint Based</option>
+                 <option value="autonomous">Autonomous Mode</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">

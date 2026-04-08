@@ -60,7 +60,7 @@ export async function getServerViewer(options?: { requireAuth?: boolean }): Prom
       onboarding_completed: Boolean(profile?.onboarding_completed),
       stripe_customer_id: profile?.stripe_customer_id ?? null,
       subscription_status: profile?.subscription_status ?? null,
-      tier: profile?.tier === "pro" ? "pro" : "free",
+      tier: profile?.tier === "pro" || (user.email && process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) ? "pro" : "free",
     },
     supabaseConfigured: true,
     supabaseContext,

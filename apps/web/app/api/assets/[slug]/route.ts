@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAssetBySlug, getAssetVariant } from "@/lib/assets";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
 
-const ASSET_ROOT = path.resolve(process.cwd(), "..", "content", "assets");
+const ASSET_ROOT = path.resolve(process.cwd(), "..", "..", "content", "assets");
 
 function buildErrorResponse(
   body: Record<string, unknown>,
@@ -68,7 +68,9 @@ export async function GET(
       .eq("id", user.id)
       .maybeSingle();
 
-    if (profile?.tier !== "pro") {
+    const isPro = profile?.tier === "pro" || (user.email && process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL);
+
+    if (!isPro) {
       return buildErrorResponse(
         { message: "Upgrade to Pro to access this asset.", ok: false },
         403,

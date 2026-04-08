@@ -35,7 +35,7 @@ npm run build
 
 ## Auth Setup
 
-The frontend runs from this nested `app/` directory. Put public and server-side frontend env vars in `app/.env.local`, not in the repo root.
+The frontend runs from `apps/web`. Put public and server-side frontend env vars in `apps/web/.env.local`, not in the repo root.
 
 Minimum auth vars:
 

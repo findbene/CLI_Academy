@@ -14,7 +14,9 @@
 - `apps/web/` and `apps/api/` are the canonical runtime locations.
 - `apps/` holds deployable software.
 - `content/` holds the curriculum source of truth.
+- `content/lounge_published/` acts as the separate, fast-paced stream for Swarm generation.
 - `.claude/` holds agent control-plane materials.
+- `.agents/` holds the strictly enforced Antigravity workflows and skills for Swarm Automation.
 - historical material belongs in `docs/archive/`.
 - `README.md`, `PROGRESS.md`, and `SESSION_HANDOFF.md` should describe the live repo state, not an outdated migration plan.
 
@@ -22,5 +24,5 @@
 
 - do not reintroduce overlapping root folders for the same concern
 - do not scatter memory notes across hidden directories
-- do not mix backup/design/history material with active product code
+- do not break frontend Light/Dark mode contrasts by hardcoding tailwind text/bg colors (always use `var(--color-bg-panel)`, etc.)
 - do not let structural migrations land without also updating root status docs and handoff notes

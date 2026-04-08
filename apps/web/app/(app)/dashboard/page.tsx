@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { getPublishedCatalogPaths, type CatalogPath } from "@/lib/catalog";
 import { getServerViewer } from "@/lib/viewer";
+import { FreeTierShowcase } from "@/components/marketing/FreeTierShowcase";
 
 function getRecommendedPaths(input: {
   catalogPaths: CatalogPath[];
@@ -187,16 +188,23 @@ export default async function DashboardPage() {
   const environment =
     typeof answers.target_env === "string" ? answers.target_env.replaceAll("-", " ") : "local laptop";
 
+  const isFreeTier = viewer.profile.tier === "free";
+
   return (
     <main className="page-shell">
       <div className="grid gap-6">
-        <section className="panel p-6">
-          <div className="eyebrow">Dashboard</div>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight">Welcome back, {viewer.user.email ?? "learner"}</h1>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">
-            Your progress, enrollments, and tutor usage are tracked here. Pick up where you left off or explore a new path.
-          </p>
-        </section>
+        
+        {isFreeTier ? (
+          <FreeTierShowcase userName={viewer.user.email ?? "Learner"} />
+        ) : (
+          <section className="panel p-6">
+            <div className="eyebrow">Dashboard</div>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight">Welcome back, {viewer.user.email ?? "learner"}</h1>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">
+              Your progress, enrollments, and tutor usage are tracked here. Pick up where you left off or explore a new path.
+            </p>
+          </section>
+        )}
 
         <section className="grid gap-5 md:grid-cols-3">
           <article className="panel panel-lift group p-5">

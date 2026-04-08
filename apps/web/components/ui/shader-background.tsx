@@ -31,7 +31,7 @@ const ShaderBackground = () => {
     const float scale = 5.0;
     
     // CLI_Academy Brand Colors
-    const vec4 lineColor = vec4(0.0, 0.8, 0.8, 1.0);     // Cyber Teal Accent
+    // (Line color is now computed dynamically in the loop)
     const vec4 bgColor1 = vec4(0.04, 0.05, 0.08, 1.0);  // Very dark slate
     const vec4 bgColor2 = vec4(0.02, 0.03, 0.05, 1.0);  // Deepest Navy
     
@@ -101,7 +101,18 @@ const ShaderBackground = () => {
         float circle = drawCircle(circlePosition, 0.01, space) * 4.0;
 
         line = line + circle;
-        lines += line * lineColor * rand;
+
+        // Dynamic Premium Multi-chromatic Gradient (Mathematically pure for WebGL compilation)
+        float tColor = normalizedLineIndex - iTime * 0.2;
+        vec4 col1 = vec4(0.576, 0.200, 0.917, 1.0); // Purple
+        vec4 col2 = vec4(0.231, 0.510, 0.964, 1.0); // Blue
+        vec4 col3 = vec4(0.882, 0.113, 0.282, 1.0); // Pink
+        
+        // Blend colors smoothly using continuous trigonometric functions
+        vec4 dynamicColor = mix(col1, col2, sin(tColor * 6.28) * 0.5 + 0.5);
+        dynamicColor = mix(dynamicColor, col3, cos(tColor * 6.28) * 0.5 + 0.5);
+
+        lines += line * dynamicColor * (rand + 0.4); // Added brightness booster for clarity
       }
 
       fragColor = mix(bgColor1, bgColor2, uv.x);

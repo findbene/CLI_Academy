@@ -21,7 +21,7 @@ Checks performed
 
 Usage
 -----
-    python scripts/validate_content.py
+    python tooling/scripts/validate_content.py
 
 Exits 0 on success (warnings do not fail), 1 when errors are found.
 """

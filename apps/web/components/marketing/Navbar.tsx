@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LogoMark } from "@/components/ui/LogoMark";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface NavbarProps {
   signedIn?: boolean;
@@ -13,6 +14,7 @@ interface NavbarProps {
 
 export function Navbar({ signedIn = false }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
 
@@ -28,6 +30,11 @@ export function Navbar({ signedIn = false }: NavbarProps) {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
+  async function handleSignOut() {
+    await fetch("/api/auth/signout", { method: "POST" });
+    window.location.href = "/";
+  }
+
   const links = signedIn
     ? [
         { href: "/dashboard", label: "Dashboard" },
@@ -36,7 +43,7 @@ export function Navbar({ signedIn = false }: NavbarProps) {
         { href: "/downloads", label: "Downloads" },
         { href: "/trust", label: "Trust" },
         { href: "/pricing", label: "Pricing" },
-        { href: "/login", label: "Log in" },
+        { label: "Sign out", isAction: true },
       ]
     : [
         { href: "/paths", label: "Paths" },
@@ -60,12 +67,24 @@ export function Navbar({ signedIn = false }: NavbarProps) {
         {/* Desktop nav */}
         <nav className="hidden items-center gap-3 md:flex">
           {links.map((link) => {
-            const active = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/"));
+            if ("isAction" in link && link.label === "Sign out") {
+              return (
+                <button
+                  key={link.label}
+                  onClick={handleSignOut}
+                  className="rounded-full px-4 py-2 text-sm transition text-[var(--color-fg-muted)] hover:bg-white/5 hover:text-red-400 font-medium"
+                >
+                  {link.label}
+                </button>
+              );
+            }
+
+            const active = link.href && (pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/")));
 
             return (
               <Link
-                key={link.href}
-                href={link.href}
+                key={link.label}
+                href={link.href!}
                 className={`rounded-full px-4 py-2 text-sm transition ${
                   active
                     ? "bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-default)]"
@@ -109,12 +128,27 @@ export function Navbar({ signedIn = false }: NavbarProps) {
           <nav className="fixed inset-x-0 top-[73px] z-50 max-h-[calc(100dvh-73px)] overflow-y-auto border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-page)] px-6 pb-6 pt-4 shadow-lg md:hidden">
             <div className="grid gap-1">
               {links.map((link) => {
-                const active = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/"));
+                if ("isAction" in link && link.label === "Sign out") {
+                  return (
+                    <button
+                      key={link.label}
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleSignOut();
+                      }}
+                      className="rounded-xl px-4 py-3 text-left text-base font-medium transition text-[var(--color-fg-muted)] hover:bg-white/5 hover:text-red-400"
+                    >
+                      {link.label}
+                    </button>
+                  );
+                }
+
+                const active = link.href && (pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/")));
 
                 return (
                   <Link
-                    key={link.href}
-                    href={link.href}
+                    key={link.label}
+                    href={link.href!}
                     className={`rounded-xl px-4 py-3 text-base transition ${
                       active
                         ? "bg-[var(--color-bg-panel-subtle)] font-medium text-[var(--color-fg-default)]"

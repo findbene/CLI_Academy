@@ -328,8 +328,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
              </h1>
              
              <p className="text-3xl md:text-[2.75rem] font-bold tracking-tight text-white leading-[1.15] drop-shadow-xl">
-                Code freely. <br className="hidden md:block"/>
-                <span className="font-extralight italic text-transparent bg-clip-text bg-gradient-to-r from-teal-200 to-emerald-400 drop-shadow-sm">Never fear the terminal.</span>
+                Build with <span className="font-extralight italic text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 drop-shadow-sm">confidence.</span>
              </p>
              
              <p className="mt-6 max-w-md mx-auto text-[15px] leading-relaxed text-white/50 font-light mix-blend-plus-lighter">

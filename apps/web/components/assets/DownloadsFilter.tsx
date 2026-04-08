@@ -63,7 +63,10 @@ export function DownloadsFilter({ downloads }: DownloadsFilterProps) {
                 key={f.value}
                 type="button"
                 aria-pressed={tier === f.value}
-                onClick={() => setTier(f.value)}
+                onClick={() => {
+                  setTier(f.value);
+                  setCategory("all"); // Prevent overlapping filter trap
+                }}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   tier === f.value
                     ? "bg-[var(--color-accent-primary)] text-white"
@@ -83,7 +86,10 @@ export function DownloadsFilter({ downloads }: DownloadsFilterProps) {
               key={f.value}
               type="button"
               aria-pressed={category === f.value}
-              onClick={() => setCategory(f.value)}
+              onClick={() => {
+                setCategory(f.value);
+                setTier("all"); // Prevent overlapping filter trap
+              }}
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                 category === f.value
                   ? "bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-default)] ring-1 ring-[var(--color-border-subtle)]"

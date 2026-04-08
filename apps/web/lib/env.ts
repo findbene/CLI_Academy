@@ -33,7 +33,7 @@ export function getPublicSupabaseConfigMessage() {
     return null;
   }
 
-  return `Authentication is unavailable until ${missing.join(" and ")} are set in app/.env.local and the Next.js server is restarted.`;
+  return `Authentication is unavailable until ${missing.join(" and ")} are set in apps/web/.env.local and the Next.js server is restarted.`;
 }
 
 export function getServiceRoleKey() {

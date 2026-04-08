@@ -2,20 +2,21 @@
 
 ## Last known objective
 
-Finish the repo normalization follow-through so the new `apps/` layout is fully reflected in docs, handoff state, and deployment-facing references.
+Launch the "Terminal Tavern" Agent Lounge and the overarching Antigravity "Content Swarm Pipeline" to generate relaxing, beginner-friendly infotainment articles. Fix frontend styling bugs on the Tutor dropdown and Aurora background.
 
 ## What is now true
 
-- Repo normalization is complete: runtime code lives under `apps/web` and `apps/api`
-- Root operating docs are the canonical state trackers for the repo
-- Archived communication and design backup material no longer sits beside active runtime code
-- The current remaining work is verification and extraction, not another top-level restructure
+- The multi-agent swarm is active in `.agents/`, configured with specific Tone Skills and Pipeline Workflows.
+- The `apps/web/content/lounge_published/` directory strictly holds auto-generated MDX. 
+- "The Terminal Tavern" `/lounge` is beautifully integrated into the main marketing platform with distinct UI cards.
+- The Aurora fragment shader on the homepage seamlessly cycles a luxury Purple -> Blue -> Pink sequence using continuous GLSL mathematics.
+- The Floating Tutor UI uses strict CSS theme variables (`--color-fg-default`, etc.) to prevent invisibility in Light Mode. 
 
 ## Continue from here
 
-1. Verify GitHub Actions, deployment config, and environment-variable references for any stale pre-migration paths.
-2. Address P1 tasks in `TASKS.md`, starting with package boundaries and reusable lesson/tutor extraction.
-3. Decide how `content/paths_old/` should be handled: retain temporarily, archive, or migrate.
+1. Direct the Swarm via the `run_lounge_pipeline.md` or `scout_daily.md` workflows to auto-generate more articles.
+2. Wait for the `archive_weekly.md` cron logic (or manual execution) to cycle old content out. 
+3. Verify GitHub Actions, deployment config, and environment-variable references for any stale pre-migration paths.
 
 ## Risks to watch
 

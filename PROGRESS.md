@@ -11,10 +11,12 @@ Post-normalization verification and documentation alignment.
 - Moved the backend from `backend/` to `apps/api/`
 - Renamed `infrastructure/` to `infra/`
 - Moved scripts into `tooling/scripts/`
-- Consolidated active agent-control material into `.claude/`
-- Archived root communication and design-backup material into `docs/archive/`
-- Re-established root operating docs as the canonical control surface
-- Updated root status docs to reflect the normalized repo instead of the earlier migration plan
+- Consolidating active agent-control material into `.claude/`
+- Architecting the complete `Content Swarm Pipeline` multi-agent automation using `.agents/` workflows
+- Launching "The Terminal Tavern" (Agent Lounge) via a dedicated Next.js `/lounge` route with isolated MDX parsing
+- Resolving visibility and contrast bugs on the Floating Tutor Mode dropdown
+- Upgrading the homepage WebGL aurora background to a mathematical, multi-chromatic (Purple/Blue/Pink) luxury gradient
+- Stabilizing the Auth flow with a server-side logout route that forcibly clears caching
 
 ## In progress
 

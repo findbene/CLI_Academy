@@ -55,16 +55,15 @@ export default async function HomePage() {
             <Zap className="h-3.5 w-3.5 text-teal-400" />
             Beginner-first tech education
           </div>
-          <h1>
+          <h1 className="text-white [text-shadow:_0_0_30px_rgba(255,255,255,0.4)]">
             Master Claude Code.
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-500 to-amber-500 drop-shadow-[0_0_20px_rgba(217,70,239,0.5)]">Build with confidence.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 drop-shadow-[0_0_25px_rgba(45,212,191,0.8)]">Build with confidence.</span>
           </h1>
-          <p>
-            The safest, most beginner-friendly way to go from zero to productive with Claude Code,
-            secure agent workflows, and AI-powered development tools.
+          <p className="font-light text-[1.15rem] tracking-wide text-[rgba(255,255,255,0.95)] mt-2 [text-shadow:_0_0_15px_rgba(255,255,255,0.3)]">
+            Stop typing syntax. Start orchestrating autonomous AI engineers to build your future.
           </p>
-          <div className="hero-actions">
+          <div className="hero-actions flex-wrap gap-4 mt-8">
             <Link
               href={viewer.user ? "/dashboard" : "/signup"}
               className="hero-cta-primary"
@@ -72,7 +71,10 @@ export default async function HomePage() {
               {viewer.user ? "Open dashboard" : "Start learning free"}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/paths" className="hero-cta-secondary">
+            <Link href="/lounge" className="hero-cta-secondary border-fuchsia-500/50 text-fuchsia-100 hover:bg-fuchsia-500/10 hover:shadow-[0_0_20px_rgba(217,70,239,0.2)]">
+              ☕ The Terminal Tavern
+            </Link>
+            <Link href="/paths" className="hero-cta-secondary hidden sm:flex">
               <BookOpen className="h-4 w-4" />
               Browse all paths
             </Link>
