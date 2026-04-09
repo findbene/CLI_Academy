@@ -17,9 +17,7 @@ export const metadata: Metadata = {
 
 import { getServerViewer } from "@/lib/viewer";
 import { ALL_RESOURCES, RESOURCE_CATEGORIES } from "@/lib/data/resources";
-import { Card } from "@/components/ui/card";
-import { Spotlight } from "@/components/ui/spotlight";
-import { SplineScene } from "@/components/ui/splite";
+import ShaderBackground from "@/components/ui/shader-background";
 import {
   BookOpen,
   MessageCircle,
@@ -38,9 +36,6 @@ const categoryIcons: Record<string, React.ElementType> = {
   Sparkles, Plug, Bot, Puzzle, Terminal,
 };
 
-const HOME_HERO_SPLINE_SCENE =
-  "https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode";
-
 export default async function HomePage() {
   const [catalogPaths, viewer] = await Promise.all([getPublishedCatalogPaths(), getServerViewer()]);
   const featuredPaths = catalogPaths.slice(0, 6);
@@ -50,105 +45,51 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ── Spline Hero Section ─────────────────────────── */}
-      <section className="relative overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(22,176,168,0.2),transparent_30%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.14),transparent_24%),linear-gradient(180deg,#020617_0%,#07111f_48%,transparent_100%)]"
-          aria-hidden="true"
-        />
-        <div className="page-shell relative pt-16 md:pt-20 lg:pt-24">
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
-            <div className="max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-400/50 bg-teal-400/10 px-4 py-1.5 text-sm text-[rgba(255,255,255,0.85)] shadow-[0_0_20px_rgba(45,212,191,0.25)]">
-                <Zap className="h-3.5 w-3.5 text-teal-400" />
-                No coding experience required
-              </div>
-              <h1 className="text-4xl font-bold tracking-tight text-white [text-shadow:_0_0_30px_rgba(255,255,255,0.16)] sm:text-5xl lg:text-6xl">
-                Zero To Mastery:
-                <br />
-                <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(45,212,191,0.45)]">
-                  The Agentic Era.
-                </span>
-              </h1>
-              <p className="mt-5 max-w-xl text-lg font-light leading-8 tracking-wide text-[rgba(255,255,255,0.84)]">
-                Master autonomous agents, automate the mundane, and engineer the future.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link
-                  href={viewer.user ? "/dashboard" : "/signup"}
-                  className="hero-cta-primary"
-                >
-                  {viewer.user ? "Open dashboard" : "Start learning free"}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link href="/lounge" className="hero-cta-secondary border-fuchsia-500/50 text-fuchsia-100 hover:bg-fuchsia-500/10 hover:shadow-[0_0_20px_rgba(217,70,239,0.2)]">
-                  📰 The Agentic Era
-                </Link>
-                <Link href="/paths" className="hero-cta-secondary hidden sm:flex">
-                  <BookOpen className="h-4 w-4" />
-                  Browse all paths
-                </Link>
-              </div>
-              <div className="hero-stats justify-start md:gap-8">
-                <div className="hero-stat text-left">
-                  <div className="hero-stat-value">{totalPaths}</div>
-                  <div className="hero-stat-label">Learning Paths</div>
-                </div>
-                <div className="hero-stat text-left">
-                  <div className="hero-stat-value">{totalLessons}+</div>
-                  <div className="hero-stat-label">Lessons</div>
-                </div>
-                <div className="hero-stat text-left">
-                  <div className="hero-stat-value">{totalResources}</div>
-                  <div className="hero-stat-label">Resources</div>
-                </div>
-              </div>
+      {/* ── Aurora Hero Section ─────────────────────────── */}
+      <section className="hero-aurora-wrapper">
+        <ShaderBackground />
+        <div className="hero-content">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-400/50 bg-teal-400/10 shadow-[0_0_20px_rgba(45,212,191,0.4)] px-4 py-1.5 text-sm text-[rgba(255,255,255,0.85)]">
+            <Zap className="h-3.5 w-3.5 text-teal-400" />
+            No coding experience required
+          </div>
+          <h1 className="text-white [text-shadow:_0_0_30px_rgba(255,255,255,0.4)]">
+            Zero To Mastery:
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 drop-shadow-[0_0_25px_rgba(45,212,191,0.8)]">The Agentic Era.</span>
+          </h1>
+          <p className="font-light text-[1.15rem] tracking-wide text-[rgba(255,255,255,0.95)] mt-2 [text-shadow:_0_0_15px_rgba(255,255,255,0.3)]">
+            Master autonomous agents, automate the mundane, and engineer the future.
+          </p>
+          <div className="hero-actions flex-wrap gap-4 mt-8">
+            <Link
+              href={viewer.user ? "/dashboard" : "/signup"}
+              className="hero-cta-primary"
+            >
+              {viewer.user ? "Open dashboard" : "Start learning free"}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href="/lounge" className="hero-cta-secondary border-fuchsia-500/50 text-fuchsia-100 hover:bg-fuchsia-500/10 hover:shadow-[0_0_20px_rgba(217,70,239,0.2)]">
+              📰 The Agentic Era
+            </Link>
+            <Link href="/paths" className="hero-cta-secondary hidden sm:flex">
+              <BookOpen className="h-4 w-4" />
+              Browse all paths
+            </Link>
+          </div>
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <div className="hero-stat-value">{totalPaths}</div>
+              <div className="hero-stat-label">Learning Paths</div>
             </div>
-
-            <Card className="relative overflow-hidden border border-white/10 bg-[#020617]/95 shadow-[0_28px_120px_rgba(2,6,23,0.65)]">
-              <Spotlight
-                className="-top-32 left-6 md:left-20 md:-top-12"
-                fill="#67e8f9"
-              />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_38%)]" />
-              <div className="relative flex min-h-[460px] flex-col lg:flex-row">
-                <div className="flex flex-1 flex-col justify-center p-8 sm:p-10">
-                  <div className="inline-flex w-max items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Interactive 3D
-                  </div>
-                  <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                    See the workflow before you run it.
-                  </h2>
-                  <p className="mt-4 max-w-lg text-sm leading-7 text-slate-300 sm:text-base">
-                    Bring the stack into view with guided paths, practical guardrails, and a calmer
-                    way to learn Claude Code and agent workflows on a real machine.
-                  </p>
-                  <div className="mt-8 flex flex-wrap gap-3 text-sm text-slate-200">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                      <Terminal className="h-4 w-4 text-cyan-300" />
-                      Real commands
-                    </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                      <Bot className="h-4 w-4 text-teal-300" />
-                      Agent patterns
-                    </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                      <Sparkles className="h-4 w-4 text-emerald-300" />
-                      Beginner-safe pacing
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative flex-1 min-h-[280px]">
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#020617] to-transparent lg:hidden" />
-                  <SplineScene
-                    scene={HOME_HERO_SPLINE_SCENE}
-                    className="h-full w-full"
-                  />
-                </div>
-              </div>
-            </Card>
+            <div className="hero-stat">
+              <div className="hero-stat-value">{totalLessons}+</div>
+              <div className="hero-stat-label">Lessons</div>
+            </div>
+            <div className="hero-stat">
+              <div className="hero-stat-value">{totalResources}</div>
+              <div className="hero-stat-label">Resources</div>
+            </div>
           </div>
         </div>
       </section>

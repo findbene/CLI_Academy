@@ -29,3 +29,15 @@
 **Decision:** Treat `README.md`, `PROGRESS.md`, and `SESSION_HANDOFF.md` as canonical descriptions of the current repository state, not as aspirational migration notes.
 
 **Why:** After structural moves, stale root docs create bad assumptions for both humans and agents and increase the risk of edits landing against the wrong paths.
+
+## ADR-006 — Hosted learner progress must self-heal from the live curriculum catalog
+
+**Decision:** Resolve hosted lesson progress against the live curriculum metadata and MDX lesson catalog by syncing `paths`, `modules`, and `lessons` into Supabase on demand instead of trusting the original seeded rows.
+
+**Why:** The published learner surface now moves faster than the legacy seed data, and stale hosted lesson rows caused authenticated progress saves to fail against otherwise valid published lessons.
+
+## ADR-007 — Browser-local learner progress is a scoped fallback, not a shared identity layer
+
+**Decision:** Keep browser-local lesson progress as a resilience layer, but scope it per authenticated user and only merge legacy anonymous entries when no competing signed-in scopes exist.
+
+**Why:** Local progress can later be reconciled into hosted rows. Treating that state as browser-global risks cross-account leakage and incorrect backfill on shared machines.

@@ -36,6 +36,9 @@ export async function createSupabaseServerClient(): Promise<SupabaseServerContex
         }
       },
     },
+    db: {
+      schema: "public",
+    },
   });
 
   return { responseHeaders, supabase };

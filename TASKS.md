@@ -7,14 +7,18 @@
 - [x] Replace legacy capstone and productivity lesson packs in Paths 18 and 19 with real bounded workflow and portfolio artifacts.
 - [x] Replace the older chapter trees across Paths 04-09 with deeper practical lessons for repo navigation, debugging, Git/GitHub, surface switching, Cowork, and research workflows.
 - [x] Add learner-flow support in the web app for onboarding start routes, dashboard resume targets, section progress tracking, and server-backed lesson verification.
+- [x] Repair hosted lesson progress so signed-in saves resolve against the live curriculum catalog instead of stale seed rows.
+- [x] Add browser-local learner-progress fallback plus authenticated local-to-hosted backfill for legacy completions.
+- [x] Run authenticated browser QA for onboarding completion, dashboard continue-learning, lesson progress, and verification UX.
 - [ ] Run editorial QA across the rewritten live paths, prioritizing Paths 11, 12, 14, 15, 16, 18, and 19.
-- [ ] Run authenticated browser QA for onboarding completion, dashboard continue-learning, mobile app navigation, lesson progress, and verification UX.
+- [ ] Add targeted regression coverage for local-progress fallback/backfill, dashboard hydration reconciliation, lesson rendering edge cases, and tutor mode gating.
+- [ ] Run the remaining visual browser pass on `/` and `/lounge` across desktop and mobile breakpoints.
 
 ## P1 (Product Hardening)
 
 - [ ] Revisit gamification persistence and concurrency semantics.
 - [ ] Verify CI/CD, deployment, and env references after the recent app and curriculum changes.
-- [ ] Add stronger regression coverage around learner-flow surfaces and verification behavior.
+- [ ] Reconcile path-overview completion state with browser-local fallback so `/learn/[pathSlug]` does not lag behind the lesson page/dashboard after local-only saves.
 - [ ] Continue Pro-tier scoping for `mcp-mastery` and `workflow-automation`.
 
 ## P2 (Structure + Operations)

@@ -85,6 +85,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
     <LessonPlayer
       lessonTitle={lesson.title}
       lessonSlug={lesson.slug}
+      userId={viewer.user?.id}
       pathTitle={path.title}
       pathSlug={path.slug}
       estimatedMinutes={lesson.estimatedMinutes}

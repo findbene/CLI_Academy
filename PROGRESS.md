@@ -35,19 +35,45 @@ Zero-To-Mastery (ZTM) Infrastructure & Pedagogy Implementation.
 
 ## In progress
 
-- Foundational scoping for the Pro-Tier `mcp-mastery` and `workflow-automation` modules.
-- Editorial QA pass across the rewritten and migrated live curriculum, especially Paths 04-19 and most urgently Paths 11, 12, 14, 15, 16, 18, and 19.
-- Learner-flow QA on the recently hardened onboarding, dashboard resume, lesson progress, and verification surfaces.
+- Editorial QA on the rewritten live curriculum, especially command realism and learner outcomes in the newer Paths 11-19 rewrites.
+- Regression hardening for learner-flow surfaces around hosted progress, browser-local fallback/backfill, tutor modes, and path-level consistency.
 
 ## Next
 
-1. Run editorial QA on the migrated live paths and spot-check command validity on macOS/Linux and Windows PowerShell.
-2. Draft the Capstone MDX payloads for the `mcp-mastery` paths.
-3. Harden the gamification service further around concurrency and malformed database edge cases.
-4. Expand browser-backed QA beyond smoke coverage to authenticated onboarding/dashboard/lesson flows.
+1. Add focused regression coverage for local-progress fallback/backfill, dashboard hydration reconciliation, lesson rendering edge cases, and tutor mode gating.
+2. Run the remaining visual browser pass on `/` and `/lounge` across desktop and mobile breakpoints.
+3. Draft the Capstone MDX payloads for the `mcp-mastery` paths.
+4. Harden the gamification service further around concurrency and malformed database edge cases.
 
 ## Latest update
 
+- Implemented authenticated local-to-hosted backfill for legacy browser-only lesson completions: authenticated app surfaces now POST old local completions into `/api/progress`, preserve original completion timestamps, remove successfully synced local keys, and refresh the signed-in dashboard state after successful backfill.
+- Tightened browser-local lesson progress so it is now user-scoped instead of browser-global, which prevents one learner's local fallback progress from being surfaced or backfilled into another learner's account on a shared machine. Legacy anonymous local progress is still readable and backfillable when no competing user scopes exist.
+- Fixed the remaining console-noise issues in the learner flow: `app/layout.tsx` now suppresses root hydration warnings caused by external `<html>` attribute injection, `LessonContent.tsx` now preserves fenced code blocks when splitting lesson bodies, and `LessonPlayer.tsx` now reads only direct lesson-body headings with stable section keys.
+- Revalidated the learner-flow changes end to end in the authenticated browser session: the lesson page reload is now clean, dashboard hydration remains correct, a seeded legacy local completion for `lesson-1-2-1-make-a-personal-safety-checklist` backfilled into hosted progress successfully, and the dashboard completed count advanced from `2` to `3` with the local key removed afterward.
+- Reworked the tutor runtime so the floating tutor now uses a shared runtime provider, mode-aware gating, richer signed-in state, and `/api/tutor` capability/usage responses that distinguish free and Pro tutor modes.
+- Final validation on the current tree is green: frontend `npm run typecheck` passes, production `npm run build` passes, and the final review pass found no remaining blocking issues in the progress-sync diff.
+- Verified the hosted cross-device lesson-sync repair end to end in the signed-in browser session for `findbene+cliacademy-d01a1a04@gmail.com`: authenticated `GET /api/progress` for lesson `1.1.2` returned `200` with `completed: false`, authenticated `POST /api/progress` returned `200` with `Progress saved.`, and a second `GET` returned a real Supabase-backed `lesson_id`, `completed_at`, and stored `completion_data`.
+- Fixed the last blocker inside the new hosted curriculum sync: live MDX frontmatter stores dotted lesson labels like `1.1.1`, so `apps/web/lib/mdx.ts` now preserves those labels for learner-facing UI while deriving stable integer sort order values for sorting and Supabase `lessons.sort_order` writes.
+- Reconciled the dashboard hydration path so completed-lesson totals now merge hosted progress keys with browser-local fallback keys without double counting. In the verified browser session the dashboard now renders `2` completed lessons and advances the continue-learning card to `Make a personal safety checklist` with `2 of 7 lessons completed`.
+- Confirmed the local environment is no longer the blocker: `apps/web/.env` now carries the required service-role key, the hosted self-heal runs locally, and the repaired Supabase project schema plus explicit `public` schema client configuration are working together.
+- Repaired the stale hosted lesson-progress mapping in code by adding a server-side curriculum sync that upserts the live `PATHS` plus MDX lesson catalog into Supabase `paths`, `modules`, and `lessons`, then retries `/api/progress` lesson resolution against the refreshed hosted rows.
+- Wired the same hosted-catalog self-heal into the signed-in dashboard and learner path page so server-rendered completion state can resolve the current live curriculum instead of the stale seeded catalog.
+- Revalidated the hosted-sync repair with clean frontend `npm run lint`, clean `npm run typecheck`, clean production `npm run build`, and green Playwright smoke coverage (`18/18`) in `apps/web`.
+- Completed the final authenticated browser revalidation with the newly confirmed QA alias `findbene+cliacademy-d01a1a04@gmail.com`: sign-in succeeded, onboarding completed cleanly, `Mark complete` on the first Start Here lesson switched to the local-fallback success state, and the dashboard updated to `1` completed lesson while advancing the continue-learning card to the next lesson.
+- Confirmed the user-facing fix is effective even though hosted sync still misses the published lesson mapping in the background: the lesson page reports `Progress saved on this device while lesson sync catches up.`, the lesson is marked complete, and the dashboard reflects completion immediately in the same browser.
+- Implemented a learner-facing resilience fix for the published-path mismatch in hosted progress sync: lesson completion now persists locally in the browser, and the dashboard hydrates its completed-count plus continue-learning card from merged server and local progress data.
+- Revalidated that lesson-progress fallback change with clean frontend `npm run lint`, clean `npm run typecheck`, green Playwright smoke coverage, and a clean production `npm run build` in `apps/web`.
+- Completed the authenticated browser pass with a confirmed Supabase-backed user: login succeeded, `/onboarding` redirected completed users back to `/dashboard`, the dashboard resume card opened the expected lesson, lesson verification required learner evidence and returned real feedback, and sign-out returned cleanly to `/login`.
+- Found a real learner-facing regression in authenticated progress persistence: clicking `Mark complete` on `/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace` surfaces `The requested lesson could not be matched to a published path.`, emits a 404-backed failure in the sidebar flow, and leaves dashboard progress unchanged at `0 of 7 lessons completed`.
+- Attempted the full authenticated browser pass with the supplied QA credentials and confirmed the active auth environment still requires confirmed email accounts: signing in with `test.learner+qa@yourdomain.com` failed, and signing up the same address created a brand-new unconfirmed user.
+- Confirmed the local web app is pointed at a hosted Supabase project and `apps/web/.env` has no service-role key, so the repo cannot self-confirm disposable QA users without inbox access or an externally confirmed seeded account.
+- Refreshed the two highest-traffic public hero surfaces: `/` now uses a Spline-powered 3D hero card via `apps/web/components/ui/splite.tsx`, while `/lounge` reuses the former front-page shader animation inside `HeroPick` after making `ShaderBackground` container-aware.
+- Revalidated that marketing-surface refresh with clean `npm run lint` and clean production `npm run build` in `apps/web`.
+- Re-ran a focused editorial QA pass on the rewritten live Paths 10-16 and confirmed the live lesson corpus already satisfies the structural learner contract, so no curriculum edits were needed from that pass.
+- Resumed browser verification on the real local app, confirmed unauthenticated protected-route redirects and callback `next` preservation, and isolated the remaining learner-flow gap to lack of a sanctioned signed-in test account rather than a route/runtime failure.
+- Fixed a real auth regression by replacing the dead `Forgot password?` CTA on `/login` with a working recovery flow: added `/forgot-password` and `/reset-password` routes, request/update password cards, and smoke coverage for the new pages plus the login CTA target.
+- Revalidated the frontend after the auth recovery fix with clean `npm run lint`, clean `npm run typecheck`, clean `npm run build`, and green Playwright smoke coverage (`18/18`).
 - Normalized the live curriculum structure back to the canonical `content/paths/` slugs for Paths 01-19 by archiving stale duplicate trees/files and moving the rewritten Path 11, 12, 14, 15, and 16 content into the stable live directories.
 - Hardened `apps/web/lib/mdx.ts` so live lesson loading only includes lesson-pattern MDX files, preventing orphan or duplicate content files from leaking into learner routes.
 - Rebuilt `tooling/scripts/validate_content.py` to match the live learner contract: recursive chapter discovery, `lesson-*.mdx` filtering, current frontmatter fields (`title`, `lessonNumber`, `chapterNumber`, `pathNumber`), and ignored-file warnings for non-lesson MDX.

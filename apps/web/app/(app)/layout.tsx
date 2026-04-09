@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { LocalProgressBackfill } from "@/components/progress/LocalProgressBackfill";
 import { PageTransition } from "@/components/ui/page-transition";
 import { getServerViewer } from "@/lib/viewer";
 
@@ -49,6 +50,7 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
             Some features require authentication. Configure your environment to unlock full functionality.
           </div>
         ) : null}
+        <LocalProgressBackfill userId={viewer.user?.id} />
         <PageTransition>{children}</PageTransition>
       </div>
     </div>

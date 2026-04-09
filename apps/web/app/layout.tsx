@@ -3,6 +3,7 @@ import { Sora, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { SearchDialog } from "@/components/ui/search-dialog";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import { FloatingTutor } from "@/components/tutor/FloatingTutor";
+import { TutorRuntimeProvider } from "@/components/tutor/TutorRuntimeProvider";
 import "./globals.css";
 
 const sora = Sora({
@@ -63,6 +64,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`h-full antialiased ${sora.variable} ${instrumentSans.variable} ${ibmPlexMono.variable}`}
     >
       <body className="min-h-full">
@@ -70,9 +72,11 @@ export default function RootLayout({
           Skip to main content
         </a>
         <ThemeProvider>
-          <SearchDialog />
-          <FloatingTutor />
-          {children}
+          <TutorRuntimeProvider>
+            <SearchDialog />
+            <FloatingTutor />
+            {children}
+          </TutorRuntimeProvider>
         </ThemeProvider>
       </body>
     </html>

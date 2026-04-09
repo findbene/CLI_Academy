@@ -256,7 +256,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
               <div className="flex justify-between items-center">
                 <label htmlFor={passwordInputId} className="text-sm font-medium text-gray-700">Password</label>
                 {!isSignup && (
-                  <Link href="#" className="text-xs font-semibold text-[var(--color-accent-primary)] hover:underline">
+                  <Link href="/forgot-password" className="text-xs font-semibold text-[var(--color-accent-primary)] hover:underline">
                     Forgot password?
                   </Link>
                 )}

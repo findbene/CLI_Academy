@@ -5,6 +5,7 @@ import { CheckoutButton } from "@/components/billing/CheckoutButton";
 import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
 import { getLessonsForPath } from "@/lib/mdx";
+import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
 import { getServerViewer } from "@/lib/viewer";
 
 interface LearnPathPageProps {
@@ -33,6 +34,10 @@ export async function generateMetadata({ params }: LearnPathPageProps): Promise<
 export default async function LearnPathPage({ params }: LearnPathPageProps) {
   const { pathSlug } = await params;
   const [path, viewer] = await Promise.all([getCatalogPathBySlug(pathSlug), getServerViewer()]);
+
+  if (viewer.user && viewer.supabaseContext) {
+    await ensurePublishedCurriculumSynced();
+  }
 
   if (!path) {
     return (

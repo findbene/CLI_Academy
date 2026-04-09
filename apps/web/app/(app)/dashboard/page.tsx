@@ -10,7 +10,12 @@ import {
 import { getPublishedCatalogPaths, type CatalogPath } from "@/lib/catalog";
 import { getLessonsForPath } from "@/lib/mdx";
 import { getRecommendedPathSlugs } from "@/lib/learning";
+import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
 import { getServerViewer } from "@/lib/viewer";
+import {
+  CompletedLessonsCount,
+  ContinueLearningHydration,
+} from "@/components/dashboard/ProgressHydration";
 import { FreeTierShowcase } from "@/components/marketing/FreeTierShowcase";
 import { AlumniHub } from "@/components/dashboard/AlumniHub";
 
@@ -28,6 +33,10 @@ function getRecommendedPaths(input: {
 
 export default async function DashboardPage() {
   const [viewer, catalogPaths] = await Promise.all([getServerViewer(), getPublishedCatalogPaths()]);
+
+  if (viewer.user && viewer.supabaseContext) {
+    await ensurePublishedCurriculumSynced();
+  }
 
   if (!viewer.supabaseConfigured || !viewer.user || !viewer.profile || !viewer.supabaseContext) {
     const recommended = catalogPaths.filter((path) => path.status === "available");
@@ -156,15 +165,31 @@ export default async function DashboardPage() {
         .in("id", completedLessonIds)
     : { data: [] as Array<{ id: string; slug: string; path_id: string }> };
 
+  const completedLessonPathIds = [...new Set((completedLessons ?? []).map((lesson) => lesson.path_id))];
+  const missingCompletedPathIds = completedLessonPathIds.filter(
+    (pathId) => !(enrolledPathRows ?? []).some((path) => path.id === pathId),
+  );
+  const { data: completedLessonPathRows } = missingCompletedPathIds.length
+    ? await viewer.supabaseContext.supabase
+        .from("paths")
+        .select("id, slug, title")
+        .in("id", missingCompletedPathIds)
+    : { data: [] as Array<{ id: string; slug: string; title: string }> };
+
   const enrolledPathMap = new Map((enrolledPathRows ?? []).map((path) => [path.id, path]));
+  const pathRowsById = new Map(
+    [...(enrolledPathRows ?? []), ...(completedLessonPathRows ?? [])].map((path) => [path.id, path]),
+  );
   const completedLessonSlugsByPath = new Map<string, Set<string>>();
+  const serverCompletedLessonKeys: string[] = [];
 
   for (const lesson of completedLessons ?? []) {
-    const path = enrolledPathMap.get(lesson.path_id) ?? (enrolledPathRows ?? []).find((row) => row.id === lesson.path_id);
+    const path = pathRowsById.get(lesson.path_id);
     if (!path) {
       continue;
     }
 
+    serverCompletedLessonKeys.push(`${path.slug}::${lesson.slug}`);
     const current = completedLessonSlugsByPath.get(path.slug) ?? new Set<string>();
     current.add(lesson.slug);
     completedLessonSlugsByPath.set(path.slug, current);
@@ -191,6 +216,13 @@ export default async function DashboardPage() {
     ...recommended.map((path) => path.slug),
   ].filter((slug, index, array) => array.indexOf(slug) === index);
 
+  const continueLearningCandidateData: Array<{
+    completedLessonSlugs: string[];
+    lessons: Array<{ slug: string; title: string }>;
+    pathSlug: string;
+    pathTitle: string;
+  }> = [];
+
   let continueLearning:
     | {
         completedCount: number;
@@ -214,6 +246,13 @@ export default async function DashboardPage() {
     }
 
     const completedSlugs = completedLessonSlugsByPath.get(slug) ?? new Set<string>();
+    continueLearningCandidateData.push({
+      completedLessonSlugs: Array.from(completedSlugs),
+      lessons: lessons.map((lesson) => ({ slug: lesson.slug, title: lesson.title })),
+      pathSlug: slug,
+      pathTitle: catalogPath.title,
+    });
+
     const nextLesson = lessons.find((lesson) => !completedSlugs.has(lesson.slug));
     if (!nextLesson) {
       continue;
@@ -269,7 +308,13 @@ export default async function DashboardPage() {
               <CheckCircle2 className="size-5 text-[var(--color-accent-primary)]" />
             </div>
             <div className="text-sm font-medium text-[var(--color-fg-muted)]">Completed lessons</div>
-            <div className="mt-2 text-4xl font-bold tracking-tight">{completedLessonsCount ?? 0}</div>
+            <div className="mt-2 text-4xl font-bold tracking-tight">
+              <CompletedLessonsCount
+                initialCount={completedLessonsCount ?? 0}
+                serverCompletedLessonKeys={serverCompletedLessonKeys}
+                userId={viewer.user?.id}
+              />
+            </div>
             <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Tracked across all enrolled paths.</p>
           </article>
           <article className="panel panel-lift group p-5">
@@ -327,36 +372,11 @@ export default async function DashboardPage() {
             <article className="panel p-5">
               <h2 className="text-2xl font-semibold">Continue learning</h2>
               <div className="mt-4">
-                {continueLearning ? (
-                  <Link
-                    href={continueLearning.href}
-                    className="group block rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 transition hover:border-[var(--color-accent-primary)] hover:shadow-md"
-                  >
-                    <div className="text-xs uppercase tracking-[0.14em] text-[var(--color-accent-primary)]">
-                      {continueLearning.pathTitle}
-                    </div>
-                    <h3 className="mt-2 text-lg font-semibold group-hover:text-[var(--color-accent-primary)] transition-colors">
-                      {continueLearning.lessonTitle}
-                    </h3>
-                    <p className="mt-2 text-sm text-[var(--color-fg-muted)]">
-                      {continueLearning.completedCount} of {continueLearning.totalCount} lessons completed
-                    </p>
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--color-border-subtle)]">
-                      <div
-                        className="h-full rounded-full bg-[var(--color-accent-primary)] transition-all duration-500"
-                        style={{ width: `${continueLearning.progressPercent}%` }}
-                      />
-                    </div>
-                    <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--color-accent-primary)]">
-                      Resume lesson
-                      <Compass className="size-4" />
-                    </div>
-                  </Link>
-                ) : (
-                  <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
-                    No in-progress lesson yet. Start with the first foundations lesson and the dashboard will keep your place here.
-                  </div>
-                )}
+                <ContinueLearningHydration
+                  candidates={continueLearningCandidateData}
+                  initialContinueLearning={continueLearning}
+                  userId={viewer.user?.id}
+                />
               </div>
             </article>
 

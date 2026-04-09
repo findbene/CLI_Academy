@@ -5,9 +5,10 @@ export interface LessonMeta {
   slug: string;
   title: string;
   description: string;
-  lessonNumber: number;
-  chapterNumber: number;
-  pathNumber: number;
+  lessonNumber: string;
+  lessonSortOrder: number;
+  chapterNumber: string;
+  pathNumber: string;
   estimatedMinutes: number;
   tierRequired: string;
   lastReviewedAt: string;
@@ -84,18 +85,68 @@ function parseFrontmatter(frontmatter: string) {
   return parsed;
 }
 
+function extractLessonSegments(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return [value];
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const segments = value.match(/\d+/g)?.map((segment) => Number.parseInt(segment, 10));
+  return segments?.length ? segments : null;
+}
+
+function getLessonOrdering(input: { fallbackSlug: string; parsed: Record<string, unknown> }) {
+  const slugSource = String(input.parsed.slug ?? input.fallbackSlug);
+  const slugMatch = slugSource.match(/^lesson-(\d+)-(\d+)-(\d+)-/);
+
+  const lessonSegments =
+    extractLessonSegments(input.parsed.lessonNumber ?? input.parsed.lesson_number) ??
+    (slugMatch
+      ? [
+          Number.parseInt(slugMatch[1], 10),
+          Number.parseInt(slugMatch[2], 10),
+          Number.parseInt(slugMatch[3], 10),
+        ]
+      : null) ??
+    [999, 999, 999];
+
+  const pathSegments =
+    extractLessonSegments(input.parsed.pathNumber ?? input.parsed.path_number) ??
+    (lessonSegments.length >= 1 ? [lessonSegments[0]] : null) ??
+    [999];
+
+  const chapterSegments =
+    extractLessonSegments(input.parsed.chapterNumber ?? input.parsed.chapter_number) ??
+    (lessonSegments.length >= 2 ? [lessonSegments[0], lessonSegments[1]] : null) ??
+    [999, 999];
+
+  const [pathNumber = 999, chapterNumber = 999, lessonNumber = 999] = lessonSegments;
+
+  return {
+    chapterNumberLabel: chapterSegments.join("."),
+    lessonNumberLabel: lessonSegments.join("."),
+    lessonSortOrder: pathNumber * 10000 + chapterNumber * 100 + lessonNumber,
+    pathNumberLabel: pathSegments.join("."),
+  };
+}
+
 function toLessonRecord(filePath: string, source: string): LessonRecord {
   const { frontmatter, body } = splitFrontmatter(source);
   const parsed = parseFrontmatter(frontmatter);
   const fallbackSlug = path.basename(filePath, ".mdx");
+  const ordering = getLessonOrdering({ fallbackSlug, parsed });
 
   return {
     slug: String(parsed.slug ?? fallbackSlug),
     title: String(parsed.title ?? fallbackSlug),
     description: String(parsed.description ?? ""),
-    lessonNumber: Number(parsed.lessonNumber ?? parsed.lesson_number ?? 999),
-    chapterNumber: Number(parsed.chapterNumber ?? 999),
-    pathNumber: Number(parsed.pathNumber ?? 999),
+    lessonNumber: ordering.lessonNumberLabel,
+    lessonSortOrder: ordering.lessonSortOrder,
+    chapterNumber: ordering.chapterNumberLabel,
+    pathNumber: ordering.pathNumberLabel,
     estimatedMinutes: Number(parsed.estimated_minutes ?? 10),
     tierRequired: String(parsed.tier_required ?? "free"),
     lastReviewedAt: String(parsed.last_reviewed_at ?? "unknown"),
@@ -125,7 +176,7 @@ export async function getLessonsForPath(pathSlug: string) {
       }),
     );
 
-    return records.sort((a, b) => a.lessonNumber - b.lessonNumber || a.sourcePath.localeCompare(b.sourcePath));
+    return records.sort((a, b) => a.lessonSortOrder - b.lessonSortOrder || a.sourcePath.localeCompare(b.sourcePath));
   } catch {
     return [] satisfies LessonRecord[];
   }

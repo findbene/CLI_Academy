@@ -2,21 +2,20 @@
 
 ## Objective
 
-Normalize the CLI Academy repo into a clear monorepo-like structure with strong agent guidance and low context waste.
+Harden the learner-facing web product now that the repo normalization and large curriculum migration are in place.
 
 ## Approved sequence
 
-1. establish the target scaffold and operating docs
-2. move web and api into `apps/`
-3. move scripts and infra into their permanent homes
-4. consolidate agent control files into `.claude/`
-5. archive non-runtime material
-6. repair references and automation
-7. verify app, api, and content workflows
+1. keep hosted lesson progress aligned with the live curriculum catalog
+2. preserve learner continuity with user-scoped browser-local fallback and deliberate backfill into hosted progress
+3. continue editorial QA on rewritten live paths with command realism and learner-outcome review
+4. add regression coverage around learner-flow surfaces, tutor modes, and lesson rendering edge cases
+5. revisit gamification persistence and other backend write semantics after learner-flow behavior is stable
 
 ## Success criteria
 
-- each top-level folder has one clear role
-- no overlapping hidden agent systems remain at root
-- root docs accurately explain the repo
-- web and api subtrees have local operating rules
+- signed-in lesson progress survives across devices via hosted Supabase rows
+- browser-local fallback never leaks across users and can be backfilled safely
+- learner-facing dashboard, lesson page, and resume state stay consistent enough for real use
+- root docs accurately describe the live learner-flow architecture and current priorities
+- validation remains green on the current frontend tree

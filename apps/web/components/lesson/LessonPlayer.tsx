@@ -14,13 +14,19 @@ import {
   Shield,
 } from "lucide-react";
 import { AssetCard } from "@/components/assets/AssetCard";
-import { FloatingTutor } from "@/components/tutor/FloatingTutor";
+import { TutorContextBridge } from "@/components/tutor/TutorRuntimeProvider";
 import { LearningModeSelector, type LearningMode } from "@/components/lesson/LearningModeSelector";
 import type { DownloadSurfaceAsset } from "@/lib/assets";
+import {
+  isLessonCompletedLocally,
+  markLessonCompletedLocally,
+  removeLessonCompletedLocally,
+} from "@/lib/local-lesson-progress";
 
 interface LessonPlayerProps {
   lessonTitle: string;
   lessonSlug: string;
+  userId?: string | null;
   pathTitle: string;
   pathSlug: string;
   estimatedMinutes: number;
@@ -57,6 +63,7 @@ function freshnessTone(state: "fresh" | "review-due" | "stale") {
 export function LessonPlayer({
   lessonTitle,
   lessonSlug,
+  userId,
   pathTitle,
   pathSlug,
   estimatedMinutes,
@@ -85,7 +92,7 @@ export function LessonPlayer({
 
   useEffect(() => {
     function collectSections() {
-      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] h2"));
+      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] > h2"));
       const titles = headings.map((heading) => heading.textContent?.trim()).filter((title): title is string => Boolean(title));
       setSectionTitles(titles);
       setActiveSectionIndex(0);
@@ -105,7 +112,7 @@ export function LessonPlayer({
     }
 
     function updateActiveSection() {
-      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] h2"));
+      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] > h2"));
       if (!headings.length) {
         return;
       }
@@ -136,6 +143,8 @@ export function LessonPlayer({
     let cancelled = false;
 
     async function loadProgress() {
+      const localCompletion = isLessonCompletedLocally(pathSlug, lessonSlug, userId);
+
       try {
         const response = await fetch(
           `/api/progress?pathSlug=${encodeURIComponent(pathSlug)}&lessonSlug=${encodeURIComponent(lessonSlug)}`,
@@ -150,20 +159,45 @@ export function LessonPlayer({
         }
 
         if (response.ok) {
-          setCompleted(Boolean(data.completed));
-          setProgressMessage(Boolean(data.completed) ? "Progress already saved." : null);
+          const syncedCompletion = Boolean(data.completed);
+          if (syncedCompletion) {
+            removeLessonCompletedLocally(pathSlug, lessonSlug, userId);
+          }
+          setCompleted(syncedCompletion || localCompletion);
+          setProgressMessage(
+            syncedCompletion
+              ? "Progress already saved."
+              : localCompletion
+                ? "Progress saved on this device."
+                : null,
+          );
           return;
         }
 
         if (response.status === 401) {
-          setProgressMessage(data.message ?? "Sign in to sync your progress.");
+          setCompleted(localCompletion);
+          setProgressMessage(
+            localCompletion
+              ? "Progress saved on this device. Sign in to sync it across devices."
+              : data.message ?? "Sign in to sync your progress.",
+          );
           return;
         }
 
-        setProgressMessage(data.message ?? "Progress is available, but this lesson is not synced yet.");
+        setCompleted(localCompletion);
+        setProgressMessage(
+          localCompletion
+            ? "Progress saved on this device while lesson sync catches up."
+            : data.message ?? "Progress is available, but this lesson is not synced yet.",
+        );
       } catch {
         if (!cancelled) {
-          setProgressMessage("Progress sync is temporarily unavailable.");
+          setCompleted(localCompletion);
+          setProgressMessage(
+            localCompletion
+              ? "Progress saved on this device while sync is temporarily unavailable."
+              : "Progress sync is temporarily unavailable.",
+          );
         }
       } finally {
         if (!cancelled) {
@@ -177,7 +211,7 @@ export function LessonPlayer({
     return () => {
       cancelled = true;
     };
-  }, [lessonSlug, pathSlug]);
+  }, [lessonSlug, pathSlug, userId]);
 
   async function handleMarkComplete() {
     if (completed || savingProgress) {
@@ -186,6 +220,7 @@ export function LessonPlayer({
 
     setSavingProgress(true);
     setProgressMessage(null);
+    let shouldAdvance = false;
 
     try {
       const response = await fetch("/api/progress", {
@@ -202,22 +237,48 @@ export function LessonPlayer({
 
       const data = (await response.json().catch(() => ({}))) as { message?: string };
       if (!response.ok) {
-        setProgressMessage(data.message ?? "Could not save progress yet.");
-        return;
+        if (response.status === 401) {
+          markLessonCompletedLocally(pathSlug, lessonSlug, userId);
+          setCompleted(true);
+          setProgressMessage("Progress saved on this device. Sign in to sync it across devices.");
+          setShowCelebration(true);
+          shouldAdvance = true;
+        } else if (response.status === 404) {
+          markLessonCompletedLocally(pathSlug, lessonSlug, userId);
+          setCompleted(true);
+          setProgressMessage("Progress saved on this device while lesson sync catches up.");
+          setShowCelebration(true);
+          shouldAdvance = true;
+        } else {
+          setProgressMessage(data.message ?? "Could not save progress yet.");
+          return;
+        }
+      } else {
+        removeLessonCompletedLocally(pathSlug, lessonSlug, userId);
+        setCompleted(true);
+        setProgressMessage(data.message ?? "Progress saved.");
+        setShowCelebration(true);
+        shouldAdvance = true;
       }
 
-      setCompleted(true);
-      setProgressMessage(data.message ?? "Progress saved.");
-      setShowCelebration(true);
-
       // Auto-advance to next lesson after a brief pause
-      if (nextLessonHref) {
+      if (shouldAdvance && nextLessonHref) {
         setTimeout(() => {
           router.push(nextLessonHref);
         }, 2000);
       }
     } catch {
-      setProgressMessage("Could not save progress yet.");
+      markLessonCompletedLocally(pathSlug, lessonSlug, userId);
+      setCompleted(true);
+      setProgressMessage("Progress saved on this device while sync is temporarily unavailable.");
+      setShowCelebration(true);
+      shouldAdvance = true;
+
+      if (shouldAdvance && nextLessonHref) {
+        setTimeout(() => {
+          router.push(nextLessonHref);
+        }, 2000);
+      }
     } finally {
       setSavingProgress(false);
     }
@@ -288,7 +349,7 @@ export function LessonPlayer({
                   <div className="mt-4 grid gap-2">
                     {sectionTitles.map((title, index) => (
                       <div
-                        key={`${lessonSlug}-${title}`}
+                        key={`${lessonSlug}-section-${index}`}
                         className={`rounded-[var(--radius-lg)] px-3 py-2 text-sm ${
                           index === activeSectionIndex
                             ? "bg-[var(--color-accent-subtle)] text-[var(--color-fg-default)]"
@@ -428,7 +489,7 @@ export function LessonPlayer({
           </div>
         </div>
       ) : null}
-      <FloatingTutor lessonTitle={lessonTitle} tutorPreload={tutorPreload} learningMode={learningMode} />
+      <TutorContextBridge lessonTitle={lessonTitle} tutorPreload={tutorPreload} learningMode={learningMode} />
     </>
   );
 }

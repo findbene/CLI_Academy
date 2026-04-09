@@ -1,10 +1,9 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { getPublicSupabaseConfigMessage, getPublicSupabaseEnv } from "@/lib/env";
 
-let browserClient: SupabaseClient | null = null;
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
 
 export function getSupabaseBrowserClient() {
   const env = getPublicSupabaseEnv();
@@ -13,6 +12,10 @@ export function getSupabaseBrowserClient() {
     throw new Error(getPublicSupabaseConfigMessage() ?? "Supabase browser client is not configured.");
   }
 
-  browserClient ??= createBrowserClient(env.url, env.anonKey);
+  browserClient ??= createBrowserClient(env.url, env.anonKey, {
+    db: {
+      schema: "public",
+    },
+  });
   return browserClient;
 }

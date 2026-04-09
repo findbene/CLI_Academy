@@ -12,6 +12,8 @@ test.describe("Public pages", () => {
     { path: "/pricing", title: "Pricing" },
     { path: "/login", title: "Log in" },
     { path: "/signup", title: "Sign up" },
+    { path: "/forgot-password", title: "Reset your password" },
+    { path: "/reset-password", title: "Choose a new password" },
     { path: "/trust", title: "Trust" },
     { path: "/resources", title: "Resource Hub" },
     { path: "/support", title: "Support" },
@@ -61,6 +63,7 @@ test.describe("Auth surfaces", () => {
     await page.goto("/login");
 
     await expect(page.getByRole("link", { name: "Sign up" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /forgot password\?/i })).toHaveAttribute("href", "/forgot-password");
 
     const emailInput = page.getByLabel("Email");
     const passwordInput = page.getByLabel("Password");

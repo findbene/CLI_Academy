@@ -53,6 +53,39 @@ function isTableBlock(lines: string[]) {
   );
 }
 
+function splitLessonBlocks(body: string) {
+  const blocks: string[] = [];
+  const currentBlock: string[] = [];
+  let inCodeFence = false;
+
+  for (const line of body.split("\n")) {
+    const trimmedLine = line.trim();
+    const isCodeFence = trimmedLine.startsWith("```");
+
+    if (isCodeFence) {
+      currentBlock.push(line);
+      inCodeFence = !inCodeFence;
+      continue;
+    }
+
+    if (!inCodeFence && trimmedLine === "") {
+      if (currentBlock.length) {
+        blocks.push(currentBlock.join("\n").trim());
+        currentBlock.length = 0;
+      }
+      continue;
+    }
+
+    currentBlock.push(line);
+  }
+
+  if (currentBlock.length) {
+    blocks.push(currentBlock.join("\n").trim());
+  }
+
+  return blocks.filter(Boolean);
+}
+
 function renderBlock(block: string, index: number) {
   const warnMatch = block.match(/^<WarnBlock title="([^"]+)">\s*([\s\S]*?)\s*<\/WarnBlock>$/);
   if (warnMatch) {
@@ -145,8 +178,8 @@ function renderBlock(block: string, index: number) {
           .split("\n")
           .map((line) => line.trim())
           .filter(Boolean)
-          .map((line) => (
-            <li key={line}>{renderInlineContent(line.replace(/^- /, "").trim())}</li>
+          .map((line, lineIndex) => (
+            <li key={`${index}-${lineIndex}`}>{renderInlineContent(line.replace(/^- /, "").trim())}</li>
           ))}
       </ul>
     );
@@ -159,8 +192,8 @@ function renderBlock(block: string, index: number) {
           .split("\n")
           .map((line) => line.trim())
           .filter(Boolean)
-          .map((line) => (
-            <li key={line}>{renderInlineContent(line.replace(/^\d+\.\s/, "").trim())}</li>
+          .map((line, lineIndex) => (
+            <li key={`${index}-${lineIndex}`}>{renderInlineContent(line.replace(/^\d+\.\s/, "").trim())}</li>
           ))}
       </ol>
     );
@@ -185,7 +218,7 @@ function renderBlock(block: string, index: number) {
           <thead>
             <tr>
               {header.map((cell) => (
-                <th key={cell} className="border-b border-[var(--color-border)] px-3 py-2 text-left font-semibold">
+                <th key={`${index}-${cell}`} className="border-b border-[var(--color-border)] px-3 py-2 text-left font-semibold">
                   {renderInlineContent(cell)}
                 </th>
               ))}
@@ -227,10 +260,7 @@ export async function LessonContent({ pathSlug, lessonSlug }: LessonContentProps
     );
   }
 
-  const blocks = lesson.body
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter(Boolean);
+  const blocks = splitLessonBlocks(lesson.body);
 
   return (
     <article className="lesson-prose" data-lesson-body>

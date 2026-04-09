@@ -1,39 +1,254 @@
 "use client";
 
-import { useState } from "react";
-import { Bot, X, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Bot,
+  Compass,
+  Download,
+  Lightbulb,
+  SendHorizontal,
+  Sparkles,
+  Wrench,
+  X,
+} from "lucide-react";
+import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
+import { useTutorRuntime } from "@/components/tutor/TutorRuntimeProvider";
+import { getTutorSupportMatches } from "@/lib/support";
+import {
+  getTutorModeDefinition,
+  mapLearningModeToTutorMode,
+  TUTOR_MODE_DEFINITIONS,
+  type TutorMode,
+  type TutorTier,
+} from "@/lib/tutor-config";
 
 interface TutorMessage {
-  role: "user" | "assistant";
   content: string;
+  id: string;
+  role: "assistant" | "user";
 }
 
-interface FloatingTutorProps {
-  lessonTitle?: string;
-  tutorPreload?: string;
-  learningMode?: string;
+interface TutorSessionState {
+  configured: boolean;
+  dailyLimit: number | null;
+  loaded: boolean;
+  loading: boolean;
+  remaining: number | null;
+  signedIn: boolean;
+  tier: TutorTier | null;
 }
 
-export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guided" }: FloatingTutorProps) {
+function makeId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildWelcomeMessage(lessonTitle?: string): TutorMessage {
+  return {
+    content: lessonTitle
+      ? `I’m your CLI Academy tutor for "${lessonTitle}". I act like a calm setup coach, troubleshooting analyst, concept explainer, and safety-minded guide. I’ll help you understand what is happening, choose the next safest step, know what to expect, and know when to stop.`
+      : "I’m your CLI Academy tutor. I act like a calm setup coach, troubleshooting analyst, concept explainer, and safety-minded guide. I’ll help you understand what is happening, choose the next safest step, know what to expect, and know when to stop.",
+    id: makeId("assistant"),
+    role: "assistant",
+  };
+}
+
+function learningModeLabel(mode?: string) {
+  if (mode === "hint") return "Hint-based lesson";
+  if (mode === "independent") return "Independent lesson";
+  return "Guided lesson";
+}
+
+function modeIcon(mode: TutorMode) {
+  if (mode === "troubleshooting") return Wrench;
+  if (mode === "planning" || mode === "compare_options") return Compass;
+  if (mode === "export_helper") return Download;
+  return Lightbulb;
+}
+
+function quickPrompts(mode: TutorMode, lessonTitle?: string) {
+  const prompts = [
+    getTutorModeDefinition(mode).quickPrompt,
+    lessonTitle ? `Help me with the next safest step in "${lessonTitle}".` : "Help me choose the next safest thing to do.",
+    "What should I expect to see if this works correctly?",
+  ];
+
+  if (mode === "troubleshooting") prompts[2] = "This failed. What should I check first?";
+  if (mode === "planning") prompts[1] = "What should I learn next after this?";
+  if (mode === "export_helper") prompts[1] = "Point me to the best checklist or download for this.";
+
+  return prompts;
+}
+
+function buildCapabilityCards(tier: TutorTier | null) {
+  return [
+    {
+      body: "Install, configure, verify, and recover without skipping the calm checks.",
+      icon: Wrench,
+      title: "Setup coach",
+    },
+    {
+      body: "Match symptoms, name the likely cause, and recommend the next safest action.",
+      icon: AlertTriangle,
+      title: "Troubleshooting analyst",
+    },
+    {
+      body: "Translate jargon into plain language with the level of an expert who teaches beginners well.",
+      icon: Lightbulb,
+      title: "Concept tutor",
+    },
+    {
+      body:
+        tier === "pro"
+          ? "Compare paths, plan what to learn next, and point to the right assets."
+          : "Planning, compare-options, and asset-finding unlock on Pro.",
+      icon: tier === "pro" ? Compass : Download,
+      title: tier === "pro" ? "Path and workflow guide" : "Deeper Pro modes",
+    },
+  ];
+}
+
+function buildActionLinks(mode: TutorMode, tier: TutorTier | null) {
+  const links = [
+    { href: "/troubleshooting", label: "Troubleshooting center" },
+    { href: "/compatibility", label: "Compatibility matrix" },
+    { href: mode === "export_helper" ? "/resources" : "/support", label: mode === "export_helper" ? "Resources and templates" : "Support hub" },
+  ];
+
+  if (tier !== "pro" && (mode === "planning" || mode === "compare_options" || mode === "export_helper")) {
+    return [{ href: "/pricing", label: "Unlock Pro modes" }, ...links.slice(0, 2)];
+  }
+
+  return links;
+}
+
+export function FloatingTutor() {
+  const { learningMode, lessonTitle, tutorPreload } = useTutorRuntime();
+  const derivedMode = mapLearningModeToTutorMode(learningMode);
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState(learningMode);
+  const [mode, setMode] = useState<TutorMode>(derivedMode);
+  const [showToolkit, setShowToolkit] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<TutorMessage[]>([
-    {
-      role: "assistant",
-      content:
-        "Hi! I'm your AI tutor. I can help you understand concepts, debug issues, and figure out what to learn next.",
-    },
-  ]);
+  const [messages, setMessages] = useState<TutorMessage[]>([buildWelcomeMessage()]);
+  const [session, setSession] = useState<TutorSessionState>({
+    configured: true,
+    dailyLimit: null,
+    loaded: false,
+    loading: false,
+    remaining: null,
+    signedIn: false,
+    tier: null,
+  });
+  const endRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const supportQuery = useDeferredValue(input.trim() || [...messages].reverse().find((m) => m.role === "user")?.content || "");
+  const supportMatches = getTutorSupportMatches(supportQuery, lessonTitle);
 
-  async function handleSend() {
-    const question = input.trim();
-    if (!question || loading) {
+  useEffect(() => {
+    setMode(derivedMode);
+    setInput("");
+    setMessages([buildWelcomeMessage(lessonTitle)]);
+  }, [derivedMode, lessonTitle, tutorPreload]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, open]);
+
+  useEffect(() => {
+    if (session.loaded && session.tier !== "pro" && getTutorModeDefinition(mode).plan === "pro") {
+      setMode(derivedMode);
+    }
+  }, [derivedMode, mode, session.loaded, session.tier]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    async function loadSession() {
+      setSession((current) => ({ ...current, loading: true }));
+      try {
+        const response = await fetch("/api/tutor");
+        const data = (await response.json()) as Partial<TutorSessionState>;
+        if (cancelled) return;
+        setSession({
+          configured: data.configured !== false,
+          dailyLimit: typeof data.dailyLimit === "number" ? data.dailyLimit : null,
+          loaded: true,
+          loading: false,
+          remaining: typeof data.remaining === "number" ? data.remaining : null,
+          signedIn: Boolean(data.signedIn),
+          tier: data.tier === "pro" ? "pro" : data.tier === "free" ? "free" : null,
+        });
+      } catch {
+        if (cancelled) return;
+        setSession((current) => ({ ...current, loaded: true, loading: false }));
+      }
+    }
+
+    void loadSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setShowToolkit(false);
       return;
     }
 
-    setMessages((current) => [...current, { role: "user", content: question }]);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 120);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [mode, open, session.configured, session.loaded, session.remaining, session.signedIn]);
+
+  function resetConversation() {
+    setInput("");
+    setMessages([buildWelcomeMessage(lessonTitle)]);
+  }
+
+  async function handleSend(prefilledQuestion?: string) {
+    const question = (prefilledQuestion ?? input).trim();
+    if (!question || loading) return;
+
+    const assistantId = makeId("assistant");
+    startTransition(() => {
+      setMessages((current) => [
+        ...current,
+        { content: question, id: makeId("user"), role: "user" },
+        { content: "", id: assistantId, role: "assistant" },
+      ]);
+    });
     setInput("");
     setLoading(true);
 
@@ -42,10 +257,11 @@ export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guide
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: question,
+          learningMode,
           lessonTitle,
+          message: question,
+          tutorMode: mode,
           tutorPreload,
-          learningMode: mode,
         }),
       });
 
@@ -55,41 +271,33 @@ export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guide
         throw new Error(data.message ?? "The tutor is unavailable right now.");
       }
 
-      if (!response.body) {
-        throw new Error("Missing response stream");
-      }
+      if (!response.body) throw new Error("Missing response stream");
+
+      setSession((current) =>
+        current.remaining == null ? current : { ...current, remaining: Math.max(0, current.remaining - 1) },
+      );
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistant = "";
 
-      setMessages((current) => [...current, { role: "assistant", content: "" }]);
-
       while (true) {
         const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
+        if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
         for (const line of chunk.split("\n")) {
-          if (!line.startsWith("data:")) {
-            continue;
-          }
-
+          if (!line.startsWith("data:")) continue;
           const payload = line.slice(5).trim();
-          if (!payload || payload === "[DONE]") {
-            continue;
-          }
-
+          if (!payload || payload === "[DONE]") continue;
           try {
-            const parsed = JSON.parse(payload) as { type: string; text?: string };
+            const parsed = JSON.parse(payload) as { text?: string; type: string };
             if (parsed.type === "delta" && parsed.text) {
               assistant += parsed.text;
-              setMessages((current) => {
-                const next = [...current];
-                next[next.length - 1] = { role: "assistant", content: assistant };
-                return next;
+              startTransition(() => {
+                setMessages((current) =>
+                  current.map((message) => (message.id === assistantId ? { ...message, content: assistant } : message)),
+                );
               });
             }
           } catch {
@@ -98,118 +306,417 @@ export function FloatingTutor({ lessonTitle, tutorPreload, learningMode = "guide
         }
       }
     } catch (error) {
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content:
-            error instanceof Error
-              ? error.message
-              : "The tutor is temporarily unavailable. Please try again in a moment.",
-        },
-      ]);
+      startTransition(() => {
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === assistantId
+              ? {
+                  ...message,
+                  content:
+                    error instanceof Error
+                      ? error.message
+                      : "The tutor is temporarily unavailable. Please try again in a moment.",
+                }
+              : message,
+          ),
+        );
+      });
     } finally {
       setLoading(false);
     }
   }
 
+  const selectedMode = getTutorModeDefinition(mode);
+  const signedOut = session.loaded && !session.signedIn;
+  const atLimit = typeof session.remaining === "number" && session.remaining <= 0;
+  const capabilityCards = buildCapabilityCards(session.tier);
+  const actionLinks = buildActionLinks(mode, session.tier);
+  const starterPrompts = quickPrompts(mode, lessonTitle);
+
   return (
     <>
       <button
         type="button"
-        className={`fixed right-6 bottom-6 z-40 flex h-14 w-14 lg:h-16 lg:w-16 items-center justify-center rounded-full text-white shadow-[0_0_25px_rgba(45,212,191,0.5)] transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${
-          open ? "bg-slate-800 rotate-90 shadow-none border border-white/10" : "bg-gradient-to-tr from-emerald-400 to-teal-500 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]"
-        }`}
+        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-3 rounded-[1.35rem] border border-white/12 bg-[linear-gradient(145deg,rgba(12,19,36,0.96),rgba(20,32,58,0.94))] px-3.5 py-3 text-white shadow-[0_20px_56px_rgba(12,19,36,0.34)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_26px_66px_rgba(12,19,36,0.4)]"
         onClick={() => setOpen((current) => !current)}
         aria-label={open ? "Close AI tutor" : "Open AI tutor"}
       >
-        {open ? <X className="h-6 w-6 lg:h-7 lg:w-7" /> : <Bot className="h-7 w-7 lg:h-8 lg:w-8" />}
+        <span className="flex h-11 w-11 items-center justify-center rounded-[1rem] border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+          {open ? <X className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+        </span>
+        <span className="hidden flex-col items-start text-left sm:flex">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold">
+            <Sparkles className="h-3.5 w-3.5 text-[var(--color-accent-primary)]" />
+            AI Tutor
+          </span>
+          <span className="text-xs text-white/70">
+            {lessonTitle ? "Scoped to this lesson" : "Grounded setup and troubleshooting help"}
+          </span>
+        </span>
+        <span className="hidden rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 lg:inline-flex">
+          {selectedMode.shortLabel}
+        </span>
       </button>
 
-      {open ? (
-        <aside
-          className="fixed right-0 bottom-16 z-40 flex h-[min(34rem,calc(100dvh-5rem))] w-full flex-col overflow-hidden border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-3)] md:right-5 md:bottom-20 md:w-[24rem] md:rounded-[var(--radius-2xl)] md:border"
-          role="dialog"
-          aria-label="AI Tutor"
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setOpen(false);
-            }
-          }}
-        >
-          <div className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-4 flex justify-between items-center rounded-t-[inherit]">
-            <div>
-              <div className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-emerald-400 inline-flex items-center gap-1.5">
-                 <Sparkles className="h-4 w-4 text-emerald-400" /> AI Tutor
-              </div>
-              <div className="mt-1 text-[11px] text-[var(--color-fg-muted)] tracking-wide uppercase font-semibold">
-                {lessonTitle ? `Context: ${lessonTitle}` : "Ask me anything"}
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-end gap-1">
-              <label htmlFor="tutor-mode-select" className="text-[10px] uppercase tracking-wider text-[var(--color-fg-muted)] font-semibold">
-                Tutor Mode
-              </label>
-              <select 
-                id="tutor-mode-select"
-                value={mode}
-                onChange={(e) => setMode(e.target.value)}
-                className="text-xs border border-[var(--color-border-subtle)] rounded-md px-2 py-1.5 bg-[var(--color-bg-lesson)] text-[var(--color-fg-default)] font-medium focus:outline-none focus:ring-1 focus:ring-[var(--color-accent-primary)] cursor-pointer shadow-sm hover:border-[var(--color-border-strong)] transition-colors"
-              >
-                 <option value="guided">Guided Learning</option>
-                 <option value="hint">Hint Based</option>
-                 <option value="autonomous">Autonomous Mode</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="grid gap-3">
-              {messages.map((message, index) => (
-                <div
-                  key={`${message.role}-${index}`}
-                  className={`max-w-[90%] rounded-[var(--radius-lg)] px-4 py-3 text-sm leading-6 ${
-                    message.role === "assistant"
-                      ? "bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-default)]"
-                      : "ml-auto bg-[var(--color-accent-primary)] text-white"
-                  }`}
-                >
-                  {message.content || (loading && message.role === "assistant" ? (
-                    <span className="inline-flex items-center gap-1">
-                      <span className="size-1.5 animate-bounce rounded-full bg-[var(--color-fg-muted)] [animation-delay:0ms]" />
-                      <span className="size-1.5 animate-bounce rounded-full bg-[var(--color-fg-muted)] [animation-delay:150ms]" />
-                      <span className="size-1.5 animate-bounce rounded-full bg-[var(--color-fg-muted)] [animation-delay:300ms]" />
-                    </span>
-                  ) : "")}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t border-[var(--color-border-subtle)] p-4">
-            <textarea
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask about setup, troubleshooting, or what to learn next."
-              className="min-h-24 w-full rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-lesson)] px-3 py-2 text-sm"
-              aria-label="Your question for the AI tutor"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
+      <AnimatePresence>
+        {open ? (
+          <>
+            <motion.button
+              type="button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-[rgba(12,19,36,0.5)] backdrop-blur-[8px]"
+              onClick={() => setOpen(false)}
+              aria-label="Close AI tutor"
             />
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <span className="text-xs text-[var(--color-fg-muted)]">Free: 10/day · Pro: 100/day</span>
-              <button type="button" className="button-primary" onClick={handleSend} disabled={loading}>
-                {loading ? "Sending..." : "Send"}
-              </button>
-            </div>
-          </div>
-        </aside>
-      ) : null}
+
+            <motion.aside
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 14, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+              className="fixed inset-x-3 bottom-20 top-3 z-50 flex flex-col overflow-hidden rounded-[1.85rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[0_30px_90px_rgba(12,19,36,0.28)] md:bottom-6 md:top-6 md:left-[max(1.5rem,calc(50%-36rem))] md:right-[max(1.5rem,calc(50%-36rem))]"
+              role="dialog"
+              aria-modal="true"
+              aria-label="CLI Academy AI tutor"
+            >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(22,176,168,0.14),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(37,99,235,0.08),transparent_28%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(22,176,168,0.08),transparent)]" />
+              <div className="relative flex h-full min-h-0 flex-col">
+                <header className="border-b border-[var(--color-border-subtle)] px-5 pb-3 pt-4 md:px-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        CLI Academy Tutor
+                      </div>
+                      <div className="mt-2 text-base font-semibold text-[var(--color-fg-default)] md:text-lg">
+                        Ask what to do next
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {messages.length > 1 ? (
+                        <button
+                          type="button"
+                          className="hidden rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-2 text-xs font-medium text-[var(--color-fg-muted)] transition hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg-default)] md:inline-flex"
+                          onClick={resetConversation}
+                        >
+                          New thread
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
+                          showToolkit
+                            ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)] text-[var(--color-fg-default)]"
+                            : "border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg-default)]"
+                        }`}
+                        onClick={() => setShowToolkit((current) => !current)}
+                      >
+                        {showToolkit ? "Hide tools" : "Tools"}
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-2 text-[var(--color-fg-muted)] transition hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg-default)]"
+                        onClick={() => setOpen(false)}
+                        aria-label="Close tutor panel"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--color-fg-muted)]">
+                    <span className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-1">
+                      {lessonTitle ? `Lesson: ${lessonTitle}` : "General product context"}
+                    </span>
+                    <span className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-1">
+                      {learningModeLabel(learningMode)}
+                    </span>
+                    <span className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-1">
+                      Mode: {selectedMode.label}
+                    </span>
+                    <span className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-1">
+                      {session.loading
+                        ? "Checking access..."
+                        : session.signedIn
+                          ? `${session.tier === "pro" ? "Pro" : "Free"}${typeof session.remaining === "number" && typeof session.dailyLimit === "number" ? ` · ${session.remaining}/${session.dailyLimit} left` : ""}`
+                          : "Sign in to activate"}
+                    </span>
+                  </div>
+                </header>
+
+                <div className="border-b border-[var(--color-border-subtle)] px-5 py-3">
+                  <div className="flex flex-wrap gap-2">
+                    {TUTOR_MODE_DEFINITIONS.map((modeDefinition) => {
+                      const Icon = modeIcon(modeDefinition.id);
+                      const disabled = modeDefinition.plan === "pro" && (!session.loaded || session.tier !== "pro");
+                      return (
+                        <button
+                          key={modeDefinition.id}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => setMode(modeDefinition.id)}
+                          className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition ${
+                            mode === modeDefinition.id
+                              ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)] text-[var(--color-fg-default)] shadow-[inset_0_1px_0_rgba(22,176,168,0.12)]"
+                              : "border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] text-[var(--color-fg-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg-default)]"
+                          } ${disabled ? "cursor-not-allowed opacity-55" : ""}`}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                          {modeDefinition.shortLabel}
+                          {modeDefinition.plan === "pro" ? (
+                            <span className="rounded-full bg-[var(--color-bg-panel-subtle)] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-muted)]">
+                              Pro
+                            </span>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="relative flex min-h-0 flex-1 overflow-hidden">
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                    <div className="flex-1 overflow-y-auto px-5 py-3">
+                      {messages.length === 1 ? (
+                        <div className="mb-3 rounded-[1.25rem] border border-[var(--color-border-subtle)] bg-[linear-gradient(145deg,rgba(234,241,247,0.55),rgba(255,255,255,0.96))] p-4 shadow-[var(--shadow-1)]">
+                          <div className="text-sm font-semibold text-[var(--color-fg-default)]">
+                            Explain, troubleshoot, or guide the next safest step.
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {capabilityCards.slice(0, 4).map((card) => (
+                              <div
+                                key={card.title}
+                                className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] px-3 py-1.5 text-xs font-medium text-[var(--color-fg-default)]"
+                              >
+                                <card.icon className="h-3.5 w-3.5 text-[var(--color-accent-primary)]" />
+                                {card.title}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <div className="grid gap-3">
+                        {messages.map((message) => (
+                          <article
+                            key={message.id}
+                            className={`rounded-[1.35rem] px-4 py-3 shadow-[var(--shadow-1)] ${
+                              message.role === "assistant"
+                                ? "max-w-full border border-[var(--color-border-subtle)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(234,241,247,0.52))] text-[var(--color-fg-default)]"
+                                : "ml-auto max-w-[88%] bg-[linear-gradient(135deg,var(--color-accent-primary)_0%,var(--color-accent-primary-hover)_100%)] text-white"
+                            }`}
+                          >
+                            <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">
+                              {message.role === "assistant" ? `AI tutor · ${selectedMode.shortLabel}` : "You"}
+                            </div>
+                            <div className="whitespace-pre-wrap text-sm leading-6">
+                              {message.content || (loading && message.role === "assistant" ? "Thinking through the safest next step..." : "")}
+                            </div>
+                          </article>
+                        ))}
+                        <div ref={endRef} />
+                      </div>
+                    </div>
+
+                    <footer className="border-t border-[var(--color-border-subtle)] px-5 pb-4 pt-3">
+                      {!session.configured ? (
+                        <div className="rounded-[1.25rem] border border-[rgba(214,90,70,0.22)] bg-[rgba(214,90,70,0.08)] p-4 text-sm text-[var(--color-fg-muted)]">
+                          Tutor setup is incomplete. Add the required runtime configuration first.
+                        </div>
+                      ) : signedOut ? (
+                        <div className="rounded-[1.25rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] p-4">
+                          <div className="text-sm font-semibold text-[var(--color-fg-default)]">Sign in to activate your tutor</div>
+                          <p className="mt-1 text-sm leading-6 text-[var(--color-fg-muted)]">Your tutor uses lesson context, plan limits, and troubleshooting data tied to your account.</p>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <Link href="/login" className="button-primary">
+                              Log in
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                            <Link href="/pricing" className="button-secondary">View plans</Link>
+                          </div>
+                        </div>
+                      ) : atLimit ? (
+                        <div className="rounded-[1.25rem] border border-[rgba(201,134,18,0.28)] bg-[rgba(201,134,18,0.08)] p-4">
+                          <div className="text-sm font-semibold text-[var(--color-fg-default)]">Daily tutor limit reached</div>
+                          <p className="mt-1 text-sm leading-6 text-[var(--color-fg-muted)]">You’ve used today’s tutor allocation. Keep learning with the lesson content and support center, or upgrade for more tutor depth.</p>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <Link href="/support" className="button-secondary">Support center</Link>
+                            <Link href="/pricing" className="button-primary">Upgrade</Link>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-[1.35rem] border border-[var(--color-border-subtle)] bg-[linear-gradient(180deg,rgba(234,241,247,0.42),rgba(255,255,255,0.92))] p-3 shadow-[var(--shadow-1)]">
+                          <textarea
+                            ref={textareaRef}
+                            value={input}
+                            onChange={(event) => setInput(event.target.value)}
+                            placeholder={mode === "troubleshooting" ? "Describe the symptom, error, or step that failed." : "Ask about setup, concepts, troubleshooting, or what to learn next."}
+                            className="min-h-16 max-h-32 w-full resize-y bg-transparent px-2 py-1.5 text-sm leading-6 text-[var(--color-fg-default)] outline-none"
+                            aria-label="Your question for the AI tutor"
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" && !event.shiftKey) {
+                                event.preventDefault();
+                                void handleSend();
+                              }
+                            }}
+                          />
+                          <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-border-subtle)] px-2 pt-2.5">
+                            <div className="text-xs leading-5 text-[var(--color-fg-muted)]">
+                              Grounded by lesson context and trusted support notes.
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {messages.length > 1 ? (
+                                <button type="button" className="button-secondary" onClick={resetConversation}>
+                                  New thread
+                                </button>
+                              ) : null}
+                              <button type="button" className="button-primary" onClick={() => void handleSend()} disabled={loading || !input.trim()}>
+                                {loading ? "Sending..." : "Send"}
+                                <SendHorizontal className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </footer>
+                  </div>
+
+                  <AnimatePresence>
+                    {showToolkit ? (
+                      <motion.aside
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+                        className="absolute inset-y-0 right-0 z-10 flex w-full flex-col border-l border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[-16px_0_40px_rgba(12,19,36,0.12)] backdrop-blur sm:max-w-[22rem]"
+                      >
+                        <div className="border-b border-[var(--color-border-subtle)] px-4 py-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-semibold text-[var(--color-fg-default)]">Tutor tools</div>
+                              <p className="mt-1 text-xs leading-5 text-[var(--color-fg-muted)]">
+                                Keep the shortcuts and support nearby without shrinking the chat.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-2 text-[var(--color-fg-muted)] transition hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg-default)]"
+                              onClick={() => setShowToolkit(false)}
+                              aria-label="Close tutor tools"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-4 py-4">
+                          <section className="rounded-[1.1rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-4 shadow-[var(--shadow-1)]">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">
+                              Active mode
+                            </div>
+                            <div className="mt-2 text-sm font-semibold text-[var(--color-fg-default)]">{selectedMode.label}</div>
+                            <p className="mt-1 text-xs leading-5 text-[var(--color-fg-muted)]">{selectedMode.description}</p>
+                          </section>
+
+                          <section className="mt-3 rounded-[1.1rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-4 shadow-[var(--shadow-1)]">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">
+                              Starter prompts
+                            </div>
+                            <div className="mt-3 grid gap-2">
+                              {starterPrompts.map((prompt) => (
+                                <button
+                                  key={prompt}
+                                  type="button"
+                                  onClick={() => {
+                                    void handleSend(prompt);
+                                    setShowToolkit(false);
+                                  }}
+                                  disabled={loading || signedOut || atLimit || !session.configured}
+                                  className="rounded-[0.95rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-2.5 text-left text-sm leading-5 text-[var(--color-fg-default)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-panel)] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {prompt}
+                                </button>
+                              ))}
+                            </div>
+                          </section>
+
+                          {supportQuery ? (
+                            <section className="mt-3 rounded-[1.1rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-4 shadow-[var(--shadow-1)]">
+                              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">
+                                Grounding
+                              </div>
+                              <div className="mt-3 grid gap-2">
+                                {supportMatches.guides.slice(0, 1).map((guide) => (
+                                  <article key={guide.slug} className="rounded-[0.95rem] bg-[var(--color-bg-panel-subtle)] px-3 py-2.5">
+                                    <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-accent-primary-hover)]">Guide</div>
+                                    <div className="mt-1 text-sm font-semibold text-[var(--color-fg-default)]">{guide.title}</div>
+                                    <p className="mt-1 text-xs leading-5 text-[var(--color-fg-muted)]">{guide.nextStep}</p>
+                                  </article>
+                                ))}
+                                {supportMatches.compatibility.slice(0, 1).map((entry) => (
+                                  <article key={entry.slug} className="rounded-[0.95rem] bg-[var(--color-bg-panel-subtle)] px-3 py-2.5">
+                                    <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-accent-primary-hover)]">Compatibility</div>
+                                    <div className="mt-1 text-sm font-semibold text-[var(--color-fg-default)]">{entry.environment}</div>
+                                    <p className="mt-1 text-xs leading-5 text-[var(--color-fg-muted)]">{entry.notes}</p>
+                                  </article>
+                                ))}
+                                {supportMatches.issues.slice(0, 1).map((issue) => (
+                                  <article key={issue.slug} className="rounded-[0.95rem] bg-[rgba(201,134,18,0.08)] px-3 py-2.5">
+                                    <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-accent-warning)]">Known issue</div>
+                                    <div className="mt-1 text-sm font-semibold text-[var(--color-fg-default)]">{issue.title}</div>
+                                    <p className="mt-1 text-xs leading-5 text-[var(--color-fg-muted)]">{issue.workaround}</p>
+                                  </article>
+                                ))}
+                              </div>
+                            </section>
+                          ) : null}
+
+                          <section className="mt-3 rounded-[1.1rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-4 shadow-[var(--shadow-1)]">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">
+                              Capabilities
+                            </div>
+                            <div className="mt-3 grid gap-2">
+                              {capabilityCards.map((card) => (
+                                <div key={card.title} className="rounded-[0.95rem] bg-[var(--color-bg-panel-subtle)] px-3 py-2.5">
+                                  <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-fg-default)]">
+                                    <card.icon className="h-4 w-4 text-[var(--color-accent-primary)]" />
+                                    {card.title}
+                                  </div>
+                                  <p className="mt-1 text-xs leading-5 text-[var(--color-fg-muted)]">{card.body}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </section>
+
+                          <section className="mt-3 rounded-[1.1rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-4 shadow-[var(--shadow-1)]">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-accent-primary-hover)]">
+                              Quick links
+                            </div>
+                            <div className="mt-3 grid gap-2">
+                              {actionLinks.map((link) => (
+                                <Link
+                                  key={link.href}
+                                  href={link.href}
+                                  className="rounded-[0.95rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-2.5 text-sm font-medium text-[var(--color-fg-default)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-panel)]"
+                                >
+                                  {link.label}
+                                </Link>
+                              ))}
+                            </div>
+                          </section>
+                        </div>
+                      </motion.aside>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }

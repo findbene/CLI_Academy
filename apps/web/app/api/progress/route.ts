@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
+import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
 
 type ProgressBody = {
   completionData?: Record<string, unknown>;
@@ -57,6 +58,20 @@ async function resolveLesson(
     return null;
   }
 
+  const resolved = await resolveLessonFromDatabase(supabaseContext, pathSlug, lessonSlug);
+  if (resolved) {
+    return resolved;
+  }
+
+  await ensurePublishedCurriculumSynced();
+  return resolveLessonFromDatabase(supabaseContext, pathSlug, lessonSlug);
+}
+
+async function resolveLessonFromDatabase(
+  supabaseContext: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>,
+  pathSlug: string,
+  lessonSlug: string,
+) {
   const { data: path } = await supabaseContext.supabase
     .from("paths")
     .select("id, slug, tier_required")

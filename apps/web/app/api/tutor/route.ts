@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { buildTutorSupportContext } from "@/lib/support";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getTutorModeDefinition,
+  isTutorMode,
+  isTutorModeAllowed,
+  mapLearningModeToTutorMode,
+  type TutorMode,
+} from "@/lib/tutor-config";
 import { buildTutorSystemPrompt, getAnthropicClient, getTutorModel } from "@/lib/tutor";
 
 const encoder = new TextEncoder();
@@ -37,12 +44,70 @@ function streamFallback(text: string, responseHeaders?: Headers) {
   return response;
 }
 
+export async function GET() {
+  const supabaseContext = await createSupabaseServerClient();
+
+  if (!supabaseContext) {
+    return NextResponse.json({
+      configured: false,
+      dailyLimit: null,
+      remaining: null,
+      signedIn: false,
+      tier: null,
+    });
+  }
+
+  const {
+    data: { user },
+  } = await supabaseContext.supabase.auth.getUser();
+
+  if (!user) {
+    const response = NextResponse.json({
+      configured: true,
+      dailyLimit: null,
+      remaining: null,
+      signedIn: false,
+      tier: null,
+    });
+
+    return applySupabaseHeaders(response, supabaseContext.responseHeaders);
+  }
+
+  const { data: profile } = await supabaseContext.supabase
+    .from("profiles")
+    .select("tier")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const tier = profile?.tier === "pro" ? "pro" : "free";
+  const dailyLimit = tier === "pro" ? 100 : 10;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data: usage } = await supabaseContext.supabase
+    .from("tutor_usage")
+    .select("message_count")
+    .eq("user_id", user.id)
+    .eq("used_at", today)
+    .maybeSingle();
+
+  const response = NextResponse.json({
+    configured: true,
+    dailyLimit,
+    remaining: Math.max(0, dailyLimit - (usage?.message_count ?? 0)),
+    signedIn: true,
+    tier,
+  });
+
+  return applySupabaseHeaders(response, supabaseContext.responseHeaders);
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as {
     lessonTitle?: string;
     message?: string;
     tutorPreload?: string;
     learningMode?: string;
+    tutorMode?: TutorMode;
   };
 
   const question = body.message?.trim();
@@ -104,6 +169,22 @@ export async function POST(request: Request) {
   const tier = profile?.tier === "pro" ? "pro" : "free";
   const dailyLimit = tier === "pro" ? 100 : 10;
   const today = new Date().toISOString().slice(0, 10);
+  const tutorMode = isTutorMode(body.tutorMode)
+    ? body.tutorMode
+    : mapLearningModeToTutorMode(body.learningMode);
+
+  if (!isTutorModeAllowed(tutorMode, tier)) {
+    const modeMeta = getTutorModeDefinition(tutorMode);
+    const response = NextResponse.json(
+      {
+        message: `${modeMeta.label} mode is available on the Pro plan. Choose a free tutor mode or upgrade for deeper planning help.`,
+        ok: false,
+      },
+      { status: 403 },
+    );
+
+    return applySupabaseHeaders(response, supabaseContext.responseHeaders);
+  }
 
   const { data: usage } = await supabaseContext.supabase
     .from("tutor_usage")
@@ -158,6 +239,7 @@ export async function POST(request: Request) {
               lessonTitle,
               supportContext,
               tier,
+              tutorMode,
               tutorPreload: body.tutorPreload,
               learningMode: body.learningMode,
             }),
@@ -203,6 +285,7 @@ export async function POST(request: Request) {
       event_data: {
         lesson_title: lessonTitle ?? null,
         model: getTutorModel(),
+        tutor_mode: tutorMode,
       },
       event_type: "tutor_message",
       user_id: user.id,

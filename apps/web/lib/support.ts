@@ -64,6 +64,12 @@ export interface PathSupportBundle {
   issues: KnownIssue[];
 }
 
+export interface TutorSupportMatches {
+  compatibility: CompatibilityEntry[];
+  guides: TroubleshootingGuide[];
+  issues: KnownIssue[];
+}
+
 export const compatibilityEntries: CompatibilityEntry[] = [
   {
     bestFor: "Most Windows beginners who want the smoothest terminal and file-path experience.",
@@ -309,7 +315,7 @@ function scoreMatch(keywords: string[], haystack: string) {
   return keywords.reduce((score, keyword) => score + (haystack.includes(keyword) ? 1 : 0), 0);
 }
 
-export function buildTutorSupportContext(question: string, lessonTitle?: string) {
+export function getTutorSupportMatches(question: string, lessonTitle?: string) {
   const haystack = `${question} ${lessonTitle ?? ""}`.toLowerCase();
 
   const matchedGuides = troubleshootingGuides
@@ -344,11 +350,21 @@ export function buildTutorSupportContext(question: string, lessonTitle?: string)
     .slice(0, 2)
     .map(({ entry }) => entry);
 
+  return {
+    compatibility: matchedCompatibility,
+    guides: matchedGuides,
+    issues: matchedIssues,
+  } satisfies TutorSupportMatches;
+}
+
+export function buildTutorSupportContext(question: string, lessonTitle?: string) {
+  const matches = getTutorSupportMatches(question, lessonTitle);
+
   const parts: string[] = [];
 
-  if (matchedGuides.length) {
+  if (matches.guides.length) {
     parts.push(
-      `Relevant troubleshooting guides: ${matchedGuides
+      `Relevant troubleshooting guides: ${matches.guides
         .map(
           (guide) =>
             `${guide.title}. Likely cause: ${guide.likelyCause} Safest checks: ${guide.safestChecks.join(" ")}`,
@@ -357,9 +373,9 @@ export function buildTutorSupportContext(question: string, lessonTitle?: string)
     );
   }
 
-  if (matchedIssues.length) {
+  if (matches.issues.length) {
     parts.push(
-      `Relevant known issues: ${matchedIssues
+      `Relevant known issues: ${matches.issues
         .map(
           (issue) =>
             `${issue.title} (${issue.status}, updated ${issue.updatedAt}). Workaround: ${issue.workaround}`,
@@ -368,9 +384,9 @@ export function buildTutorSupportContext(question: string, lessonTitle?: string)
     );
   }
 
-  if (matchedCompatibility.length) {
+  if (matches.compatibility.length) {
     parts.push(
-      `Relevant compatibility notes: ${matchedCompatibility
+      `Relevant compatibility notes: ${matches.compatibility
         .map(
           (entry) =>
             `${entry.tool} on ${entry.environment} is ${entry.status.replaceAll("-", " ")} and was tested on ${entry.testedOn}. Notes: ${entry.notes}`,
