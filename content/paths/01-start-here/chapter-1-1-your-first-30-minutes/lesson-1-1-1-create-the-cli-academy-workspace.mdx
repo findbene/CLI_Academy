@@ -11,26 +11,107 @@ verifyType: "terminal_output"
 
 ## Objective
 
-We are going to start by building a digital safety net. When you're learning AI commands, you never want your agent accidentally reading or modifying personal files on your Desktop or Documents folder. 
-
-Today we are going to create a brand new, empty, and perfectly safe folder on your computer called `cli-academy`. Everything you do in this platform will happen inside that folder.
+You will use terminal commands to create a dedicated `cli-academy/` workspace folder with three subfolders. By the end of this lesson you will have built an organized home for every project, note, and screenshot you produce in CLI Academy — entirely from the command line.
 
 ## Walkthrough
 
-Let's keep this simple.
-1. Open your computer's file explorer (Finder on Mac, File Explorer on Windows).
-2. Go to your main Drive (like your `C:` drive or your home user folder).
-3. Right-click, select **New Folder**, and name it exactly: `cli-academy`.
-4. Open that new folder.
-5. Create three more folders inside it:
-   - `notes` (Where we'll keep copies of configurations)
-   - `projects` (Where we'll let Claude write code)
-   - `screenshots` (Where we'll capture errors)
+### Step 1 — Open your terminal
 
-> [!TIP]
-> If you're completely new to file management, or you want to know how to do this using your Terminal instead of clicking, ask your AI Tutor in the bottom right corner right now! Say: *"How do I make a folder called cli-academy in my terminal?"*
+**macOS / Linux:** Open **Terminal** (search "Terminal" in Spotlight or your app launcher).
 
-<VerificationBlock 
-  deliverable="A clean `cli-academy/` folder with `notes/`, `projects/`, and `screenshots/` subfolders."
-  verifyCheck="Folder tree matches the lesson checker exactly."
+**Windows:** Press `Win + X` and choose **Windows PowerShell** (or **Terminal**). All Windows commands in this course use PowerShell, not Command Prompt.
+
+### Step 2 — Navigate to your home directory
+
+Start from a known, safe location so the workspace lands in the right place.
+
+**macOS / Linux:**
+```bash
+cd ~
+pwd
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location ~
+Get-Location
+```
+
+You should see your home path printed — for example `/Users/yourname` or `C:\Users\yourname`.
+
+### Step 3 — Create the workspace and subfolders
+
+One command creates everything at once.
+
+**macOS / Linux:**
+```bash
+mkdir -p cli-academy/notes cli-academy/projects cli-academy/screenshots
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path cli-academy\notes, cli-academy\projects, cli-academy\screenshots -Force
+```
+
+What each subfolder is for:
+
+- **notes/** — configuration snapshots, checklists, and learning logs
+- **projects/** — code and files you build during lessons
+- **screenshots/** — saved error messages and terminal output for troubleshooting
+
+### Step 4 — Verify the folder tree
+
+**macOS / Linux:**
+```bash
+ls cli-academy
+```
+
+Expected output:
+```
+notes  projects  screenshots
+```
+
+**Windows PowerShell:**
+```powershell
+Get-ChildItem cli-academy -Name
+```
+
+Expected output:
+```
+notes
+projects
+screenshots
+```
+
+### Step 5 — Move into your workspace
+
+Most CLI Academy work starts from this folder, so step inside it now.
+
+**macOS / Linux:**
+```bash
+cd cli-academy
+pwd
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location cli-academy
+Get-Location
+```
+
+Confirm the printed path ends with `cli-academy`.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `mkdir: cannot create directory: Permission denied` | You are in a system-protected folder | Run `cd ~` first, then retry the `mkdir` command |
+| `New-Item : Access to the path is denied` | Same issue on Windows | Run `Set-Location ~` first, then retry |
+| Folder already exists — no error but nothing seems to happen | You ran the command before | This is safe. `mkdir -p` (macOS/Linux) and `-Force` (Windows) silently skip folders that already exist without deleting anything |
+| `command not found: mkdir` | You may be in an unusual shell | On Windows, confirm you opened **PowerShell**, not Command Prompt. On macOS/Linux, type `bash` then Enter to start a standard shell |
+| Path printed by `pwd` / `Get-Location` is not what you expected | You may have a custom home directory or OneDrive redirect on Windows | Use the full printed path in future commands instead of `~` |
+
+<VerificationBlock
+  deliverable="A cli-academy/ folder in your home directory containing notes/, projects/, and screenshots/ subfolders — all created from the terminal."
+  verifyCheck="Run ls cli-academy (macOS/Linux) or Get-ChildItem cli-academy -Name (Windows) and confirm notes, projects, and screenshots all appear."
 />

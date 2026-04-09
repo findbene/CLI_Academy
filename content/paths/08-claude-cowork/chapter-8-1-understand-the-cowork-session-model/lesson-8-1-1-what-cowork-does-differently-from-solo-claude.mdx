@@ -1,0 +1,117 @@
+---
+title: "What Cowork does differently from solo Claude"
+lessonNumber: "8.1.1"
+chapterNumber: "8.1"
+pathNumber: "8"
+tutorPreload: "Explain whether my task is better suited for a quick Claude question or a full Cowork session."
+verifyType: "terminal_output"
+---
+
+# What Cowork does differently from solo Claude
+
+## Objective
+
+By the end of this lesson you will understand the practical difference between asking Claude a one-off question and running a sustained Cowork session where Claude acts as a persistent working partner. You will be able to look at a task and decide which mode fits it best.
+
+## Walkthrough
+
+### Step 1 — Understand the two modes
+
+When you use Claude, two broad patterns emerge:
+
+**Solo Claude (quick question mode)**
+You open Claude Code or claude.ai, type a question, get an answer, and move on. Each prompt stands on its own. If you ask a follow-up, Claude may lose context about what came before once the conversation grows long.
+
+Good for:
+- "What does this error message mean?"
+- "Write me a regex that matches email addresses."
+- "Explain the difference between `git merge` and `git rebase`."
+
+**Cowork mode (sustained session)**
+You open a conversation with a clear goal, share context (files, constraints, success criteria), then iterate across many turns. Claude remembers everything you shared earlier in the session and builds on it. You review intermediate output, redirect, and refine until the deliverable is done.
+
+Good for:
+- "Help me write a project README, then a CONTRIBUTING guide that matches it."
+- "Review these three drafts, pick the strongest structure, and rewrite the other two to match."
+- "Walk through my onboarding checklist step by step and flag anything confusing."
+
+The core difference is **shared context across turns**. In a Cowork session, every turn inherits everything said before it. That is what makes multi-step collaboration possible.
+
+### Step 2 — See the difference in practice
+
+**Solo question (one turn, done):**
+
+You type into Claude Code:
+
+```
+> How do I create a `.gitignore` file?
+```
+
+Claude replies with instructions. You are done. There is no follow-up dependency.
+
+**Cowork session (multi-turn, iterative):**
+
+Turn 1 — you share context:
+
+```
+> I'm building a small Node.js CLI tool called `lintr`. Here is my current
+> folder structure and package.json. I need a README that covers installation,
+> usage, and contributing. Let's start with an outline.
+```
+
+Claude returns an outline. You review it.
+
+Turn 2 — you steer:
+
+```
+> Good outline, but move the "Contributing" section before "License" and add a
+> "Troubleshooting" section at the end. Then write the full README draft.
+```
+
+Claude writes the full draft, remembering your folder structure from Turn 1.
+
+Turn 3 — you refine:
+
+```
+> The installation section assumes macOS. Add Windows PowerShell equivalents
+> for every command. Also tone down the emoji — this is a developer tool, not a
+> marketing page.
+```
+
+Claude revises, still holding all prior context. That is Cowork in action.
+
+### Step 3 — Match tasks to the right mode
+
+Read each task below and decide: **Solo question** or **Cowork session**?
+
+| Task | Best mode | Why |
+|---|---|---|
+| "What flag makes `ls` show hidden files?" | Solo question | One fact, no iteration needed |
+| "Help me write and refine a 3-page project proposal over several drafts" | Cowork session | Multi-step, needs shared context |
+| "Convert this JSON to YAML" | Solo question | Single transformation |
+| "Review my API routes, suggest improvements, then rewrite the worst two" | Cowork session | Multi-step review + editing pass |
+| "What's the default port for PostgreSQL?" | Solo question | Fact lookup |
+| "Walk me through setting up CI/CD for my repo, test it, then document it" | Cowork session | Multi-phase project with iteration |
+
+### Step 4 — Try it yourself
+
+Pick a task you actually need to do this week. Ask yourself:
+
+1. Can I get the answer in a single prompt with no follow-up? → Solo question.
+2. Will I need to share files, review drafts, or iterate? → Cowork session.
+
+Write your answer down. You will use this judgment call in every remaining lesson of this path.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude forgets context you shared earlier in a long session | The conversation exceeded Claude's context window limit | Start a new session and re-share the essential context up front |
+| You get a great answer but it does not connect to your earlier request | You started a new conversation instead of continuing the existing one | Keep multi-step work inside a single conversation thread |
+| Claude gives a generic answer when you expected project-specific detail | You did not share enough context (files, constraints) at the start | Open the session with the relevant files and explicit constraints before asking your question |
+| Cowork session feels slow for a simple factual question | You used Cowork mode for a task that only needed a quick lookup | Switch to a single prompt — not everything needs a session |
+
+<VerificationBlock
+  deliverable="A written classification of three personal tasks as 'solo question' or 'cowork session' with a one-sentence reason for each."
+  verifyCheck="Learner correctly matches at least two out of three tasks to the right mode with a valid reason."
+/>

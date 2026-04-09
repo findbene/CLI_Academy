@@ -11,43 +11,92 @@ verifyType: "terminal_output"
 
 ## Objective
 
-Before diving into making changes, it's crucial to first understand the codebase you're working with. In this lesson, you'll learn how to approach an unfamiliar repository safely by summarizing its purpose, identifying potential areas for improvement, and outlining a plan—all before touching a single line of code. This practice ensures you build a solid foundation of understanding and minimize risks, preparing you to answer the AI Tutor's request for a codebase summary and the safest first improvement.
+Learn the most important Claude Code habit: always ask first, edit second. You will open a Claude Code session inside your practice repo and prompt it to summarize the project, list its files, and suggest the safest first improvement — all without changing a single line of code.
 
 ## Walkthrough
 
-It's natural to want to jump straight into fixing things, but patience is key! Our first step is always to understand, not to change.
+### Step 1 — Open a Claude Code session
 
-1.  **Create your `session-notes.md` file:**
-    Type `touch session-notes.md` and press Enter.
-    *   **Why this is safe:** The `touch` command simply creates an empty file if it doesn't exist, or updates its modification timestamp if it does. It never alters existing content or runs any code, making it a completely harmless operation. This file will be your personal workspace for notes and planning.
+Navigate to your practice repo and start Claude Code:
 
-2.  **Open `session-notes.md` in your preferred editor:**
-    Use a command like `nano session-notes.md` (or `code session-notes.md` if you have VS Code CLI tools installed).
+**macOS / Linux**
+```bash
+cd ~/projects/cli-practice
+claude
+```
 
-3.  **Add the following sections to `session-notes.md`:**
+**Windows PowerShell**
+```powershell
+Set-Location "$HOME\projects\cli-practice"
+claude
+```
 
-    ```markdown
-    # Session Notes
+You should see the interactive Claude Code prompt.
 
-    ## Codebase Summary
-    [Briefly describe what this repository appears to do and its main components.]
+### Step 2 — Ask Claude Code to describe the project
 
-    ## Affected Files
-    [List any files you anticipate might be relevant for a potential improvement, and why.]
+Type this prompt at the Claude Code `>` cursor:
 
-    ## Safest First Improvement Plan
-    [Describe a very small, low-risk improvement you could make, explaining why it's safe and beneficial.]
-    ```
+```
+What does this project do? List every file and give a one-sentence summary of each.
+```
 
-4.  **Fill in the sections:**
-    Based on your initial exploration of the repository (e.g., by listing files with `ls -F`, reading a `README.md` if present, or just thinking about common project structures), populate these sections thoughtfully. Remember, the goal isn't to be perfect, but to demonstrate your thinking process.
+Claude Code reads the files on disk and returns something like:
 
-5.  **Save and exit your editor:**
-    If using `nano`, press `Ctrl+O` (to write out/save), then `Enter`, then `Ctrl+X` (to exit).
+```
+This is a small Node.js greeter project.
 
-You've now created a clear plan and summary, showing you've taken the time to understand before making any changes. This is a critical habit for any developer!
+- index.js — Defines a greet() function and prints "Hello, Learner! Welcome to CLI Academy."
+- package.json — Standard Node config; the start script runs node index.js.
+- README.md — One-line description of the project.
+```
 
-<VerificationBlock 
-  deliverable="A `session-notes.md` with codebase summary, affected files, and plan."
-  verifyCheck="Learner gets a summary that names the right files and change area."
+Read the answer carefully. Confirm for yourself that it matches what you created in Lesson 3.1.2.
+
+### Step 3 — Ask what could be improved
+
+Now type:
+
+```
+What is the smallest, safest improvement you could suggest for this project?
+```
+
+Claude Code might suggest things like:
+
+- Adding a `.gitignore` file so `node_modules` is never committed.
+- Adding an `--help` flag to the greeter.
+- Expanding the README with usage instructions.
+
+You are **not** accepting any changes yet. You are building the habit of asking before editing.
+
+### Step 4 — Ask a follow-up question
+
+Practice going deeper. Try one of these prompts:
+
+```
+Which files would that change touch?
+```
+
+```
+What could go wrong if we made that change?
+```
+
+Claude Code responds with specifics — file names, potential side effects, and confidence level. This is the information you need before you say "yes, go ahead."
+
+### Step 5 — Leave the session without making changes
+
+Type `/exit` to quit. Nothing in your project has changed. You have a clear picture of the codebase and a candidate improvement for the next lesson.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Claude Code says "I don't see any files" | You launched `claude` from the wrong directory | Exit with `/exit`, `cd` into `cli-practice`, and relaunch |
+| The summary mentions files you did not create | Another project's files leaked into the folder | Run `ls` (macOS/Linux) or `Get-ChildItem` (PowerShell) to verify you are in the right folder |
+| Claude Code suggests a large refactor instead of a small improvement | The prompt was too open-ended | Ask again more narrowly: "What is the smallest change that improves this project without adding dependencies?" |
+| Session freezes or stops responding | Network hiccup to the Anthropic API | Press `Ctrl+C` to interrupt, then relaunch `claude` |
+
+<VerificationBlock
+  deliverable="A Claude Code summary of the practice repo and a candidate improvement, with zero files changed."
+  verifyCheck="Learner shares Claude Code's summary showing correct file names and the suggested improvement."
 />

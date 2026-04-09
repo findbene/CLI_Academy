@@ -1,0 +1,207 @@
+---
+title: "Generate a project README with Cowork"
+lessonNumber: "9.1.1"
+chapterNumber: "9.1"
+pathNumber: "9"
+tutorPreload: "Help me generate an accurate README by sharing my project files with Claude and iterating on each section."
+verifyType: "terminal_output"
+---
+
+# Generate a project README with Cowork
+
+## Objective
+
+By the end of this lesson you will use Claude Code to generate a real `README.md` for an existing project by sharing actual project files, iterating on individual sections, and verifying every claim in the README against your codebase
+
+## Walkthrough
+
+### Step 1 — Set up a practice project with realistic files
+
+You need a small project with real structure so Claude has something truthful to describe. Create a practice project with a few files.
+
+**macOS / Linux:**
+
+```bash
+mkdir readme-lab && cd readme-lab
+git init
+
+cat > app.py << 'EOF'
+"""Simple task tracker CLI."""
+import json, sys, os
+
+DB = "tasks.json"
+
+def load():
+    if os.path.exists(DB):
+        with open(DB) as f:
+            return json.load(f)
+    return []
+
+def save(tasks):
+    with open(DB, "w") as f:
+        json.dump(tasks, f, indent=2)
+
+def add(title):
+    tasks = load()
+    tasks.append({"title": title, "done": False})
+    save(tasks)
+    print(f"Added: {title}")
+
+def list_tasks():
+    for i, t in enumerate(load(), 1):
+        status = "done" if t["done"] else "todo"
+        print(f"  {i}. [{status}] {t['title']}")
+
+if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "list"
+    if cmd == "add":
+        add(" ".join(sys.argv[2:]))
+    else:
+        list_tasks()
+EOF
+
+echo "json" > requirements.txt
+echo "tasks.json" > .gitignore
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir readme-lab; cd readme-lab
+git init
+
+@"
+"""Simple task tracker CLI."""
+import json, sys, os
+
+DB = "tasks.json"
+
+def load():
+    if os.path.exists(DB):
+        with open(DB) as f:
+            return json.load(f)
+    return []
+
+def save(tasks):
+    with open(DB, "w") as f:
+        json.dump(tasks, f, indent=2)
+
+def add(title):
+    tasks = load()
+    tasks.append({"title": title, "done": False})
+    save(tasks)
+    print(f"Added: {title}")
+
+def list_tasks():
+    for i, t in enumerate(load(), 1):
+        status = "done" if t["done"] else "todo"
+        print(f"  {i}. [{status}] {t['title']}")
+
+if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "list"
+    if cmd == "add":
+        add(" ".join(sys.argv[2:]))
+    else:
+        list_tasks()
+"@ | Out-File -Encoding utf8 app.py
+
+"json" | Out-File -Encoding utf8 requirements.txt
+"tasks.json" | Out-File -Encoding utf8 .gitignore
+```
+
+Stage and commit so the project has a baseline:
+
+```bash
+git add -A
+git commit -m "Initial task tracker"
+```
+
+### Step 2 — Ask Claude to generate a README from your actual files
+
+Open Claude Code (or start a Cowork session) in the `readme-lab` directory and give it this prompt:
+
+```
+Read app.py, requirements.txt, and .gitignore. Generate a README.md that includes:
+- Project title and one-sentence description
+- Prerequisites
+- Installation steps
+- Usage examples with actual CLI commands
+- File structure overview
+```
+
+Claude will read your files and produce a draft README. Save it:
+
+```bash
+cat README.md
+```
+
+Skim the output. Does the description match what `app.py` actually does? Do the usage examples reference real commands like `python app.py add Buy groceries`?
+
+### Step 3 — Iterate on weak sections
+
+Almost every first draft has at least one problem — vague description, missing prerequisites, or invented features. Pick the weakest section and ask Claude to fix it:
+
+```
+The Usage section says the app supports "delete" but app.py has no delete command.
+Rewrite the Usage section to only list commands that actually exist in app.py.
+```
+
+After Claude updates the file, verify:
+
+```bash
+cat README.md
+```
+
+If Installation says `pip install -r requirements.txt` but your `requirements.txt` only lists the `json` standard library module, ask Claude to correct that too. The goal is zero fabricated claims.
+
+### Step 4 — Verify the README against the real project
+
+Run a manual cross-check. For each section of the README, confirm it matches reality.
+
+**macOS / Linux:**
+
+```bash
+# Verify the described CLI commands actually work
+python app.py add "Test task from README"
+python app.py list
+
+# Verify file structure claims
+ls -la
+```
+
+**Windows PowerShell:**
+
+```powershell
+# Verify the described CLI commands actually work
+python app.py add "Test task from README"
+python app.py list
+
+# Verify file structure claims
+Get-ChildItem
+```
+
+If any command listed in the README fails or produces different output than described, go back to Claude and ask for a correction referencing the actual error.
+
+### Step 5 — Commit the verified README
+
+```bash
+git add README.md
+git diff --staged
+git commit -m "Add verified README generated with Claude"
+```
+
+Review `git diff --staged` before committing. You should see the full README content.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| README describes features that do not exist | Claude hallucinated based on common patterns | Cross-check every listed feature against actual source code and ask Claude to remove invented ones |
+| Install instructions fail | Claude assumed a virtual environment or package manager you are not using | Run the install steps yourself and feed the actual error back to Claude |
+| Usage examples show wrong output | Claude guessed the output format | Run each example command, copy the real output, and paste it into your prompt for Claude to correct |
+| README mentions files that are not in the repo | Claude listed common project files generically | Run `ls` (or `Get-ChildItem`) and tell Claude exactly which files exist |
+
+<VerificationBlock
+  deliverable="A README.md whose every section matches the actual project files and working CLI commands."
+  verifyCheck="Each usage example runs successfully and produces the output described in the README."
+/>

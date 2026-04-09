@@ -1,0 +1,155 @@
+---
+title: "Find the entry point and config files"
+lessonNumber: "4.1.2"
+chapterNumber: "4.1"
+pathNumber: "4"
+tutorPreload: "Help me find the entry point, config files, and tech stack for this project."
+verifyType: "terminal_output"
+---
+
+# Find the entry point and config files
+
+## Objective
+
+Use Claude Code to pinpoint the main entry point file, locate every configuration file, and identify the tech stack of a real project. By the end you will have a short reference card listing these items with their exact file paths.
+
+## Walkthrough
+
+Continue working in the project you cloned in Lesson 4.1.1 (json-server or your substitute).
+
+### Step 1 — Ask Claude to find the entry point
+
+```
+Where is the main entry point of this application — the file that runs when a user starts the project? Show me the file path and the first few lines.
+```
+
+For a Node.js project, Claude identifies the `"main"` or `"bin"` field in `package.json`. For a Python project it finds `__main__.py`, a console-script entry in `pyproject.toml`, or a `main.py` file.
+
+Confirm by checking the manifest yourself:
+
+**macOS / Linux (Node.js)**
+
+```bash
+grep -E '"main"|"bin"' package.json
+```
+
+**Windows PowerShell (Node.js)**
+
+```powershell
+Select-String -Path package.json -Pattern '"main"|"bin"'
+```
+
+**macOS / Linux (Python)**
+
+```bash
+grep -E 'entry_points|console_scripts|\[project\.scripts\]' pyproject.toml setup.cfg setup.py 2>/dev/null
+```
+
+**Windows PowerShell (Python)**
+
+```powershell
+Select-String -Path pyproject.toml,setup.cfg,setup.py -Pattern 'entry_points|console_scripts' -ErrorAction SilentlyContinue
+```
+
+The output should match the file Claude named.
+
+### Step 2 — Ask Claude to list all config files
+
+```
+List every configuration file in this project — package.json, tsconfig, eslint, prettier, CI configs, Docker, etc. Give me the file path and a one-line description of what each one controls.
+```
+
+Claude returns a list like:
+- `package.json` — dependencies, scripts, and project metadata
+- `.eslintrc.json` — code style and lint rules
+- `.github/workflows/ci.yml` — continuous integration pipeline
+- `.gitignore` — files excluded from version control
+
+Scan the project root to see if Claude missed any dot-files:
+
+**macOS / Linux**
+
+```bash
+ls -a | head -30
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Force | Select-Object -First 30 Name
+```
+
+If you spot a config file Claude did not mention, ask: "What is `.editorconfig` for? You missed it in your list."
+
+### Step 3 — Ask Claude to identify the tech stack
+
+```
+What programming languages, frameworks, and key libraries does this project use? List them with version numbers from the config files.
+```
+
+Claude reads `package.json` dependencies (or `requirements.txt` / `pyproject.toml` for Python) and returns a clear stack list. Compare its answer to the actual dependency file:
+
+**macOS / Linux (Node.js)**
+
+```bash
+cat package.json | grep -A 30 '"dependencies"'
+```
+
+**Windows PowerShell (Node.js)**
+
+```powershell
+Get-Content package.json | Select-String -Pattern '"dependencies"' -Context 0,30
+```
+
+**macOS / Linux (Python)**
+
+```bash
+cat requirements.txt
+```
+
+**Windows PowerShell (Python)**
+
+```powershell
+Get-Content requirements.txt
+```
+
+### Step 4 — Build your reference card
+
+Ask Claude to consolidate everything:
+
+```
+Create a short markdown reference card with three sections: Entry Point, Config Files, and Tech Stack. Use the information you found in this project.
+```
+
+Review the output, then save it to a file:
+
+**macOS / Linux**
+
+```bash
+# Open your editor and paste Claude's output
+nano project-reference.md
+```
+
+**Windows PowerShell**
+
+```powershell
+# Open your editor and paste Claude's output
+notepad project-reference.md
+```
+
+This reference card is your deliverable. Whenever you return to this project later, you can read it instead of re-exploring from scratch.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude names a file that does not exist | The repo structure changed after Claude's training data | Ask Claude to list the actual files: "Run `ls src/` and tell me what you see" |
+| `grep` returns nothing for `"main"` in package.json | The project uses `"bin"` or `"exports"` instead | Search for those fields: `grep -E '"bin"|"exports"' package.json` |
+| Python project has no `pyproject.toml` | Older project using `setup.py` or `setup.cfg` only | Ask Claude: "This project has no pyproject.toml. Where are config and entry points defined?" |
+| Config file list seems incomplete | Dot-files are hidden by default on both OS platforms | Use `ls -a` (macOS/Linux) or `Get-ChildItem -Force` (Windows) to reveal them |
+| Claude lists configs from a different version of the project | Open-source repos evolve quickly | Rely on your own `ls -a` output as the source of truth and ask Claude about any files you do not recognize |
+
+<VerificationBlock
+  deliverable="A reference card listing the entry point, config files, and tech stack with verified file paths."
+  verifyCheck="Reference card names the correct entry-point file and at least three config files confirmed against the actual repo."
+/>

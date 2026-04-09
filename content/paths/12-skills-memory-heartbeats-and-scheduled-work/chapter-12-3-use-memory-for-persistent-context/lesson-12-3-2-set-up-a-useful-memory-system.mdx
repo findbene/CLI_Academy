@@ -1,0 +1,192 @@
+---
+title: "Set up a useful memory system"
+lessonNumber: "12.3.2"
+chapterNumber: "12.3"
+pathNumber: "12"
+tutorPreload: "Help me organize my Claude Code memory into topic files that actually help."
+verifyType: "terminal_output"
+---
+
+# Set up a useful memory system
+
+## Objective
+
+By the end of this lesson you will have a structured memory system with topic-based files — `preferences.md`, `patterns.md`, and `debugging.md` — containing real entries. You will verify that Claude Code loads these files and draws on them during a new session.
+
+## Walkthrough
+
+### Step 1 — Create the user memory directory if it does not exist
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/.claude/memory
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.claude\memory"
+```
+
+### Step 2 — Create preferences.md
+
+This file captures how you like to work. Claude reads it at session start and adjusts its behavior.
+
+**macOS / Linux**
+
+```bash
+cat > ~/.claude/memory/preferences.md << 'EOF'
+# Preferences
+
+- I prefer concise answers — skip unnecessary introductions.
+- Use TypeScript over JavaScript when both are options.
+- For git commits, follow conventional commit format.
+- I use VS Code as my editor.
+- On Windows I use PowerShell. On macOS I use zsh.
+- Do not add comments to code unless the logic is non-obvious.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Preferences
+
+- I prefer concise answers — skip unnecessary introductions.
+- Use TypeScript over JavaScript when both are options.
+- For git commits, follow conventional commit format.
+- I use VS Code as my editor.
+- On Windows I use PowerShell. On macOS I use zsh.
+- Do not add comments to code unless the logic is non-obvious.
+"@ | Set-Content -Path "$HOME\.claude\memory\preferences.md" -Encoding UTF8
+```
+
+### Step 3 — Create patterns.md
+
+This file records patterns and conventions you want Claude to follow consistently. Add entries as you discover them during real work.
+
+**macOS / Linux**
+
+```bash
+cat > ~/.claude/memory/patterns.md << 'EOF'
+# Patterns
+
+- When creating React components, use function declarations, not arrow functions.
+- API routes should validate inputs with Zod at the boundary.
+- File names use kebab-case, not camelCase or snake_case.
+- Test files go next to the source file, named `<source>.test.ts`.
+- Prefer early returns over deep nesting in functions.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Patterns
+
+- When creating React components, use function declarations, not arrow functions.
+- API routes should validate inputs with Zod at the boundary.
+- File names use kebab-case, not camelCase or snake_case.
+- Test files go next to the source file, named ``<source>.test.ts``.
+- Prefer early returns over deep nesting in functions.
+"@ | Set-Content -Path "$HOME\.claude\memory\patterns.md" -Encoding UTF8
+```
+
+### Step 4 — Create debugging.md
+
+This file captures lessons from past debugging sessions so Claude does not repeat the same investigation steps.
+
+**macOS / Linux**
+
+```bash
+cat > ~/.claude/memory/debugging.md << 'EOF'
+# Debugging Notes
+
+- On Windows, if .gitignore does not work, check for UTF-16 BOM encoding.
+  Fix: recreate the file with UTF-8 encoding using Set-Content -Encoding UTF8.
+- If Next.js dev server shows stale content, delete .next/ and restart.
+- If Python imports fail after installing a package, check that the
+  virtual environment is activated: `which python` should point to .venv/.
+- If git push is rejected, check for a pre-push hook that blocks dirty trees.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Debugging Notes
+
+- On Windows, if .gitignore does not work, check for UTF-16 BOM encoding.
+  Fix: recreate the file with UTF-8 encoding using Set-Content -Encoding UTF8.
+- If Next.js dev server shows stale content, delete .next/ and restart.
+- If Python imports fail after installing a package, check that the
+  virtual environment is activated: ``which python`` should point to .venv/.
+- If git push is rejected, check for a pre-push hook that blocks dirty trees.
+"@ | Set-Content -Path "$HOME\.claude\memory\debugging.md" -Encoding UTF8
+```
+
+### Step 5 — Verify all three files exist
+
+**macOS / Linux**
+
+```bash
+ls -la ~/.claude/memory/
+cat ~/.claude/memory/preferences.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem "$HOME\.claude\memory"
+Get-Content "$HOME\.claude\memory\preferences.md"
+```
+
+You should see `preferences.md`, `patterns.md`, and `debugging.md`.
+
+### Step 6 — Test that Claude Code loads your memory
+
+Start a new Claude Code session:
+
+```
+claude
+```
+
+Ask a question that your memory files should inform:
+
+```
+I have a file called myComponent.js. According to my preferences and patterns, 
+what changes should I make to the filename?
+```
+
+Claude should recommend:
+1. Rename from `.js` to `.ts` (preferences say TypeScript over JavaScript).
+2. Rename from camelCase to kebab-case: `my-component.ts` (patterns say kebab-case).
+
+This proves Claude loaded both `preferences.md` and `patterns.md`.
+
+Then test debugging memory:
+
+```
+My .gitignore file is not ignoring anything on Windows. What should I check first?
+```
+
+Claude should mention checking for UTF-16 BOM encoding, because that is in your `debugging.md`.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude does not reference your preferences | Memory files exceed 200 lines (only the first 200 lines of user memory auto-load) | Keep each file short and focused. Move low-priority entries to the bottom |
+| Claude follows old preferences you have since changed | You updated a preference but the old version still exists in the file | Open the memory file and delete or overwrite the outdated line. There should only be one entry per topic |
+| Memory files are not loading | Files are not in `~/.claude/memory/` exactly | Double-check the directory path. On Windows, `~` expands to `$HOME` which is usually `C:\Users\<username>` |
+| Claude mixes up project memory and user memory | You put project-specific notes in user memory | Move project-specific entries to `<project>/.claude/memory/` so they only load in that project |
+| Claude treats memory entries as absolute commands | You wrote entries as rigid rules instead of preferences | Phrase entries as preferences: "I prefer X" not "Always do X." Rigid rules belong in `CLAUDE.md`, not memory |
+
+<VerificationBlock
+  deliverable="Three organized memory files (preferences.md, patterns.md, debugging.md) in ~/.claude/memory/ with real, useful entries."
+  verifyCheck="Claude Code correctly applies your preferences, patterns, and debugging notes when asked relevant questions in a new session."
+/>

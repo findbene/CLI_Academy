@@ -10,72 +10,136 @@ verifyType: "terminal_output"
 # Build: daily brief assistant
 
 ## Objective
-By the end of this lesson, you will have built your very own daily brief assistant! This assistant will be a simple script that gathers key information from a few approved sources and presents it to you as a single, concise summary directly in your terminal. This is your first step towards automating your morning routine, giving you control over your information flow.
+Build a real CLAUDE.md-driven assistant that creates a morning summary file named `daily-brief-YYYY-MM-DD.md` by reading yesterday's git activity and your `TODO.md`.
 
 ## Walkthrough
+### Step 1: Create a bounded workspace and starter files
+Use a dedicated folder so your assistant never runs across unrelated repos.
 
-Let's create a small script that fetches headlines from a couple of RSS feeds.
+```bash
+mkdir -p daily-brief-agent
+cd daily-brief-agent
+git init
+printf "- [ ] Review yesterday's commits\n- [ ] Top 3 priorities today\n" > TODO.md
+```
 
-1.  **Create your script file:**
-    We'll create a new file where our commands will live.
+```powershell
+New-Item -ItemType Directory -Path daily-brief-agent -Force | Out-Null
+Set-Location daily-brief-agent
+git init
+@"
+- [ ] Review yesterday's commits
+- [ ] Top 3 priorities today
+"@ | Set-Content TODO.md
+```
 
-    ```bash
-    touch daily_brief.sh
-    ```
-    The `touch` command safely creates an empty file. It doesn't modify existing files.
+### Step 2: Add the assistant contract in CLAUDE.md
+This contract keeps the agent focused on one task: produce a daily brief, no side effects.
 
-2.  **Open and edit your script:**
-    Open this file using `nano`.
+```bash
+cat > CLAUDE.md <<'EOF'
+# Daily Brief Assistant Contract
 
-    ```bash
-    nano daily_brief.sh
-    ```
-    `nano` is a user-friendly text editor. Press `Ctrl+X` to exit.
+## Purpose
+Create one file named daily-brief-YYYY-MM-DD.md from yesterday's git log and TODO.md.
 
-3.  **Add the script content:**
-    Paste the following lines.
+## Allowed commands
+- git log --since="yesterday" --oneline
+- cat TODO.md
+- date
 
-    ```bash
-    #!/bin/bash
+## Must do
+1. Read git log for yesterday.
+2. Read TODO.md.
+3. Create daily-brief-YYYY-MM-DD.md with: Summary, Yesterday's Changes, Today's Priorities, Risks.
 
-    echo "--- Your Daily Brief ---"
-    echo "Date: $(date)"
-    echo ""
+## Must not do
+- Do not run any write command except creating the brief file.
+- Do not stage, commit, push, delete, or rename files.
+- Do not install packages.
 
-    echo "== News Headlines =="
-    curl -s 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml' | grep -E -o '<title>[^<]+</title>' | head -n 3 | sed -E 's/<title>//;s/<\/title>//'
-    echo ""
+## Stop conditions
+- If TODO.md is missing, stop and report the missing file.
+- If git log fails, stop and show the error.
+EOF
+```
 
-    echo "== Tech Updates =="
-    curl -s 'https://www.theverge.com/rss/index.xml' | grep -E -o '<title>[^<]+</title>' | head -n 3 | sed -E 's/<title>//;s/<\/title>//'
-    echo "----------------------"
-    ```
-    *   `#!/bin/bash`: Defines the script interpreter.
-    *   `echo`, `$(date)`: Safely prints text and the current date.
-    *   `curl -s 'URL'`: Safely fetches content from a web address (`-s` for silent). It's a read-only command.
-    *   `|`: Pipes output from one command to the next.
-    *   `grep -E -o '<title>[^<]+</title>'`: Safely searches for and extracts title tags.
-    *   `head -n 3`: Safely takes only the first 3 lines of output, making it concise.
-    *   `sed -E 's/<title>//;s/<\/title>//'`: Safely removes the `<title>` and `</title>` tags.
+```powershell
+@"
+# Daily Brief Assistant Contract
 
-4.  **Make your script executable:**
-    Give your script permission to run.
+## Purpose
+Create one file named daily-brief-YYYY-MM-DD.md from yesterday's git log and TODO.md.
 
-    ```bash
-    chmod +x daily_brief.sh
-    ```
-    `chmod +x` safely adds execute permission. It doesn't alter file content.
+## Allowed commands
+- git log --since=""yesterday"" --oneline
+- Get-Content TODO.md
+- Get-Date
 
-5.  **Run your daily brief:**
+## Must do
+1. Read git log for yesterday.
+2. Read TODO.md.
+3. Create daily-brief-YYYY-MM-DD.md with: Summary, Yesterday's Changes, Today's Priorities, Risks.
 
-    ```bash
-    ./daily_brief.sh
-    ```
-    This executes your script.
+## Must not do
+- Do not run any write command except creating the brief file.
+- Do not stage, commit, push, delete, or rename files.
+- Do not install packages.
 
-You now have a functional, basic daily brief assistant!
+## Stop conditions
+- If TODO.md is missing, stop and report the missing file.
+- If git log fails, stop and show the error.
+"@ | Set-Content CLAUDE.md
+```
+
+### Step 3: Seed one commit so the brief has data
+
+```bash
+printf "# Daily Brief Agent\n" > README.md
+git add README.md TODO.md CLAUDE.md
+git commit -m "chore: seed daily brief assistant"
+```
+
+```powershell
+"# Daily Brief Agent" | Set-Content README.md
+git add README.md TODO.md CLAUDE.md
+git commit -m "chore: seed daily brief assistant"
+```
+
+### Step 4: Trigger the assistant in Claude Code
+In Claude Code, run this exact prompt:
+
+```text
+Read CLAUDE.md and execute the contract exactly. Run git log --since="yesterday" --oneline, read TODO.md, and create daily-brief-YYYY-MM-DD.md only.
+```
+
+### Step 5: Verify output quality and boundaries
+
+```bash
+ls daily-brief-*.md
+cat daily-brief-*.md
+git status --short
+```
+
+```powershell
+Get-ChildItem daily-brief-*.md
+Get-Content daily-brief-*.md
+git status --short
+```
+
+The correct result is one generated brief file and no unrelated repo changes.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| No brief file created | Prompt ignored CLAUDE.md contract | Re-run with explicit instruction to follow CLAUDE.md first |
+| Agent touched extra files | Contract too vague on write limits | Add stricter "must not do" rules and rerun |
+| Empty "Yesterday's Changes" section | No commits in timeframe | Use `--since="2 days ago"` for testing, then revert |
+| Too much output or token/cost spike | Prompt asked for unnecessary analysis | Ask only for the four required sections and one file |
+| Agent suggests commit/push | Over-permission in instructions | Keep git write actions explicitly forbidden in CLAUDE.md |
 
 <VerificationBlock 
-  deliverable="A daily brief assistant that gathers from approved sources and outputs one summary."
-  verifyCheck="Assistant produces one correct daily brief on test data."
+  deliverable="A working daily brief assistant contract in CLAUDE.md plus one generated daily-brief-YYYY-MM-DD.md file."
+  verifyCheck="You can show: (1) git log and TODO.md were used, (2) exactly one brief file was created, and (3) no unrelated files were modified."
 />

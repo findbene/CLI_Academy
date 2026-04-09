@@ -10,57 +10,94 @@ verifyType: "terminal_output"
 # Add evidence, logs, and stop rules
 
 ## Objective
-By the end of this lesson, you will have created an "evidence and stop-rule pack" for your helper. This pack will tell your helper what clues to look for ("evidence") to confirm progress or success, and when to safely stop its actions ("stop rules"), making your automated tasks more reliable and predictable.
+Add a mandatory `agent-log.md` evidence trail and strict stop rules (max iterations, max file count, allowed glob scope) so your assistant cannot run away or silently overreach.
 
 ## Walkthrough
+### Step 1: Create evidence and rule files
 
-It's super important to build safety into your automated helpers right from the start! Evidence and stop rules are like giving your helper a checklist and an emergency brake.
+```bash
+touch agent-log.md stop-rules.md
+```
 
-1.  **Create your rule pack file:**
-    We'll start by creating a new file to hold our rules. Let's call it `helper_rules.yaml`. You can use the `touch` command, which safely creates an empty file without altering anything else on your system.
-    ```bash
-    touch helper_rules.yaml
-    ```
-    This command is safe because it simply creates an empty file in your current directory; it doesn't run any programs or make system-wide changes.
+```powershell
+New-Item agent-log.md -ItemType File -Force | Out-Null
+New-Item stop-rules.md -ItemType File -Force | Out-Null
+```
 
-2.  **Add evidence rules:**
-    Now, let's open `helper_rules.yaml` using your favorite text editor (like `nano` or VS Code). Inside, we'll define some "evidence" your helper should look for. Evidence could be a specific log message, a file appearing, or even the absence of an error.
-    ```yaml
-    # helper_rules.yaml
-    evidence:
-      - name: "Deployment Success Log"
-        type: "log_pattern"
-        pattern: "Deployment complete successfully"
-        path: "/var/log/my_app/deploy.log"
-      - name: "Configuration File Created"
-        type: "file_exists"
-        path: "/etc/my_app/config.conf"
-    ```
-    You're just describing patterns and file paths here, not executing anything. This is a safe step, defining what "success" or "expected behavior" looks like *before* any action is taken.
+### Step 2: Define non-negotiable stop rules
 
-3.  **Add stop rules:**
-    Below your `evidence` section in the same `helper_rules.yaml` file, let's add some `stop_rules`. These rules are crucial for preventing unwanted actions.
-    ```yaml
-    # helper_rules.yaml (continued)
-    stop_rules:
-      - name: "Critical Error Logged"
-        condition: "log_pattern_match"
-        pattern: "ERROR: Critical failure"
-        path: "/var/log/my_app/deploy.log"
-        action: "stop_immediately"
-      - name: "Disk Space Low"
-        condition: "system_metric"
-        metric: "disk_usage_percent"
-        threshold: 90 # Stop if disk usage is 90% or higher
-        action: "stop_and_notify"
-    ```
-    These rules are your helper's safety net. They tell it, "If you see X, stop immediately!" This makes your helper *safer* to use by preventing it from continuing under unsafe conditions.
+```bash
+cat > stop-rules.md <<'EOF'
+# Stop Rules
 
-4.  **Save your `helper_rules.yaml` file.**
+1. Max iterations per run: 3
+2. Max files processed: 20
+3. Allowed paths only: content/drafts/**/*.md, *.md at repo root
+4. If command errors twice in a row: stop
+5. If user approval is required and not granted: stop
+EOF
+```
 
-You've now successfully created an evidence and stop-rule pack! This file is your blueprint for a more controlled and safer helper.
+```powershell
+@"
+# Stop Rules
+
+1. Max iterations per run: 3
+2. Max files processed: 20
+3. Allowed paths only: content/drafts/**/*.md, *.md at repo root
+4. If command errors twice in a row: stop
+5. If user approval is required and not granted: stop
+"@ | Set-Content stop-rules.md
+```
+
+### Step 3: Define evidence log schema
+Add this format to `agent-log.md`:
+
+```md
+# Agent Evidence Log
+
+| Timestamp | Run ID | Task | Command/Action | Files Touched | Result | Stop Rule Triggered |
+| --- | --- | --- | --- | --- | --- | --- |
+```
+
+### Step 4: Update CLAUDE.md to enforce logging and stop rules
+Add this section:
+
+```md
+## Logging and stop enforcement
+- Every action must be logged to agent-log.md.
+- Before each step, check stop-rules.md.
+- If any stop rule is reached, halt immediately and report why.
+```
+
+### Step 5: Run one helper task and log it
+Prompt Claude Code:
+
+```text
+Read CLAUDE.md and stop-rules.md. Execute one helper task within allowed scope only, and append every action to agent-log.md using the defined table format.
+```
+
+Then verify:
+
+```bash
+cat agent-log.md
+```
+
+```powershell
+Get-Content agent-log.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| No evidence after run | Logging not mandatory in contract | Add explicit "log every action" requirement |
+| Agent processes too many files | Max file rule missing or ignored | Add `max files: 20` and require pre-check each step |
+| Agent loops repeatedly | No iteration cap | Enforce `max iterations: 3` |
+| Actions outside expected folders | Missing glob/path allowlist | Restrict to explicit patterns in stop-rules.md |
+| Cost overrun on long runs | No hard stop on retries | Stop after two consecutive command errors |
 
 <VerificationBlock 
-  deliverable="An evidence and stop-rule pack for the helper."
-  verifyCheck="Helper can be stopped and audited easily."
+  deliverable="A working safety pack: stop-rules.md plus agent-log.md with at least one real recorded run."
+  verifyCheck="You can point to logged actions and prove stop conditions (iterations, file count, path bounds) are explicitly enforced."
 />

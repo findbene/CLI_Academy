@@ -10,37 +10,188 @@ verifyType: "terminal_output"
 # Audit integrated workflow risk
 
 ## Objective
-In this lesson, you'll learn a critical skill: how to identify and document potential risks in new automated workflows. It's like being a detective for potential problems! Our goal is to create a clear, structured risk table for a new integration. By understanding these risks upfront, we can help protect our systems and data, ensuring everything runs smoothly and safely. This proactive approach is a cornerstone of responsible system administration.
+
+Every integration has a **risk profile** — the combination of what it can access, what happens if that access is misused, and how likely each failure mode is. Risk audits are not abstract exercises: they produce a prioritized list of things to fix, track, or accept before your integration goes into regular use.
+
+In this lesson you will inspect your live GitHub integration's current permissions and access log, identify over-permissioned tokens, rate your risk per finding, and produce a `workflow-risk-audit.md` that serves as an ongoing document you can update each time the integration changes.
 
 ## Walkthrough
-Let's imagine a new script that automatically transfers important data from one system to another every night. While automation is powerful, it's super important to pause and think about what could go wrong *before* it happens.
 
-1.  **Identify Key Integration Points:** Consider our hypothetical integration: a daily script pulls user data (System A), processes it (Script Logic), and uploads to a cloud platform (System B).
-2.  **Brainstorm Potential Risks:** For each point, what could fail? E.g., for System A: authentication failure, data corruption. For Script Logic: bugs, invalid parameters. For System B: API limits, downtime.
-3.  **Prepare Your Risk Document:** We'll use `nano`, a friendly text editor, to create a file for our risk table.
-    ```bash
-    nano workflow_risks.md
-    ```
-    This command is safe because `nano` only lets you create and edit text files in your current folder. It won't change any important system settings.
-4.  **Populate Your Risk Table:** Inside `nano`, define columns like `Component`, `Potential Risk`, `Impact`, `Likelihood`. Then, list your identified risks. For example:
-    ```
-    | Component       | Potential Risk           | Impact                     | Likelihood |
-    |-----------------|--------------------------|----------------------------|------------|
-    | Script Logic    | Incorrect data transformation | Inaccurate reports         | Medium     |
-    | Cloud Platform  | API rate limits reached  | Data upload delayed/failed | Low        |
-    ```
-    *Hint:* Use spaces to align columns for readability.
-5.  **Save Your Work:**
-    Press `Ctrl+O` (that's Control key and 'O'), then `Enter` to confirm the filename.
-6.  **Exit `nano`:**
-    Press `Ctrl+X` (Control key and 'X').
-7.  **Review Your Table:** You can view your created file using `cat`:
-    ```bash
-    cat workflow_risks.md
-    ```
-    This command safely displays the file's content to your screen without altering it.
+### Step 1 — Inspect current token scopes and rate limits
+
+**macOS / Linux:**
+```bash
+# Check active scopes
+gh auth status
+
+# Check GitHub API rate limit (how many calls remain)
+gh api /rate_limit --jq '.rate'
+```
+
+**Windows PowerShell:**
+```powershell
+# Check active scopes
+gh auth status
+
+# Check GitHub API rate limit
+gh api /rate_limit | ConvertFrom-Json | Select-Object -ExpandProperty rate
+```
+
+Expected rate limit output:
+```json
+{
+    "limit": 5000,
+    "remaining": 4987,
+    "reset": 1710000000,
+    "used": 13
+}
+```
+
+If `remaining` is under 100, your workflow is making too many API calls. That is a risk: rate-limit exhaustion can break scheduled jobs silently.
+
+### Step 2 — Identify what the token can actually reach
+
+**macOS / Linux:**
+```bash
+# Count how many repos this token has access to
+REPO_COUNT=$(gh api /user/repos --paginate --jq 'length' | paste -sd+ | bc)
+echo "Token has access to $REPO_COUNT repositories"
+
+# Check if token has org-level access
+gh api /user/orgs --jq '[.[].login]'
+```
+
+**Windows PowerShell:**
+```powershell
+# Count repos this token can access
+$repos = gh api /user/repos --paginate | ConvertFrom-Json
+Write-Host "Token has access to $($repos.Count) repositories"
+
+# Check org-level access
+gh api /user/orgs | ConvertFrom-Json | Select-Object -ExpandProperty login
+```
+
+A token with access to 50 repositories when your workflow only needs access to one is a risk: any bug or compromise exposes all 50.
+
+### Step 3 — Check GitHub's security log for this token's activity
+
+GitHub logs every action taken under your account. For a manual review:
+
+1. Open **github.com → Settings → Security log**
+2. Filter by `oauth_access` or the name of the application that holds the token
+3. Look for any actions you did not initiate
+
+From the CLI, you can also check which OAuth apps currently have access:
+
+**macOS / Linux:**
+```bash
+# List authorized OAuth apps (shows what third-party apps have tokens on your account)
+gh api /user/oauth_authorizations 2>/dev/null || \
+    echo "Note: This endpoint requires user:read scope. Check github.com/settings/applications manually."
+```
+
+**Windows PowerShell:**
+```powershell
+# List authorized OAuth apps
+try {
+        gh api /user/oauth_authorizations | ConvertFrom-Json | Select-Object app, scopes, created_at
+} catch {
+        Write-Host "Check github.com/settings/applications manually for the full list."
+}
+```
+
+### Step 4 — Rate each risk finding
+
+Use this scale for your risk table:
+
+| Rating | Meaning |
+|---|---|
+| 🔴 Critical | Could result in data loss, account takeover, or public exposure of private data |
+| 🟠 High | Could cause unintended writes to production, billing impact, or team disruption |
+| 🟡 Medium | Could cause delays, incorrect reads, or minor unintended state changes |
+| 🟢 Low | Cosmetic issues or hypotheticals with no current exploitation path |
+
+### Step 5 — Produce the workflow risk audit document
+
+**macOS / Linux:**
+```bash
+cd ~/projects/integration-safety
+
+cat > workflow-risk-audit.md << 'EOF'
+# Workflow Risk Audit
+
+Date: FILL_IN
+Integration: GitHub API via gh CLI
+Workflow: Read issues and post a monthly summary comment
+
+## Risk findings
+
+| # | Risk | Component | Impact | Rating | Mitigation |
+|---|------|-----------|--------|--------|------------|
+| 1 | Token has `repo` scope giving write access to ALL accessible repos | Token config | Unintended write to any repo | 🟠 High | Use fine-grained PAT scoped to one repo |
+| 2 | Token accesses 50+ repos but workflow only needs 1 | Token config | Blast radius of compromise is 50x larger than needed | 🟠 High | Scope fine-grained PAT to specific repo |
+| 3 | No API rate limit monitoring | Workflow | Silent failure when rate limit exhausted | 🟡 Medium | Add rate limit check before each scheduled run |
+| 4 | Revoke-and-rotate playbook exists but not tested | Process | Slow response during incident | 🟡 Medium | Dry-run the playbook in a sandbox quarterly |
+| 5 | gh auth token can print raw token in shared sessions | Local security | Token exposure via logs or screen share | 🟠 High | Document: never run gh auth token in shared terminals |
+
+## Accepted risks
+- GitHub's `repo` scope is unavoidable for private repo access (no read-only alternative exists)
+
+## Actions required before production use
+- [ ] Rotate to a fine-grained PAT scoped to the one repo this workflow needs
+- [ ] Add rate limit check to the workflow script
+- [ ] Test revoke-rotate playbook in sandbox
+EOF
+
+cat workflow-risk-audit.md
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\projects\integration-safety"
+
+$audit = @'
+# Workflow Risk Audit
+
+Date: FILL_IN
+Integration: GitHub API via gh CLI
+Workflow: Read issues and post a monthly summary comment
+
+## Risk findings
+
+| # | Risk | Component | Impact | Rating | Mitigation |
+|---|------|-----------|--------|--------|------------|
+| 1 | Token has `repo` scope giving write access to ALL accessible repos | Token config | Unintended write to any repo | 🟠 High | Use fine-grained PAT scoped to one repo |
+| 2 | Token accesses 50+ repos but workflow only needs 1 | Token config | Blast radius 50x larger than needed | 🟠 High | Scope fine-grained PAT to specific repo |
+| 3 | No API rate limit monitoring | Workflow | Silent failure on rate limit exhaustion | 🟡 Medium | Add rate limit check before each scheduled run |
+| 4 | Revoke-and-rotate playbook exists but not tested | Process | Slow incident response | 🟡 Medium | Dry-run the playbook quarterly |
+| 5 | gh auth token prints raw token in shared sessions | Local security | Token exposure | 🟠 High | Never run gh auth token in shared terminals |
+
+## Accepted risks
+- GitHub `repo` scope unavoidable for private repo access (no read-only alternative)
+
+## Actions required before production use
+- [ ] Rotate to fine-grained PAT scoped to this one repo only
+- [ ] Add rate limit check to workflow script
+- [ ] Test revoke-rotate playbook in sandbox
+'@
+
+$audit | Out-File -FilePath "workflow-risk-audit.md" -Encoding utf8
+Get-Content workflow-risk-audit.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Rate limit shows `remaining: 0` | Workflow script is calling the API in a tight loop | Add `gh api /rate_limit` checks; use pagination with `--paginate` not polling |
+| Repo count is much higher than expected | Token authenticated to a GitHub org with many repos | Use a fine-grained PAT scoped to specific repositories only |
+| Security log shows actions you did not take | Token may be compromised or shared with a third-party app | Revoke immediately using the playbook from lesson 17.3.1 |
+| Audit doc lists "TBD" mitigations | Skipping the hard thinking | Every 🔴 and 🟠 risk must have a concrete mitigation before the workflow runs in production |
+
+> **Safety warning — over-permissioned tokens are the most common root cause of API incidents.** A token with `repo` on 50 repositories means a single leaked token exposes 50 codebases. Fine-grained Personal Access Tokens (available at github.com/settings/tokens?type=beta) let you scope to a single repository and specific permission types — always prefer them over classic PATs for automated workflows.
 
 <VerificationBlock 
-  deliverable="A workflow risk table for the new integration."
-  verifyCheck="Top risks and mitigations are explicit."
+    deliverable="A workflow-risk-audit.md containing at least five risk findings with ratings (Critical/High/Medium/Low), mitigations, and a list of actions required before production use."
+    verifyCheck="Audit file exists, shows gh auth status scopes, rates at least one finding as High or Critical, and includes concrete mitigations."
 />

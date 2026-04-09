@@ -1,0 +1,211 @@
+---
+title: "Understand Git as your undo system"
+lessonNumber: "6.1.1"
+chapterNumber: "6.1"
+pathNumber: "6"
+tutorPreload: "Explain what just happened in my git log and how I can undo my last change safely."
+verifyType: "terminal_output"
+---
+
+# Understand Git as your undo system
+
+## Objective
+
+By the end of this lesson you will initialize a real Git repository, make tracked changes, prove those changes exist in history with `git log`, and undo a change safely. You will see Git as a working undo system — not an abstract concept.
+
+## Walkthrough
+
+### Step 1 — Create a project folder and initialize Git
+
+Open your terminal and create a practice project.
+
+**macOS / Linux:**
+
+```bash
+mkdir git-undo-lab && cd git-undo-lab
+git init
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir git-undo-lab; cd git-undo-lab
+git init
+```
+
+You should see:
+
+```
+Initialized empty Git repository in .../git-undo-lab/.git/
+```
+
+`git init` creates a hidden `.git` folder that stores all version history. It does not touch any existing files.
+
+### Step 2 — Create a file, check status, and see the diff
+
+Create a simple README file and watch Git detect it.
+
+**macOS / Linux:**
+
+```bash
+echo "# My Undo Lab" > README.md
+git status
+```
+
+**Windows PowerShell:**
+
+```powershell
+"# My Undo Lab" | Out-File -Encoding utf8 README.md
+git status
+```
+
+Git shows `README.md` as an **untracked file**. It knows the file exists but is not yet tracking changes to it.
+
+Now stage it and check the diff of what you are about to commit:
+
+```bash
+git add README.md
+git diff --staged
+```
+
+You will see green `+` lines showing every line being added. This is your chance to review before you commit.
+
+### Step 3 — Make your first commit and read the log
+
+```bash
+git commit -m "Add project README"
+```
+
+Now prove the history exists:
+
+```bash
+git log --oneline
+```
+
+Output:
+
+```
+a1b2c3d Add project README
+```
+
+That short hash (`a1b2c3d`) is a unique ID for this snapshot. You can always return to it.
+
+### Step 4 — Make a second change and see history grow
+
+**macOS / Linux:**
+
+```bash
+echo "This project demonstrates Git undo." >> README.md
+git diff
+```
+
+**Windows PowerShell:**
+
+```powershell
+Add-Content README.md "This project demonstrates Git undo."
+git diff
+```
+
+`git diff` (without `--staged`) shows unstaged changes — the lines you edited since the last commit. You will see a green `+` line for the new sentence.
+
+Stage and commit:
+
+```bash
+git add README.md
+git commit -m "Add project description to README"
+git log --oneline
+```
+
+Output now shows two commits, newest first:
+
+```
+b4c5d6e Add project description to README
+a1b2c3d Add project README
+```
+
+### Step 5 — Undo an uncommitted change with checkout
+
+Make a bad edit, then undo it before committing.
+
+**macOS / Linux:**
+
+```bash
+echo "DELETING EVERYTHING" >> README.md
+cat README.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+Add-Content README.md "DELETING EVERYTHING"
+Get-Content README.md
+```
+
+You see the bad line. Now restore the last committed version:
+
+```bash
+git checkout -- README.md
+```
+
+Check the file again — the bad line is gone. `git checkout -- <file>` replaces the working copy with the version from your last commit. It only affects the file you name.
+
+> **Safety note:** `git checkout -- <file>` permanently discards uncommitted changes to that file. If you need those changes, stage or stash them first.
+
+### Step 6 — Undo a committed change with revert
+
+What if you already committed something bad? Use `git revert`, which creates a new commit that reverses the previous one — keeping full history intact.
+
+**macOS / Linux:**
+
+```bash
+echo "BUG: wrong config value" >> README.md
+git add README.md
+git commit -m "Add broken config line"
+git log --oneline
+```
+
+**Windows PowerShell:**
+
+```powershell
+Add-Content README.md "BUG: wrong config value"
+git add README.md
+git commit -m "Add broken config line"
+git log --oneline
+```
+
+Now revert the bad commit:
+
+```bash
+git revert HEAD --no-edit
+git log --oneline
+```
+
+You will see a new `Revert "Add broken config line"` commit. The bad line is removed, and the history shows exactly what happened and when.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `fatal: not a git repository` | You ran a git command outside the project folder | `cd git-undo-lab` first |
+| `git diff` shows nothing | Changes are already staged | Use `git diff --staged` instead |
+| `git checkout -- file` did nothing | File was already committed; checkout only undoes unstaged edits | Use `git revert HEAD` to undo the last commit |
+| `error: pathspec 'README.md' did not match any file` | Typo in the filename | Run `git status` to see the exact filename |
+| Revert opens a text editor | Git wants a commit message for the revert | Save and close, or re-run with `--no-edit` flag |
+| PowerShell creates a file with BOM encoding | `>` redirect in PowerShell adds a byte-order mark | Use `Out-File -Encoding utf8` as shown above |
+
+<VerificationBlock>
+Run these commands and confirm the output matches:
+
+```bash
+git log --oneline
+```
+
+You should see at least four commits: the original README, the description, the broken config line, and the revert. The most recent commit message should start with `Revert`.
+
+```bash
+cat README.md   # macOS/Linux
+Get-Content README.md   # Windows PowerShell
+```
+
+The file should contain only the original two lines — no broken config line.
+</VerificationBlock>

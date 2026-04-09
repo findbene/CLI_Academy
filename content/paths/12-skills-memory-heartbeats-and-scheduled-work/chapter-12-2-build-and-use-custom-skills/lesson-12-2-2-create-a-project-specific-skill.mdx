@@ -1,0 +1,237 @@
+---
+title: "Create a project-specific skill"
+lessonNumber: "12.2.2"
+chapterNumber: "12.2"
+pathNumber: "12"
+tutorPreload: "Help me build a commit-message skill, install it, and verify it works."
+verifyType: "terminal_output"
+---
+
+# Create a project-specific skill
+
+## Objective
+
+By the end of this lesson you will build a real, useful Claude Code skill — a commit-message generator that writes conventional commit messages from staged changes. You will install the skill, trigger it with a real git diff, and verify the output follows your format rules.
+
+## Walkthrough
+
+### Step 1 — Create the skill directory
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/.claude/skills/commit-message
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills\commit-message"
+```
+
+### Step 2 — Write the SKILL.md file
+
+**macOS / Linux**
+
+```bash
+cat > ~/.claude/skills/commit-message/SKILL.md << 'SKILLEOF'
+# Commit Message Generator
+
+<description>
+Use this skill whenever the user asks to write a commit message,
+generate a conventional commit, review staged changes for a commit,
+or says "commit this", "write a commit message", or "what should
+the commit message be". Also trigger when the user runs /commit.
+</description>
+
+## Instructions
+
+1. Run `git diff --cached --stat` to see which files are staged.
+2. Run `git diff --cached` to read the actual changes.
+3. Identify the primary type of change:
+   - `feat` — new feature or capability
+   - `fix` — bug fix
+   - `refactor` — code restructuring without behavior change
+   - `docs` — documentation only
+   - `test` — adding or updating tests
+   - `chore` — maintenance, dependencies, config
+   - `style` — formatting, whitespace, no logic change
+   - `perf` — performance improvement
+4. Identify the scope (the module, component, or area affected).
+5. Write the commit message in this format:
+   ```
+   type(scope): short description under 72 characters
+
+   Optional body explaining WHY, not WHAT. Wrap at 80 characters.
+   ```
+6. Present the message and ask the user to confirm before committing.
+
+## Constraints
+
+- Subject line must be under 72 characters.
+- Never use emoji in the commit message.
+- Never bundle unrelated changes into one commit message. If the diff
+  contains unrelated changes, tell the user to split the commit.
+- Use imperative mood: "add login form" not "added login form".
+
+## Examples
+
+**Staged diff:** Added a new React login component with email/password fields.
+**Output:**
+```
+feat(auth): add login form with email and password fields
+```
+
+**Staged diff:** Fixed a crash when user object is null in the API auth middleware.
+**Output:**
+```
+fix(api): handle null user object in auth middleware
+
+The /me endpoint crashed when called with an expired session token
+because the user lookup returned null. Added a guard clause.
+```
+
+**Staged diff:** Mixed changes — new tests AND a config file rename.
+**Output:**
+"These changes are unrelated. Stage and commit them separately:
+1. The test additions → `test(auth): add unit tests for login validation`
+2. The config rename → `chore(config): rename env.sample to .env.example`"
+SKILLEOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Commit Message Generator
+
+<description>
+Use this skill whenever the user asks to write a commit message,
+generate a conventional commit, review staged changes for a commit,
+or says "commit this", "write a commit message", or "what should
+the commit message be". Also trigger when the user runs /commit.
+</description>
+
+## Instructions
+
+1. Run ``git diff --cached --stat`` to see which files are staged.
+2. Run ``git diff --cached`` to read the actual changes.
+3. Identify the primary type of change:
+   - ``feat`` — new feature or capability
+   - ``fix`` — bug fix
+   - ``refactor`` — code restructuring without behavior change
+   - ``docs`` — documentation only
+   - ``test`` — adding or updating tests
+   - ``chore`` — maintenance, dependencies, config
+   - ``style`` — formatting, whitespace, no logic change
+   - ``perf`` — performance improvement
+4. Identify the scope (the module, component, or area affected).
+5. Write the commit message in this format:
+   ``type(scope): short description under 72 characters``
+6. Present the message and ask the user to confirm before committing.
+
+## Constraints
+
+- Subject line must be under 72 characters.
+- Never use emoji in the commit message.
+- Never bundle unrelated changes into one commit message. If the diff
+  contains unrelated changes, tell the user to split the commit.
+- Use imperative mood: "add login form" not "added login form".
+
+## Examples
+
+**Staged diff:** Added a new React login component with email/password fields.
+**Output:** ``feat(auth): add login form with email and password fields``
+
+**Staged diff:** Fixed a crash when user object is null in the API auth middleware.
+**Output:** ``fix(api): handle null user object in auth middleware``
+
+**Staged diff:** Mixed changes — new tests AND a config file rename.
+**Output:** "These changes are unrelated. Stage and commit them separately."
+"@ | Set-Content -Path "$HOME\.claude\skills\commit-message\SKILL.md" -Encoding UTF8
+```
+
+### Step 3 — Create a test change to trigger the skill
+
+Use your practice project (or any git repo). Make a small change so you have something to commit.
+
+**macOS / Linux**
+
+```bash
+cd ~/claude-md-lab
+echo "# README" > README.md
+git add README.md
+git diff --cached --stat
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\claude-md-lab"
+"# README" | Set-Content -Path "README.md" -Encoding UTF8
+git add README.md
+git diff --cached --stat
+```
+
+You should see `README.md` listed as a new file.
+
+### Step 4 — Trigger the skill in Claude Code
+
+Start Claude Code in the project:
+
+```
+claude
+```
+
+Type:
+
+```
+Write a commit message for my staged changes.
+```
+
+Claude should follow the skill instructions: read the diff, identify it as a `docs` change, and produce something like:
+
+```
+docs: add project README
+```
+
+If Claude produces a message that uses emoji or exceeds 72 characters, the skill constraints are not being followed. Check that your `SKILL.md` file saved correctly.
+
+### Step 5 — Actually commit using the generated message
+
+Once you are happy with the message, you can either copy it and run git commit manually, or ask Claude:
+
+```
+Commit with that message.
+```
+
+Verify the commit landed:
+
+**macOS / Linux**
+
+```bash
+git log --oneline -1
+```
+
+**Windows PowerShell**
+
+```powershell
+git log --oneline -1
+```
+
+You should see the conventional commit message in your git history.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude writes a commit message without reading the diff | Skill description did not match your prompt wording | Add more trigger phrases to the `<description>` tag, matching the exact words you used |
+| Claude uses emoji in the message | Skill file was not saved correctly or has a syntax error | Re-read the file: `cat ~/.claude/skills/commit-message/SKILL.md` (macOS/Linux) or `Get-Content "$HOME\.claude\skills\commit-message\SKILL.md"` (PowerShell). Check for truncation or encoding issues |
+| "Nothing to commit" error | You forgot to stage changes with `git add` | Run `git add <file>` before asking Claude to write the message |
+| Claude ignores the format and writes a free-form message | The skill was not loaded because the session started before the file existed | Restart Claude Code. Skills are loaded at session start |
+| Subject line is over 72 characters | Claude sometimes ignores length constraints | Strengthen the constraint: "CRITICAL: Subject line MUST be under 72 characters. Count them." |
+
+<VerificationBlock
+  deliverable="A commit-message SKILL.md installed at ~/.claude/skills/commit-message/ that generates conventional commit messages from staged diffs."
+  verifyCheck="Claude Code reads your staged diff and produces a properly formatted conventional commit message when you ask it to write one."
+/>

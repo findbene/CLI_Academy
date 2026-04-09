@@ -79,7 +79,58 @@ export function LessonPlayer({
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [learningMode, setLearningMode] = useState<LearningMode>("guided");
+  const [sectionTitles, setSectionTitles] = useState<string[]>([]);
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const router = useRouter();
+
+  useEffect(() => {
+    function collectSections() {
+      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] h2"));
+      const titles = headings.map((heading) => heading.textContent?.trim()).filter((title): title is string => Boolean(title));
+      setSectionTitles(titles);
+      setActiveSectionIndex(0);
+    }
+
+    collectSections();
+    window.addEventListener("resize", collectSections);
+
+    return () => {
+      window.removeEventListener("resize", collectSections);
+    };
+  }, [lessonSlug]);
+
+  useEffect(() => {
+    if (!sectionTitles.length) {
+      return;
+    }
+
+    function updateActiveSection() {
+      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] h2"));
+      if (!headings.length) {
+        return;
+      }
+
+      let currentIndex = 0;
+      for (const [index, heading] of headings.entries()) {
+        if (heading.getBoundingClientRect().top <= 180) {
+          currentIndex = index;
+        }
+      }
+
+      setActiveSectionIndex(currentIndex);
+    }
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+    };
+  }, [sectionTitles, lessonSlug]);
+
+  const sectionProgressPercent = sectionTitles.length
+    ? Math.round(((activeSectionIndex + 1) / sectionTitles.length) * 100)
+    : 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -222,6 +273,35 @@ export function LessonPlayer({
               <div className="panel p-6">{children}</div>
             </div>
             <aside className="grid h-fit gap-4">
+              {sectionTitles.length ? (
+                <div className="panel p-5">
+                  <div className="flex items-center justify-between gap-3 text-sm font-semibold">
+                    <span>Lesson progress</span>
+                    <span className="text-[var(--color-fg-muted)]">{sectionProgressPercent}%</span>
+                  </div>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--color-border-subtle)]">
+                    <div
+                      className="h-full rounded-full bg-[var(--color-accent-primary)] transition-all duration-300"
+                      style={{ width: `${sectionProgressPercent}%` }}
+                    />
+                  </div>
+                  <div className="mt-4 grid gap-2">
+                    {sectionTitles.map((title, index) => (
+                      <div
+                        key={`${lessonSlug}-${title}`}
+                        className={`rounded-[var(--radius-lg)] px-3 py-2 text-sm ${
+                          index === activeSectionIndex
+                            ? "bg-[var(--color-accent-subtle)] text-[var(--color-fg-default)]"
+                            : "bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-muted)]"
+                        }`}
+                      >
+                        {index + 1}. {title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
               <div className="panel p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   <BookOpen className="size-4 text-[var(--color-accent-primary)]" />

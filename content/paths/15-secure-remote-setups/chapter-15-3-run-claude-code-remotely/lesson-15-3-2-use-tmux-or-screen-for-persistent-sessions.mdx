@@ -1,0 +1,141 @@
+---
+title: "Use tmux or screen for persistent sessions"
+lessonNumber: "15.3.2"
+chapterNumber: "15.3"
+pathNumber: "15"
+tutorPreload: "Show me how to use tmux so Claude Code survives an SSH disconnect."
+verifyType: "terminal_output"
+---
+
+# Use tmux or screen for persistent sessions
+
+## Objective
+
+By the end of this lesson you will be able to start a tmux session on a remote server, run Claude Code inside it, detach from the session, close your SSH connection, reconnect later, and reattach to find Claude Code still running exactly where you left off.
+
+## Walkthrough
+
+When you close your laptop lid or your WiFi drops, your SSH connection dies — and every process attached to it dies too, including Claude Code. Terminal multiplexers like tmux and screen solve this by running your shell inside a persistent session on the server. You detach when you leave and reattach when you come back.
+
+### Step 1 — Install tmux on the server
+
+SSH into your server first, then:
+
+**Ubuntu / Debian:**
+
+```bash
+sudo apt update && sudo apt install -y tmux
+```
+
+**Amazon Linux / CentOS / RHEL:**
+
+```bash
+sudo yum install -y tmux
+```
+
+**Verify:**
+
+```bash
+tmux -V
+# tmux 3.x
+```
+
+### Step 2 — Start a named tmux session
+
+```bash
+tmux new -s work
+```
+
+This creates a new session named `work`. Your terminal now has a green status bar at the bottom — that is tmux's indicator.
+
+Everything you type from here runs inside the tmux session. If your SSH connection drops, the session keeps running on the server.
+
+### Step 3 — Run Claude Code inside tmux
+
+```bash
+cd ~/projects/my-app
+claude
+```
+
+Claude Code is now running inside a persistent session. You can interact with it normally.
+
+### Step 4 — Detach from the session
+
+Press `Ctrl+b`, then press `d`.
+
+That key sequence means: send the tmux prefix (`Ctrl+b`), then the detach command (`d`). You are back at the regular server shell. Claude Code is still running inside the detached tmux session.
+
+You can now safely disconnect from SSH:
+
+```bash
+exit
+```
+
+### Step 5 — Reattach to the session later
+
+SSH back into the server:
+
+```bash
+ssh your-user@your-server.example.com
+```
+
+List active tmux sessions:
+
+```bash
+tmux ls
+# work: 1 windows (created Wed Apr  9 10:30:00 2026)
+```
+
+Reattach:
+
+```bash
+tmux attach -t work
+```
+
+Claude Code is right where you left it — no work lost.
+
+### Step 6 — Essential tmux commands
+
+| Action | Key / Command |
+|---|---|
+| Detach | `Ctrl+b` then `d` |
+| List sessions | `tmux ls` |
+| Attach to a session | `tmux attach -t session-name` |
+| Create a new window (tab) | `Ctrl+b` then `c` |
+| Switch to next window | `Ctrl+b` then `n` |
+| Switch to previous window | `Ctrl+b` then `p` |
+| Split pane horizontally | `Ctrl+b` then `"` |
+| Split pane vertically | `Ctrl+b` then `%` |
+| Move between panes | `Ctrl+b` then arrow key |
+| Kill current session | `tmux kill-session -t session-name` |
+| Scroll up (copy mode) | `Ctrl+b` then `[`, then arrow keys or Page Up; press `q` to exit |
+
+### Step 7 — Alternative: GNU Screen (if tmux is unavailable)
+
+Some older servers have `screen` but not `tmux`:
+
+```bash
+screen -S work          # Start a named session
+# ... do your work ...
+# Ctrl+a then d          # Detach
+screen -ls              # List sessions
+screen -r work          # Reattach
+```
+
+tmux is preferred for its better pane management and scripting, but screen works fine for keeping a single session alive.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `tmux: command not found` | Not installed | Install with `apt install tmux` or `yum install tmux` |
+| `no sessions` when running `tmux ls` | Session was killed (server rebooted, or you ran `tmux kill-session`) | Start a new session with `tmux new -s work` |
+| Detach shortcut does not work | Your terminal intercepts `Ctrl+b` (some Windows terminals do this) | Try `Ctrl+b` then release both keys, then press `d`; or remap the prefix in `~/.tmux.conf` |
+| Cannot scroll up in tmux | tmux captures scroll by default | Enter copy mode: `Ctrl+b` then `[`, scroll with arrow keys, press `q` to exit |
+| `sessions should be nested with care` warning | You are trying to start tmux inside an existing tmux session | You are already in tmux — just create a new window with `Ctrl+b` then `c` |
+| Claude Code session loses context after reattach | Claude Code itself timed out (API token expired or idle timeout) | Restart Claude Code inside the tmux session — the tmux session is still alive, only the Claude process exited |
+| Server rebooted and all tmux sessions are gone | tmux sessions do not survive reboots | This is expected; restart tmux and Claude Code after a reboot |
+
+<VerificationBlock>
+Run `tmux new -s test-session`, then inside the session run `echo "tmux is working"`. Detach with `Ctrl+b` then `d`. Run `tmux ls` to confirm the session is listed. Reattach with `tmux attach -t test-session` and verify your shell history is intact. Finally, exit the session with `exit` and confirm `tmux ls` shows no sessions.
+</VerificationBlock>

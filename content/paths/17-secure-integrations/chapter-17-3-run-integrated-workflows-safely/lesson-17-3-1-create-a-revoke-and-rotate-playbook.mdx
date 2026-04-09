@@ -10,57 +10,202 @@ verifyType: "terminal_output"
 # Create a revoke-and-rotate playbook
 
 ## Objective
-You'll learn to create a quick "revoke-and-rotate" playbook using CLI commands. This playbook will act as an emergency plan to swiftly disable a potentially compromised integration and issue new credentials, helping you secure your systems quickly and confidently.
+
+Token compromise is not a hypothetical. GitHub tokens leak through git history, CI/CD logs, screenshots, and accidental `echo` calls. When that happens, you have one goal: **stop the bleeding fast**. A revoke-and-rotate playbook is a pre-written, tested sequence of commands you can run in under five minutes without having to think under pressure.
+
+In this lesson you will learn the real commands for revoking a GitHub token, verify revocation worked, generate a fresh token with only the scopes you need, and write a playbook document you can execute without hesitation in an emergency.
 
 ## Walkthrough
 
-**Step 1: Understand the Goal – Speed and Safety**
-When an integration might be compromised, the priority is to stop unauthorized access *immediately* (revoke) and then restore functionality safely with new credentials (rotate). Your playbook will be a script or a clear sequence of commands to do this without hesitation.
+### Step 1 — Understand the three triggers for revocation
 
-**Step 2: Identify Revocation Commands**
-First, you need the command to disable or revoke the current credentials for your integration.
-*   **Example (generic):** `your-cli-tool integration revoke --id <integration_id> --key <access_key_to_revoke>`
-    *   *Why this is safe:* This command specifically targets the *old*, potentially compromised key, disabling its access. It doesn't affect other integrations or system settings. Always confirm the exact syntax with your tool's documentation (e.g., `your-cli-tool integration revoke --help`).
+| Trigger | Action |
+|---|---|
+| Token appeared in git history, a log file, or a screenshot | Revoke immediately — assume it is compromised |
+| Team member who held the token leaves the organization | Revoke and rotate within 24 hours |
+| Scheduled maintenance (every 90 days recommended) | Rotate proactively — no urgency but plan downtime |
+| CI/CD provider had a breach | Revoke all tokens that CI accessed |
 
-**Step 3: Identify Rotation Commands**
-Next, you'll need the command to generate new credentials.
-*   **Example (generic):** `your-cli-tool integration create-key --id <integration_id> --output json`
-    *   *Why this is safe:* This command creates *new*, pristine credentials. It does not re-enable the old key or expose existing secrets. The `--output json` helps capture the new key easily.
+### Step 2 — Check your current active GitHub sessions
 
-**Step 4: Assemble Your Playbook**
-Combine these commands into a simple script. Use comments (`#`) to explain each step and placeholders (`<...>` ) for information you'll fill in during an emergency.
+Before revoking, know what you are revoking:
+
+**macOS / Linux:**
+```bash
+# See which token is active and what it can do
+gh auth status
+
+# Print the raw token so you can find it in github.com/settings/tokens
+# WARNING: this prints the token value — do not run this in shared terminal sessions
+gh auth token
+```
+
+**Windows PowerShell:**
+```powershell
+# See which token is active and what it can do
+gh auth status
+
+# Print the raw token value (see warning above)
+gh auth token
+```
+
+Copy the token prefix (first 8 characters like `gho_XXXX`) so you can identify it on github.com/settings/tokens.
+
+### Step 3 — Revoke the current token
+
+There are two revocation paths:
+
+**Path A: Revoke via gh CLI (fastest)**
 
 ```bash
-#!/bin/bash
-# revoke_rotate_playbook.sh
+# macOS / Linux / Windows PowerShell — same command
+gh auth logout
+```
 
-# This playbook helps quickly disable and re-enable an integration with new credentials.
-# IMPORTANT: Replace placeholders like <INTEGRATION_ID> before running in a real scenario.
-# ALWAYS test this playbook in a safe, non-production environment first!
+This removes the stored token from your local keychain. The token itself may still be valid on GitHub until you also delete it at github.com/settings/tokens.
 
-# Step 1: Revoke the old, potentially compromised credentials.
-echo "Revoking old credentials for integration: <INTEGRATION_ID>..."
-# Replace `your-cli-tool` with your actual CLI tool name.
-# Replace `<INTEGRATION_ID>` and `<ACCESS_KEY_TO_REVOKE>` with the actual values.
-your-cli-tool integration revoke --id <INTEGRATION_ID> --key <ACCESS_KEY_TO_REVOKE>
-# Always double-check the command output to confirm revocation was successful.
+**Path B: Revoke directly on GitHub (most thorough)**
 
-# Step 2: Generate new credentials.
-echo "Generating new credentials for integration: <INTEGRATION_ID>..."
-# Capture the output, which will contain your new access key/secret.
-# Replace `your-cli-tool` with your actual CLI tool name.
-NEW_CREDENTIALS=$(your-cli-tool integration create-key --id <INTEGRATION_ID> --output json)
+1. Go to: **github.com → Settings → Developer settings → Personal access tokens**
+2. Find the token by name or the prefix you copied in Step 2
+3. Click **Delete** (classic PAT) or **Revoke** (fine-grained PAT)
+4. Confirm the modal
 
-echo "New credentials generated. IMPORTANT: Securely store these and update your application!"
-echo "$NEW_CREDENTIALS"
+After deletion, verify the token no longer works:
 
-# Step 3: (Optional, but highly recommended) Update your application/service with the NEW_CREDENTIALS.
-# This step depends on your specific application and configuration.
-echo "Remember to update your application configuration with these new credentials."
-# Example: If your application reads from a specific file, you might replace it:
-# cp <path_to_new_credentials_file> <path_to_application_credentials_file>
+**macOS / Linux:**
+```bash
+# After gh auth logout, this should return an auth error
+gh api /user
+# Expected: "To get started with GitHub CLI, please run:  gh auth login"
+```
+
+**Windows PowerShell:**
+```powershell
+gh api /user
+# Expected: error message indicating no auth token
+```
+
+### Step 4 — Rotate: create a fresh token with minimum scopes
+
+**macOS / Linux:**
+```bash
+# Login fresh — this creates a new token via the OAuth device flow
+# Specify only the scopes your workflow needs (comma-separated, no spaces)
+gh auth login --scopes repo,read:org
+
+# Confirm the new token is active and scoped correctly
+gh auth status
+```
+
+**Windows PowerShell:**
+```powershell
+gh auth login --scopes repo,read:org
+gh auth status
+```
+
+If you need a raw PAT (for CI/CD secrets) instead of the OAuth flow:
+1. Go to **github.com → Settings → Developer settings → Fine-grained personal access tokens → Generate new token**
+2. Set expiry to 30–90 days (never choose "No expiration")
+3. Select only the repositories and permissions the workflow needs
+4. Copy the token and store it immediately in your CI/CD secrets vault — not in a file, not in Slack
+
+### Step 5 — Write the playbook document
+
+**macOS / Linux:**
+```bash
+cd ~/projects/integration-safety
+
+cat > revoke-rotate-playbook.md << 'EOF'
+# Revoke-and-Rotate Playbook: GitHub
+
+**Use this when:** Token leaked / team member departed / scheduled 90-day rotation
+
+## Step 1 — Identify the token (< 1 min)
+```
+gh auth status
+gh auth token   # WARNING: prints raw token — use only in a private terminal
+```
+Copy the token prefix to identify it on github.com/settings/tokens.
+
+## Step 2 — Revoke locally (< 30 sec)
+```
+gh auth logout
+```
+
+## Step 3 — Revoke on GitHub (< 2 min)
+1. Open: github.com/settings/tokens
+2. Find and delete/revoke the token
+3. Verify: `gh api /user` returns an auth error
+
+## Step 4 — Rotate with minimum scopes (< 2 min)
+```
+gh auth login --scopes repo,read:org
+gh auth status
+```
+
+## Step 5 — Update dependent systems (varies)
+- Update any CI/CD secrets that used the old token
+- Update any `.env` files on servers that stored the old token
+- Notify the team that credentials have rotated
+
+## Recovery time target: < 5 minutes for Steps 1–4
+EOF
+
+cat revoke-rotate-playbook.md
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\projects\integration-safety"
+
+$playbook = @'
+# Revoke-and-Rotate Playbook: GitHub
+
+**Use this when:** Token leaked / team member departed / scheduled 90-day rotation
+
+## Step 1 — Identify the token (< 1 min)
+  gh auth status
+  gh auth token   # WARNING: prints raw token — use only in a private terminal
+Copy the token prefix to identify it on github.com/settings/tokens.
+
+## Step 2 — Revoke locally (< 30 sec)
+  gh auth logout
+
+## Step 3 — Revoke on GitHub (< 2 min)
+1. Open: github.com/settings/tokens
+2. Find and delete/revoke the token
+3. Verify: gh api /user returns an auth error
+
+## Step 4 — Rotate with minimum scopes (< 2 min)
+  gh auth login --scopes repo,read:org
+  gh auth status
+
+## Step 5 — Update dependent systems (varies)
+- Update any CI/CD secrets that used the old token
+- Update any .env files on servers that stored the old token
+- Notify the team that credentials have rotated
+
+## Recovery time target: < 5 minutes for Steps 1-4
+'@
+
+$playbook | Out-File -FilePath "revoke-rotate-playbook.md" -Encoding utf8
+Get-Content revoke-rotate-playbook.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `gh auth logout` succeeds but `gh api /user` still works | A second token for the same account is stored | Check `gh auth status --show-token`; look for multiple hosts |
+| Token deleted on GitHub but still works in curl | GitHub token invalidation can take up to 60 seconds to propagate | Wait 60 seconds and retry |
+| `gh auth login --scopes` prompts for browser but browser does not open | Headless/SSH environment | Use `gh auth login --with-token` and paste a pre-generated PAT |
+| CI/CD pipeline breaks after rotation | Pipeline was using the old token stored as a secret | Update the secret in your CI/CD provider's vault and re-run the pipeline |
+| Playbook not found during an incident | Stored only locally | Commit `revoke-rotate-playbook.md` to a private runbooks repo or a password-manager note |
+
+> **Safety warning — `gh auth token` is dangerous in shared contexts:** Running `gh auth token` in a screen-share session, CI log, or recorded terminal session exposes your raw OAuth token. That token is as powerful as your GitHub password with the granted scopes. Only run it in an isolated private terminal, treat the output as a secret, and delete it from your terminal scrollback immediately.
 
 <VerificationBlock 
-  deliverable="A playbook for disabling the integration quickly."
-  verifyCheck="Learner can revoke access without guessing."
+  deliverable="A revoke-rotate-playbook.md with real commands for revoking via gh auth logout, verifying revocation, rotating with minimum scopes via gh auth login --scopes, and updating dependent systems."
+  verifyCheck="Playbook file exists with all five steps and gh auth status confirms a fresh active token after rotation."
 />

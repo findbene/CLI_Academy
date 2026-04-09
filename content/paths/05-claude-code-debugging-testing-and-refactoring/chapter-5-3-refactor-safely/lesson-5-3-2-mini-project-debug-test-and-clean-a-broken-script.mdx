@@ -1,0 +1,305 @@
+---
+title: "Mini project: debug, test, and clean a broken script"
+lessonNumber: "5.3.2"
+chapterNumber: "5.3"
+pathNumber: "5"
+tutorPreload: "Walk me through the full loop: find the bug, write a test, fix it, refactor, and commit."
+verifyType: "terminal_output"
+---
+
+# Mini project: debug, test, and clean a broken script
+
+## Objective
+
+Bring together everything from Path 05 in a single end-to-end exercise. You start with a broken, messy script. You debug it with Claude Code, add tests, fix the bugs, refactor for clarity, confirm all tests pass, and commit the result. This is the real workflow professional developers follow every day.
+
+## Walkthrough
+
+### Step 1 — Set up the project
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/projects/mini-project && cd ~/projects/mini-project
+git init
+npm init -y
+npm install --save-dev jest
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force ~\projects\mini-project | Set-Location
+git init
+npm init -y
+npm install --save-dev jest
+```
+
+Set the test script in `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "jest"
+  }
+}
+```
+
+For Python users, skip the npm steps and use `pip install pytest` instead. The rest of the workflow is identical.
+
+### Step 2 — Create the broken, messy script
+
+This script is a tiny invoice calculator. It has **two bugs** and is written in a messy, hard-to-read style on purpose.
+
+**JavaScript — `invoice.js`**
+
+```js
+// invoice.js — broken and messy on purpose
+function calcInvoice(items, taxRate) {
+  let s = 0;
+  let i = 0;
+  while (i <= items.length) { // BUG 1: should be < not <=
+    let item = items[i];
+    let p = item.price;
+    let q = item.qty;
+    let t = p * q;
+    s = s + t;
+    i = i + 1;
+  }
+  let tax = s * taxRate;
+  let tot = s + taxRate; // BUG 2: should add tax, not taxRate
+  return { subtotal: s, tax: tax, total: tot };
+}
+
+module.exports = { calcInvoice };
+```
+
+**Python — `invoice.py`**
+
+```python
+# invoice.py — broken and messy on purpose
+def calc_invoice(items, tax_rate):
+    s = 0
+    i = 0
+    while i <= len(items):  # BUG 1: should be < not <=
+        item = items[i]
+        p = item["price"]
+        q = item["qty"]
+        t = p * q
+        s = s + t
+        i = i + 1
+    tax = s * tax_rate
+    tot = s + tax_rate  # BUG 2: should add tax, not tax_rate
+    return {"subtotal": s, "tax": tax, "total": tot}
+```
+
+### Step 3 — Run the script and see the crash
+
+Create a small runner to call the function:
+
+**JavaScript — `run.js`**
+
+```js
+const { calcInvoice } = require("./invoice");
+
+const items = [
+  { name: "Widget", price: 10, qty: 2 },
+  { name: "Gadget", price: 25, qty: 1 },
+];
+
+const result = calcInvoice(items, 0.08);
+console.log(result);
+```
+
+**macOS / Linux**
+
+```bash
+node run.js
+```
+
+**Windows PowerShell**
+
+```powershell
+node run.js
+```
+
+You get a crash:
+
+```
+TypeError: Cannot read properties of undefined (reading 'price')
+```
+
+The `while (i <= items.length)` goes one index past the end of the array.
+
+### Step 4 — Paste the error into Claude Code and fix Bug 1
+
+```
+I ran node run.js and got:
+TypeError: Cannot read properties of undefined (reading 'price')
+The code is in invoice.js. What is wrong?
+```
+
+Claude identifies that `i <= items.length` should be `i < items.length` because array indices go from 0 to length - 1. Accept the fix.
+
+Run again:
+
+```bash
+node run.js
+```
+
+Output:
+
+```
+{ subtotal: 45, tax: 3.6, total: 45.08 }
+```
+
+No crash, but the total is wrong. Subtotal 45 + tax 3.60 should be 48.60, not 45.08. That is Bug 2.
+
+### Step 5 — Ask Claude to find Bug 2
+
+```
+The script runs now but the total is wrong. Subtotal is 45 and tax is 3.6, so total should be 48.6 but it says 45.08. What is wrong?
+```
+
+Claude finds `s + taxRate` on the total line — it adds the tax **rate** (0.08) instead of the tax **amount** (3.6). The fix is `s + tax`. Accept the fix.
+
+Run again:
+
+```
+{ subtotal: 45, tax: 3.6, total: 48.6 }
+```
+
+Correct.
+
+### Step 6 — Ask Claude to write tests
+
+```
+Write a Jest test file for calcInvoice in invoice.js. Test: a normal invoice with multiple items, a single-item invoice, and an empty items array (should return zeros).
+```
+
+Claude generates `invoice.test.js`:
+
+```js
+const { calcInvoice } = require("./invoice");
+
+test("calculates invoice with multiple items", () => {
+  const items = [
+    { name: "Widget", price: 10, qty: 2 },
+    { name: "Gadget", price: 25, qty: 1 },
+  ];
+  const result = calcInvoice(items, 0.08);
+  expect(result.subtotal).toBe(45);
+  expect(result.tax).toBeCloseTo(3.6);
+  expect(result.total).toBeCloseTo(48.6);
+});
+
+test("calculates invoice with a single item", () => {
+  const items = [{ name: "Thing", price: 100, qty: 3 }];
+  const result = calcInvoice(items, 0.1);
+  expect(result.subtotal).toBe(300);
+  expect(result.tax).toBeCloseTo(30);
+  expect(result.total).toBeCloseTo(330);
+});
+
+test("handles empty items array", () => {
+  const result = calcInvoice([], 0.08);
+  expect(result.subtotal).toBe(0);
+  expect(result.tax).toBe(0);
+  expect(result.total).toBe(0);
+});
+```
+
+Accept the file and run tests:
+
+**macOS / Linux**
+
+```bash
+npm test
+```
+
+**Windows PowerShell**
+
+```powershell
+npm test
+```
+
+All 3 tests pass. Good — these tests lock in the correct behavior before we refactor.
+
+### Step 7 — Ask Claude to refactor
+
+```
+The calcInvoice function in invoice.js works but uses single-letter variable names and a manual while loop. Refactor it to use descriptive names and modern array methods. All tests must still pass.
+```
+
+Claude rewrites the function:
+
+```js
+function calcInvoice(items, taxRate) {
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0
+  );
+  const tax = subtotal * taxRate;
+  const total = subtotal + tax;
+  return { subtotal, tax, total };
+}
+```
+
+This is 6 clear lines instead of 13 confusing ones. No single-letter variables, no manual index management, no off-by-one risk.
+
+Accept the refactoring.
+
+### Step 8 — Run tests after refactoring
+
+**macOS / Linux**
+
+```bash
+npm test
+```
+
+**Windows PowerShell**
+
+```powershell
+npm test
+```
+
+All 3 tests pass. The refactored code behaves identically to the fixed version.
+
+### Step 9 — Commit the final result
+
+```bash
+git add -A
+git commit -m "feat: invoice calculator — debugged, tested, refactored"
+```
+
+**Windows PowerShell**
+
+```powershell
+git add -A
+git commit -m "feat: invoice calculator — debugged, tested, refactored"
+```
+
+You now have a clean commit containing:
+- A working, refactored `invoice.js`
+- A test suite proving it works
+- No debug logging, no bugs, no mess
+
+This is exactly how the debug → test → refactor loop works in the real world.
+
+> **Real danger — committing before tests pass.** Never commit code that has failing tests. If you commit a broken state, anyone who pulls your code inherits your bugs. Always run `npm test` (or `pytest`) immediately before `git commit`.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Bug 2 is hard to spot because the numbers are close | Tax rate (0.08) and tax amount (3.6) are both small numbers | Use a larger tax rate (like 0.5) in your test runner to make the difference more obvious |
+| Claude fixes both bugs at once before you ask about Bug 2 | Claude saw the entire file and fixed everything proactively | This is fine — Claude being thorough is a feature. Just make sure you understand both fixes before accepting |
+| `git commit` says "nothing to commit" | You forgot `git add` or the files are gitignored | Run `git status` first; if files show as untracked, run `git add -A` |
+| Empty array test fails with `NaN` | The `reduce` call has no initial value | Make sure `reduce` has `, 0` as the second argument: `.reduce((sum, item) => ..., 0)` |
+| The refactored code uses `reduce` which you do not understand | Array methods are new to you | Ask Claude: "Explain this reduce call step by step" — learning the idiom is part of the exercise |
+| Python `IndexError: list index out of range` instead of `TypeError` | Different language, same off-by-one bug | The fix is the same: change `<=` to `<` in the while condition |
+
+<VerificationBlock
+  deliverable="A git commit containing a debugged, tested, and refactored invoice calculator with all tests passing."
+  verifyCheck="Run `npm test` and confirm all tests pass. Run `git log --oneline -1` and confirm the commit exists."
+/>

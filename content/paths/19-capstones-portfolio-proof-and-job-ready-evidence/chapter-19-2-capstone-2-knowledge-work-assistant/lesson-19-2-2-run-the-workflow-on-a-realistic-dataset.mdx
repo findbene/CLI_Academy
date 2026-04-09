@@ -10,50 +10,88 @@ verifyType: "terminal_output"
 # Run the workflow on a realistic dataset
 
 ## Objective
-By the end of this lesson, you will have successfully run your data processing workflow on a more realistic dataset, producing raw, cleaned, and final data artifacts. Crucially, you'll learn how to package all these output files into a single, reproducible archive, making it easy to share your work with others. This ensures anyone can reproduce your results!
+Run the knowledge workflow on a real codebase folder, capture the raw findings before summarization, record edge cases, and produce a todo-report.md that another person can audit. By the end of this lesson, you will have before-and-after evidence, an agent run log, and a report generated from a real dataset.
 
 ## Walkthrough
 
-Time to run your workflow on real-world data and package everything neatly for sharing!
+### Step 1: Capture the raw dataset snapshot from a real codebase
+Use a real folder from the repo instead of a practice folder. This creates the baseline that your report must summarize honestly.
 
-1.  **Place Your Realistic Dataset:**
-    Assume you have a realistic dataset (e.g., `large_sales.csv`) ready. Move it into your project's raw data directory.
-    ```bash
-    mv ~/Downloads/large_sales.csv data/raw/
-    ```
-    *This `mv` command is safe: it only moves a file from one specified location to another within your own system. It won't modify the file's content.*
+macOS/Linux:
+```bash
+rg -n "TODO|FIXME|XXX" ../apps ../content ../packages ../tooling ../tests > source-snapshots/raw-findings.txt
+wc -l source-snapshots/raw-findings.txt
+```
 
-2.  **Run Your Workflow Script:**
-    Execute your main workflow script, specifying the raw data file to process.
-    ```bash
-    bash process_data.sh data/raw/large_sales.csv
-    ```
-    *Running a `bash` script like `process_data.sh` is safe because it executes commands *you* wrote or understand. Always be cautious with scripts from unknown sources, but for your own, you're in control.*
+Windows PowerShell:
+```powershell
+rg -n "TODO|FIXME|XXX" ..\apps ..\content ..\packages ..\tooling ..\tests | Set-Content source-snapshots/raw-findings.txt
+(Get-Content source-snapshots/raw-findings.txt | Measure-Object -Line).Lines
+```
 
-3.  **Verify the Output:**
-    Confirm your script created the cleaned and final data files.
-    ```bash
-    ls data/cleaned/
-    ls data/final/
-    ```
-    *The `ls` command is very safe! It simply lists directory contents; it never modifies, deletes, or creates files.* You should see new files reflecting your processed data.
+If the count is zero, that is still a valid dataset. Your workflow should produce a clean no-findings report instead of inventing issues.
 
-4.  **Package Your Entire Output:**
-    Create a single archive containing all your raw, cleaned, and final data for reproducibility and easy sharing.
-    ```bash
-    tar -czvf output_package.tar.gz data/
-    ```
-    *The `tar` command is a safe tool for bundling files into a compressed archive.*
-    *   `-c`: **c**reates a new archive.
-    *   `-z`: compresses using gzip.
-    *   `-v`: shows **v**erbose output.
-    *   `-f output_package.tar.gz`: specifies the output **f**ilename.
-    *   `data/`: includes the entire `data/` directory.
-    *This command collects copies of your `data/` directory files and bundles them. It does not modify your original files.*
+### Step 2: Run the bounded workflow in Claude Code
+Use the raw snapshot as the source of truth and keep the run within the capstone contract.
 
-You now have a complete, reproducible output package!
+Use this prompt:
+
+```text
+Read WORKFLOW-DESIGN.md, CLAUDE.md, and source-snapshots/raw-findings.txt. Produce todo-report.md plus logs/run-001.md and logs/edge-cases.md. If there are no findings, write a clean no-findings report. If the workflow depends on a remote source and you hit a rate limit, log it and stop instead of retrying.
+```
+
+This run should create three artifacts:
+- todo-report.md
+- logs/run-001.md
+- logs/edge-cases.md
+
+### Step 3: Inspect the before-and-after evidence
+Compare the raw search output with the final report so you can show exactly how the workflow transformed the dataset.
+
+macOS/Linux:
+```bash
+cat source-snapshots/raw-findings.txt
+cat todo-report.md
+cat logs/run-001.md
+cat logs/edge-cases.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content source-snapshots/raw-findings.txt
+Get-Content todo-report.md
+Get-Content logs/run-001.md
+Get-Content logs/edge-cases.md
+```
+
+Your report does not need to list every finding in full detail. It does need to make the grouping, prioritization, and top review items defensible.
+
+### Step 4: Record one explicit edge-case outcome
+Even if you used a local codebase and did not hit a rate limit, record that in the edge-case log so the portfolio artifact shows you thought about failure modes.
+
+macOS/Linux:
+```bash
+printf '\nRemote source rate limits: not applicable for this local code scan.\n' >> logs/edge-cases.md
+```
+
+Windows PowerShell:
+```powershell
+Add-Content logs/edge-cases.md "`nRemote source rate limits: not applicable for this local code scan."
+```
+
+If you used `gh` or another remote API instead of a local scan, replace that note with the actual rate-limit behavior you observed.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The report misses findings that are in the raw snapshot | The agent summarized from memory instead of the captured dataset | Force the prompt to read source-snapshots/raw-findings.txt directly |
+| The workflow scans folders outside the approved scope | The raw search command was too broad | Restrict the scan to the folders listed in WORKFLOW-DESIGN.md |
+| The report fabricates owner names or priority | The schema invited guesses without evidence | Label guesses as guesses and leave unknown fields unknown |
+| The workflow hangs on remote data | No rate-limit stop rule exists | Log the rate limit and stop instead of retrying indefinitely |
+| A clean dataset turns into a fake problem list | Empty-result handling was not enforced | Produce a no-findings report with the scanned paths and timestamp |
 
 <VerificationBlock 
-  deliverable="A finished output package with raw, cleaned, and final artifacts."
-  verifyCheck="Package is complete and reproducible."
+    deliverable="A real dataset run containing source-snapshots/raw-findings.txt, todo-report.md, logs/run-001.md, and logs/edge-cases.md."
+    verifyCheck="You can show the raw dataset, the structured report derived from it, and an explicit edge-case note covering either an empty result or remote rate-limit behavior."
 />

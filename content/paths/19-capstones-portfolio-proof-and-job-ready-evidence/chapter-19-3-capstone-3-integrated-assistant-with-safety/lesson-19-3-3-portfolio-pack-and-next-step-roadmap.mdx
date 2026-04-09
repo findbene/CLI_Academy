@@ -10,59 +10,142 @@ verifyType: "terminal_output"
 # Portfolio pack and next-step roadmap
 
 ## Objective
-Welcome to your final capstone! Today, we'll bring together all your hard work into a "portfolio pack" that showcases not just what you can do, but *how you think*. You'll assemble your three case studies and craft a learning roadmap, demonstrating your judgment and growth. This is about empowering you to present your skills confidently.
+Assemble the graduation deliverable for Path 19. In this lesson, you will produce portfolio.md with summaries of all three capstones, CV-ready bullets, and a next-step roadmap that shows what work you are ready to own next.
 
 ## Walkthrough
 
-Here’s how we'll safely create your portfolio pack:
+### Step 1: Gather the three capstone stories and their evidence
+Pull together the artifacts that prove each capstone was real.
 
-1.  **Navigate to a Safe Starting Point:**
-    Let's start from your home directory, a familiar and safe place.
-    ```bash
-    cd ~
-    ```
-    *This command simply changes your current location to your home directory (`~`). It's safe because it doesn't modify any files or folders.*
+macOS/Linux:
+```bash
+ls ../capstone-1-automation
+ls ../capstone-2-knowledge
+ls .
+```
 
-2.  **Create Your Portfolio Folder:**
-    Now, let's make a new, dedicated folder to hold your final portfolio.
-    ```bash
-    mkdir final_portfolio
-    ```
-    *`mkdir` (make directory) creates a new empty folder. It's safe because it only adds a new structure without touching existing files. If a folder with this exact name already exists, it will let you know without causing harm.*
+Windows PowerShell:
+```powershell
+Get-ChildItem ..\capstone-1-automation
+Get-ChildItem ..\capstone-2-knowledge
+Get-ChildItem .
+```
 
-3.  **Enter Your New Portfolio:**
-    Move into the folder you just created.
-    ```bash
-    cd final_portfolio
-    ```
-    *This is another safe navigation command, simply changing your working directory.*
+You should be able to point to:
+- automation workflow evidence from Capstone 1
+- knowledge workflow evidence from Capstone 2
+- integrated pilot evidence from Capstone 3
 
-4.  **Gather Your Case Studies:**
-    We'll copy each of your completed case study folders into your `final_portfolio`. This keeps your original case study folders untouched and safe.
-    ```bash
-    cp -r ~/case_study_1 .
-    cp -r ~/case_study_2 .
-    cp -r ~/case_study_3 .
-    ```
-    *`cp` (copy) creates duplicates of files or directories. The `-r` flag tells `cp` to copy directories recursively (including all their contents). `~` refers to your home directory where your original case studies are, and `.` refers to your current directory (`final_portfolio`). This is safe because you are only *copying* files; your original project folders remain intact.*
+### Step 2: Write portfolio.md with the three capstone summaries
+The summaries should explain the problem, the workflow, the evidence, and the judgment call that kept each project safe.
 
-5.  **Create Your Learning Roadmap File:**
-    Let's create an empty file where you can write your reflections and future plans.
-    ```bash
-    touch learning_roadmap.md
-    ```
-    *`touch` creates a new, empty file if it doesn't exist, or updates its modification timestamp if it does. It's safe and won't overwrite any existing content.*
+macOS/Linux:
+```bash
+cat > portfolio.md <<'EOF'
+# Portfolio Pack: CLI Academy Capstones
 
-6.  **Verify Your Portfolio Pack:**
-    Take a quick look to ensure everything is in place.
-    ```bash
-    ls -F
-    ```
-    *`ls -F` lists the contents of your current directory and adds indicators (`/` for directories, `*` for executables) to help you see file types. It's a read-only command, perfectly safe for viewing.*
+## Capstone 1: Daily Git Digest Assistant
+Designed and built a bounded Claude Code workflow that reviews one local repository, summarizes recent git activity, and produces one digest plus a run log without changing repo state.
 
-You now have a `final_portfolio` directory containing your three case studies and a `learning_roadmap.md` file. Edit `learning_roadmap.md` using your favorite text editor to discuss your thought process, challenges, solutions, and next steps in your CLI journey – this is where you show your judgment!
+## Capstone 2: Codebase TODO Extraction Workflow
+Designed a knowledge workflow that turns a raw TODO-style code scan into a structured markdown report with path, line, context, and review priority.
+
+## Capstone 3: Curriculum Change Brief Pilot
+Built and piloted an integrated workflow that combines git evidence, real lesson files, and Claude Code summarization to generate a curriculum change brief and document a tested failure mode.
+
+## CV-Ready Bullet Points
+- Designed, built, and verified a bounded Claude Code automation workflow that summarized real repository activity into a reusable markdown digest with evidence logs and output checks.
+- Built a knowledge-extraction workflow that transformed raw codebase findings into a structured review artifact while handling empty datasets and remote rate-limit scenarios explicitly.
+- Piloted an integrated git plus content plus Claude Code workflow, tested a no-op failure mode, and documented an iteration that improved accuracy and safety.
+
+## Next-Step Roadmap
+- Build a second integrated workflow that writes a release brief from merged pull requests.
+- Add automated regression checks for output quality, not just file existence.
+- Expand from single-user operation to teammate handoff with clearer operator docs and review gates.
+
+## Problems I Am Ready To Take On
+- repo summaries and engineering handoff briefs
+- codebase knowledge extraction and cleanup reporting
+- bounded documentation assistants for content-heavy repositories
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Portfolio Pack: CLI Academy Capstones
+
+## Capstone 1: Daily Git Digest Assistant
+Designed and built a bounded Claude Code workflow that reviews one local repository, summarizes recent git activity, and produces one digest plus a run log without changing repo state.
+
+## Capstone 2: Codebase TODO Extraction Workflow
+Designed a knowledge workflow that turns a raw TODO-style code scan into a structured markdown report with path, line, context, and review priority.
+
+## Capstone 3: Curriculum Change Brief Pilot
+Built and piloted an integrated workflow that combines git evidence, real lesson files, and Claude Code summarization to generate a curriculum change brief and document a tested failure mode.
+
+## CV-Ready Bullet Points
+- Designed, built, and verified a bounded Claude Code automation workflow that summarized real repository activity into a reusable markdown digest with evidence logs and output checks.
+- Built a knowledge-extraction workflow that transformed raw codebase findings into a structured review artifact while handling empty datasets and remote rate-limit scenarios explicitly.
+- Piloted an integrated git plus content plus Claude Code workflow, tested a no-op failure mode, and documented an iteration that improved accuracy and safety.
+
+## Next-Step Roadmap
+- Build a second integrated workflow that writes a release brief from merged pull requests.
+- Add automated regression checks for output quality, not just file existence.
+- Expand from single-user operation to teammate handoff with clearer operator docs and review gates.
+
+## Problems I Am Ready To Take On
+- repo summaries and engineering handoff briefs
+- codebase knowledge extraction and cleanup reporting
+- bounded documentation assistants for content-heavy repositories
+"@ | Set-Content portfolio.md
+```
+
+### Step 3: Tighten the portfolio language until every claim maps to evidence
+Use Claude Code as an editor, not a hype machine.
+
+Use this prompt:
+
+```text
+Read portfolio.md and the evidence files from all three capstones. Tighten any claim that goes beyond the evidence. Keep the portfolio concrete, credible, and ready for a hiring manager.
+```
+
+Then review the result.
+
+macOS/Linux:
+```bash
+cat portfolio.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content portfolio.md
+```
+
+### Step 4: Do the final graduation check
+Read the bullets out loud. If they sound like generic AI output, rewrite them until they point to actual artifacts and actual safety decisions.
+
+macOS/Linux:
+```bash
+ls ../capstone-1-automation ../capstone-2-knowledge .
+```
+
+Windows PowerShell:
+```powershell
+Get-ChildItem ..\capstone-1-automation, ..\capstone-2-knowledge, .
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The portfolio reads like three unrelated projects | You listed outputs but not the through-line | Emphasize bounded workflows, evidence, and safety decisions in each summary |
+| The CV bullets sound generic | They are not tied to named artifacts | Mention the digest, report, brief, logs, and tested failure mode directly |
+| The roadmap is vague | It describes ambition instead of next builds | List the exact next workflow, test improvement, and handoff improvement |
+| The portfolio overclaims production readiness | You skipped the limits of the pilots | Keep the language at designed, built, piloted, and verified |
+| The final pack hides judgment | You only summarized outputs | Call out the no-commit, no-secret, no-invented-summary controls explicitly |
 
 <VerificationBlock 
-  deliverable="A final portfolio pack with all three case studies and a learning roadmap."
-  verifyCheck="Portfolio pack clearly shows progression from beginner to capable operator."
+  deliverable="A final portfolio pack centered on portfolio.md with three capstone summaries, CV-ready bullet points, and a next-step roadmap tied to real evidence."
+  verifyCheck="A hiring manager can read portfolio.md and understand what you built, how you kept it safe, what evidence proves it worked, and what level of problems you are ready to own next."
 />

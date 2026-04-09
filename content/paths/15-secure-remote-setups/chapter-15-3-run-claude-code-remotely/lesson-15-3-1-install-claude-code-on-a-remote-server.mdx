@@ -1,0 +1,136 @@
+---
+title: "Install Claude Code on a remote server"
+lessonNumber: "15.3.1"
+chapterNumber: "15.3"
+pathNumber: "15"
+tutorPreload: "Guide me through installing Claude Code on a remote Linux server over SSH."
+verifyType: "terminal_output"
+---
+
+# Install Claude Code on a remote server
+
+## Objective
+
+By the end of this lesson you will be able to SSH into a remote server, install Node.js and Claude Code, authenticate, and run Claude Code against a remote repository. You will understand the security implications of running an AI coding agent on infrastructure you do not physically control.
+
+## Walkthrough
+
+Running Claude Code on a remote server is useful when you need more compute than your laptop provides, want to work on a project that lives on the server, or need Claude Code running while your laptop is closed. The trade-off: you are giving an AI agent access to a machine connected to the internet.
+
+### Step 1 — SSH into your server
+
+From your local terminal (any OS):
+
+```bash
+ssh your-user@your-server.example.com
+```
+
+If you set up an SSH config alias in lesson 15.1.3, use that:
+
+```bash
+ssh myserver
+```
+
+### Step 2 — Install Node.js on the server
+
+Claude Code requires Node.js 18 or later. Most server distributions ship an older version or none at all.
+
+**Ubuntu / Debian:**
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v
+# v20.x.x
+```
+
+**Amazon Linux / CentOS / RHEL:**
+
+```bash
+curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
+sudo yum install -y nodejs
+node -v
+```
+
+**Verify npm is available:**
+
+```bash
+npm -v
+# 10.x.x
+```
+
+### Step 3 — Install Claude Code
+
+```bash
+npm install -g @anthropic-ai/claude-code
+claude --version
+```
+
+If you get an `EACCES` permission error:
+
+```bash
+sudo npm install -g @anthropic-ai/claude-code
+```
+
+### Step 4 — Authenticate Claude Code
+
+```bash
+claude
+```
+
+Claude Code prints an authentication URL. Since you are on a headless server, copy the URL and paste it into a browser on your local machine. Complete the OAuth flow there. The token is saved on the server in `~/.claude/`.
+
+**Security warning:** The authentication token stored in `~/.claude/` on the server grants access to your Anthropic account. Treat it like a password:
+
+- Set file permissions: `chmod 700 ~/.claude`
+- Do not share the server with untrusted users
+- Revoke the token from your Anthropic dashboard if the server is compromised
+
+### Step 5 — Run Claude Code on a remote project
+
+Navigate to a project directory and start Claude Code:
+
+```bash
+cd ~/projects/my-app
+claude
+```
+
+Claude Code works identically to a local session — it reads files, suggests edits, runs commands. The difference is that every command runs on the server, not your laptop.
+
+### Step 6 — Transfer a project to the server (if needed)
+
+If your project is on your local machine, push via Git or copy with `scp`:
+
+**macOS / Linux (from your local terminal):**
+
+```bash
+scp -r ./my-app your-user@your-server.example.com:~/projects/
+```
+
+**Windows (PowerShell, from your local terminal):**
+
+```powershell
+scp -r .\my-app your-user@your-server.example.com:~/projects/
+```
+
+Or clone directly on the server:
+
+```bash
+git clone https://github.com/you/my-app.git ~/projects/my-app
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `node: command not found` after install | Shell does not see the new binary; need to reload | Run `hash -r` or open a new shell session |
+| `npm install -g` hangs | Server has no outbound internet, or DNS is broken | Test with `curl -I https://registry.npmjs.org`; fix DNS or firewall rules |
+| Auth URL printed but flow fails | URL expired or browser and server are on different networks | Copy the URL quickly; make sure you complete the flow within a few minutes |
+| `ENOMEM` during install | Server is too small (< 512 MB RAM) | Use a swap file: `sudo fallocate -l 1G /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile` |
+| Claude Code modifies system files | You ran Claude Code as root | Never run Claude Code as root; always use a regular user account |
+| Token file readable by other users | Default `umask` on the server is too permissive | `chmod 700 ~/.claude && chmod 600 ~/.claude/*` |
+| SSH disconnects mid-session and Claude Code dies | No persistent session manager | See lesson 15.3.2 — use tmux or screen |
+
+<VerificationBlock>
+SSH into your server, run `claude --version` to confirm Claude Code is installed, then navigate to a project directory and run `claude`. Verify that Claude Code loads, shows the project files, and responds to a prompt. Type `/exit` to quit cleanly.
+</VerificationBlock>

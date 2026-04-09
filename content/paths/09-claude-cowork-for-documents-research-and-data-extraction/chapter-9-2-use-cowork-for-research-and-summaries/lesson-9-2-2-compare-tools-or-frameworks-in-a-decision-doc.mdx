@@ -1,0 +1,164 @@
+---
+title: "Compare tools or frameworks in a decision doc"
+lessonNumber: "9.2.2"
+chapterNumber: "9.2"
+pathNumber: "9"
+tutorPreload: "Help me build a structured decision document comparing CSS frameworks with a clear recommendation and reasoning."
+verifyType: "terminal_output"
+---
+
+# Compare tools or frameworks in a decision doc
+
+## Objective
+
+By the end of this lesson you will use Claude Code to produce a decision document that evaluates Tailwind CSS, Bootstrap, and vanilla CSS for a small project — with a structured comparison table, weighted scoring, and a recommendation backed by explicit reasoning.
+
+## Walkthrough
+
+### Step 1 — Set up a workspace and define your evaluation context
+
+A good decision doc starts by stating what you are building and what matters most. Create a workspace and a context file.
+
+**macOS / Linux:**
+
+```bash
+mkdir css-decision && cd css-decision
+git init
+
+cat > context.md << 'EOF'
+# Project context
+
+We are building a 5-page marketing site for a small business.
+Team: 1 developer (me), no designer.
+Timeline: 2 weeks.
+Must work on mobile.
+No build tooling preferred (no webpack/vite if possible).
+Priority: speed of development > long-term maintainability.
+EOF
+
+git add context.md
+git commit -m "Add project context for CSS decision"
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir css-decision; cd css-decision
+git init
+
+@"
+# Project context
+
+We are building a 5-page marketing site for a small business.
+Team: 1 developer (me), no designer.
+Timeline: 2 weeks.
+Must work on mobile.
+No build tooling preferred (no webpack/vite if possible).
+Priority: speed of development > long-term maintainability.
+"@ | Out-File -Encoding utf8 context.md
+
+git add context.md
+git commit -m "Add project context for CSS decision"
+```
+
+### Step 2 — Ask Claude to produce a structured comparison
+
+Open Claude Code in the `css-decision` directory and provide this prompt:
+
+```
+Read context.md. Create a decision document called decision.md comparing
+three CSS approaches for this project:
+1. Tailwind CSS
+2. Bootstrap 5
+3. Vanilla CSS (no framework)
+
+Structure:
+# CSS Framework Decision
+
+## Context (reference context.md)
+## Comparison Table
+  Columns: Criterion, Tailwind CSS, Bootstrap 5, Vanilla CSS
+  Rows: Setup complexity, Learning curve, Mobile responsiveness,
+  Build tooling required, Component availability, Bundle size,
+  Customization effort
+## Scoring
+  Weight each criterion 1-3 based on context.md priorities.
+  Score each option 1-5 per criterion. Show the math.
+## Recommendation
+  Pick one option. Explain why in 3-4 sentences referencing the scores.
+## Risks and mitigations
+  List 1-2 risks for the recommended option and how to handle them.
+```
+
+### Step 3 — Verify the comparison table for accuracy
+
+```bash
+cat decision.md
+```
+
+Check these common mistakes:
+
+- **Build tooling:** Tailwind CSS v3+ requires a build step (PostCSS or the Tailwind CLI). If Claude says "no build tooling needed," that is wrong for the full version. Tailwind has a CDN play version with limited features.
+- **Bootstrap build tooling:** Bootstrap 5 can be loaded from a CDN with no build step. If Claude says it requires npm, that is only for customization.
+- **Bundle size:** If Claude cites specific KB numbers, verify they are in the right ballpark. Bootstrap CSS is roughly 150-200 KB uncompressed. Tailwind with purging is much smaller.
+
+Correct errors:
+
+```
+The comparison table says Tailwind requires no build step. That is wrong
+for production use — Tailwind needs PostCSS or the Tailwind CLI to purge
+unused styles. The CDN version exists but is not recommended for production.
+Fix this row and note the distinction.
+```
+
+### Step 4 — Check the scoring math
+
+Verify that the weighted scores add up correctly. Claude sometimes makes arithmetic mistakes.
+
+```
+Check the scoring section. Multiply each weight by each score and confirm
+the totals. If any total is wrong, fix the arithmetic.
+```
+
+After Claude updates:
+
+```bash
+cat decision.md
+```
+
+Manually verify one or two totals. For example, if "Setup complexity" has weight 3 and Tailwind scores 2, the weighted score should be 6.
+
+### Step 5 — Challenge the recommendation
+
+A good decision doc survives pushback. Ask Claude to argue against its own recommendation:
+
+```
+You recommended [option]. Now argue the strongest case for the second-place
+option. What scenario would make it the better choice? Add this as a
+"## Dissenting view" section at the end.
+```
+
+This section makes the document more useful for team discussions because it shows you considered alternatives seriously.
+
+### Step 6 — Commit the decision document
+
+```bash
+git add decision.md
+git diff --staged
+git commit -m "Add CSS framework decision doc"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Scoring totals do not add up | Claude made arithmetic errors in the weighted scoring | Ask Claude to recalculate and show each multiplication step |
+| Comparison table has vague entries like "good" or "easy" | Claude used subjective language instead of concrete details | Ask Claude to replace vague words with specifics (e.g., "CDN link, no install" instead of "easy setup") |
+| Recommendation ignores the stated priorities | Claude optimized for a different criterion than context.md specifies | Point Claude back to context.md and ask it to re-rank based on the stated priority order |
+| Build tooling claims are wrong | Claude confused CDN usage with full installation | Ask Claude to distinguish CDN-only usage from full npm installation for each option |
+| Document reads as biased toward one option | Claude's training data favors popular frameworks | Ask Claude to add a "Dissenting view" section arguing for the runner-up |
+
+<VerificationBlock
+  deliverable="A decision.md with a comparison table, weighted scoring with correct arithmetic, a recommendation with reasoning, and a dissenting view section."
+  verifyCheck="Scoring totals are arithmetically correct and the recommendation directly references the project context."
+/>

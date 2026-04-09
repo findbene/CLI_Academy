@@ -3,7 +3,7 @@ title: "Define roles, contracts, and stop conditions"
 lessonNumber: "13.2.1"
 chapterNumber: "13.2"
 pathNumber: "13"
-tutorPreload: "Make these two agents less overlapping and more accountable."
+tutorPreload: "Review my two-agent contract and tell me if the roles overlap or if the stop conditions are missing."
 verifyType: "terminal_output"
 ---
 
@@ -11,72 +11,237 @@ verifyType: "terminal_output"
 
 ## Objective
 
-In this lesson, you'll learn to define clear, distinct roles for your AI agents and establish a simple contract between them. This is a crucial step towards building predictable and safe autonomous systems, ensuring agents work together efficiently without duplicating effort or causing confusion. By the end, you will have created a Python file outlining a two-agent contract with specific responsibilities.
+When two Claude Code agents collaborate on a task, each one needs a clear role, a defined boundary, and an explicit stop condition. Without these, agents duplicate effort, contradict each other, or run indefinitely. In this lesson you will create a `CLAUDE.md`-based contract that assigns two agents non-overlapping responsibilities and defines exactly when each one stops.
+
+By the end, you will have a working two-agent contract directory that you can hand to Claude Code to execute.
+
+## Why this matters
+
+Multi-agent systems fail for three common reasons:
+
+1. **Role overlap** — both agents research the same thing and produce conflicting summaries.
+2. **Missing stop conditions** — an agent keeps iterating because nobody told it when "done" looks like.
+3. **No handoff protocol** — Agent A finishes but Agent B never receives the output.
+
+The contract pattern solves all three.
 
 ## Walkthrough
 
-Let's create a foundational contract file where two agents have well-defined, non-overlapping roles. This approach prevents redundancy and enhances accountability, making your AI systems much safer and easier to manage.
+### Step 1 — Create the project structure
 
-1.  **Create your contract file:**
-    Open your terminal. We'll start by creating an empty Python file for our contract.
-    ```bash
-    touch my_first_contract.py
-    ```
-    *Why `touch` is safe:* The `touch` command simply creates an empty file with the given name. If the file already exists, it only updates its timestamp without altering its contents. It's a very safe way to begin a new file.
+Open your terminal in `cli-academy/projects/`:
 
-2.  **Open the file for editing:**
-    Now, let's open `my_first_contract.py` to add our agent definitions. We'll use `nano`, a beginner-friendly text editor.
-    ```bash
-    nano my_first_contract.py
-    ```
-    *Why `nano` is safe:* `nano` is a terminal-based text editor. It only modifies the file you explicitly open. You are in control of what you type and save. When you're done, press `Ctrl+X`, then `Y` to save, and `Enter` to confirm the filename.
+**macOS / Linux:**
+```bash
+mkdir -p two-agent-contract && cd two-agent-contract
+```
 
-3.  **Define your two-agent contract:**
-    Inside `nano`, copy and paste the following Python code. Pay close attention to the `system_message` for each agent; this is where we define their unique roles and responsibilities to minimize overlap and maximize accountability.
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Path two-agent-contract -Force; Set-Location two-agent-contract
+```
 
-    ```python
-    import autogen
+### Step 2 — Write the Researcher agent contract
 
-    # Agent 1: The Researcher
-    # Role: Focus solely on gathering information and presenting raw data.
-    researcher = autogen.AssistantAgent(
-        name="Researcher",
-        llm_config={"config_list": autogen.config_list_from_json(
-            "OAI_CONFIG_LIST",
-            filter_dict={
-                "model": ["gpt-4o", "gpt-4", "gpt-3.5-turbo"],
-            },
-        )},
-        system_message="You are a meticulous researcher. Your sole task is to gather factual information on the given topic and present it clearly. Do NOT analyze or summarize; just provide the raw, relevant data.",
-    )
+Create a file called `researcher-CLAUDE.md`. This is the instruction file that defines Agent 1's role, inputs, outputs, and stop condition.
 
-    # Agent 2: The Analyzer
-    # Role: Focus solely on analyzing data provided by the Researcher and providing insights.
-    analyzer = autogen.AssistantAgent(
-        name="Analyzer",
-        llm_config={"config_list": autogen.config_list_from_json(
-            "OAI_CONFIG_LIST",
-            filter_dict={
-                "model": ["gpt-4o", "gpt-4", "gpt-3.5-turbo"],
-            },
-        )},
-        system_message="You are a brilliant analyst. Your sole task is to critically analyze the raw data provided by the Researcher and extract key insights, trends, and conclusions. Do NOT gather new information.",
-    )
+**macOS / Linux:**
+```bash
+cat > researcher-CLAUDE.md << 'EOF'
+# Researcher Agent Contract
 
-    # User Proxy Agent (to facilitate interaction between human and AI agents)
-    user_proxy = autogen.UserProxyAgent(
-        name="User_Proxy",
-        human_input_mode="NEVER", # For this basic contract, we'll keep human input out
-        max_consecutive_auto_reply=10,
-        is_termination_msg=lambda x: x.get("content", "").rstrip().endswith("TERMINATE"),
-        code_execution_config={"work_dir": "coding"},
-    )
-    ```
-    After pasting, press `Ctrl+X`, then `Y`, and `Enter` to save the file.
+## Role
+You are a factual researcher. Your job is to gather raw information on the assigned topic.
 
-    You've successfully created a contract file where your `Researcher` and `Analyzer` agents have distinct, non-overlapping responsibilities defined in their `system_message`. This clarity is key to making them more accountable and preventing wasted effort!
+## Inputs
+- A topic string provided by the coordinator
+- Access to web search or provided source documents
+
+## Outputs
+- A file called `research-findings.md` containing:
+  - 5-10 bullet points of factual findings
+  - Source attribution for each finding
+  - A one-line confidence note ("High confidence" / "Needs verification")
+
+## Boundaries
+- Do NOT analyze, interpret, or draw conclusions
+- Do NOT modify any file other than `research-findings.md`
+- Do NOT continue after writing the findings file
+
+## Stop Condition
+Stop immediately after writing `research-findings.md`. Do not iterate.
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+# Researcher Agent Contract
+
+## Role
+You are a factual researcher. Your job is to gather raw information on the assigned topic.
+
+## Inputs
+- A topic string provided by the coordinator
+- Access to web search or provided source documents
+
+## Outputs
+- A file called ``research-findings.md`` containing:
+  - 5-10 bullet points of factual findings
+  - Source attribution for each finding
+  - A one-line confidence note ("High confidence" / "Needs verification")
+
+## Boundaries
+- Do NOT analyze, interpret, or draw conclusions
+- Do NOT modify any file other than ``research-findings.md``
+- Do NOT continue after writing the findings file
+
+## Stop Condition
+Stop immediately after writing ``research-findings.md``. Do not iterate.
+"@ | Set-Content researcher-CLAUDE.md
+```
+
+### Step 3 — Write the Analyzer agent contract
+
+Create `analyzer-CLAUDE.md` for Agent 2:
+
+**macOS / Linux:**
+```bash
+cat > analyzer-CLAUDE.md << 'EOF'
+# Analyzer Agent Contract
+
+## Role
+You are an analyst. Your job is to take the Researcher's findings and extract insights.
+
+## Inputs
+- The file `research-findings.md` (produced by the Researcher agent)
+
+## Outputs
+- A file called `analysis-report.md` containing:
+  - 3-5 key insights derived from the findings
+  - One "recommendation" section with a single actionable next step
+  - A confidence rating for the overall analysis
+
+## Boundaries
+- Do NOT gather new information or search for sources
+- Do NOT modify `research-findings.md`
+- Do NOT continue after writing the analysis report
+- If `research-findings.md` does not exist, STOP and report the error
+
+## Stop Condition
+Stop immediately after writing `analysis-report.md`. Do not iterate.
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+# Analyzer Agent Contract
+
+## Role
+You are an analyst. Your job is to take the Researcher's findings and extract insights.
+
+## Inputs
+- The file ``research-findings.md`` (produced by the Researcher agent)
+
+## Outputs
+- A file called ``analysis-report.md`` containing:
+  - 3-5 key insights derived from the findings
+  - One "recommendation" section with a single actionable next step
+  - A confidence rating for the overall analysis
+
+## Boundaries
+- Do NOT gather new information or search for sources
+- Do NOT modify ``research-findings.md``
+- Do NOT continue after writing the analysis report
+- If ``research-findings.md`` does not exist, STOP and report the error
+
+## Stop Condition
+Stop immediately after writing ``analysis-report.md``. Do not iterate.
+"@ | Set-Content analyzer-CLAUDE.md
+```
+
+### Step 4 — Write the coordinator CLAUDE.md
+
+This is the main `CLAUDE.md` that orchestrates both agents:
+
+**macOS / Linux:**
+```bash
+cat > CLAUDE.md << 'EOF'
+# Two-Agent Research Workflow
+
+## Execution Order
+1. Run the Researcher agent using `researcher-CLAUDE.md`
+2. Verify `research-findings.md` exists and has content
+3. Run the Analyzer agent using `analyzer-CLAUDE.md`
+4. Verify `analysis-report.md` exists and has content
+
+## Topic
+"What are the three most common mistakes beginners make when setting up Claude Code?"
+
+## Safety Rules
+- Each agent runs once. No loops.
+- If any agent fails, stop the workflow and report which agent failed and why.
+- Never allow an agent to modify another agent's output file.
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+# Two-Agent Research Workflow
+
+## Execution Order
+1. Run the Researcher agent using ``researcher-CLAUDE.md``
+2. Verify ``research-findings.md`` exists and has content
+3. Run the Analyzer agent using ``analyzer-CLAUDE.md``
+4. Verify ``analysis-report.md`` exists and has content
+
+## Topic
+"What are the three most common mistakes beginners make when setting up Claude Code?"
+
+## Safety Rules
+- Each agent runs once. No loops.
+- If any agent fails, stop the workflow and report which agent failed and why.
+- Never allow an agent to modify another agent's output file.
+"@ | Set-Content CLAUDE.md
+```
+
+### Step 5 — Run and verify
+
+Open Claude Code in the `two-agent-contract/` directory and tell it:
+
+```
+Follow the workflow in CLAUDE.md. Execute the Researcher first, then the Analyzer.
+```
+
+After it finishes, check your directory. You should see four files:
+- `CLAUDE.md` — the coordinator contract
+- `researcher-CLAUDE.md` — Agent 1's contract
+- `analyzer-CLAUDE.md` — Agent 2's contract
+- `research-findings.md` — Agent 1's output
+- `analysis-report.md` — Agent 2's output
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Researcher keeps iterating | Missing stop condition | Add explicit "Stop immediately after writing" to the contract |
+| Analyzer invents new facts | Role boundary not enforced | Add "Do NOT gather new information" to the Boundaries section |
+| Both agents produce the same file | Output names collide | Give each agent a unique output filename |
+| Analyzer runs before Researcher finishes | No execution order | Define sequential order in the coordinator `CLAUDE.md` |
+
+> [!WARN]
+> **Safety note:** Never set agents to run in an unbounded loop. Always define a maximum iteration count or an explicit stop condition. An agent without a stop condition can consume API credits indefinitely and produce unpredictable results.
+
+## Key takeaways
+
+- Every agent needs **Role**, **Inputs**, **Outputs**, **Boundaries**, and a **Stop Condition**.
+- The coordinator contract defines execution order and safety rules.
+- Claude Code's `CLAUDE.md` file is the natural place to define agent contracts — no external frameworks required.
+- Start with two agents. Add more only when you can prove two aren't enough.
 
 <VerificationBlock 
-  deliverable="A two-agent contract file."
-  verifyCheck="Roles do not overlap and each has clear stop conditions."
+  deliverable="A `two-agent-contract/` directory with coordinator CLAUDE.md, two agent contracts, and two output files."
+  verifyCheck="Each agent has a distinct role, defined boundaries, and an explicit stop condition. The Analyzer's output references only findings from the Researcher."
 />

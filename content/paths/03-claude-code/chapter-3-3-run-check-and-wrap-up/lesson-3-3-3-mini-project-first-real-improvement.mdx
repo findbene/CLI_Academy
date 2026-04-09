@@ -10,37 +10,139 @@ verifyType: "terminal_output"
 # Mini project: first real improvement
 
 ## Objective
-Fantastic job getting your development environment ready! Now, let's make your very first real improvement in your `cli-practice` repository. You'll use the full "ask-plan-edit-run-verify" loop to implement and verify a small, safe change. This is a core skill, and we'll tackle it together, step-by-step.
+
+Put the full Claude Code loop together: open a repo, ask Claude Code to identify an improvement, review its plan, let it make the edit, run the project to check the result, and commit. This is the workflow you will use on every real project going forward.
 
 ## Walkthrough
-We'll follow a proven development loop: **Ask**, **Plan**, **Edit**, **Run**, and **Verify**. This ensures every change is intentional and tested.
 
-1.  **Ask: What improvement should we make?**
-    *   Think of a very small, safe change for your `cli-practice` repo. Examples: adding a greeting line to `README.md`, creating a new `notes.txt` file with a simple message, or updating a 'todo' list.
-    *   *Choose something clear and simple that you can describe in one sentence.*
+### Step 1 — Open your practice repo in Claude Code
 
-2.  **Plan: How will we make it?**
-    *   Mentally (or jot down) the specific steps required to implement your chosen improvement.
-    *   *Example plan:* If adding a line to `README.md`: 1. Navigate to `cli-practice`. 2. Open `README.md` with an editor. 3. Add text. 4. Save and exit.
+**macOS / Linux**
+```bash
+cd ~/projects/cli-practice
+claude
+```
 
-3.  **Edit: Make the change.**
-    *   First, navigate to your `cli-practice` directory: `cd cli-practice`.
-    *   Use `nano` to open or create your file. For example: `nano README.md` or `nano my_notes.txt`.
-        *   **Safety check:** `nano` only affects the file you specify. You can always exit without saving (`Ctrl+X`, then `N`).
-    *   Type your improvement (e.g., "Hello, CLI Academy!").
-    *   Save: `Ctrl+O` (write out), then `Enter`.
-    *   Exit `nano`: `Ctrl+X`.
+**Windows PowerShell**
+```powershell
+Set-Location "$HOME\projects\cli-practice"
+claude
+```
 
-4.  **Run: See your change.**
-    *   Display the file's contents to confirm your edit.
-    *   Use `cat [filename]`. For example: `cat README.md` or `cat my_notes.txt`.
-        *   **Safety check:** `cat` simply prints content to your terminal; it does not modify files.
+### Step 2 — Ask Claude Code to suggest an improvement
 
-5.  **Verify: Does it look correct?**
-    *   Compare the output from `cat` with your planned change.
-    *   *Is your improvement exactly as you intended?* If not, repeat from step 3 (Edit) to refine it until it's perfect.
+At the prompt, type:
 
-<VerificationBlock 
-  deliverable="One shipped improvement in the practice repo using the full loop."
-  verifyCheck="Learner passes the end-of-path rubric with one real improvement."
+```
+Look at this project and suggest one concrete improvement that makes the greeter more useful. Do not make any changes yet — just describe what you would do and which files you would touch.
+```
+
+Claude Code might suggest:
+
+- Accept a name from the command line so the user can run `node index.js Alice`.
+- Add a `--help` flag that prints usage instructions.
+- Create a `.gitignore` that excludes `node_modules`.
+
+Read the suggestion. Pick the one that sounds most interesting to you (or ask for a different one).
+
+### Step 3 — Review the plan before approving
+
+Once you have picked an improvement, confirm the scope:
+
+```
+Go ahead and implement that change. Show me the diff before writing anything.
+```
+
+Claude Code outlines the exact edits — which files change, what lines are added or removed. Review the diff:
+
+- Does it only touch the files it mentioned?
+- Does the new code make sense to you even if you are a beginner?
+- Is there anything you do not understand? If so, ask: "Explain the line that starts with ..."
+
+When you are satisfied, let Claude Code write the change to disk. (If your version of Claude Code auto-writes, the file is already saved. If it asks for confirmation, approve it.)
+
+### Step 4 — Run the project and verify
+
+Exit Claude Code with `/exit` and run the project:
+
+```bash
+npm start
+```
+
+If the improvement was a command-line name argument, test it:
+
+**macOS / Linux**
+```bash
+node index.js Alice
+```
+
+**Windows PowerShell**
+```powershell
+node index.js Alice
+```
+
+Expected output: `Hello, Alice! Welcome to CLI Academy.`
+
+If the output matches, the improvement works. If there is an error, relaunch Claude Code and paste the error — it will diagnose and fix it.
+
+### Step 5 — Commit the improvement
+
+```bash
+git add -A
+git commit -m "feat: accept name argument from command line"
+```
+
+Use a message that describes what the improvement does, not how you did it. Adjust the message to match whatever change you actually made.
+
+### Step 6 — Update the CHANGELOG
+
+Launch Claude Code one more time:
+
+```bash
+claude
+```
+
+```
+Add a new entry to CHANGELOG.md for the improvement we just made. Keep the same style as the existing entries.
+```
+
+Review the diff, exit, and commit:
+
+```bash
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG with new feature"
+```
+
+### Step 7 — Celebrate the full loop
+
+Run `git log --oneline` to see the full history of your practice project:
+
+```bash
+git log --oneline
+```
+
+You should see five or six commits telling a clear story from "initial commit" through "add CHANGELOG" to "new feature." Every single one was created with understanding and intention.
+
+You have just completed the full Claude Code workflow:
+
+1. **Ask** — Understand the codebase before touching it.
+2. **Plan** — Review what Claude Code intends to do.
+3. **Edit** — Let Claude Code write the code while you review diffs.
+4. **Run** — Execute the project and verify the result.
+5. **Commit** — Save a clean history with descriptive messages.
+
+This is the loop you will use in every lesson from here on.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Claude Code suggests a change that is too complex | The project is simple, so Claude Code "over-improves" | Constrain it: "Keep the change under 10 lines and do not add any dependencies." |
+| The project errors after the edit | The new code has a bug | Relaunch Claude Code, paste the error, and ask it to fix. This is normal — even AI makes mistakes |
+| `git add -A` stages files you did not expect (like `node_modules`) | No `.gitignore` file exists | Ask Claude Code to create a `.gitignore` that excludes `node_modules`, then commit it before staging other files |
+| You forget which improvement you picked | Multiple suggestions in the session | Run `git diff HEAD~1` to see exactly what changed in the last commit |
+
+<VerificationBlock
+  deliverable="One real improvement shipped through the full ask-plan-edit-run-commit loop."
+  verifyCheck="Learner shares git log --oneline showing the improvement commit and the updated CHANGELOG."
 />

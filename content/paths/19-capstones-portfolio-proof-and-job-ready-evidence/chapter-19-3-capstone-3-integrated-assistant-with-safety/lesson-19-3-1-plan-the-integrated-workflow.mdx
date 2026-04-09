@@ -10,39 +10,192 @@ verifyType: "terminal_output"
 # Plan the integrated workflow
 
 ## Objective
-
-In this lesson, you will gently begin to outline your final capstone project. Our goal here isn't to build anything yet, but to thoughtfully *plan* how different services will integrate. You will create a high-level, integration-first capstone plan that details necessary permissions (scopes), strategies for test data, and crucially, a clear path for revoking or undoing your integration safely. This planning phase is paramount for ensuring your project is secure and manageable.
+Plan a real workflow that combines multiple tools instead of pretending one agent does everything alone. In this lesson, you will define an integrated workflow that uses Claude Code plus git plus a real content folder to generate a curriculum change brief, and you will document the integration seams, stop rules, and failure test before building it.
 
 ## Walkthrough
 
-It’s exciting to think about building, but a solid, safety-conscious plan is your best first step. Let's outline your capstone project together.
+### Step 1: Create the capstone workspace and define the integrated outcome
+This capstone is strongest when each tool has an obvious role.
 
-1.  **Define Your Integration's Core Purpose:**
-    *   What single, clear goal does your capstone integration aim to achieve? Keep it simple and focused.
-    *   *Example:* "Automatically create a new task in a project management tool whenever a specific type of email arrives in my inbox."
-    *   *Safety Note:* Starting with a narrow purpose reduces complexity and potential error.
+macOS/Linux:
+```bash
+mkdir -p capstone-3-integrated/{pilot-output,portfolio-evidence}
+cd capstone-3-integrated
+pwd
+```
 
-2.  **Identify Services and Required Scopes (Permissions):**
-    *   List the services involved in your integration (e.g., Email service, Project Management service).
-    *   For each service, carefully consider the *absolute minimum* permissions (scopes) your integration would need.
-        *   *Email service example:* "Read inbox," "Filter by label." Not "Send emails," unless explicitly required.
-        *   *Project Management example:* "Create task," "Read project list." Not "Delete project."
-    *   *Why this is safe:* Always ask for *least privilege*. Giving an integration only the permissions it truly needs significantly reduces the risk if something goes wrong or if the integration is compromised.
+Windows PowerShell:
+```powershell
+New-Item -ItemType Directory -Path capstone-3-integrated, capstone-3-integrated/pilot-output, capstone-3-integrated/portfolio-evidence -Force | Out-Null
+Set-Location capstone-3-integrated
+Get-Location
+```
 
-3.  **Plan Your Test Data Strategy:**
-    *   How will you generate or prepare *non-sensitive, dummy data* for testing your integration?
-    *   *Example:* Create a dedicated "test" email address, a "sandbox" project in your project management tool, or use placeholder text like "TEST_SUBJECT_CLI_ACADEMY".
-    *   *Why this is safe:* **Never** use real, sensitive, or production data for initial integration testing. This protects your privacy and prevents accidental changes to important information.
+Recommended integrated workflow for this chapter:
+- Tool 1: git provides changed-file evidence
+- Tool 2: a real content folder provides the source material
+- Tool 3: Claude Code turns the evidence into a readable curriculum-change brief
 
-4.  **Outline Your Revocation (Undo) Path:**
-    *   This is vital for safety. Imagine you need to stop your integration immediately. How would you do it?
-    *   List the steps to:
-        *   Disconnect the integration between services.
-        *   Clean up any test data created by your integration.
-        *   Revoke any API keys or access tokens granted.
-    *   *Why this is safe:* Having a clear revocation plan means you can quickly and cleanly shut down your integration if it's not working as expected, or if you simply decide to remove it, without leaving lingering connections or data.
+### Step 2: Write INTEGRATION-PLAN.md with clear seams between the tools
+Document where one tool stops and the next begins.
+
+macOS/Linux:
+```bash
+cat > INTEGRATION-PLAN.md <<'EOF'
+# Capstone 3 Integration Plan
+
+## Workflow
+Curriculum Change Brief
+
+## Goal
+Turn real git and content evidence into one brief that explains what changed in curriculum files and what should happen next.
+
+## Tool seams
+- git: produces changed-file lists and diff summaries
+- content folder: provides the lesson files referenced by the change list
+- Claude Code: reads the evidence and writes the brief
+
+## Inputs
+- git status output
+- git diff --name-only for content files
+- git diff --stat for content files
+- selected lesson files from content/paths
+
+## Outputs
+- pilot-output/curriculum-change-brief.md
+- portfolio-evidence/run-001.md
+- portfolio-evidence/failure-test.md
+- portfolio-evidence/iteration-001.md
+
+## Stop rules
+- do not commit, push, merge, or delete files
+- do not summarize files outside the approved content scope
+- stop if no qualifying content files exist
+- stop if the prompt asks for deployed secrets, tokens, or production access
+
+## Failure test
+Run one dry failure mode where the changed-file list is empty and confirm the workflow writes a controlled no-op result instead of inventing changes.
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Capstone 3 Integration Plan
+
+## Workflow
+Curriculum Change Brief
+
+## Goal
+Turn real git and content evidence into one brief that explains what changed in curriculum files and what should happen next.
+
+## Tool seams
+- git: produces changed-file lists and diff summaries
+- content folder: provides the lesson files referenced by the change list
+- Claude Code: reads the evidence and writes the brief
+
+## Inputs
+- git status output
+- git diff --name-only for content files
+- git diff --stat for content files
+- selected lesson files from content/paths
+
+## Outputs
+- pilot-output/curriculum-change-brief.md
+- portfolio-evidence/run-001.md
+- portfolio-evidence/failure-test.md
+- portfolio-evidence/iteration-001.md
+
+## Stop rules
+- do not commit, push, merge, or delete files
+- do not summarize files outside the approved content scope
+- stop if no qualifying content files exist
+- stop if the prompt asks for deployed secrets, tokens, or production access
+
+## Failure test
+Run one dry failure mode where the changed-file list is empty and confirm the workflow writes a controlled no-op result instead of inventing changes.
+"@ | Set-Content INTEGRATION-PLAN.md
+```
+
+### Step 3: Add the integrated agent contract
+The contract should state exactly what Claude Code is allowed to read and write.
+
+macOS/Linux:
+```bash
+cat > CLAUDE.md <<'EOF'
+# Capstone 3 Agent Contract
+
+Allowed actions:
+- read git evidence files from portfolio-evidence/
+- read approved lesson files under content/paths/
+- write pilot-output/curriculum-change-brief.md
+- write portfolio-evidence/run-001.md, portfolio-evidence/failure-test.md, and portfolio-evidence/iteration-001.md
+
+Forbidden actions:
+- edit lesson files during the pilot
+- commit, push, merge, reset, or delete files
+- inspect secret-bearing files or deployed credentials
+- describe changes that are not present in the git evidence
+
+No-op behavior:
+- if the content file list is empty, write a short no qualifying content changes note and stop
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Capstone 3 Agent Contract
+
+Allowed actions:
+- read git evidence files from portfolio-evidence/
+- read approved lesson files under content/paths/
+- write pilot-output/curriculum-change-brief.md
+- write portfolio-evidence/run-001.md, portfolio-evidence/failure-test.md, and portfolio-evidence/iteration-001.md
+
+Forbidden actions:
+- edit lesson files during the pilot
+- commit, push, merge, reset, or delete files
+- inspect secret-bearing files or deployed credentials
+- describe changes that are not present in the git evidence
+
+No-op behavior:
+- if the content file list is empty, write a short no qualifying content changes note and stop
+"@ | Set-Content CLAUDE.md
+```
+
+### Step 4: Review the integration plan before you pilot it
+Use Claude Code to challenge the seams and failure behavior now, before the build step.
+
+Use this prompt:
+
+```text
+Read INTEGRATION-PLAN.md and CLAUDE.md. Check whether the tool seams are clear, whether the stop rules are strong enough, and whether the failure test would catch an invented summary. Write the review to portfolio-evidence/plan-review.md.
+```
+
+Inspect the review.
+
+macOS/Linux:
+```bash
+cat portfolio-evidence/plan-review.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content portfolio-evidence/plan-review.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The workflow is really just one agent with too much freedom | Tool seams were never defined | Assign git, content inspection, and summarization distinct roles in INTEGRATION-PLAN.md |
+| The agent summarizes unrelated repo changes | Approved scope does not explicitly narrow to content files | Restrict inputs to content change evidence and named lesson files |
+| The pilot could mutate the repo | Contract does not forbid edit and commit actions | Ban edits, commits, pushes, resets, and deletes directly in CLAUDE.md |
+| The workflow would invent changes when no files match | No no-op behavior exists | Add a stop rule for an empty content file list |
+| The pilot could drift toward production data | Safety rules do not mention secrets or deployed systems | Add an explicit stop on tokens, credentials, and production access |
 
 <VerificationBlock 
-  deliverable="An integration-first capstone plan with scopes, test data, and revoke path."
-  verifyCheck="Plan is safe enough for pilot on test or low-risk real data."
+  deliverable="An integrated capstone plan containing INTEGRATION-PLAN.md, CLAUDE.md, and portfolio-evidence/plan-review.md."
+  verifyCheck="A reviewer can identify the role of git, the role of the content source, the role of Claude Code, and the exact failure mode the pilot will test before broader use."
 />

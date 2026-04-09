@@ -11,17 +11,26 @@ interface VerificationBlockProps {
 export function VerificationBlock({ deliverable, verifyCheck }: VerificationBlockProps) {
   const [status, setStatus] = useState<"idle" | "verifying" | "success" | "fail">("idle");
   const [output, setOutput] = useState("");
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   async function handleVerify() {
     setStatus("verifying");
-    // Simulate AI verification
-    setTimeout(() => {
-      if (output.trim().length > 5) {
-        setStatus("success");
-      } else {
-        setStatus("fail");
-      }
-    }, 1500);
+    setFeedback(null);
+
+    try {
+      const response = await fetch("/api/lesson-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliverable, output, verifyCheck }),
+      });
+
+      const data = (await response.json().catch(() => ({}))) as { message?: string; ok?: boolean };
+      setFeedback(data.message ?? null);
+      setStatus(data.ok ? "success" : "fail");
+    } catch {
+      setStatus("fail");
+      setFeedback("Verification service is temporarily unavailable. Keep your output and try again.");
+    }
   }
 
   return (
@@ -60,13 +69,13 @@ export function VerificationBlock({ deliverable, verifyCheck }: VerificationBloc
           {status === "success" && (
             <div className="flex items-center gap-2 text-[var(--color-accent-primary)] font-medium text-sm">
               <CheckCircle2 className="size-5" />
-              Verification passed! You may proceed.
+              {feedback || "Verification passed. You may proceed."}
             </div>
           )}
           {status === "fail" && (
             <div className="flex items-center gap-2 text-[var(--color-accent-warning)] font-medium text-sm">
               <ChevronRight className="size-5" />
-              Not quite right. Please check your output and try again.
+              {feedback || "Not quite right. Please check your output and try again."}
             </div>
           )}
           {status === "idle" && <div />}

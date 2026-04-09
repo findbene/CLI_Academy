@@ -10,63 +10,122 @@ verifyType: "terminal_output"
 # Build and verify the workflow
 
 ## Objective
-
-In this lesson, your goal is to confidently establish a simple command-line workflow. You'll learn to create a basic script, run it, capture its output into a dedicated log file, and then verify that everything worked as intended. This hands-on experience will build a foundational understanding of how commands work together to achieve a specific outcome, all while keeping safety and clarity as our top priorities.
+Build the bounded automation workflow for real, run it against a real repository, capture evidence, and verify that it produces the promised deliverable. By the end of this lesson, you will have a working daily git digest, a run log, and a test that proves the expected output file exists and contains the sections you scoped.
 
 ## Walkthrough
 
-Let's build your first workflow step-by-step:
+### Step 1: Add a prompt file and a real output test
+Create a reusable run prompt and a basic test that checks the output file for the sections your scope promised.
 
-1.  **Create your project directory:**
-    ```bash
-    mkdir my_first_workflow
-    ```
-    This command is very safe. `mkdir` (make directory) simply creates an empty folder on your computer to keep your project organized. It doesn't modify any existing files or system settings.
+macOS/Linux:
+```bash
+cat > run-prompt.md <<'EOF'
+Read SCOPE.md and CLAUDE.md. Inspect only this repository. Review the current working tree and the most recent 10 commits. Write output/daily-git-digest.md and logs/run-001.md. Do not commit, push, delete files, or inspect secrets.
+EOF
 
-2.  **Navigate into your new directory:**
-    ```bash
-    cd my_first_workflow
-    ```
-    `cd` (change directory) moves you into the folder you just created. This is also safe, as it only changes your current location in the file system, not any files themselves.
+cat > tests/check-output.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
 
-3.  **Create a simple script:**
-    We'll use `nano`, a beginner-friendly text editor, to create a shell script.
-    ```bash
-    nano welcome_script.sh
-    ```
-    This command opens `nano` and either creates a new file named `welcome_script.sh` or opens it if it already exists. Creating a new file is safe; it's like opening a blank document. Inside `nano`, type the following:
-    ```bash
-    #!/bin/bash
-    echo "Welcome to your first CLI workflow!"
-    date
-    ```
-    Press `Ctrl+O` to save, then `Enter` to confirm the filename, and `Ctrl+X` to exit `nano`.
+test -f output/daily-git-digest.md
+grep -q '^# Daily Git Digest' output/daily-git-digest.md
+grep -q '^## Commits Reviewed' output/daily-git-digest.md
+grep -q '^## Working Tree Status' output/daily-git-digest.md
+grep -q '^## Recommended Next Action' output/daily-git-digest.md
 
-4.  **Make your script executable:**
-    ```bash
-    chmod +x welcome_script.sh
-    ```
-    `chmod +x` changes the file's permissions to allow it to be run as a program. This is safe because it only modifies *how* your operating system treats the file, not the content of the file itself. It gives your script the "permission to execute."
+echo 'capstone-1 output check passed'
+EOF
 
-5.  **Run your script and capture its output:**
-    ```bash
-    ./welcome_script.sh > workflow.log
-    ```
-    Here, `./welcome_script.sh` executes your script. The `>` symbol is a powerful but safe redirection operator. It takes all the output that `welcome_script.sh` normally prints to your screen and instead writes it into a file named `workflow.log`. If `workflow.log` doesn't exist, it creates it. If it does exist, it safely overwrites its contents.
+chmod +x tests/check-output.sh
+```
 
-6.  **Verify your log file:**
-    ```bash
-    cat workflow.log
-    ```
-    `cat` (concatenate and print files) displays the entire content of `workflow.log` right in your terminal. This is a read-only operation and perfectly safe, as it only shows you the file's contents without making any changes.
+Windows PowerShell:
+```powershell
+@"
+Read SCOPE.md and CLAUDE.md. Inspect only this repository. Review the current working tree and the most recent 10 commits. Write output/daily-git-digest.md and logs/run-001.md. Do not commit, push, delete files, or inspect secrets.
+"@ | Set-Content run-prompt.md
 
-7.  **List your project files:**
-    ```bash
-    ls -l
-    ```
-    `ls -l` (list long format) shows you all the files in your current directory, along with details like permissions and file size. This is a read-only command, offering a safe way to confirm that both your script and your log file are present.
+@"
+if (-not (Test-Path output/daily-git-digest.md)) { throw 'Missing output/daily-git-digest.md' }
+
+$content = Get-Content output/daily-git-digest.md -Raw
+if ($content -notmatch '^# Daily Git Digest') { throw 'Missing title' }
+if ($content -notmatch '^## Commits Reviewed') { throw 'Missing commits section' }
+if ($content -notmatch '^## Working Tree Status') { throw 'Missing working tree section' }
+if ($content -notmatch '^## Recommended Next Action') { throw 'Missing next action section' }
+
+Write-Host 'capstone-1 output check passed'
+"@ | Set-Content tests/check-output.ps1
+```
+
+### Step 2: Capture the raw repo evidence before the agent summarizes it
+Your portfolio is stronger if you can show what the workflow looked at before it wrote the digest.
+
+macOS/Linux:
+```bash
+git status --short > logs/git-status.txt
+git log --oneline -10 > logs/git-log.txt
+git diff --stat > logs/git-diff-stat.txt
+```
+
+Windows PowerShell:
+```powershell
+git status --short | Set-Content logs/git-status.txt
+git log --oneline -10 | Set-Content logs/git-log.txt
+git diff --stat | Set-Content logs/git-diff-stat.txt
+```
+
+If `git diff --stat` is empty, that is still useful evidence. It means your working tree has no unstaged content changes.
+
+### Step 3: Run the bounded workflow in Claude Code
+Open Claude Code in this capstone folder and use the prompt file as your run contract.
+
+Use this prompt:
+
+```text
+Read run-prompt.md, SCOPE.md, CLAUDE.md, and the files in logs/. Produce output/daily-git-digest.md and logs/run-001.md. Quote only evidence you can verify from the repo inputs. Stop after those two files.
+```
+
+After the run completes, inspect both artifacts.
+
+macOS/Linux:
+```bash
+cat output/daily-git-digest.md
+cat logs/run-001.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content output/daily-git-digest.md
+Get-Content logs/run-001.md
+```
+
+### Step 4: Run the test and verify the deliverable matches the scope
+Run the test on your platform.
+
+macOS/Linux:
+```bash
+./tests/check-output.sh
+```
+
+Windows PowerShell:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\check-output.ps1
+```
+
+Then do one human check: make sure the digest includes facts, not invented explanations. A passing test proves the file structure; your review proves the content is credible.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The digest sounds polished but not true | The agent wrote from memory instead of the captured git evidence | Force the prompt to read logs/git-status.txt, logs/git-log.txt, and logs/git-diff-stat.txt |
+| The workflow writes more than the planned files | The run prompt does not restate the stop condition clearly | Limit the run to one digest and one log in both run-prompt.md and CLAUDE.md |
+| The agent starts recommending commits or pushes | Safety rules focus on style instead of repo risk | Explicitly forbid commit, push, merge, reset, and delete actions |
+| The test passes but the digest is still weak | The test only checks headings | Add a human review that compares the digest against the raw git evidence files |
+| The workflow inspects a repo with live credentials | You ran the capstone in the wrong folder | Move to a safe local repo and stop if secrets or deployment files are in scope |
 
 <VerificationBlock 
-  deliverable="A working local workflow with logs and outputs."
-  verifyCheck="Workflow completes one end-to-end run reliably."
+  deliverable="A working capstone run containing output/daily-git-digest.md, logs/run-001.md, raw git evidence files in logs/, and a passing output check script."
+  verifyCheck="You can show the raw git inputs, the generated digest, and a test run that proves the file exists with the required sections promised in SCOPE.md."
 />

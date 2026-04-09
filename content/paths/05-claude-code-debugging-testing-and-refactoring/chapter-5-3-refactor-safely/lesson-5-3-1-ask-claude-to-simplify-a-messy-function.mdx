@@ -1,0 +1,236 @@
+---
+title: "Ask Claude to simplify a messy function"
+lessonNumber: "5.3.1"
+chapterNumber: "5.3"
+pathNumber: "5"
+tutorPreload: "Refactor this function to be shorter and clearer without changing what it does."
+verifyType: "terminal_output"
+---
+
+# Ask Claude to simplify a messy function
+
+## Objective
+
+Start with a working but ugly function — deeply nested, repetitive, and hard to read. Run the existing tests to prove it works. Ask Claude Code to refactor it for clarity. Run the tests again to prove behavior is preserved. By the end of this lesson you will understand that refactoring means changing how code looks without changing what it does, and that tests are your safety net for proving that.
+
+## Walkthrough
+
+### Step 1 — Create a messy but working function
+
+This function categorizes a user based on their age and membership status. It works correctly but is deeply nested and repetitive.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/projects/refactor-practice && cd ~/projects/refactor-practice
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force ~\projects\refactor-practice | Set-Location
+```
+
+**JavaScript — `categorize.js`**
+
+```js
+// categorize.js — works but is a mess
+function categorizeUser(age, isMember) {
+  let result;
+  if (age !== undefined && age !== null) {
+    if (typeof age === "number") {
+      if (age >= 0) {
+        if (age < 13) {
+          if (isMember === true) {
+            result = "child-member";
+          } else {
+            result = "child-guest";
+          }
+        } else {
+          if (age < 18) {
+            if (isMember === true) {
+              result = "teen-member";
+            } else {
+              result = "teen-guest";
+            }
+          } else {
+            if (isMember === true) {
+              result = "adult-member";
+            } else {
+              result = "adult-guest";
+            }
+          }
+        }
+      } else {
+        result = "invalid";
+      }
+    } else {
+      result = "invalid";
+    }
+  } else {
+    result = "invalid";
+  }
+  return result;
+}
+
+module.exports = { categorizeUser };
+```
+
+**Python — `categorize.py`**
+
+```python
+# categorize.py — works but is a mess
+def categorize_user(age, is_member):
+    result = None
+    if age is not None:
+        if isinstance(age, (int, float)):
+            if age >= 0:
+                if age < 13:
+                    if is_member is True:
+                        result = "child-member"
+                    else:
+                        result = "child-guest"
+                else:
+                    if age < 18:
+                        if is_member is True:
+                            result = "teen-member"
+                        else:
+                            result = "teen-guest"
+                    else:
+                        if is_member is True:
+                            result = "adult-member"
+                        else:
+                            result = "adult-guest"
+            else:
+                result = "invalid"
+        else:
+            result = "invalid"
+    else:
+        result = "invalid"
+    return result
+```
+
+### Step 2 — Write tests that lock in the correct behavior
+
+Ask Claude Code to write a test file that covers every category:
+
+```
+Write tests for categorizeUser in categorize.js. Cover: child-member, child-guest, teen-member, teen-guest, adult-member, adult-guest, negative age, non-number age, and null/undefined age.
+```
+
+Claude generates a complete test file. Accept it. For JavaScript this produces `categorize.test.js` with tests like:
+
+```js
+const { categorizeUser } = require("./categorize");
+
+test("child member", () => expect(categorizeUser(10, true)).toBe("child-member"));
+test("child guest", () => expect(categorizeUser(10, false)).toBe("child-guest"));
+test("teen member", () => expect(categorizeUser(15, true)).toBe("teen-member"));
+test("teen guest", () => expect(categorizeUser(15, false)).toBe("teen-guest"));
+test("adult member", () => expect(categorizeUser(25, true)).toBe("adult-member"));
+test("adult guest", () => expect(categorizeUser(25, false)).toBe("adult-guest"));
+test("negative age", () => expect(categorizeUser(-1, true)).toBe("invalid"));
+test("string age", () => expect(categorizeUser("old", true)).toBe("invalid"));
+test("null age", () => expect(categorizeUser(null, true)).toBe("invalid"));
+test("undefined age", () => expect(categorizeUser(undefined, true)).toBe("invalid"));
+```
+
+### Step 3 — Run tests before refactoring
+
+**macOS / Linux (JavaScript)**
+
+```bash
+npm test
+```
+
+**Windows PowerShell (JavaScript)**
+
+```powershell
+npm test
+```
+
+**macOS / Linux (Python)**
+
+```bash
+pytest -v
+```
+
+**Windows PowerShell (Python)**
+
+```powershell
+pytest -v
+```
+
+All 10 tests pass. This is your baseline. These tests will catch any accidental behavior change during refactoring.
+
+### Step 4 — Ask Claude Code to refactor
+
+```
+The categorizeUser function in categorize.js works correctly but is deeply nested and hard to read. Refactor it to be flat and clear. Use early returns for the invalid cases and a simple lookup for the categories. Do not change the behavior — all existing tests must still pass.
+```
+
+Claude rewrites the function. A typical result:
+
+```js
+function categorizeUser(age, isMember) {
+  if (age === undefined || age === null || typeof age !== "number" || age < 0) {
+    return "invalid";
+  }
+
+  const group = age < 13 ? "child" : age < 18 ? "teen" : "adult";
+  const tier = isMember ? "member" : "guest";
+  return `${group}-${tier}`;
+}
+```
+
+This is 6 lines instead of 30. The deep nesting is gone. Early returns handle all the invalid cases upfront, and the category logic is a simple two-part string.
+
+Accept the change.
+
+### Step 5 — Run tests after refactoring
+
+**macOS / Linux**
+
+```bash
+npm test
+```
+
+**Windows PowerShell**
+
+```powershell
+npm test
+```
+
+All 10 tests pass. The refactored function produces identical results for every input. That is the point of refactoring: the outside behavior does not change; only the inside code gets better.
+
+### Step 6 — Compare before and after
+
+Ask Claude Code:
+
+```
+Show me a side-by-side comparison of the original categorizeUser and the refactored version. What specifically improved?
+```
+
+Claude explains:
+
+- **Nesting depth**: went from 7 levels to 1.
+- **Lines of code**: went from 30+ to 6.
+- **Readability**: a new developer can understand the refactored version in seconds.
+- **Maintainability**: adding a new age group (like "senior") requires one change, not several nested blocks.
+
+> **Real danger — refactoring without tests is gambling.** If you did not have those 10 tests, you would have no way to know if the refactored function still produces the same results. Always write or confirm tests before refactoring. The tests are your safety net, not the refactoring.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Tests fail after refactoring | Claude's refactored logic does not exactly match the original edge cases | Reject the refactoring, ask Claude what case it changed, and refactor in smaller steps |
+| Claude rewrites the function and also changes the test file | You did not tell Claude to leave the tests alone | Say explicitly: "Only change categorize.js. Do not modify the test file." |
+| The refactored code uses syntax you do not understand (ternary, template literals) | Claude used advanced language features | Ask Claude: "Explain the ternary operator you used on line 6" — understanding the syntax is part of learning |
+| Claude refuses to refactor, saying the original is fine | Claude does not see a problem because the code works | Be specific: "The function has 7 levels of nesting. Flatten it using early returns." |
+| Python version uses `match/case` which is not available in your Python version | `match` requires Python 3.10+ | Tell Claude your Python version: "I'm using Python 3.9, do not use match/case" |
+
+<VerificationBlock
+  deliverable="A deeply nested function, a test suite that passes before and after, and a clean refactored version that is shorter and flatter."
+  verifyCheck="Run tests after refactoring and confirm all pass with the same results as before."
+/>

@@ -35,10 +35,35 @@ Zero-To-Mastery (ZTM) Infrastructure & Pedagogy Implementation.
 
 ## In progress
 
-- Initiating the foundational scoping for the Pro-Tier `mcp-mastery` and `workflow-automation` modules.
+- Foundational scoping for the Pro-Tier `mcp-mastery` and `workflow-automation` modules.
+- Editorial QA pass across the rewritten and migrated live curriculum, especially Paths 04-19 and most urgently Paths 11, 12, 14, 15, 16, 18, and 19.
+- Learner-flow QA on the recently hardened onboarding, dashboard resume, lesson progress, and verification surfaces.
 
 ## Next
 
-1. Kick off the next batch of Lounge/editorial content now that the public route and renderer are stable.
+1. Run editorial QA on the migrated live paths and spot-check command validity on macOS/Linux and Windows PowerShell.
 2. Draft the Capstone MDX payloads for the `mcp-mastery` paths.
 3. Harden the gamification service further around concurrency and malformed database edge cases.
+4. Expand browser-backed QA beyond smoke coverage to authenticated onboarding/dashboard/lesson flows.
+
+## Latest update
+
+- Normalized the live curriculum structure back to the canonical `content/paths/` slugs for Paths 01-19 by archiving stale duplicate trees/files and moving the rewritten Path 11, 12, 14, 15, and 16 content into the stable live directories.
+- Hardened `apps/web/lib/mdx.ts` so live lesson loading only includes lesson-pattern MDX files, preventing orphan or duplicate content files from leaking into learner routes.
+- Rebuilt `tooling/scripts/validate_content.py` to match the live learner contract: recursive chapter discovery, `lesson-*.mdx` filtering, current frontmatter fields (`title`, `lessonNumber`, `chapterNumber`, `pathNumber`), and ignored-file warnings for non-lesson MDX.
+- Updated `content/README.md` so the documented lesson path shape and frontmatter baseline match the live chapterized curriculum instead of the older flat structure.
+- Fixed malformed frontmatter in seven Path 17 lesson files and archived the obsolete `nano_claw_organizer.mdx` lab out of the live Path 13 tree into `content/paths_old/2026-04-curriculum-rewrite/...`.
+- Revalidated the curriculum after those repairs: the validator now reports 139 live lessons across 19 paths with 0 errors and 0 warnings.
+- Added `apps/web/lib/learning.ts` and rewired onboarding completion plus dashboard recommendations/resume behavior to the current live path slugs and first-lesson routes.
+- Added mobile app navigation in `AppSidebar`, lesson section progress tracking in `LessonPlayer`, and a real API-backed verification flow through `apps/web/app/api/lesson-verification/route.ts`.
+- Updated path metadata for migrated curriculum and added the DOM marker needed for lesson-progress tracking without changing route contracts.
+- Revalidated the frontend after these changes with clean `npm run lint`, clean `npm run typecheck`, clean `npm run build`, and green Playwright smoke coverage (`16/16`).
+- Rewrote all seven Path 18 MDX lessons under `content/paths/18-real-world-agent-builds-for-everyday-productivity/` to remove template-only `touch`/`nano` loops and replace them with real Claude Code + `CLAUDE.md` assistant workflows.
+- Added dual command paths (macOS/Linux and Windows PowerShell) in every lesson walkthrough.
+- Added "What can go wrong" troubleshooting tables in every lesson with real risks: runaway loops, over-permission, and avoidable cost overruns.
+- Realigned each `VerificationBlock` so deliverables and checks match the actual hands-on activities performed by learners.
+- Replaced the older Path 04-09 chapter trees with new practical lesson packs covering codebase mapping, controlled repo operations, debugging/testing/refactoring, Git/GitHub workflows, cross-surface Claude usage, Cowork session discipline, and research/document workflows.
+- The working tree also includes the same replacement pattern for later paths that had stale chapter structures (notably Paths 10-16), with old directories removed and new chapter directories staged for the live curriculum surface.
+- Rewrote all nine Path 19 MDX lessons under `content/paths/19-capstones-portfolio-proof-and-job-ready-evidence/` around portfolio-grade capstones instead of file-creation drills.
+- Standardized Capstone 1 as a bounded daily git digest, Capstone 2 as a real TODO extraction workflow, and Capstone 3 as an integrated git-plus-content curriculum brief pilot.
+- Added dual command paths, real troubleshooting tables, and verification checks that match the actual capstone artifacts: scope docs, run logs, reports, case studies, and final portfolio pack.

@@ -10,58 +10,114 @@ verifyType: "terminal_output"
 # Build: repo helper or content workflow helper
 
 ## Objective
-By the end of this lesson, you will create your very own CLI helper script. This script will be a safe, bounded tool designed to draft routine project artifacts like handoff notes or meeting summaries. We'll start with a safe first version that outputs directly to your screen, ensuring you're always in complete control of what it does and where it goes.
+Build one practical helper assistant that answers real operational questions in your workspace:
+- Repo helper: "What changed in the last week?" and "What files have TODOs?"
+- Content helper: summarize draft files from a bounded folder.
 
 ## Walkthrough
+### Step 1: Choose your helper scope and define a contract
+Create `CLAUDE.md` rules for one helper mode only.
 
-Let's build a simple script that helps you draft handoff notes.
+```md
+# Helper Contract
 
-1.  **Create your script file:**
-    ```bash
-    touch my_handoff_helper.sh
-    ```
-    The `touch` command is a safe way to create an empty file. It doesn't modify any existing content or folders, just prepares a new, blank canvas for our script.
+## Mode A: Repo helper
+- Answer only:
+  1) What changed in the last week?
+  2) What files have TODO markers?
+- Allowed commands: git log --since="7 days ago" --oneline, grep -R "TODO" .
 
-2.  **Add the basic script structure:**
-    Open `my_handoff_helper.sh` with your favorite text editor (e.g., `nano my_handoff_helper.sh` or `code my_handoff_helper.sh`). Add the following content:
+## Mode B: Content helper
+- Read drafts only from content/drafts/.
+- Summarize each draft in 3 bullets.
 
-    ```bash
-    #!/bin/bash
+## Shared safety
+- Do not edit files.
+- Do not commit/push.
+- Stop after processing max 20 files.
+```
 
-    echo "--- Draft Handoff Notes Helper ---"
-    echo "Please provide a summary of your work:"
-    read SUMMARY
+### Step 2: Run the repo helper path
 
-    echo "What are the next steps for this item?"
-    read NEXT_STEPS
+```bash
+git log --since="7 days ago" --oneline
+grep -R --line-number "TODO" .
+```
 
-    echo -e "
---- DRAFT HANDOFF NOTES ---
-"
-    echo "Summary: $SUMMARY"
-    echo "Next Steps: $NEXT_STEPS"
-    echo -e "
-Remember to review and save these notes where appropriate!
-"
-    ```
-    The `#!/bin/bash` line tells your system to execute the script using Bash. `echo` is a very safe command—it simply prints text to your terminal. `read` securely takes input from you and stores it in a temporary variable within the script, without touching any files.
+```powershell
+git log --since="7 days ago" --oneline
+Get-ChildItem -Recurse -File | Select-String -Pattern "TODO"
+```
 
-3.  **Make your script executable:**
-    ```bash
-    chmod +x my_handoff_helper.sh
-    ```
-    The `chmod +x` command makes your script runnable. It's a safe operation because it only changes the permissions of *your specific file* to allow execution; it doesn't alter its content or affect any other files on your system.
+Then in Claude Code prompt:
 
-4.  **Run your new helper!**
-    ```bash
-    ./my_handoff_helper.sh
-    ```
-    Watch as your script prompts you for input and then neatly formats your responses into draft notes, displaying them directly in your terminal. This basic version is safe because all output is to your screen (standard output); it doesn't write to, modify, or delete any files. You can copy the generated text and paste it wherever you need it.
+```text
+Read CLAUDE.md and run Mode A only. Return: (1) one-paragraph summary of last-week changes and (2) a TODO file list with paths.
+```
 
-5.  **Looking Ahead (Safely!):**
-    For a later version, you could expand this script to write the output to a specific file using `>>` (e.g., `echo "..." >> notes.txt`). However, always build cautiously! When modifying files, ensure your script explicitly asks for confirmation, perhaps using a `read -p "Save to file? (y/n): "` prompt, to maintain full control and prevent unintended changes.
+### Step 3: Run the content helper path
+Create draft inputs first.
+
+```bash
+mkdir -p content/drafts
+printf "Draft 1\nThis draft covers onboarding improvements.\n" > content/drafts/draft-1.md
+printf "Draft 2\nThis draft covers release notes quality.\n" > content/drafts/draft-2.md
+```
+
+```powershell
+New-Item -ItemType Directory -Path content/drafts -Force | Out-Null
+@"
+Draft 1
+This draft covers onboarding improvements.
+"@ | Set-Content content/drafts/draft-1.md
+@"
+Draft 2
+This draft covers release notes quality.
+"@ | Set-Content content/drafts/draft-2.md
+```
+
+Prompt Claude Code:
+
+```text
+Read CLAUDE.md and run Mode B only. Summarize every file in content/drafts/ into 3 bullets and stop at 20 files max.
+```
+
+### Step 4: Record output artifact
+Save the assistant response to `helper-output.md`.
+
+```bash
+touch helper-output.md
+```
+
+```powershell
+New-Item helper-output.md -ItemType File -Force | Out-Null
+```
+
+Paste your assistant output into that file.
+
+### Step 5: Validate boundaries
+
+```bash
+git status --short
+```
+
+```powershell
+git status --short
+```
+
+Your helper should produce useful read-only analysis without changing project code.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| Helper scans entire machine | Missing path bounds | Constrain to repo root or `content/drafts/` explicitly |
+| Command fails on Windows (`grep`) | Platform mismatch | Use `Select-String` alternative |
+| Too many files processed | No max-file stop rule | Enforce `max 20 files` in contract |
+| Output too generic | Prompt asks for summary without structure | Require exact output schema (paragraph + list) |
+| Hidden cost creep from repeated broad scans | Re-running recursive scans in large repos | Keep scope narrow and rerun only changed directories |
 
 <VerificationBlock 
-  deliverable="A bounded helper that drafts handoff notes, summaries, or routine project artifacts."
-  verifyCheck="Helper completes one artifact end to end."
+  deliverable="A repo helper or content helper run that produced a saved helper-output.md artifact."
+  verifyCheck="You can show the exact command evidence, bounded scope, and a useful output answering the target questions."
 />

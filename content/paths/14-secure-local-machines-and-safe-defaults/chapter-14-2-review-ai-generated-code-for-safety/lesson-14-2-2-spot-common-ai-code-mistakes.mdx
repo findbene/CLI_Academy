@@ -1,0 +1,382 @@
+---
+title: "Spot common AI code mistakes"
+lessonNumber: "14.2.2"
+chapterNumber: "14.2"
+pathNumber: "14"
+tutorPreload: "Review this AI-generated code for security issues and tell me what to fix."
+verifyType: "terminal_output"
+---
+
+# Spot common AI code mistakes
+
+## Objective
+
+AI code generators produce code that works on the surface but often contains patterns that would fail in production — or worse, create security vulnerabilities. These are not random errors. They fall into predictable categories.
+
+In this lesson you will study the five most common AI code mistakes with real examples, learn to recognize each pattern instantly, and build a reference file you can check against every time you review AI-generated code.
+
+## Walkthrough
+
+### Step 1 — Set up a practice directory
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/ai-mistakes-lab && cd ~/cli-academy/projects/ai-mistakes-lab
+git init
+```
+
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\ai-mistakes-lab" -Force
+Set-Location "$HOME\cli-academy\projects\ai-mistakes-lab"
+git init
+```
+
+### Step 2 — Mistake 1: Hallucinated imports
+
+AI models generate import statements for packages or modules that do not exist. The code looks complete, lints clean in the editor, and only fails at runtime.
+
+Create a file that demonstrates this:
+
+**macOS / Linux:**
+```bash
+cat > hallucinated_imports.py << 'EOF'
+# AI-generated code — looks correct but has a fake import
+from flask import Flask
+from flask_security import SecurityManager  # DOES NOT EXIST
+from utils.auth_helpers import validate_token  # may not exist in your project
+
+app = Flask(__name__)
+security = SecurityManager(app)
+
+@app.route('/dashboard')
+def dashboard():
+    token = validate_token(request.headers.get('Authorization'))
+    return render_template('dashboard.html')
+EOF
+git add hallucinated_imports.py && git commit -m "example: hallucinated imports"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+# AI-generated code — looks correct but has a fake import
+from flask import Flask
+from flask_security import SecurityManager  # DOES NOT EXIST
+from utils.auth_helpers import validate_token  # may not exist in your project
+
+app = Flask(__name__)
+security = SecurityManager(app)
+
+@app.route('/dashboard')
+def dashboard():
+    token = validate_token(request.headers.get('Authorization'))
+    return render_template('dashboard.html')
+"@ | Set-Content hallucinated_imports.py
+git add hallucinated_imports.py; git commit -m "example: hallucinated imports"
+```
+
+**How to catch it:** Run the code. Check every import with `pip show <package>` or `npm ls <package>`. If the package does not exist on PyPI or npm, the AI invented it.
+
+**macOS / Linux:**
+```bash
+pip show flask-security 2>&1 || echo "Package not found — hallucinated import"
+```
+
+**Windows (PowerShell):**
+```powershell
+pip show flask-security; if ($LASTEXITCODE -ne 0) { Write-Host "Package not found — hallucinated import" }
+```
+
+### Step 3 — Mistake 2: Deprecated APIs
+
+AI models are trained on older data. They suggest APIs that have been removed or replaced.
+
+**macOS / Linux:**
+```bash
+cat > deprecated_api.js << 'EOF'
+const https = require('https');
+
+// AI suggested url.parse — deprecated since Node.js 11
+const url = require('url');
+const parsed = url.parse('https://api.example.com/data?user=1');
+
+// AI used Buffer constructor — deprecated and unsafe
+const encoded = new Buffer('sensitive-data').toString('base64');
+
+// Correct modern equivalents:
+// const parsed = new URL('https://api.example.com/data?user=1');
+// const encoded = Buffer.from('sensitive-data').toString('base64');
+EOF
+git add deprecated_api.js && git commit -m "example: deprecated APIs"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+const https = require('https');
+
+// AI suggested url.parse — deprecated since Node.js 11
+const url = require('url');
+const parsed = url.parse('https://api.example.com/data?user=1');
+
+// AI used Buffer constructor — deprecated and unsafe
+const encoded = new Buffer('sensitive-data').toString('base64');
+
+// Correct modern equivalents:
+// const parsed = new URL('https://api.example.com/data?user=1');
+// const encoded = Buffer.from('sensitive-data').toString('base64');
+"@ | Set-Content deprecated_api.js
+git add deprecated_api.js; git commit -m "example: deprecated APIs"
+```
+
+**How to catch it:** Run `node --pending-deprecation deprecated_api.js` to see deprecation warnings. For Python, watch for `DeprecationWarning` in output. Check the official docs for the current version of any API you see.
+
+### Step 4 — Mistake 3: eval() and dynamic code execution
+
+AI models reach for `eval()` when they want flexibility. It is almost never the right choice, and when it takes user input, it creates a remote code execution vulnerability.
+
+**macOS / Linux:**
+```bash
+cat > eval_danger.py << 'EOF'
+# AI-generated "flexible calculator" — remote code execution vulnerability
+def calculate(expression):
+    """Evaluate a math expression from the user."""
+    return eval(expression)  # DANGER: executes ANY Python code
+
+# An attacker sends: __import__('os').system('rm -rf /')
+# The eval() call will execute it.
+
+# SAFE alternative:
+import ast
+def safe_calculate(expression):
+    """Safely evaluate a math expression."""
+    tree = ast.parse(expression, mode='eval')
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Expression, ast.BinOp, ast.Num,
+                                  ast.UnaryOp, ast.operator, ast.unaryop)):
+            raise ValueError(f"Unsafe expression: {expression}")
+    return eval(compile(tree, '<string>', 'eval'))
+EOF
+git add eval_danger.py && git commit -m "example: eval danger"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+# AI-generated "flexible calculator" — remote code execution vulnerability
+def calculate(expression):
+    """Evaluate a math expression from the user."""
+    return eval(expression)  # DANGER: executes ANY Python code
+
+# An attacker sends: __import__('os').system('rm -rf /')
+# The eval() call will execute it.
+
+# SAFE alternative:
+import ast
+def safe_calculate(expression):
+    """Safely evaluate a math expression."""
+    tree = ast.parse(expression, mode='eval')
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Expression, ast.BinOp, ast.Num,
+                                  ast.UnaryOp, ast.operator, ast.unaryop)):
+            raise ValueError(f"Unsafe expression: {expression}")
+    return eval(compile(tree, '<string>', 'eval'))
+"@ | Set-Content eval_danger.py
+git add eval_danger.py; git commit -m "example: eval danger"
+```
+
+**How to catch it:** Search for `eval(`, `exec(`, `Function(`, `new Function(` in any AI output. If the argument comes from user input, it is a critical vulnerability.
+
+### Step 5 — Mistake 4: Hardcoded credentials in examples
+
+AI frequently embeds real-looking credentials directly in code — sometimes from its training data, sometimes as "examples" that developers forget to replace.
+
+**macOS / Linux:**
+```bash
+cat > hardcoded_creds.py << 'EOF'
+import requests
+
+# AI-generated API client with hardcoded credentials
+API_KEY = "sk-proj-abc123def456"  # NEVER hardcode keys
+DB_PASSWORD = "admin123"           # NEVER hardcode passwords
+WEBHOOK_URL = "https://hooks.slack.com/services/T00/B00/xxxx"
+
+def fetch_data():
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    return requests.get("https://api.example.com/data", headers=headers)
+
+# SAFE alternative: use environment variables
+import os
+def fetch_data_safe():
+    api_key = os.environ.get("API_KEY")
+    if not api_key:
+        raise RuntimeError("API_KEY environment variable is not set")
+    headers = {"Authorization": f"Bearer {api_key}"}
+    return requests.get("https://api.example.com/data", headers=headers)
+EOF
+git add hardcoded_creds.py && git commit -m "example: hardcoded credentials"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+import requests
+
+# AI-generated API client with hardcoded credentials
+API_KEY = "sk-proj-abc123def456"  # NEVER hardcode keys
+DB_PASSWORD = "admin123"           # NEVER hardcode passwords
+WEBHOOK_URL = "https://hooks.slack.com/services/T00/B00/xxxx"
+
+def fetch_data():
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    return requests.get("https://api.example.com/data", headers=headers)
+
+# SAFE alternative: use environment variables
+import os
+def fetch_data_safe():
+    api_key = os.environ.get("API_KEY")
+    if not api_key:
+        raise RuntimeError("API_KEY environment variable is not set")
+    headers = {"Authorization": f"Bearer {api_key}"}
+    return requests.get("https://api.example.com/data", headers=headers)
+"@ | Set-Content hardcoded_creds.py
+git add hardcoded_creds.py; git commit -m "example: hardcoded credentials"
+```
+
+**How to catch it:** Search for quoted strings that look like keys (`sk-`, `ghp_`, `AKIA`, `xoxb-`), passwords assigned to variables, or URLs containing tokens.
+
+```bash
+git diff --staged | grep -iE '(api_key|password|secret|token)\s*=' 
+```
+
+### Step 6 — Mistake 5: SQL injection via string concatenation
+
+AI models frequently build SQL queries by concatenating user input instead of using parameterized queries. This is the #1 web application vulnerability (OWASP Top 10).
+
+**macOS / Linux:**
+```bash
+cat > sql_injection.py << 'EOF'
+import sqlite3
+
+# DANGEROUS: AI-generated query with string concatenation
+def get_user_unsafe(username):
+    conn = sqlite3.connect('app.db')
+    # An attacker sends: ' OR '1'='1
+    query = f"SELECT * FROM users WHERE username = '{username}'"
+    return conn.execute(query).fetchall()
+
+# SAFE: parameterized query — the database driver handles escaping
+def get_user_safe(username):
+    conn = sqlite3.connect('app.db')
+    query = "SELECT * FROM users WHERE username = ?"
+    return conn.execute(query, (username,)).fetchall()
+EOF
+git add sql_injection.py && git commit -m "example: SQL injection"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+import sqlite3
+
+# DANGEROUS: AI-generated query with string concatenation
+def get_user_unsafe(username):
+    conn = sqlite3.connect('app.db')
+    # An attacker sends: ' OR '1'='1
+    query = f"SELECT * FROM users WHERE username = '{username}'"
+    return conn.execute(query).fetchall()
+
+# SAFE: parameterized query — the database driver handles escaping
+def get_user_safe(username):
+    conn = sqlite3.connect('app.db')
+    query = "SELECT * FROM users WHERE username = ?"
+    return conn.execute(query, (username,)).fetchall()
+"@ | Set-Content sql_injection.py
+git add sql_injection.py; git commit -m "example: SQL injection"
+```
+
+**How to catch it:** Search for f-strings, `.format()`, or `+` inside SQL query strings. Any time user input touches a SQL string directly, it is a vulnerability.
+
+```bash
+grep -rn "f\"SELECT\|f\"INSERT\|f\"UPDATE\|f\"DELETE" *.py
+```
+
+### Step 7 — Build your AI code review reference
+
+Create a quick-reference checklist you can use on every review:
+
+**macOS / Linux:**
+```bash
+cat > ai-code-review-checklist.md << 'EOF'
+# AI Code Review Checklist
+
+## Before accepting any AI-generated code, check for:
+
+1. **Hallucinated imports** — Does every imported package actually exist?
+   - Run: `pip show <package>` or `npm ls <package>`
+   
+2. **Deprecated APIs** — Is the code using current API versions?
+   - Check: official docs for the library version you are using
+   
+3. **eval() / exec() / Function()** — Is code being dynamically executed?
+   - Rule: NEVER use eval() on user-controlled input
+   
+4. **Hardcoded credentials** — Are there API keys, passwords, or tokens in the code?
+   - Search: `grep -iE '(key|password|secret|token)\s*=' *.py *.js`
+   
+5. **SQL injection** — Are queries built with string concatenation?
+   - Rule: Always use parameterized queries (? placeholders)
+EOF
+git add ai-code-review-checklist.md && git commit -m "add AI code review checklist"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+# AI Code Review Checklist
+
+## Before accepting any AI-generated code, check for:
+
+1. **Hallucinated imports** — Does every imported package actually exist?
+   - Run: ``pip show <package>`` or ``npm ls <package>``
+   
+2. **Deprecated APIs** — Is the code using current API versions?
+   - Check: official docs for the library version you are using
+   
+3. **eval() / exec() / Function()** — Is code being dynamically executed?
+   - Rule: NEVER use eval() on user-controlled input
+   
+4. **Hardcoded credentials** — Are there API keys, passwords, or tokens in the code?
+   - Search: ``grep -iE '(key|password|secret|token)\s*=' *.py *.js``
+   
+5. **SQL injection** — Are queries built with string concatenation?
+   - Rule: Always use parameterized queries (? placeholders)
+"@ | Set-Content ai-code-review-checklist.md
+git add ai-code-review-checklist.md; git commit -m "add AI code review checklist"
+```
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Hallucinated package looks real — similar name exists on PyPI/npm | AI confused a real package with a nonexistent one, or there is a typosquat package | Verify the package on the official registry page; check download counts and maintainers |
+| Deprecated API still works, so the code seems fine | Deprecation warnings are hidden by default | Run with `python -W all` or `node --pending-deprecation` to surface warnings |
+| `eval()` is used for JSON parsing | AI used `eval()` instead of `JSON.parse()` or `json.loads()` | Replace with the language's built-in JSON parser — never eval untrusted strings |
+| AI insists the hardcoded key is "just an example" | AI training data included code with real-looking keys | Treat every key-shaped string as real; replace with `os.environ` / `process.env` before committing |
+| Parameterized query syntax varies by database driver | Different libraries use `?`, `%s`, `$1`, or named parameters | Check your specific driver's docs: sqlite3 uses `?`, psycopg2 uses `%s`, node-postgres uses `$1` |
+
+> [!WARN]
+> **AI code that "works" is not the same as safe code.** Every example in this lesson will execute without errors in a local test. The security flaws only matter when real users send real input — and by then, the damage is done. Review before you trust.
+
+## Key takeaways
+
+- AI code generators make the same five categories of mistakes repeatedly: hallucinated imports, deprecated APIs, `eval()` usage, hardcoded credentials, and SQL injection.
+- Each mistake has a specific detection technique. Learn the five checks and run them every time.
+- The `ai-code-review-checklist.md` you created is a living document. Add new patterns as you encounter them.
+- "It works on my machine" is not a security review.
+
+<VerificationBlock
+  deliverable="An ai-mistakes-lab project with five example files demonstrating AI code mistakes and an AI code review checklist."
+  verifyCheck="Run `git log --oneline` — you should see commits for each mistake category plus the checklist. Run `cat ai-code-review-checklist.md` — the five-item checklist should be present."
+/>

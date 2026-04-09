@@ -7,50 +7,212 @@ tutorPreload: "Tell me whether this workflow truly needs multiple agents."
 verifyType: "terminal_output"
 ---
 
-# Compare one-agent vs two-agent results
+# Run agents in sequence and check handoffs
 
 ## Objective
-By the end of this lesson, you will have run a simple task using both a single AI agent and a multi-agent (two-agent) setup. You'll capture the results and create a side-by-side comparison sheet. This hands-on experience will help you observe the differences in their output and start to determine if a multi-agent approach genuinely benefits specific workflows.
+
+Running agents is only half the job. You also need to verify that each agent finished, that the handoff file is valid, and that the next agent can actually use what the previous one produced. In this lesson you will build a lightweight orchestration script that runs a Researcher and a Writer in sequence, checks the handoff between them, and stops early if something is wrong.
+
+By the end you will have a reusable `run-pipeline.sh` (or `.ps1`) script that coordinates two agents with explicit verification between steps.
 
 ## Walkthrough
 
-Let's explore the power of single vs. multi-agent systems!
+### Step 1 — Set up the project
 
-1.  **Prepare your input file:**
-    First, let's give our agents something to work with. Create a simple text file with some content.
-    ```bash
-    echo "The moon is Earth's only natural satellite. It's the fifth-largest satellite in the Solar System. Its surface is covered with craters from asteroid impacts." > moon_facts.txt
-    ```
-    *   **Safety Check:** The `echo` command only writes the specified text into a new file named `moon_facts.txt` (or overwrites it if it exists). It does not affect other files or your system configuration. It's completely safe.
+**macOS / Linux:**
+```bash
+mkdir -p sequential-pipeline && cd sequential-pipeline
+```
 
-2.  **Run with a Single Agent:**
-    Now, let's have a single agent summarize this file. We'll use a conceptual `run-agent` command for this example.
-    ```bash
-    run-agent --config single_agent_config.yaml --prompt "Summarize the key points from moon_facts.txt concisely." > single_agent_result.txt
-    ```
-    *   **Safety Check:** This `run-agent` command (in a real scenario, this would interface with an LLM framework like Autogen or OLLAMA) sends your prompt and the content of `moon_facts.txt` to an AI model. The `> single_agent_result.txt` part safely redirects the AI's textual response from your terminal directly into a new file. No system files are modified, and the process is entirely focused on generating text.
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path sequential-pipeline -Force; Set-Location sequential-pipeline
+```
 
-3.  **Run with Two Agents:**
-    Next, let's try the same task but with a configuration involving two agents (e.g., one agent to read the file, another to summarize and refine).
-    ```bash
-    run-agent --config two_agent_config.yaml --prompt "Summarize the key points from moon_facts.txt concisely." > two_agent_result.txt
-    ```
-    *   **Safety Check:** Just like before, this command orchestrates AI models (in this case, two collaborating ones) to respond to your prompt. The output is safely redirected. It's designed to generate text and observe agent interactions, not to alter your system.
+Copy or re-create the Researcher and Writer contracts from Lesson 13.2.2 (you can also just copy them):
 
-4.  **Create your Comparison Sheet:**
-    Finally, combine the results into a markdown file for easy comparison.
-    ```bash
-    echo "# Single Agent Result" > comparison.md
-    cat single_agent_result.txt >> comparison.md
-    echo "
-# Two Agent Result" >> comparison.md
-    cat two_agent_result.txt >> comparison.md
-    ```
-    *   **Safety Check:** These commands simply write and append text from your result files into a new file named `comparison.md`. They are entirely safe and only manipulate text files you've created.
+**macOS / Linux:**
+```bash
+cat > researcher-CLAUDE.md << 'EOF'
+# Researcher Agent Contract
+## Role
+Gather 5–8 factual bullet points on "common beginner mistakes with Git."
+## Outputs
+- `research-findings.md` — bullet list with brief explanations.
+## Boundaries
+- No prose. No conclusions.
+- Only create `research-findings.md`.
+## Stop Condition
+Stop after writing `research-findings.md`.
+EOF
 
-Now open `comparison.md` in your favorite text editor to review the differences! Consider if the added complexity of two agents genuinely improved the output for this simple task.
+cat > writer-CLAUDE.md << 'EOF'
+# Writer Agent Contract
+## Role
+Turn the bullet points in `research-findings.md` into a short, beginner-friendly article.
+## Inputs
+- `research-findings.md`
+## Outputs
+- `article-draft.md` — titled article with intro, sections, conclusion.
+## Boundaries
+- Do not invent facts beyond what is in `research-findings.md`.
+- Do not modify `research-findings.md`.
+- Only create `article-draft.md`.
+- If `research-findings.md` is missing or empty, stop and report error.
+## Stop Condition
+Stop after writing `article-draft.md`.
+EOF
+```
 
-<VerificationBlock 
-  deliverable="A side-by-side comparison sheet."
-  verifyCheck="Learner chooses the simpler architecture when appropriate."
+**Windows PowerShell:**
+```powershell
+@"
+# Researcher Agent Contract
+## Role
+Gather 5-8 factual bullet points on "common beginner mistakes with Git."
+## Outputs
+- ``research-findings.md`` — bullet list with brief explanations.
+## Boundaries
+- No prose. No conclusions.
+- Only create ``research-findings.md``.
+## Stop Condition
+Stop after writing ``research-findings.md``.
+"@ | Set-Content researcher-CLAUDE.md
+
+@"
+# Writer Agent Contract
+## Role
+Turn the bullet points in ``research-findings.md`` into a short, beginner-friendly article.
+## Inputs
+- ``research-findings.md``
+## Outputs
+- ``article-draft.md`` — titled article with intro, sections, conclusion.
+## Boundaries
+- Do not invent facts beyond what is in ``research-findings.md``.
+- Do not modify ``research-findings.md``.
+- Only create ``article-draft.md``.
+- If ``research-findings.md`` is missing or empty, stop and report error.
+## Stop Condition
+Stop after writing ``article-draft.md``.
+"@ | Set-Content writer-CLAUDE.md
+```
+
+### Step 2 — Write the orchestration script (macOS / Linux)
+
+```bash
+cat > run-pipeline.sh << 'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "=== Step 1: Running Researcher ==="
+claude --print "Follow the instructions in researcher-CLAUDE.md exactly."
+
+# Verify handoff
+if [ ! -s research-findings.md ]; then
+  echo "FAIL: research-findings.md is missing or empty. Stopping pipeline."
+  exit 1
+fi
+echo "OK: research-findings.md exists ($(wc -l < research-findings.md) lines)"
+
+echo ""
+echo "=== Step 2: Running Writer ==="
+claude --print "Follow the instructions in writer-CLAUDE.md exactly."
+
+# Verify output
+if [ ! -s article-draft.md ]; then
+  echo "FAIL: article-draft.md is missing or empty. Stopping pipeline."
+  exit 1
+fi
+echo "OK: article-draft.md exists ($(wc -l < article-draft.md) lines)"
+
+echo ""
+echo "=== Pipeline complete ==="
+echo "Files produced:"
+ls -la research-findings.md article-draft.md
+SCRIPT
+
+chmod +x run-pipeline.sh
+```
+
+### Step 3 — Write the orchestration script (Windows PowerShell)
+
+```powershell
+@"
+`$ErrorActionPreference = "Stop"
+
+Write-Host "=== Step 1: Running Researcher ==="
+claude --print "Follow the instructions in researcher-CLAUDE.md exactly."
+
+# Verify handoff
+if (-not (Test-Path research-findings.md) -or (Get-Item research-findings.md).Length -eq 0) {
+    Write-Host "FAIL: research-findings.md is missing or empty. Stopping pipeline."
+    exit 1
+}
+`$lines = (Get-Content research-findings.md).Count
+Write-Host "OK: research-findings.md exists (`$lines lines)"
+
+Write-Host ""
+Write-Host "=== Step 2: Running Writer ==="
+claude --print "Follow the instructions in writer-CLAUDE.md exactly."
+
+# Verify output
+if (-not (Test-Path article-draft.md) -or (Get-Item article-draft.md).Length -eq 0) {
+    Write-Host "FAIL: article-draft.md is missing or empty. Stopping pipeline."
+    exit 1
+}
+`$lines = (Get-Content article-draft.md).Count
+Write-Host "OK: article-draft.md exists (`$lines lines)"
+
+Write-Host ""
+Write-Host "=== Pipeline complete ==="
+Get-ChildItem research-findings.md, article-draft.md | Format-Table Name, Length
+"@ | Set-Content run-pipeline.ps1
+```
+
+### Step 4 — Run the pipeline
+
+**macOS / Linux:**
+```bash
+./run-pipeline.sh
+```
+
+**Windows PowerShell:**
+```powershell
+.\run-pipeline.ps1
+```
+
+Watch for the verification messages between steps. If the Researcher fails, the script exits before the Writer ever starts — exactly the behavior you want.
+
+### Step 5 — Understand what the verification checks do
+
+The key insight is the check between agents:
+
+```bash
+if [ ! -s research-findings.md ]; then
+  echo "FAIL"; exit 1
+fi
+```
+
+This does three things:
+1. **Confirms the file exists** — the Researcher actually ran and produced output.
+2. **Confirms the file is non-empty** — the Researcher didn't create a blank file and stop.
+3. **Stops the pipeline early** — the Writer never gets confused by missing input.
+
+Without this check, the Writer would start, see no input file, and either error out with a confusing message or (worse) write an article from nothing.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Script says `claude: command not found` | Claude CLI is not installed or not on PATH | Install Claude Code CLI and verify with `claude --version` |
+| Researcher produces the file but it is empty | Stop condition triggered before output was written | Adjust the contract: output section must come before the stop condition |
+| Writer runs even though findings file is bad | Verification check was removed or bypassed | Never skip the handoff check — it is your safety net |
+| Pipeline takes 5+ minutes and costs too much | Topic is too broad or agents are iterating | Narrow the topic and confirm stop conditions say "one pass" |
+| Script works on Linux but fails on Windows | Bash syntax used in PowerShell | Use the `.ps1` version of the script on Windows |
+
+> **Cost warning:** The orchestration script runs two separate Claude sessions back-to-back. If the Researcher's topic is too broad, it may generate a large output that the Writer then expands further. Keep topics narrow during testing. You can always scale up once the pipeline is proven.
+
+<VerificationBlock
+  deliverable="A `sequential-pipeline/` directory containing `run-pipeline.sh` (or `.ps1`), both agent contracts, `research-findings.md`, and `article-draft.md`."
+  verifyCheck="The pipeline script includes a handoff verification step between Researcher and Writer. If findings are missing, the Writer never runs."
 />

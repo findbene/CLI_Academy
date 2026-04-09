@@ -1,0 +1,283 @@
+---
+title: "Connect Claude Desktop to local files with MCP"
+lessonNumber: "7.2.2"
+chapterNumber: "7.2"
+pathNumber: "7"
+tutorPreload: "Walk me through setting up a filesystem MCP server in Claude Desktop so it can read my project files directly."
+verifyType: "terminal_output"
+---
+
+# Connect Claude Desktop to local files with MCP
+
+## Objective
+
+By the end of this lesson you will configure a Model Context Protocol (MCP) filesystem server in Claude Desktop, verify the connection, and use it to read and write local files without manual drag-and-drop. This bridges the gap between Claude Desktop's graphical interface and Claude Code's direct file access.
+
+## Walkthrough
+
+### Step 1 — Understand what MCP does
+
+In Lesson 7.2.1 you saw that Claude Desktop cannot browse your file system on its own — you must drag files in. MCP changes that.
+
+**Model Context Protocol (MCP)** is a standard that lets Claude Desktop connect to local servers that provide tools — like reading files, listing directories, or even running commands. You install a small server on your machine, point Claude Desktop at it, and Claude gains new abilities.
+
+The **filesystem MCP server** gives Claude Desktop these tools:
+
+- `read_file` — read the contents of a file by path
+- `write_file` — write content to a file
+- `list_directory` — list files and folders in a path
+- `search_files` — search for files matching a pattern
+
+> **Safety note:** The filesystem MCP server only allows access to directories you explicitly configure. It cannot read outside those paths. You choose exactly which folders Claude can see.
+
+### Step 2 — Install the filesystem MCP server
+
+The official filesystem server is an npm package. You need Node.js installed.
+
+Confirm Node.js is available:
+
+**macOS / Linux:**
+
+```bash
+node --version
+```
+
+**Windows PowerShell:**
+
+```powershell
+node --version
+```
+
+You should see `v18.x.x` or newer. If not, install Node.js from [nodejs.org](https://nodejs.org).
+
+You do not need to install the server globally — Claude Desktop runs it automatically using `npx`. But you can verify the package exists:
+
+```bash
+npx @modelcontextprotocol/server-filesystem --help
+```
+
+This should print usage information. If it downloads the package first, that is expected.
+
+### Step 3 — Locate the Claude Desktop config file
+
+Claude Desktop stores its MCP configuration in a JSON file. The location depends on your operating system.
+
+**macOS:**
+
+```bash
+ls ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```
+
+**Windows PowerShell:**
+
+```powershell
+Test-Path "$env:APPDATA\Claude\claude_desktop_config.json"
+```
+
+**Linux:**
+
+```bash
+ls ~/.config/Claude/claude_desktop_config.json
+```
+
+If the file does not exist yet, you will create it in the next step.
+
+### Step 4 — Add the filesystem MCP server to the config
+
+Open the config file in a text editor. If it does not exist, create it.
+
+**macOS / Linux:**
+
+```bash
+# macOS path (adjust for Linux: ~/.config/Claude/)
+mkdir -p ~/Library/Application\ Support/Claude
+nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```
+
+**Windows PowerShell:**
+
+```powershell
+# Create the directory if needed
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\Claude"
+notepad "$env:APPDATA\Claude\claude_desktop_config.json"
+```
+
+Paste this JSON (replace the paths with your actual project folder):
+
+**macOS / Linux:**
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/yourname/projects"
+      ]
+    }
+  }
+}
+```
+
+**Windows:**
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Users\\yourname\\projects"
+      ]
+    }
+  }
+}
+```
+
+> **Important:** Use the actual absolute path to your projects folder. On Windows, use double backslashes (`\\`) in JSON. You can list multiple folders by adding more path arguments after the package name.
+
+Save and close the file.
+
+### Step 5 — Restart Claude Desktop and verify the connection
+
+Completely quit Claude Desktop (not just close the window), then relaunch it:
+
+- **macOS:** Right-click the dock icon → Quit, then reopen from Applications.
+- **Windows:** Right-click the system tray icon → Exit, then reopen from the Start menu.
+- **Linux:** Close the window and relaunch from your app menu.
+
+Open a new conversation in Claude Desktop. You should see a small **hammer icon** (🔨) or **tools indicator** near the input box. Click it to see the available MCP tools. You should see tools like `read_file`, `write_file`, `list_directory`, and `search_files`.
+
+If the tools indicator does not appear, check the Claude Desktop logs:
+
+**macOS:**
+
+```bash
+cat ~/Library/Logs/Claude/mcp*.log
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content "$env:APPDATA\Claude\logs\mcp*.log" -ErrorAction SilentlyContinue
+```
+
+The log will tell you if the server failed to start (usually a Node.js path issue or JSON syntax error).
+
+### Step 6 — Use MCP to read a local file
+
+In the Claude Desktop chat, try:
+
+```
+List the files in my projects folder.
+```
+
+Claude should use the `list_directory` tool and show you a file listing. Then:
+
+```
+Read the README.md file in my-app.
+```
+
+Claude uses `read_file` and displays the contents. No drag-and-drop needed — Claude is reading directly from your disk through the MCP server.
+
+### Step 7 — Use MCP to write a local file
+
+Ask Claude to create a file:
+
+```
+Create a file called mcp-test.txt in my projects folder with the content "MCP connection verified."
+```
+
+Claude uses `write_file` to write the file. Verify it worked from your terminal:
+
+**macOS / Linux:**
+
+```bash
+cat ~/projects/mcp-test.txt
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content "$HOME\projects\mcp-test.txt"
+```
+
+You should see `MCP connection verified.` printed. Claude Desktop just wrote a file to your disk without you copy-pasting anything.
+
+Clean up:
+
+**macOS / Linux:**
+
+```bash
+rm ~/projects/mcp-test.txt
+```
+
+**Windows PowerShell:**
+
+```powershell
+Remove-Item "$HOME\projects\mcp-test.txt"
+```
+
+### Step 8 — Add access to more folders (optional)
+
+To give Claude access to additional directories, add more paths to the args array:
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/yourname/projects",
+        "/Users/yourname/Documents/notes"
+      ]
+    }
+  }
+}
+```
+
+Restart Claude Desktop after editing the config.
+
+> **Safety note:** Only add folders you are comfortable sharing with Claude. Do not add your entire home directory or system paths. Start with specific project folders and expand only if needed.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| No tools indicator (hammer icon) after restart | Config file has a JSON syntax error | Validate JSON at jsonlint.com or run `cat claude_desktop_config.json | python3 -m json.tool` |
+| `Error: Cannot find module` in MCP logs | Node.js is not on PATH when Claude Desktop launches | Install Node.js globally; on macOS add Node to `/etc/paths` or use `nvm` with shell init |
+| `read_file` returns "permission denied" | The MCP server does not have access to that path | Add the folder to the args list in the config and restart Claude Desktop |
+| `write_file` fails silently | Target directory does not exist | Create the directory first, or ask Claude to create it |
+| Tools appear but Claude never uses them | Claude chose not to use tools for that request | Be explicit: "Use the read_file tool to read README.md" |
+| Config file path is wrong on Windows | Used forward slashes or single backslashes | Use double backslashes (`\\`) in JSON on Windows, e.g., `C:\\Users\\you\\projects` |
+| Claude Desktop hangs on startup | MCP server process crashed at launch | Check MCP logs; try running `npx -y @modelcontextprotocol/server-filesystem /your/path` manually in a terminal to see the error |
+
+<VerificationBlock>
+Confirm the MCP connection is active:
+
+1. Open Claude Desktop and start a new conversation.
+2. Click the tools indicator (hammer icon near the input box).
+3. You should see `read_file`, `write_file`, `list_directory`, and `search_files` in the tools list.
+
+Then in your terminal, verify the config file exists:
+
+**macOS:**
+
+```bash
+cat ~/Library/Application\ Support/Claude/claude_desktop_config.json | python3 -m json.tool
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content "$env:APPDATA\Claude\claude_desktop_config.json" | ConvertFrom-Json | ConvertTo-Json -Depth 5
+```
+
+The output should show valid JSON with a `filesystem` entry under `mcpServers`. If both checks pass, your MCP connection is working.
+</VerificationBlock>

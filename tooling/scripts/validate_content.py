@@ -2,26 +2,26 @@
 """
 validate_content.py
 ===================
-Validates every MDX lesson file under content/paths/**/*.mdx.
+Validates learner-visible MDX lesson files under content/paths/**/lesson-*.mdx.
 
 Checks performed
 ----------------
-  - Frontmatter parses (starts with ``---``)
-  - Required fields present: title, description, slug, lesson_number,
-    estimated_minutes, tier_required
-  - Correct field types (lesson_number and estimated_minutes are integers)
-  - ``slug`` matches the filename (without .mdx)
-  - ``tier_required`` is one of {free, pro}
-  - ``lesson_number`` is >= 1 and unique within the path
-  - ``estimated_minutes`` is >= 1
-  - ``last_reviewed_at`` is a valid YYYY-MM-DD date (warn if > 365 days old)
-  - Lessons where ``has_safety_warning = true`` contain a <WarnBlock>
-  - Body is non-empty
-  - No placeholder "lorem ipsum" text in body
+    - Frontmatter parses (starts with ``---``)
+    - Required fields present: title, lessonNumber, chapterNumber, pathNumber
+    - Lesson numbering matches the lesson filename
+    - Optional slug matches the filename (without .mdx)
+    - Optional tierRequired / tier_required is one of {free, pro}
+    - Optional estimatedMinutes / estimated_minutes is a positive integer
+    - Optional lastReviewedAt / last_reviewed_at is a valid YYYY-MM-DD date
+        (warn if > 365 days old)
+    - Optional hasSafetyWarning / has_safety_warning requires a <WarnBlock>
+    - Body is non-empty
+    - No placeholder "lorem ipsum" text in body
+    - Non-lesson MDX files are reported because the app loader ignores them
 
 Usage
 -----
-    python tooling/scripts/validate_content.py
+        python tooling/scripts/validate_content.py
 
 Exits 0 on success (warnings do not fail), 1 when errors are found.
 """
@@ -35,14 +35,10 @@ from pathlib import Path
 
 CONTENT_DIR = Path(__file__).parent.parent.parent / "content" / "paths"
 
-REQUIRED_FIELDS: dict[str, type] = {
-    "title": str,
-    "description": str,
-    "slug": str,
-    "lesson_number": int,
-    "estimated_minutes": int,
-    "tier_required": str,
-}
+LESSON_FILE_PATTERN = re.compile(r"^lesson-(\d+)-(\d+)-(\d+)-.+\.mdx$")
+LESSON_NUMBER_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
+CHAPTER_NUMBER_PATTERN = re.compile(r"^\d+\.\d+$")
+PATH_NUMBER_PATTERN = re.compile(r"^\d+$")
 
 VALID_TIERS = {"free", "pro"}
 STALE_THRESHOLD_DAYS = 365
@@ -91,14 +87,57 @@ def _parse_frontmatter(text: str) -> dict[str, object]:
     return parsed
 
 
+def _lesson_files(path_dir: Path) -> list[Path]:
+    return sorted(
+        file_path
+        for file_path in path_dir.rglob("*.mdx")
+        if LESSON_FILE_PATTERN.match(file_path.name)
+    )
+
+
+def _coerce_positive_int(value: object) -> int | None:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    return None
+
+
+def _expected_numbers(path: Path) -> tuple[str, str, str] | None:
+    match = LESSON_FILE_PATTERN.match(path.name)
+    if not match:
+        return None
+
+    path_num, chapter_num, lesson_num = match.groups()
+    return (
+        f"{path_num}.{chapter_num}.{lesson_num}",
+        f"{path_num}.{chapter_num}",
+        path_num,
+    )
+
+
+def _frontmatter_value(frontmatter: dict[str, object], *keys: str) -> object | None:
+    for key in keys:
+        if key in frontmatter:
+            return frontmatter[key]
+    return None
+
+
+def _display_name(path: Path, path_root: Path) -> str:
+    try:
+        return path.relative_to(path_root).as_posix()
+    except ValueError:
+        return path.name
+
+
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
 
-def validate_lesson(path: Path) -> list[tuple[str, str]]:
+def validate_lesson(path: Path, path_root: Path) -> list[tuple[str, str]]:
     """Return list of (level, message) tuples. level = 'error' | 'warning'."""
     issues: list[tuple[str, str]] = []
-    name = path.name
+    name = _display_name(path, path_root)
 
     try:
         source = path.read_text(encoding="utf-8")
@@ -112,40 +151,70 @@ def validate_lesson(path: Path) -> list[tuple[str, str]]:
 
     fm = _parse_frontmatter(fm_text)
 
-    # Required fields + types
-    for field, expected_type in REQUIRED_FIELDS.items():
-        value = fm.get(field)
-        if value is None:
-            issues.append(("error", f"{name}: missing required field `{field}`"))
-            continue
-        if not isinstance(value, expected_type):
-            issues.append((
-                "error",
-                f"{name}: `{field}` is {type(value).__name__!r}, expected {expected_type.__name__!r}",
-            ))
+    expected_numbers = _expected_numbers(path)
+    if expected_numbers is None:
+        return [("error", f"{name}: filename must follow lesson-<path>-<chapter>-<lesson>-<slug>.mdx")]
+
+    expected_lesson, expected_chapter, expected_path = expected_numbers
+
+    title = _frontmatter_value(fm, "title")
+    if not isinstance(title, str) or not title.strip():
+        issues.append(("error", f"{name}: missing required field `title`"))
+
+    lesson_number = _frontmatter_value(fm, "lessonNumber")
+    if lesson_number is None and fm.get("lesson_number") is not None:
+        lesson_number = expected_lesson
+
+    if lesson_number is None:
+        issues.append(("error", f"{name}: missing required field `lessonNumber`"))
+    else:
+        lesson_number_text = str(lesson_number).strip()
+        if not LESSON_NUMBER_PATTERN.fullmatch(lesson_number_text):
+            issues.append(("error", f"{name}: lessonNumber must look like 4.2.1, got {lesson_number_text!r}"))
+        elif lesson_number_text != expected_lesson:
+            issues.append(("error", f"{name}: lessonNumber {lesson_number_text!r} does not match filename {expected_lesson!r}"))
+
+    chapter_number = _frontmatter_value(fm, "chapterNumber")
+    if chapter_number is None:
+        issues.append(("error", f"{name}: missing required field `chapterNumber`"))
+    else:
+        chapter_number_text = str(chapter_number).strip()
+        if not CHAPTER_NUMBER_PATTERN.fullmatch(chapter_number_text):
+            issues.append(("error", f"{name}: chapterNumber must look like 4.2, got {chapter_number_text!r}"))
+        elif chapter_number_text != expected_chapter:
+            issues.append(("error", f"{name}: chapterNumber {chapter_number_text!r} does not match filename {expected_chapter!r}"))
+
+    path_number = _frontmatter_value(fm, "pathNumber")
+    if path_number is None:
+        issues.append(("error", f"{name}: missing required field `pathNumber`"))
+    else:
+        path_number_text = str(path_number).strip()
+        if not PATH_NUMBER_PATTERN.fullmatch(path_number_text):
+            issues.append(("error", f"{name}: pathNumber must look like 4, got {path_number_text!r}"))
+        elif path_number_text != expected_path:
+            issues.append(("error", f"{name}: pathNumber {path_number_text!r} does not match filename {expected_path!r}"))
 
     # Slug must match filename
     fm_slug = str(fm.get("slug", ""))
     if fm_slug and fm_slug != path.stem:
         issues.append(("error", f"{name}: slug {fm_slug!r} != filename {path.stem!r}"))
 
-    # tier_required
-    tier = str(fm.get("tier_required", ""))
+    # tier_required / tierRequired
+    tier = str(_frontmatter_value(fm, "tierRequired", "tier_required") or "")
     if tier and tier not in VALID_TIERS:
-        issues.append(("error", f"{name}: invalid tier_required {tier!r} -- must be free|pro"))
+        issues.append(("error", f"{name}: invalid tier value {tier!r} -- must be free|pro"))
 
-    # lesson_number >= 1
-    ln = fm.get("lesson_number")
-    if isinstance(ln, int) and ln < 1:
-        issues.append(("error", f"{name}: lesson_number must be >= 1, got {ln}"))
+    # estimatedMinutes / estimated_minutes >= 1
+    estimated_minutes = _frontmatter_value(fm, "estimatedMinutes", "estimated_minutes")
+    if estimated_minutes is not None:
+        estimated_minutes_int = _coerce_positive_int(estimated_minutes)
+        if estimated_minutes_int is None:
+            issues.append(("error", f"{name}: estimated minutes must be an integer, got {estimated_minutes!r}"))
+        elif estimated_minutes_int < 1:
+            issues.append(("error", f"{name}: estimated minutes must be >= 1, got {estimated_minutes_int}"))
 
-    # estimated_minutes >= 1
-    em = fm.get("estimated_minutes")
-    if isinstance(em, int) and em < 1:
-        issues.append(("error", f"{name}: estimated_minutes must be >= 1, got {em}"))
-
-    # last_reviewed_at
-    reviewed_raw = str(fm.get("last_reviewed_at", ""))
+    # lastReviewedAt / last_reviewed_at
+    reviewed_raw = str(_frontmatter_value(fm, "lastReviewedAt", "last_reviewed_at") or "")
     if reviewed_raw:
         try:
             reviewed_date = datetime.strptime(reviewed_raw, "%Y-%m-%d").date()
@@ -155,8 +224,9 @@ def validate_lesson(path: Path) -> list[tuple[str, str]]:
         except ValueError:
             issues.append(("warning", f"{name}: invalid last_reviewed_at {reviewed_raw!r} (expected YYYY-MM-DD)"))
 
-    # has_safety_warning + WarnBlock
-    if fm.get("has_safety_warning") is True and not WARN_BLOCK_PATTERN.search(body):
+    # hasSafetyWarning / has_safety_warning + WarnBlock
+    has_safety_warning = _frontmatter_value(fm, "hasSafetyWarning", "has_safety_warning")
+    if has_safety_warning is True and not WARN_BLOCK_PATTERN.search(body):
         issues.append(("error", f"{name}: has_safety_warning=true but <WarnBlock> not found in body"))
 
     # Non-empty body
@@ -173,30 +243,42 @@ def validate_lesson(path: Path) -> list[tuple[str, str]]:
 def validate_path(path_dir: Path) -> list[tuple[str, str]]:
     """Validate all lessons in one learning path directory."""
     issues: list[tuple[str, str]] = []
-    mdx_files = sorted(path_dir.glob("*.mdx"))
+    mdx_files = _lesson_files(path_dir)
+    ignored_mdx_files = sorted(
+        file_path.relative_to(path_dir).as_posix()
+        for file_path in path_dir.rglob("*.mdx")
+        if not LESSON_FILE_PATTERN.match(file_path.name)
+    )
+
+    if ignored_mdx_files:
+        issues.append((
+            "warning",
+            f"{path_dir.name}: {len(ignored_mdx_files)} non-lesson .mdx file(s) ignored by the app loader",
+        ))
 
     if not mdx_files:
-        issues.append(("warning", f"{path_dir.name}: no .mdx lesson files found"))
+        issues.append(("warning", f"{path_dir.name}: no lesson-*.mdx files found"))
         return issues
 
-    lesson_numbers: dict[int, str] = {}
+    lesson_numbers: dict[str, str] = {}
 
     for mdx_file in mdx_files:
-        issues.extend(validate_lesson(mdx_file))
+        issues.extend(validate_lesson(mdx_file, path_dir))
 
         # Collision detection
         source = mdx_file.read_text(encoding="utf-8", errors="ignore")
         fm_text, _ = _split_frontmatter(source)
         fm = _parse_frontmatter(fm_text)
-        num = fm.get("lesson_number")
-        if isinstance(num, int):
-            if num in lesson_numbers:
+        num = _frontmatter_value(fm, "lessonNumber")
+        if num is not None:
+            num_text = str(num).strip()
+            if num_text in lesson_numbers:
                 issues.append((
                     "error",
-                    f"{mdx_file.name}: lesson_number {num} collides with {lesson_numbers[num]}",
+                    f"{_display_name(mdx_file, path_dir)}: lessonNumber {num_text} collides with {lesson_numbers[num_text]}",
                 ))
             else:
-                lesson_numbers[num] = mdx_file.name
+                lesson_numbers[num_text] = _display_name(mdx_file, path_dir)
 
     return issues
 
@@ -221,7 +303,7 @@ def main() -> int:
     rows: list[tuple[str, int, int, int]] = []
 
     for path_dir in path_dirs:
-        mdx_count = len(list(path_dir.glob("*.mdx")))
+        mdx_count = len(_lesson_files(path_dir))
         total_lessons += mdx_count
         path_issues = validate_path(path_dir)
         errs = [m for lvl, m in path_issues if lvl == "error"]

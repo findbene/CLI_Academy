@@ -1,0 +1,160 @@
+---
+title: "Update dependencies and lock files safely"
+lessonNumber: "4.2.1"
+chapterNumber: "4.2"
+pathNumber: "4"
+tutorPreload: "Help me update one dependency without breaking the project."
+verifyType: "terminal_output"
+---
+
+# Update dependencies and lock files safely
+
+## Objective
+
+Use Claude Code to check for outdated dependencies, pick the safest one to update, perform the update, and verify the project still works. By the end you will have updated one package with tests passing and a clean commit.
+
+## Walkthrough
+
+You need a project with installed dependencies for this lesson. If you have been following along with json-server, install its dependencies first. If you prefer a Python project, substitute pip commands where noted.
+
+> **Real danger — `npm install` executes arbitrary code.** The `postinstall`, `preinstall`, and `prepare` scripts in `package.json` run automatically during install. Only install dependencies in repos you trust. For unfamiliar repos, read the `"scripts"` block in `package.json` before running install.
+
+### Step 1 — Install dependencies (if not done)
+
+**macOS / Linux (Node.js)**
+
+```bash
+npm install
+```
+
+**Windows PowerShell (Node.js)**
+
+```powershell
+npm install
+```
+
+**Python alternative (macOS / Linux)**
+
+```bash
+python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+```
+
+**Python alternative (Windows PowerShell)**
+
+```powershell
+python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt
+```
+
+### Step 2 — Check what is outdated
+
+**Node.js**
+
+```bash
+npm outdated
+```
+
+**Python**
+
+```bash
+pip list --outdated
+```
+
+This prints a table of packages with current and latest versions. This is a read-only command — nothing changes.
+
+### Step 3 — Ask Claude which package to update
+
+```
+Here is the output of npm outdated:
+[paste the output]
+
+Which ONE package is safest to update first? Explain why, and tell me if it is a patch, minor, or major version bump.
+```
+
+Claude explains semver (major.minor.patch) and recommends a patch or minor update where the risk of breaking changes is lowest. It will warn you away from major version jumps.
+
+### Step 4 — Update the single package
+
+Follow Claude's recommendation. For example, if Claude suggests updating `lodash`:
+
+**Node.js**
+
+```bash
+npm update lodash
+```
+
+**Python (example: updating `requests`)**
+
+```bash
+pip install --upgrade requests
+```
+
+> **Real danger — major version bumps can break your code.** If npm outdated shows a package at version 3.x and latest is 5.x, do NOT run `npm install package@latest` without understanding what changed. Ask Claude: "What are the breaking changes between [package] v3 and v5?" and only update after you understand the impact.
+
+### Step 5 — Verify the project still works
+
+Run the test suite:
+
+**Node.js**
+
+```bash
+npm test
+```
+
+**Python**
+
+```bash
+pytest
+```
+
+If tests pass, the update is safe. If tests fail, ask Claude:
+
+```
+Tests failed after updating lodash. Here is the error:
+[paste error output]
+What broke and should I roll back?
+```
+
+To roll back a Node.js update:
+
+```bash
+git checkout -- package.json package-lock.json
+npm install
+```
+
+To roll back a Python update:
+
+```bash
+pip install requests==2.28.0    # whatever the old version was
+```
+
+### Step 6 — Commit the dependency update
+
+**macOS / Linux and Windows PowerShell**
+
+```bash
+git add package.json package-lock.json
+git commit -m "chore: update lodash to 4.17.21"
+```
+
+For Python:
+
+```bash
+git add requirements.txt
+git commit -m "chore: update requests to 2.31.0"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `npm outdated` shows nothing | All packages are already current | No action needed — your dependencies are up to date |
+| `npm test` fails after the update | The new version has breaking changes or removed APIs | Roll back: `git checkout -- package.json package-lock.json && npm install`, then investigate before retrying |
+| `pip list --outdated` is very slow | pip is checking remote indexes over a slow connection | Add `--timeout 15` or try `pip list --outdated --local` to skip globally installed packages |
+| Lock file diff is enormous | Updating one package triggered cascading sub-dependency updates | This is normal — review the lock file diff briefly but focus on the direct dependency you changed |
+| `npm install` runs a suspicious script you did not expect | A package has a `postinstall` hook | Read the `"scripts"` block in `package.json` first; use `npm install --ignore-scripts` for untrusted projects |
+| Python venv is not activated | You forgot to activate before `pip install` | Run `source .venv/bin/activate` (macOS/Linux) or `.\.venv\Scripts\Activate.ps1` (Windows) |
+
+<VerificationBlock
+  deliverable="One dependency updated with tests passing and a clean commit."
+  verifyCheck="git log shows a dependency-update commit message and npm test or pytest exits with code 0."
+/>

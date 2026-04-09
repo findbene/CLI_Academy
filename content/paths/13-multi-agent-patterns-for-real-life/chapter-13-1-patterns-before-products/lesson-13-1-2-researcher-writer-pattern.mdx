@@ -7,70 +7,148 @@ tutorPreload: "Design a researcher-writer split for this task and define the han
 verifyType: "terminal_output"
 ---
 
-# Researcher-writer pattern
+# When to use subagents vs a single session
 
 ## Objective
-In this lesson, you'll learn a powerful strategy for tackling complex writing tasks: the "researcher-writer" split. We'll set up a workflow that separates gathering information from drafting your final piece, improving clarity and efficiency. You'll gain practical skills in organizing your project files effectively using the command line.
+
+Not every task needs multiple agents. In this lesson you will learn a practical decision framework for choosing between one long Claude Code session and a multi-agent split. You will apply the framework to three realistic scenarios and write a one-page decision record explaining your reasoning.
+
+By the end you will be able to look at any task and say confidently: "One session is enough" or "This needs separate agents, and here is how I would split it."
 
 ## Walkthrough
 
-Let's create a structured environment for your project, separating your research notes from your final writing.
+### Step 1 — Learn the three decision criteria
 
-1.  **Create Your Project Space:**
-    First, we'll make a dedicated folder for your project. This keeps everything tidy and contained.
-    ```bash
-    mkdir my_new_project
-    ```
-    *   `mkdir` is a very safe command. It simply *makes* a new, empty *directory* (folder) with the name you provide. It won't touch or change any existing files.
+Use these three questions to decide:
 
-2.  **Enter Your Project:**
-    Now, let's move into our new project folder.
-    ```bash
-    cd my_new_project
-    ```
-    *   `cd` (change directory) is also a safe command. It only changes your current location in the file system. It doesn't modify any files or folders.
+1. **Size** — Will the task exceed what one session can hold in context? If your project has dozens of files and thousands of lines, a single session may lose track. Splitting lets each agent focus on a small slice.
 
-3.  **Define Research and Writing Areas:**
-    Inside `my_new_project`, we'll create two distinct folders: one for all your gathered information and another for your final document drafts.
-    ```bash
-    mkdir research writing
-    ```
-    *   Again, `mkdir` safely creates these two new, empty folders.
+2. **Independence** — Can the subtasks run without constantly referencing each other? If task A needs output from task B, and B needs output from A, splitting creates more problems than it solves. If A finishes completely before B starts, splitting is clean.
 
-4.  **Simulate the Research Phase:**
-    Imagine you're now in "researcher" mode. You're gathering facts, links, and ideas.
-    ```bash
-    cd research
-    echo "Source 1: Interesting article on topic X (link)" > research_notes.md
-    echo "Source 2: Key facts for section A" >> research_notes.md
-    ```
-    *   `echo "..." > research_notes.md`: `echo` simply prints text. The `>` symbol redirects that text into a file named `research_notes.md`. If the file doesn't exist, it's safely created. If it *does* exist, it will be safely *overwritten* with the new text. This is why we use `>` only for the first entry.
-    *   `echo "..." >> research_notes.md`: The `>>` symbol also redirects text, but it *appends* it to the end of the file. This is safe for adding more content without deleting what's already there.
+3. **Specialization** — Does each subtask benefit from a different set of instructions? A researcher agent told "only gather facts, never analyze" will produce cleaner findings than a general-purpose agent that tries to do everything.
 
-5.  **The Handoff Contract:**
-    The "handoff contract" is an agreement between your "researcher" self and your "writer" self. In this setup, the contract is simple: the `research/` folder will contain all raw notes, links, and key points, clearly organized, so the "writer" doesn't have to go hunting for information.
+If you answer "yes" to at least two of these three, splitting is likely worth it. If the task is small, tightly coupled, or uniform, keep it in one session.
 
-6.  **Simulate the Writing Phase:**
-    Now, switch to "writer" mode. You'll use the notes from `research/` to craft your final piece.
-    ```bash
-    cd ../writing
-    echo "# Final Document Title" > final_draft.md
-    echo "Based on my research, here are the main points..." >> final_draft.md
-    ```
-    *   `cd ../writing`: `..` means "go up one directory level" (back to `my_new_project`), then `writing` tells `cd` to enter that folder. Safe and effective for navigation.
-    *   We use `echo` and `>`/`>>` again to safely create and add content to your `final_draft.md`, mimicking the writing process.
+### Step 2 — Set up a decision-record directory
 
-7.  **Review Your Structure:**
-    Let's look at what you've built.
-    ```bash
-    cd ..
-    ls -R
-    ```
-    *   `ls -R` (list recursively) is safe. It only displays the names of files and folders within your project, showing you the organized structure you've created.
+**macOS / Linux:**
+```bash
+mkdir -p agent-decisions && cd agent-decisions
+```
 
-You now have a clear, separated workflow for research and writing!
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path agent-decisions -Force; Set-Location agent-decisions
+```
 
-<VerificationBlock 
-  deliverable="A split workflow for source gathering and final writing."
-  verifyCheck="Handoff between agents is explicit and reviewable."
+### Step 3 — Evaluate three scenarios
+
+Create a decision record that analyzes three scenarios. Write it as a Markdown file:
+
+**macOS / Linux:**
+```bash
+cat > decision-record.md << 'EOF'
+# Agent Split Decision Record
+
+## Scenario A: Rename 200 files using a consistent pattern
+- Size: Small per-file work, but many files → moderate
+- Independence: Each rename is independent → high
+- Specialization: Same operation every time → low
+- **Decision: Single session.** One agent with a loop is simpler than a manager-worker split for uniform tasks.
+
+## Scenario B: Research a topic, then write a report from the findings
+- Size: Research can produce pages of notes; writing is a separate creative task → moderate to high
+- Independence: Writer needs Researcher output, but Researcher does not need Writer → sequential, clean split
+- Specialization: Researcher should not editorialize; Writer should not invent facts → high
+- **Decision: Two agents.** Researcher writes findings to a file, Writer reads that file and produces the report.
+
+## Scenario C: Fix a bug by reading logs, identifying the cause, and writing a patch
+- Size: Usually fits in one context window → small
+- Independence: Each step depends heavily on the previous → tightly coupled
+- Specialization: Same skill set (debugging) throughout → low
+- **Decision: Single session.** Splitting debugging across agents would create more handoff friction than value.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Agent Split Decision Record
+
+## Scenario A: Rename 200 files using a consistent pattern
+- Size: Small per-file work, but many files → moderate
+- Independence: Each rename is independent → high
+- Specialization: Same operation every time → low
+- **Decision: Single session.** One agent with a loop is simpler than a manager-worker split for uniform tasks.
+
+## Scenario B: Research a topic, then write a report from the findings
+- Size: Research can produce pages of notes; writing is a separate creative task → moderate to high
+- Independence: Writer needs Researcher output, but Researcher does not need Writer → sequential, clean split
+- Specialization: Researcher should not editorialize; Writer should not invent facts → high
+- **Decision: Two agents.** Researcher writes findings to a file, Writer reads that file and produces the report.
+
+## Scenario C: Fix a bug by reading logs, identifying the cause, and writing a patch
+- Size: Usually fits in one context window → small
+- Independence: Each step depends heavily on the previous → tightly coupled
+- Specialization: Same skill set (debugging) throughout → low
+- **Decision: Single session.** Splitting debugging across agents would create more handoff friction than value.
+"@ | Set-Content decision-record.md
+```
+
+### Step 4 — Review your reasoning
+
+Read back your decision record:
+
+**macOS / Linux:**
+```bash
+cat decision-record.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content decision-record.md
+```
+
+For each scenario, check:
+- Did you evaluate all three criteria (size, independence, specialization)?
+- Does the decision follow logically from the scores?
+- Could you defend the choice to someone who disagrees?
+
+### Step 5 — Add your own scenario
+
+Append a fourth scenario based on a real task from your own work:
+
+**macOS / Linux:**
+```bash
+cat >> decision-record.md << 'EOF'
+
+## Scenario D: [Your own task here]
+- Size:
+- Independence:
+- Specialization:
+- **Decision:**
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+Add-Content decision-record.md "`n## Scenario D: [Your own task here]`n- Size:`n- Independence:`n- Specialization:`n- **Decision:**"
+```
+
+Fill in the blanks with honest assessments. The goal is to internalize the framework so you use it automatically before reaching for multi-agent complexity.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| You split a tiny task into agents and it takes longer | Over-engineering; the handoff overhead exceeds the task itself | Apply the three-question framework first — if the task is small and uniform, use one session |
+| Single session loses context halfway through a big task | Context window exceeded for a complex, multi-phase job | Split into agents with file-based handoffs so each agent starts fresh |
+| Agents duplicate work | Roles overlap because specialization was not defined | Write explicit boundary rules: "Do NOT do X" in each contract |
+| You cannot decide whether to split | Criteria scores are mixed (e.g., 1 yes, 1 no, 1 maybe) | Default to single session. You can always split later if the single session struggles |
+
+> **Cost warning:** Every additional agent session uses its own context window and API tokens. Two agents doing a job one agent could handle means you pay roughly double for no benefit. Always justify the split before committing to it.
+
+<VerificationBlock
+  deliverable="A `decision-record.md` with at least four scenarios evaluated using the size/independence/specialization framework."
+  verifyCheck="Each scenario names all three criteria, gives a clear decision, and the reasoning is consistent."
 />

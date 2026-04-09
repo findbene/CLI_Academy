@@ -1,0 +1,182 @@
+---
+title: "Push to GitHub and create a pull request"
+lessonNumber: "6.3.1"
+chapterNumber: "6.3"
+pathNumber: "6"
+tutorPreload: "Help me write a clear PR title and description for this feature branch."
+verifyType: "terminal_output"
+---
+
+# Push to GitHub and create a pull request
+
+## Objective
+
+By the end of this lesson you will push a feature branch to GitHub and create a pull request using both the GitHub CLI (`gh`) and the web interface. You will understand that a pull request is a request to merge your branch into `main` — the standard way teams review code before it lands.
+
+## Walkthrough
+
+### Step 1 — Set up a local repo connected to GitHub
+
+If you already have a repo from Lesson 6.1.2, you can reuse it. Otherwise, create one now.
+
+**macOS / Linux:**
+
+```bash
+mkdir pr-lab && cd pr-lab
+git init
+echo "# PR Lab" > README.md
+git add README.md
+git commit -m "Initial commit"
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir pr-lab; cd pr-lab
+git init
+"# PR Lab" | Out-File -Encoding utf8 README.md
+git add README.md
+git commit -m "Initial commit"
+```
+
+Create a repo on GitHub named `pr-lab` (no README, no .gitignore) and connect it:
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/pr-lab.git
+git branch -M main
+git push -u origin main
+```
+
+Replace `YOUR_USERNAME` with your actual GitHub username. Use the SSH URL if you set up SSH in Lesson 6.1.2.
+
+### Step 2 — Create a feature branch with real changes
+
+```bash
+git switch -c feature-homepage
+```
+
+**macOS / Linux:**
+
+```bash
+echo "<!DOCTYPE html>" > index.html
+echo "<html><head><title>Home</title></head>" >> index.html
+echo "<body><h1>Welcome to PR Lab</h1></body></html>" >> index.html
+git add index.html
+git commit -m "Add homepage"
+```
+
+**Windows PowerShell:**
+
+```powershell
+@"
+<!DOCTYPE html>
+<html><head><title>Home</title></head>
+<body><h1>Welcome to PR Lab</h1></body></html>
+"@ | Out-File -Encoding utf8 index.html
+git add index.html
+git commit -m "Add homepage"
+```
+
+### Step 3 — Push the feature branch to GitHub
+
+```bash
+git push -u origin feature-homepage
+```
+
+This pushes the branch to GitHub. The `-u` flag sets the upstream so future `git push` commands on this branch will go to the right place.
+
+Visit your repo on GitHub. You should see a banner: **"feature-homepage had recent pushes"** with a **Compare & pull request** button.
+
+### Step 4 — Create a pull request (web interface)
+
+1. Click **Compare & pull request** on GitHub.
+2. Fill in:
+   - **Title:** `Add homepage`
+   - **Description:** Explain what the change does and why. For example: "Adds a basic HTML homepage as the landing page for the project."
+3. Make sure the base branch is `main` and the compare branch is `feature-homepage`.
+4. Click **Create pull request**.
+
+You now have an open PR. The diff tab shows exactly what changed.
+
+### Step 5 — Create a pull request (GitHub CLI)
+
+If you prefer the terminal, install the GitHub CLI first.
+
+**macOS:**
+
+```bash
+brew install gh
+```
+
+**Windows (winget):**
+
+```powershell
+winget install --id GitHub.cli
+```
+
+**Linux (apt):**
+
+```bash
+sudo apt install gh
+```
+
+Authenticate once:
+
+```bash
+gh auth login
+```
+
+Follow the prompts — choose GitHub.com, HTTPS (or SSH), and authenticate via browser.
+
+Now create the PR from your terminal:
+
+```bash
+gh pr create --title "Add homepage" --body "Adds a basic HTML homepage as the landing page for the project." --base main
+```
+
+Output shows the PR URL. Click it to see the PR on GitHub.
+
+> **Tip:** If you skip `--title` and `--body`, `gh pr create` opens an interactive prompt.
+
+### Step 6 — Verify the pull request exists
+
+```bash
+gh pr list
+```
+
+Output:
+
+```
+#1  Add homepage  feature-homepage
+```
+
+Or visit `https://github.com/YOUR_USERNAME/pr-lab/pulls` in your browser.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `gh: command not found` | GitHub CLI not installed | Install with `brew install gh` (macOS), `winget install --id GitHub.cli` (Windows), or `sudo apt install gh` (Linux) |
+| `gh auth` fails | Not logged in or token expired | Run `gh auth login` and follow the browser flow |
+| Push rejected with `403 Forbidden` | Token lacks `repo` scope | Regenerate your personal access token with the `repo` scope |
+| `There isn't anything to compare` on GitHub | Feature branch has no new commits relative to main | Make sure you committed on the feature branch, not main |
+| PR shows wrong base branch | Default branch is `master` instead of `main` | Change base branch in the PR dropdown, or rename with `git branch -M main` |
+| `error: src refspec feature-homepage does not match any` | Branch name typo or no commits on branch | Run `git branch` to verify the name, ensure you committed |
+
+<VerificationBlock>
+Run these commands and confirm:
+
+```bash
+gh pr list
+```
+
+You should see one open PR titled "Add homepage" on branch `feature-homepage`.
+
+```bash
+git log --oneline --all
+```
+
+You should see `origin/feature-homepage` and `origin/main` as remote tracking branches, with `feature-homepage` one commit ahead of `main`.
+
+Visit `https://github.com/YOUR_USERNAME/pr-lab/pulls` — the PR should be open with your title and description.
+</VerificationBlock>

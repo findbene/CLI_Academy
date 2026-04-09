@@ -1,0 +1,152 @@
+---
+title: "Use Claude to jump between related files"
+lessonNumber: "4.3.1"
+chapterNumber: "4.3"
+pathNumber: "4"
+tutorPreload: "Help me find every file connected to this module and understand the dependency chain."
+verifyType: "terminal_output"
+---
+
+# Use Claude to jump between related files
+
+## Objective
+
+Use Claude Code to navigate between related files in a project — finding every file that imports a given module, locating where a function is defined, and mapping dependency chains. By the end you will have verified Claude's navigation answers with your own searches across at least two different queries.
+
+## Walkthrough
+
+### Step 1 — Find all importers of a module
+
+Pick a module that other files depend on. In json-server, the router module is a good choice. Ask Claude:
+
+```
+Show me every file that imports or requires the router module. List the file paths and the exact import lines.
+```
+
+Verify Claude's answer with a manual search:
+
+**macOS / Linux**
+
+```bash
+grep -rn --exclude-dir=node_modules "require.*router\|from.*router" src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "require.*router|from.*router"
+```
+
+Compare Claude's list to the search output. Every file Claude named should appear in the results, and no files in the results should be missing from Claude's list.
+
+### Step 2 — Find where a function is defined
+
+Pick a function name you encountered during the feature trace in Lesson 4.1.3. Ask Claude:
+
+```
+Where is the function `create` (or `show`, `list`, etc.) defined in this project? Give me the file path and line number.
+```
+
+Verify:
+
+**macOS / Linux**
+
+```bash
+grep -rn "function create\|const create\|exports\.create\|module\.exports.*create" src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "function create|const create|exports\.create"
+```
+
+If Claude and grep agree, you have confirmed the answer. If they differ, ask Claude to explain the discrepancy.
+
+### Step 3 — Map a two-level dependency chain
+
+Ask Claude to draw the dependency tree for a specific file:
+
+```
+What does src/server/router/index.js depend on? List every local file it imports. Then for each of those files, list what they import. Two levels deep only.
+```
+
+Claude returns a tree:
+
+```
+src/server/router/index.js
+├── src/server/router/plural.js
+│   ├── src/server/mixins/...
+│   └── src/server/helpers.js
+├── src/server/router/singular.js
+│   └── src/server/helpers.js
+└── src/server/router/nested.js
+```
+
+### Step 4 — Verify one branch of the tree
+
+Open any file from the tree and check its import lines:
+
+**macOS / Linux**
+
+```bash
+head -15 src/server/router/plural.js
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content src\server\router\plural.js -TotalCount 15
+```
+
+The import/require lines at the top of the file should match what Claude listed as its dependencies.
+
+### Step 5 — Navigate by concept, not filename
+
+This is the most powerful navigation pattern. Ask Claude something you could not easily grep for:
+
+```
+Where does this project handle pagination? I do not know the filename — find it by reading the code.
+```
+
+Claude searches the codebase conceptually and returns the file and function responsible. Verify:
+
+**macOS / Linux**
+
+```bash
+grep -rn "paginate\|_page\|per_page\|limit.*offset" src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "paginate|_page|per_page|limit.*offset"
+```
+
+If your grep finds the same file Claude named, the conceptual navigation worked.
+
+### Step 6 — Chain two jumps together
+
+Combine the skills. Ask Claude:
+
+```
+Which file handles error responses in this project? Then show me every file that calls that error handler.
+```
+
+Claude finds the error handler definition, then finds its callers — a two-hop navigation. Verify the caller list with grep on the function name or the file import.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude's import list is incomplete | Dynamic `require()` calls or path aliases are not caught by static analysis | Ask: "Are there any dynamic imports, path aliases, or webpack aliases in this project?" |
+| `grep` returns matches from `node_modules/` | Your search is hitting third-party code | Exclude it: add `--exclude-dir=node_modules` (macOS/Linux) or filter after `Get-ChildItem` (Windows) |
+| Claude says "function not found" | The function is an anonymous export or arrow function assigned to a variable | Try: "Search for the word 'create' in all .js files and show me every line where it is assigned or exported" |
+| Dependency chain is deeper than expected | The project has many abstraction layers | Ask Claude to simplify: "Show only the direct imports, not transitive dependencies" |
+| PowerShell `Select-String` misses files in nested folders | The path pattern did not recurse correctly | Always pipe from `Get-ChildItem -Recurse -Filter *.js` rather than using a flat path glob |
+| Claude and grep give different results | Claude might be reading an older version of the code | Trust your grep output as ground truth — it reads the files on disk right now |
+
+<VerificationBlock
+  deliverable="A verified map of file relationships: importers of a module, definition location of a function, and a two-level dependency chain."
+  verifyCheck="Learner confirms Claude's navigation answers against manual grep output on at least two of the three queries."
+/>

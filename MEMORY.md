@@ -7,6 +7,7 @@
 - Safety, verification, and troubleshooting are part of the product, not optional extras.
 - The repo should stay easy for agents to navigate with minimal context.
 - The root must remain small and intentional.
+- The live lesson contract is the chapterized `content/paths/**/lesson-*.mdx` tree; anything outside that pattern is historical or support material and should not leak into learner routes.
 
 ## Structural invariants
 
@@ -16,9 +17,9 @@
 - `content/` holds the curriculum source of truth.
 - `content/lounge_published/` acts as the separate, fast-paced stream for Swarm generation.
 - `.claude/` holds agent control-plane materials.
-- `.agents/` holds the strictly enforced Antigravity workflows and skills for Swarm Automation.
+- `agents/` holds repo-level agent scaffolding and related helpers.
 - historical material belongs in `docs/archive/`.
-- `README.md`, `PROGRESS.md`, and `SESSION_HANDOFF.md` should describe the live repo state, not an outdated migration plan.
+- `README.md`, `MEMORY.md`, `PROGRESS.md`, `TASKS.md`, and `SESSION_HANDOFF.md` should describe the live repo state, not an outdated migration plan.
 
 ## Things not to regress
 

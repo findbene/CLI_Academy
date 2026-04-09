@@ -10,35 +10,168 @@ verifyType: "terminal_output"
 # Move between folders the safe way
 
 ## Objective
-Learn how to safely step into and out of folders using `cd` without getting lost or overwhelmed.
+
+Navigate your file system using `cd` with relative paths, absolute paths, `..`, and `~`. By the end you will move confidently between folders and always know how to get back.
 
 ## Walkthrough
 
-Now that you know how to figure out where you are (`pwd` or `cd`) and what's around you (`ls` or `dir`), it's time to actually move!
+### Step 1 — Move into a folder you can see
 
-We use a command called `cd`, which stands for **Change Directory**. 
+First, confirm where you are and what folders are available.
 
-**Step 1: Stepping "Into" a folder**
-If you see a folder when you list the files around you, you can walk inside it.
-Type `cd ` (don't forget the space!) followed by the folder's name.
+**macOS / Linux**
 
-Example: If you see a folder named `Documents`, type:
-`cd Documents`
-Press Enter. You've now "walked" into the Documents room! Always run your "Where am I?" command here to prove you've moved.
+```bash
+pwd
+ls
+```
 
-**Step 2: Stepping "Out" of a folder**
-What if you walked into the wrong room and want to go back?
-To step backwards (out of the current folder and into the one containing it), you use a special shortcut: `..` (two dots).
+**Windows PowerShell**
 
-Type `cd ..`
-Press Enter. You have now taken one step backwards!
+```powershell
+Get-Location
+Get-ChildItem -Name
+```
 
-*Safety tip*: If you ever try to `cd` into a folder that doesn't exist, the terminal will just give you an honest error. It won't break anything. 
+Pick a folder from the listing — `Documents` is a safe choice on every operating system. Move into it.
 
-**Your First Task:**
-Use `cd` to step into a folder you know exists on your computer, verify your location, and then use `cd ..` to step back out. Copy your terminal output and paste it here so the tutor can verify your navigation drill!
+**macOS / Linux**
 
-<VerificationBlock 
-  deliverable="A completed folder navigation challenge."
-  verifyCheck="Learner completes a timed navigation drill with no wrong-folder actions."
+```bash
+cd Documents
+pwd
+```
+
+**Windows PowerShell**
+
+```powershell
+cd Documents
+Get-Location
+```
+
+The second command proves you moved. Your path now ends with `Documents`.
+
+### Step 2 — Go back one level with `..`
+
+Two dots (`..`) always means "the folder that contains this one" — your parent folder.
+
+**macOS / Linux**
+
+```bash
+cd ..
+pwd
+```
+
+**Windows PowerShell**
+
+```powershell
+cd ..
+Get-Location
+```
+
+You are back where you started. Think of `..` as one step up in the folder tree.
+
+### Step 3 — Jump straight home with `~`
+
+No matter how deep you wander, the tilde character (`~`) is a shortcut for your home directory.
+
+**macOS / Linux**
+
+```bash
+cd ~
+pwd
+```
+
+**Windows PowerShell**
+
+```powershell
+cd ~
+Get-Location
+```
+
+This always returns you to your home folder — the same place your terminal started.
+
+### Step 4 — Use an absolute path
+
+An **absolute path** starts from the root of the file system. It works no matter where you currently are.
+
+**macOS / Linux**
+
+```bash
+cd /tmp
+pwd
+cd ~
+```
+
+**Windows PowerShell**
+
+```powershell
+cd C:\Windows\Temp
+Get-Location
+cd ~
+```
+
+You jumped to a temporary directory and then jumped back home. Absolute paths start with `/` on macOS/Linux and a drive letter like `C:\` on Windows.
+
+### Step 5 — Chain relative moves
+
+You can move multiple levels in one command by chaining folder names with `/` (or `\` on Windows).
+
+**macOS / Linux**
+
+```bash
+cd Documents/../Documents
+pwd
+```
+
+**Windows PowerShell**
+
+```powershell
+cd Documents\..\Documents
+Get-Location
+```
+
+This moved into `Documents`, back out, and into `Documents` again — all in one step. It looks silly but proves you understand how relative paths combine.
+
+### Step 6 — Navigate a real drill
+
+Put it all together. Starting from your home directory, complete this sequence and verify each step:
+
+**macOS / Linux**
+
+```bash
+cd ~
+cd Documents
+cd ..
+cd Downloads
+cd ~
+pwd
+```
+
+**Windows PowerShell**
+
+```powershell
+cd ~
+cd Documents
+cd ..
+cd Downloads
+cd ~
+Get-Location
+```
+
+After the final `pwd` or `Get-Location`, your output should show your home directory — exactly where you began.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `cd: no such file or directory` or `Set-Location : Cannot find path` | The folder name is misspelled or does not exist | Run `ls` / `Get-ChildItem -Name` to see the exact names available, then re-type carefully |
+| Tab completion does nothing | The first few characters you typed do not match any folder | Double-check spelling. On Windows, folder names are case-insensitive but on macOS/Linux they are case-sensitive |
+| `cd ~` goes to a OneDrive folder instead of the local home | Windows has redirected your user profile to OneDrive | Use the full local path: `cd C:\Users\yourname` |
+| `cd -` gives an error on PowerShell | `cd -` (jump to previous directory) is a Bash-only feature | On PowerShell, there is no built-in equivalent — use `cd ~` or type the path explicitly |
+| Nothing seems to happen after `cd` | You may have typed `cd .` (single dot = current directory) instead of `cd ..` | Check your dots — you need two for the parent |
+
+<VerificationBlock
+  deliverable="Terminal output showing a complete navigation drill: home → Documents → back → Downloads → home, with path verification at each step."
+  verifyCheck="Output contains at least five cd or Set-Location commands and ends back at the home directory."
 />

@@ -1,0 +1,496 @@
+---
+title: "Mini project: security audit your own project"
+lessonNumber: "14.3.3"
+chapterNumber: "14.3"
+pathNumber: "14"
+tutorPreload: "Give me the acceptance checklist for a complete beginner security audit."
+verifyType: "terminal_output"
+---
+
+# Mini project: security audit your own project
+
+## Objective
+
+You have learned individual security skills throughout this path: secrets management, diff review, AI code mistake detection, pre-commit hooks, and the review-test-commit cycle. Now you will combine them all in a single, end-to-end security audit of a practice project.
+
+In this mini project you will:
+
+1. Scan for secrets in code and Git history.
+2. Check dependencies for known vulnerabilities.
+3. Review code for the five common AI mistakes.
+4. Document your findings in a structured audit report.
+
+This is the same process that professional security engineers follow — scaled down for a beginner project.
+
+## Walkthrough
+
+### Step 1 — Choose or create a project to audit
+
+Use a project you have built during CLI Academy, or create a quick practice project:
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/audit-target && cd ~/cli-academy/projects/audit-target
+git init
+```
+
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\audit-target" -Force
+Set-Location "$HOME\cli-academy\projects\audit-target"
+git init
+```
+
+Create a realistic small project with intentional problems to find:
+
+**macOS / Linux:**
+```bash
+cat > app.py << 'EOF'
+import os
+import sqlite3
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+DB_PASSWORD = "supersecret123"  # Problem: hardcoded credential
+
+@app.route('/api/search')
+def search():
+    query = request.args.get('q', '')
+    conn = sqlite3.connect('app.db')
+    # Problem: SQL injection via string concatenation
+    results = conn.execute(f"SELECT * FROM items WHERE name LIKE '%{query}%'").fetchall()
+    return jsonify(results)
+
+@app.route('/api/eval')
+def evaluate():
+    expr = request.args.get('expr', '')
+    # Problem: eval on user input
+    result = eval(expr)
+    return jsonify({"result": result})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+EOF
+
+cat > requirements.txt << 'EOF'
+flask==2.0.1
+requests==2.25.0
+pyyaml==5.3.1
+EOF
+
+echo "DATABASE_URL=postgres://admin:password@localhost/mydb" > .env
+
+git add app.py requirements.txt .env
+git commit -m "initial project"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+import os
+import sqlite3
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+DB_PASSWORD = "supersecret123"  # Problem: hardcoded credential
+
+@app.route('/api/search')
+def search():
+    query = request.args.get('q', '')
+    conn = sqlite3.connect('app.db')
+    # Problem: SQL injection via string concatenation
+    results = conn.execute(f"SELECT * FROM items WHERE name LIKE '%{query}%'").fetchall()
+    return jsonify(results)
+
+@app.route('/api/eval')
+def evaluate():
+    expr = request.args.get('expr', '')
+    # Problem: eval on user input
+    result = eval(expr)
+    return jsonify({"result": result})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+"@ | Set-Content app.py
+
+@"
+flask==2.0.1
+requests==2.25.0
+pyyaml==5.3.1
+"@ | Set-Content requirements.txt
+
+"DATABASE_URL=postgres://admin:password@localhost/mydb" | Set-Content .env
+
+git add app.py requirements.txt .env
+git commit -m "initial project"
+```
+
+This project has at least five security problems. Your job is to find them all.
+
+### Step 2 — Audit phase 1: Scan for secrets
+
+**Check Git history for committed secrets:**
+```bash
+git log --all -p -S "password"
+git log --all -p -S "secret"
+git log --all -p -S "API_KEY"
+git log --all --diff-filter=A -- '*.env' '*.env.*'
+```
+
+**Scan the current codebase for hardcoded credentials:**
+
+**macOS / Linux:**
+```bash
+grep -rnE '(password|secret|api_key|token|DATABASE_URL)\s*=' --include='*.py' --include='*.js' --include='*.env' .
+```
+
+**Windows (PowerShell):**
+```powershell
+Select-String -Path *.py,*.env -Pattern '(password|secret|api_key|token|DATABASE_URL)\s*=' -AllMatches
+```
+
+**What you should find:**
+- `DB_PASSWORD = "supersecret123"` hardcoded in `app.py`
+- `DATABASE_URL` with a real password in `.env`
+- `.env` was committed to Git (it should be in `.gitignore`)
+
+Record each finding.
+
+### Step 3 — Audit phase 2: Check dependencies for vulnerabilities
+
+**For Python projects:**
+
+**macOS / Linux:**
+```bash
+pip install pip-audit
+pip-audit -r requirements.txt
+```
+
+**Windows (PowerShell):**
+```powershell
+pip install pip-audit
+pip-audit -r requirements.txt
+```
+
+**For Node.js projects (if you have a package.json):**
+```bash
+npm audit
+```
+
+`pip-audit` checks every package in your `requirements.txt` against the Python Packaging Advisory Database. `npm audit` does the same for JavaScript packages.
+
+**What you should find:** The pinned versions in `requirements.txt` are old and likely have known vulnerabilities. `pyyaml==5.3.1` had a critical arbitrary code execution vulnerability (CVE-2020-14343). `requests==2.25.0` and `flask==2.0.1` likely have known issues too.
+
+Record each package with vulnerabilities and the CVE numbers.
+
+### Step 4 — Audit phase 3: Review code for common vulnerabilities
+
+Go through the code file by file. Check for the five AI mistake patterns from Lesson 14.2.2:
+
+**Search for SQL injection:**
+
+**macOS / Linux:**
+```bash
+grep -n 'f"SELECT\|f"INSERT\|f"UPDATE\|f"DELETE' app.py
+```
+
+**Windows (PowerShell):**
+```powershell
+Select-String -Path app.py -Pattern 'f"SELECT|f"INSERT|f"UPDATE|f"DELETE'
+```
+
+**Search for eval/exec:**
+
+**macOS / Linux:**
+```bash
+grep -n 'eval(\|exec(' app.py
+```
+
+**Windows (PowerShell):**
+```powershell
+Select-String -Path app.py -Pattern 'eval\(|exec\('
+```
+
+**Search for debug mode in production:**
+
+**macOS / Linux:**
+```bash
+grep -n 'debug=True' app.py
+```
+
+**Windows (PowerShell):**
+```powershell
+Select-String -Path app.py -Pattern 'debug=True'
+```
+
+**What you should find:**
+- SQL injection on line with `f"SELECT * FROM items WHERE name LIKE '%{query}%'"`
+- `eval(expr)` on user-controlled input
+- `debug=True` exposes detailed error messages and a debugger to anyone on the network
+
+### Step 5 — Write the audit report
+
+Create a structured report of everything you found:
+
+**macOS / Linux:**
+```bash
+cat > security-audit-report.md << 'EOF'
+# Security Audit Report
+
+**Project:** audit-target
+**Date:** $(date +%Y-%m-%d)
+**Auditor:** [Your Name]
+
+## Summary
+
+| Category | Issues Found | Severity |
+|----------|-------------|----------|
+| Secrets  |             | Critical |
+| Dependencies |         | High     |
+| Code vulnerabilities | | Critical |
+
+## Findings
+
+### Finding 1: Hardcoded database password
+- **File:** app.py
+- **Line:** 6
+- **Severity:** Critical
+- **Issue:** `DB_PASSWORD = "supersecret123"` is hardcoded
+- **Fix:** Move to `.env` file, load with `os.environ.get('DB_PASSWORD')`
+
+### Finding 2: .env file committed to Git
+- **File:** .env
+- **Severity:** Critical
+- **Issue:** `.env` containing `DATABASE_URL` with password was committed
+- **Fix:** Add `.env` to `.gitignore`, remove from history with `git filter-repo`
+
+### Finding 3: SQL injection
+- **File:** app.py, search endpoint
+- **Severity:** Critical
+- **Issue:** User input directly interpolated into SQL query
+- **Fix:** Use parameterized query: `conn.execute("SELECT * FROM items WHERE name LIKE ?", (f'%{query}%',))`
+
+### Finding 4: Remote code execution via eval()
+- **File:** app.py, evaluate endpoint
+- **Severity:** Critical
+- **Issue:** `eval(expr)` executes arbitrary Python code from user input
+- **Fix:** Remove the endpoint entirely, or use `ast.literal_eval()` for safe evaluation
+
+### Finding 5: Debug mode enabled
+- **File:** app.py
+- **Severity:** High
+- **Issue:** `debug=True` exposes stack traces and interactive debugger
+- **Fix:** Use environment variable: `app.run(debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')`
+
+### Finding 6: Outdated dependencies with known CVEs
+- **File:** requirements.txt
+- **Severity:** High
+- **Issue:** pyyaml 5.3.1 (CVE-2020-14343), flask 2.0.1, requests 2.25.0 — all have known vulnerabilities
+- **Fix:** Update to latest stable versions: `pip install --upgrade flask requests pyyaml && pip freeze > requirements.txt`
+
+## Remediation Priority
+
+1. Rotate any real credentials that match the committed secrets (immediate)
+2. Add `.gitignore` and remove `.env` from history (immediate)
+3. Fix SQL injection and remove eval() endpoint (before any deployment)
+4. Update dependencies (before any deployment)
+5. Disable debug mode for production (before any deployment)
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+# Security Audit Report
+
+**Project:** audit-target
+**Date:** $(Get-Date -Format 'yyyy-MM-dd')
+**Auditor:** [Your Name]
+
+## Summary
+
+| Category | Issues Found | Severity |
+|----------|-------------|----------|
+| Secrets  |             | Critical |
+| Dependencies |         | High     |
+| Code vulnerabilities | | Critical |
+
+## Findings
+
+### Finding 1: Hardcoded database password
+- **File:** app.py
+- **Line:** 6
+- **Severity:** Critical
+- **Issue:** ``DB_PASSWORD = "supersecret123"`` is hardcoded
+- **Fix:** Move to ``.env`` file, load with ``os.environ.get('DB_PASSWORD')``
+
+### Finding 2: .env file committed to Git
+- **File:** .env
+- **Severity:** Critical
+- **Issue:** ``.env`` containing ``DATABASE_URL`` with password was committed
+- **Fix:** Add ``.env`` to ``.gitignore``, remove from history with ``git filter-repo``
+
+### Finding 3: SQL injection
+- **File:** app.py, search endpoint
+- **Severity:** Critical
+- **Issue:** User input directly interpolated into SQL query
+- **Fix:** Use parameterized query
+
+### Finding 4: Remote code execution via eval()
+- **File:** app.py, evaluate endpoint
+- **Severity:** Critical
+- **Issue:** ``eval(expr)`` executes arbitrary Python code from user input
+- **Fix:** Remove the endpoint entirely, or use ``ast.literal_eval()``
+
+### Finding 5: Debug mode enabled
+- **File:** app.py
+- **Severity:** High
+- **Issue:** ``debug=True`` exposes stack traces and interactive debugger
+- **Fix:** Use environment variable for debug setting
+
+### Finding 6: Outdated dependencies with known CVEs
+- **File:** requirements.txt
+- **Severity:** High
+- **Issue:** pyyaml 5.3.1 (CVE-2020-14343), flask 2.0.1, requests 2.25.0
+- **Fix:** Update to latest stable versions
+
+## Remediation Priority
+
+1. Rotate any real credentials that match the committed secrets (immediate)
+2. Add ``.gitignore`` and remove ``.env`` from history (immediate)
+3. Fix SQL injection and remove eval() endpoint (before any deployment)
+4. Update dependencies (before any deployment)
+5. Disable debug mode for production (before any deployment)
+"@ | Set-Content security-audit-report.md
+```
+
+### Step 6 — Fix the highest-severity issues
+
+Apply the fixes you documented:
+
+**Add .gitignore and remove .env from tracking:**
+```bash
+echo ".env" >> .gitignore
+git rm --cached .env
+git add .gitignore
+git commit -m "fix: add .gitignore and untrack .env"
+```
+
+**Fix the hardcoded password and SQL injection in app.py:**
+
+**macOS / Linux:**
+```bash
+cat > app.py << 'EOF'
+import os
+import sqlite3
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/api/search')
+def search():
+    query = request.args.get('q', '')
+    conn = sqlite3.connect('app.db')
+    results = conn.execute(
+        "SELECT * FROM items WHERE name LIKE ?",
+        (f'%{query}%',)
+    ).fetchall()
+    return jsonify(results)
+
+# eval endpoint removed — no safe way to execute arbitrary user code
+
+if __name__ == '__main__':
+    app.run(debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')
+EOF
+git add app.py && git commit -m "fix: remove hardcoded creds, fix SQL injection, remove eval endpoint"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+import os
+import sqlite3
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/api/search')
+def search():
+    query = request.args.get('q', '')
+    conn = sqlite3.connect('app.db')
+    results = conn.execute(
+        "SELECT * FROM items WHERE name LIKE ?",
+        (f'%{query}%',)
+    ).fetchall()
+    return jsonify(results)
+
+# eval endpoint removed — no safe way to execute arbitrary user code
+
+if __name__ == '__main__':
+    app.run(debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')
+"@ | Set-Content app.py
+git add app.py; git commit -m "fix: remove hardcoded creds, fix SQL injection, remove eval endpoint"
+```
+
+**Update dependencies:**
+
+**macOS / Linux:**
+```bash
+cat > requirements.txt << 'EOF'
+flask>=3.0,<4.0
+requests>=2.31,<3.0
+pyyaml>=6.0,<7.0
+EOF
+git add requirements.txt && git commit -m "fix: update dependencies to patched versions"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+flask>=3.0,<4.0
+requests>=2.31,<3.0
+pyyaml>=6.0,<7.0
+"@ | Set-Content requirements.txt
+git add requirements.txt; git commit -m "fix: update dependencies to patched versions"
+```
+
+### Step 7 — Commit the audit report
+
+```bash
+git add security-audit-report.md
+git commit -m "docs: add security audit report with findings and remediation"
+```
+
+Verify the full history:
+```bash
+git log --oneline
+```
+
+You should see commits for: initial project, gitignore fix, code fixes, dependency update, and audit report.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `pip-audit` says "command not found" | Not installed | Run `pip install pip-audit` first |
+| `pip-audit` shows no vulnerabilities for old packages | The advisory database might not cover every package | Cross-check with `safety check -r requirements.txt` or search the CVE database manually |
+| `npm audit` shows hundreds of vulnerabilities | Transitive dependencies have cascading issues | Focus on direct dependencies first; use `npm audit --omit=dev` for production dependencies only |
+| `git rm --cached .env` says "did not match any files" | `.env` was never tracked, or it was already removed | Check with `git ls-files .env` — if empty, the file is already untracked |
+| You are not sure what severity to assign | No clear framework | Use: Critical = data exposure or code execution; High = information leak or denial of service; Medium = best practice violation; Low = cosmetic |
+| The audit feels overwhelming for a real project | Larger projects have more files and dependencies | Start with secrets scan and dependency check — these have the highest impact. Add code review gradually |
+
+> [!WARN]
+> **A security audit is not a one-time event.** Dependencies get new CVEs every week. Code changes introduce new patterns. Run `pip-audit` or `npm audit` regularly — ideally in CI so it runs on every pull request automatically.
+
+## Key takeaways
+
+- A security audit has four phases: secrets scan, dependency check, code review, and documentation.
+- `git log -S` finds secrets in history. `pip-audit` / `npm audit` find vulnerable dependencies. `grep` finds dangerous patterns in code.
+- The audit report is not just documentation — it is a prioritized to-do list for remediation.
+- Fix critical issues (secrets exposure, code execution) immediately. Fix high issues (outdated deps, debug mode) before deployment.
+- Make auditing a habit. Run dependency checks weekly and code scans before every release.
+
+<VerificationBlock
+  deliverable="An audit-target project with a completed `security-audit-report.md` documenting at least five findings, and Git history showing the initial vulnerable state followed by remediation commits."
+  verifyCheck="Run `git log --oneline` — you should see the initial commit plus at least three fix commits and the audit report commit. Run `cat security-audit-report.md` — at least five findings should be documented with severity ratings."
+/>

@@ -1,0 +1,178 @@
+---
+title: "Use Claude AI for quick prototyping"
+lessonNumber: "7.3.1"
+chapterNumber: "7.3"
+pathNumber: "7"
+tutorPreload: "Show me how to use claude.ai in the browser to quickly prototype and iterate on an idea without setting up a local project."
+verifyType: "terminal_output"
+---
+
+# Use Claude AI for quick prototyping
+
+## Objective
+
+By the end of this lesson you will use claude.ai in the browser to upload a file for analysis, create an artifact (a runnable code preview), organize work using the Projects feature, and understand what the browser interface can and cannot do compared to the CLI and Desktop experiences.
+
+## Walkthrough
+
+### Step 1 — Open claude.ai and start a conversation
+
+Open your browser and navigate to [claude.ai](https://claude.ai). Sign in with your Anthropic account.
+
+You land on the chat interface. This is the fastest way to interact with Claude — no installation, no terminal, no configuration. You type a message and get a response.
+
+Start with a simple prompt to warm up:
+
+```
+What are three things I should think about before building a to-do app?
+```
+
+Claude responds immediately in the browser. No setup time.
+
+### Step 2 — Upload a file for analysis
+
+Click the **paperclip icon** (📎) at the bottom of the chat input, or drag a file from your file manager directly into the chat.
+
+Try uploading a file from one of your projects — for example, a `package.json`, a Python script, or a configuration file. Then ask:
+
+```
+What does this file do? Are there any issues?
+```
+
+Claude reads the uploaded file and gives analysis. You can upload multiple files in a single message to give Claude more context.
+
+**Supported file types:** Text files (.txt, .md, .json, .py, .ts, .js, .html, .css, etc.), PDFs, and images (PNG, JPG, GIF, WebP). Code files are read as text. Images and PDFs are analyzed visually.
+
+> **Limitation:** Uploaded files live only in the current conversation. They are not saved to your disk or synced anywhere. If you start a new conversation, you must upload again.
+
+### Step 3 — Create an artifact
+
+Artifacts are a browser-only feature that lets Claude generate interactive previews — like a mini web page or a runnable React component — right inside the chat.
+
+Try this prompt:
+
+```
+Create a simple HTML page with a button that counts clicks. Show it as an artifact.
+```
+
+Claude generates the code and renders it in a side panel. You can:
+
+- **See the live preview** on the right side of the screen.
+- **Copy the code** by clicking the code tab.
+- **Edit and regenerate** by asking follow-up questions like "Change the button color to blue."
+
+Artifacts are great for:
+
+- Prototyping UI ideas without setting up a project.
+- Generating HTML/CSS/JS snippets and seeing them rendered.
+- Creating SVG illustrations, charts, or diagrams.
+- Building React components with live preview.
+
+> **Limitation:** Artifacts run in a sandboxed iframe. They cannot access your file system, make authenticated API calls, or install npm packages. They are for previewing, not for production deployment.
+
+### Step 4 — Use the Projects feature
+
+Projects let you organize related conversations and attach reference files that persist across chats.
+
+1. Click **Projects** in the left sidebar (or the menu on mobile).
+2. Click **Create a project** (or the + icon).
+3. Give it a name, like "To-do App Prototype."
+4. Inside the project, click **Add content** to upload reference files — these stay available across all conversations in the project.
+5. Start a new conversation inside the project.
+
+Now when you chat, Claude has access to the project files without you re-uploading them each time:
+
+```
+Based on the files in this project, suggest a folder structure for the To-do app.
+```
+
+**Projects are useful for:**
+
+- Keeping design docs, specs, or reference code attached to a set of conversations.
+- Returning to a project days later without losing context.
+- Sharing a project with collaborators (if your plan supports it).
+
+### Step 5 — Understand the limitations
+
+The browser interface is powerful for conversation and prototyping, but it cannot do everything the CLI can. Here is the honest comparison:
+
+| Capability | claude.ai (browser) | Claude Code (CLI) |
+|---|---|---|
+| File system access | Upload only — no read/write to disk | Full read/write to local files |
+| Git integration | None | Full — commit, branch, diff, log |
+| Run shell commands | None | Yes — executes commands |
+| Artifacts (live preview) | Yes | No |
+| Projects (persistent files) | Yes | Uses CLAUDE.md and project files |
+| Image analysis | Yes — upload and analyze images | Limited |
+| Speed to start | Instant — open browser and type | Must open terminal and start Claude |
+| Code execution | Sandboxed artifact only | Runs on your real machine |
+| API key management | Handled by the web app | Configured locally |
+| Offline access | No — requires internet | No — requires internet |
+
+**Use claude.ai when:**
+
+- You want to brainstorm, plan, or prototype quickly.
+- You need to analyze an image or PDF.
+- You are on a shared computer where you cannot install software.
+- You want to create a visual artifact to preview an idea.
+
+**Use Claude Code CLI when:**
+
+- You need to read, write, and run code on your machine.
+- You are in the middle of a coding session with Git.
+- You need to modify multiple files across a project.
+
+### Step 6 — Export your work from the browser
+
+Anything Claude generates in the browser stays in the browser. To bring it into your local project:
+
+**Copy code from an artifact:**
+
+1. Click the code tab on the artifact.
+2. Click the copy button.
+3. Paste into a file in your editor.
+
+**Save to a file from the terminal:**
+
+**macOS / Linux:**
+
+```bash
+pbpaste > prototype.html   # macOS only
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Clipboard | Out-File -Encoding utf8 prototype.html
+```
+
+**Download conversation text:**
+
+Some plans allow you to export or share conversations. Check the three-dot menu (⋯) at the top of the conversation.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| "Conversation is too long" warning | You hit the context window limit | Start a new conversation; summarize key points in the first message |
+| File upload rejected | File is too large or unsupported format | Keep files under 10 MB; use text formats (.md, .json, .py) when possible |
+| Artifact does not render | The code has a JavaScript error | Ask Claude to fix the error: "The artifact is not rendering — check for JS errors" |
+| Projects not visible in sidebar | Your plan may not include Projects | Check your subscription tier; Projects require Claude Pro or Team |
+| Pasted code has wrong formatting | Clipboard added extra whitespace or lost indentation | Paste into VS Code (which preserves formatting) rather than a plain text editor |
+| Session expired — "Please sign in again" | Browser session timed out | Sign in again; your conversation history is saved |
+
+<VerificationBlock>
+Confirm you can use the core browser features:
+
+1. Go to [claude.ai](https://claude.ai) and start a new conversation.
+2. Upload any text file and ask Claude to summarize it — Claude should respond with an accurate summary.
+3. Ask Claude to create a simple HTML artifact — the preview should render in the side panel.
+
+Then from your terminal, verify that Claude Code is also still available:
+
+```bash
+claude --version
+```
+
+You should see the Claude Code version number. The browser and CLI are completely independent — using one does not affect the other.
+</VerificationBlock>

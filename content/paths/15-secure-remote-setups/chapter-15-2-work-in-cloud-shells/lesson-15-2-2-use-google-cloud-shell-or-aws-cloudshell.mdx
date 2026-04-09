@@ -1,0 +1,135 @@
+---
+title: "Use Google Cloud Shell or AWS CloudShell"
+lessonNumber: "15.2.2"
+chapterNumber: "15.2"
+pathNumber: "15"
+tutorPreload: "Compare Google Cloud Shell and AWS CloudShell, including preinstalled tools and session limits."
+verifyType: "terminal_output"
+---
+
+# Use Google Cloud Shell or AWS CloudShell
+
+## Objective
+
+By the end of this lesson you will be able to open a terminal session in Google Cloud Shell and AWS CloudShell, understand what tools are preinstalled, know the session limits, and install Claude Code in each environment.
+
+## Walkthrough
+
+Both Google Cloud Platform (GCP) and Amazon Web Services (AWS) offer free browser-based terminals. These are not full virtual machines you own — they are managed shells with limitations. Understanding those limits prevents surprises.
+
+### Step 1 — Open Google Cloud Shell
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com).
+2. Click the **Activate Cloud Shell** icon (terminal icon in the top-right toolbar).
+3. A terminal panel opens at the bottom of the page.
+
+Explore the environment:
+
+```bash
+whoami
+# your-google-username
+
+echo $HOME
+# /home/your-google-username
+
+node -v
+# v20.x.x (preinstalled)
+
+python3 --version
+# Python 3.11.x (preinstalled)
+
+gcloud --version
+# Google Cloud SDK preinstalled
+```
+
+**Google Cloud Shell facts:**
+
+| Feature | Detail |
+|---|---|
+| OS | Debian-based Linux |
+| Persistent storage | 5 GB in `$HOME` (persists across sessions) |
+| Session timeout | 20 minutes of inactivity, 12 hours max |
+| Weekly limit | 50 hours per week |
+| Preinstalled | Node.js, Python, Go, Java, gcloud CLI, kubectl, terraform, git, docker |
+| Cost | Free (included with any GCP account) |
+
+### Step 2 — Install Claude Code in Google Cloud Shell
+
+```bash
+npm install -g @anthropic-ai/claude-code
+claude --version
+```
+
+Authenticate by following the URL printed in the terminal. Remember: your `$HOME` directory persists, so Claude Code stays installed between sessions.
+
+### Step 3 — Open AWS CloudShell
+
+1. Sign in to [console.aws.amazon.com](https://console.aws.amazon.com).
+2. Click the **CloudShell** icon (terminal icon in the top navigation bar).
+3. A terminal opens at the bottom of the console.
+
+```bash
+whoami
+# cloudshell-user
+
+echo $HOME
+# /home/cloudshell-user
+
+node -v
+# v18.x.x (preinstalled)
+
+python3 --version
+# Python 3.9.x (preinstalled)
+
+aws --version
+# aws-cli/2.x.x preinstalled
+```
+
+**AWS CloudShell facts:**
+
+| Feature | Detail |
+|---|---|
+| OS | Amazon Linux 2023 |
+| Persistent storage | 1 GB in `$HOME` (persists across sessions) |
+| Session timeout | 20 minutes of inactivity, 12 hours max |
+| Monthly limit | No published hour cap, but concurrent sessions are limited to 10 |
+| Preinstalled | Node.js, Python, AWS CLI, git, pip, make |
+| Cost | Free (included with any AWS account) |
+
+### Step 4 — Install Claude Code in AWS CloudShell
+
+```bash
+npm install -g @anthropic-ai/claude-code
+claude --version
+```
+
+Since `$HOME` is only 1 GB on AWS CloudShell, installing many global packages will fill up fast. Use it for lightweight tasks, not full project builds.
+
+### Step 5 — Know the limits that matter
+
+Both cloud shells have restrictions that can catch you off guard:
+
+| Limitation | Google Cloud Shell | AWS CloudShell |
+|---|---|---|
+| No inbound ports | You cannot host a web server others can reach | Same — no publicly accessible ports |
+| No Docker daemon (AWS) | Docker runs fine | Docker is **not available** in CloudShell |
+| Session wipes on timeout | Non-`$HOME` files are lost | Same — only `$HOME` survives |
+| No GPU | CPU-only | CPU-only |
+| No background daemons | Processes stop when the session ends | Same |
+
+**Safety note:** These environments are tied to your cloud account. Any `gcloud` or `aws` command you run has the permissions of your logged-in account. Do not paste untrusted scripts — they could spin up billable resources.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Cloud Shell will not start | You are on a new account with no project (GCP) or region not supported (AWS) | GCP: Create a project first; AWS: Switch to a supported region (e.g., us-east-1) |
+| `npm install -g` fails with `ENOSPC` | Storage full (especially the 1 GB AWS limit) | Clear caches: `npm cache clean --force`; remove unused files from `$HOME` |
+| Session disconnects after 20 minutes | Idle timeout — by design | Interact with the terminal or set up a keep-alive: `while true; do echo keepalive; sleep 300; done &` |
+| Accidentally created cloud resources | Ran a `gcloud` / `aws` command that provisions billable infrastructure | Review and delete: `gcloud compute instances list` or `aws ec2 describe-instances` |
+| Claude Code auth URL does not open automatically | No browser integration in the cloud shell | Copy the full URL and paste it in a new browser tab manually |
+| Files outside `$HOME` vanish | Non-persistent filesystem reset on session restart | Always save work in `$HOME` or push to Git before ending the session |
+
+<VerificationBlock>
+Open Google Cloud Shell or AWS CloudShell, run `node -v` to confirm Node.js is available, then install Claude Code with `npm install -g @anthropic-ai/claude-code`. Run `claude --version` to confirm the install succeeded. Finally, run `df -h $HOME` to check how much persistent storage you have remaining.
+</VerificationBlock>

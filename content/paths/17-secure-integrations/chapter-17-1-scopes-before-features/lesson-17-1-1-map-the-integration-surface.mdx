@@ -10,29 +10,118 @@ verifyType: "terminal_output"
 # Map the integration surface
 
 ## Objective
-Welcome! In this lesson, we'll learn to "map the integration surface" of a digital service. This means identifying all the ways an application, like Gmail or your calendar, can connect and share information with other tools. Our goal is to create a simple text-based map that helps us understand these connections and, most importantly, highlight any potential "dangerous surfaces" where your data or privacy might be at risk. This foundational step is crucial for working safely in the command line.
+
+Before you connect anything, you need to know *what* you are connecting. An **integration surface** is the complete set of data, actions, and credentials that an external service can reach the moment you grant it access. Mapping the surface before writing a single line of code lets you spot dangerous zones early, pick the right credential type, and make a deliberate decision about every permission you grant.
+
+In this lesson you will create a real `.integration-audit.md` file that catalogs the services you plan to integrate with. By the end you will have a reusable template any teammate can fill out for any new integration.
 
 ## Walkthrough
-Let's build your first integration map!
 
-1.  **Choose Your Service:** Pick *one* service you use daily: Gmail, your calendar, a file storage service (like Google Drive), or a chat application.
-2.  **Open Your Map:** We'll create a simple text file. Type `nano integration-map.txt` and press Enter.
-    *   **Why `nano` is safe:** `nano` is a friendly, text-based editor. It won't run complex commands or access anything without your explicit input. This command simply opens a new file (or an existing one) for editing.
-3.  **List Core Functions:** Inside `nano`, start by listing what your chosen service *does*.
-    *   *Example for Gmail:* "Send email, receive email, manage contacts, organize labels, search mail."
-4.  **Identify Integration Points:** For each function, think about how another application could *interact* with it. This is your "integration surface."
-    *   *Example for Gmail (Send email):* "API for sending automated emails, sharing drafts with other apps."
-    *   *Example for Gmail (Receive email):* "Notifications to other apps, parsing email content for tasks."
-5.  **Highlight Dangerous Surfaces:** This is critical. For *each* integration point, ask yourself:
-    *   What sensitive data could be accessed or shared?
-    *   Could this allow unauthorized deletion or modification of my data?
-    *   What privacy implications exist?
-    *   Mark these with a clear warning, like "⚠️ DANGER: Can delete all emails!" or "⚠️ DANGER: Exposes private contact info."
-6.  **Save Your Map:** When you're done, press `Ctrl+X`. `nano` will ask if you want to save. Type `Y` for Yes, then press Enter to confirm the filename.
+### Step 1 — Understand what belongs on the map
 
-You've just created a valuable security tool!
+Every integration has four things worth recording:
+
+| Field | What to capture |
+|---|---|
+| **Service** | Name of the external system (GitHub, Slack, Google Sheets…) |
+| **Data touched** | What data the integration reads or writes |
+| **Access type** | Read-only / Write / Delete / Admin |
+| **Credential type** | OAuth token, API key, Personal Access Token, service account |
+
+A **dangerous surface** is any row where access type is Write, Delete, or Admin — or where the data touched is sensitive (PII, billing data, auth secrets, private code).
+
+### Step 2 — Create your integration audit file
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/projects/integration-safety
+cd ~/projects/integration-safety
+
+cat > .integration-audit.md << 'EOF'
+# Integration Surface Audit
+
+Last updated: FILL_IN_DATE
+
+## Service map
+
+| Service        | Data touched                   | Access type   | Credential type         | Dangerous?   |
+|----------------|--------------------------------|---------------|-------------------------|--------------|
+| GitHub         | Repos, PRs, issues, code       | Read / Write  | Personal Access Token   | ⚠️ Write     |
+| Slack          | Messages, channels, users      | Read / Post   | OAuth Bot Token         | ⚠️ Post      |
+| Google Sheets  | Spreadsheet rows               | Read / Write  | OAuth Service Account   | ⚠️ Write     |
+| npm registry   | Published packages             | Write         | Automation Token        | 🔴 Publish   |
+
+## Notes
+- Replace each row with your actual integrations.
+- Flag every Write / Delete / Admin row for scope review in lesson 17.1.2.
+- Never add OAuth client secrets or raw API keys to this file — record credential *type* only.
+EOF
+
+cat .integration-audit.md
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\projects\integration-safety" | Out-Null
+Set-Location "$HOME\projects\integration-safety"
+
+$auditContent = @'
+# Integration Surface Audit
+
+Last updated: FILL_IN_DATE
+
+## Service map
+
+| Service        | Data touched                   | Access type   | Credential type         | Dangerous?   |
+|----------------|--------------------------------|---------------|-------------------------|--------------|
+| GitHub         | Repos, PRs, issues, code       | Read / Write  | Personal Access Token   | ⚠️ Write     |
+| Slack          | Messages, channels, users      | Read / Post   | OAuth Bot Token         | ⚠️ Post      |
+| Google Sheets  | Spreadsheet rows               | Read / Write  | OAuth Service Account   | ⚠️ Write     |
+| npm registry   | Published packages             | Write         | Automation Token        | 🔴 Publish   |
+
+## Notes
+- Replace each row with your actual integrations.
+- Flag every Write / Delete / Admin row for scope review in lesson 17.1.2.
+- Never add OAuth client secrets or raw API keys to this file — record credential *type* only.
+'@
+
+$auditContent | Out-File -FilePath ".integration-audit.md" -Encoding utf8
+Get-Content .integration-audit.md
+```
+
+### Step 3 — Customize the map for your own integrations
+
+Replace the example rows with the real services you plan to use. Map **at least three services**. For each Write-access row, add a one-sentence note in the Notes section explaining *why* write access is necessary — if you cannot justify it in one sentence, you probably do not need it yet.
+
+### Step 4 — Verify the file is complete
+
+**macOS / Linux:**
+```bash
+# Confirm the file exists and has content
+wc -l .integration-audit.md       # expect more than 10 lines
+grep -i "dangerous" .integration-audit.md   # should print the table header
+```
+
+**Windows PowerShell:**
+```powershell
+# Confirm the file exists and has content
+(Get-Content .integration-audit.md).Count   # expect more than 10
+Select-String -Path .integration-audit.md -Pattern "Dangerous"
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| File is empty after `cat` / `Get-Content` | Here-doc delimiter `'EOF'` had trailing whitespace | Delete the file, re-run `cat > .integration-audit.md << 'EOF'` with no trailing spaces |
+| PowerShell shows `?` characters instead of emoji | File saved in Latin-1 encoding | Add `-Encoding utf8` to `Out-File` |
+| Audit table only has one row | Rushed the map | Add all real services before moving to 17.1.2 |
+| Every row lists Admin access | Defaulting to broadest permission | Challenge each row: what is the *minimum* access this workflow actually needs? |
+| Secrets appear in the file | Pasted token values directly | Remove them immediately, rotate the exposed token, then record only the credential *type* |
+
+> **Safety warning — incomplete maps compound over time.** An integration audit with gaps is worse than no audit because it creates false confidence. If you skip rows now, you will discover missing scopes only after you have already granted broad access — and broad tokens are difficult to shrink without breaking live workflows.
 
 <VerificationBlock 
-  deliverable="An integration map for Gmail, calendar, files, or chat."
-  verifyCheck="Map names read, write, delete, and notification surfaces."
+  deliverable="A .integration-audit.md file with at least three services mapped, access types recorded, and Write/Delete/Admin rows flagged as Dangerous."
+  verifyCheck="File exists, contains the service table with at least three rows, and at least one row is marked Dangerous."
 />

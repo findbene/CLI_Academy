@@ -1,0 +1,269 @@
+---
+title: "Share session briefs and prompt libraries"
+lessonNumber: "10.3.1"
+chapterNumber: "10.3"
+pathNumber: "10"
+tutorPreload: "Set up a shared prompts folder so every teammate gets consistent Claude results."
+verifyType: "terminal_output"
+---
+
+# Share session briefs and prompt libraries
+
+## Objective
+
+By the end of this lesson you will create a git-tracked `prompts/` directory containing reusable session briefs and prompt templates that your whole team can use. When someone needs Claude to generate a standup summary, write a runbook, or review code, they pull from a shared library instead of writing prompts from scratch.
+
+## Walkthrough
+
+### Step 1 — Create the prompts directory in your project
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/my-project/prompts
+cd ~/my-project/prompts
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\my-project\prompts"
+Set-Location "$HOME\my-project\prompts"
+```
+
+### Step 2 — Write a session brief template
+
+A session brief tells Claude what role to play, what files to read, and what output format to follow. Create a reusable template:
+
+**macOS / Linux**
+
+```bash
+cat > session-brief-template.md << 'EOF'
+# Session Brief: [Task Name]
+
+## Context
+- Project: [project name]
+- Goal: [one sentence describing what you need]
+- Files to read: [list specific files]
+
+## Instructions
+1. Read the files listed above.
+2. [Specific task — e.g., "Summarize changes since last Monday"]
+3. [Output format — e.g., "Use bullet points, max 15 words each"]
+4. [Constraints — e.g., "Do not invent information not in the files"]
+
+## Output
+Save the result to: [output file path]
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Session Brief: [Task Name]
+
+## Context
+- Project: [project name]
+- Goal: [one sentence describing what you need]
+- Files to read: [list specific files]
+
+## Instructions
+1. Read the files listed above.
+2. [Specific task - e.g., "Summarize changes since last Monday"]
+3. [Output format - e.g., "Use bullet points, max 15 words each"]
+4. [Constraints - e.g., "Do not invent information not in the files"]
+
+## Output
+Save the result to: [output file path]
+"@ | Out-File "session-brief-template.md"
+```
+
+### Step 3 — Create concrete prompt files from the template
+
+Build a few real prompts your team will actually use:
+
+**macOS / Linux**
+
+```bash
+cat > standup-summary.md << 'EOF'
+# Session Brief: Daily Standup Summary
+
+## Context
+- Project: this repository
+- Goal: Generate a standup update from yesterday's git activity
+- Files to read: none (use git log output)
+
+## Instructions
+1. Run: git log --since="yesterday" --author="$(git config user.name)" --oneline
+2. Format the output as:
+   - **What I did yesterday** (group by theme)
+   - **What I'm doing today** (say "Continuing [last theme]" if unsure)
+   - **Blockers** (say "None" unless something looks stalled)
+3. Keep each bullet under 15 words.
+4. Do not invent work not shown in the git log.
+
+## Output
+Save to: standup-summaries/standup-YYYY-MM-DD.md
+EOF
+```
+
+```bash
+cat > code-review-checklist.md << 'EOF'
+# Session Brief: Code Review Checklist
+
+## Context
+- Project: this repository
+- Goal: Review a pull request diff for common issues
+- Files to read: the diff output (provided by the user)
+
+## Instructions
+1. Check for: security issues, missing error handling, unclear naming, dead code.
+2. For each issue found, state: file, line, what is wrong, and suggested fix.
+3. End with a summary: "Approve", "Approve with minor fixes", or "Request changes".
+4. Do not suggest style changes unless they affect readability.
+
+## Output
+Print to screen (do not save to file).
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Session Brief: Daily Standup Summary
+
+## Context
+- Project: this repository
+- Goal: Generate a standup update from yesterday's git activity
+- Files to read: none (use git log output)
+
+## Instructions
+1. Run: git log --since="yesterday" --author="`$(git config user.name)" --oneline
+2. Format the output as:
+   - **What I did yesterday** (group by theme)
+   - **What I'm doing today** (say "Continuing [last theme]" if unsure)
+   - **Blockers** (say "None" unless something looks stalled)
+3. Keep each bullet under 15 words.
+4. Do not invent work not shown in the git log.
+
+## Output
+Save to: standup-summaries/standup-YYYY-MM-DD.md
+"@ | Out-File "standup-summary.md"
+
+@"
+# Session Brief: Code Review Checklist
+
+## Context
+- Project: this repository
+- Goal: Review a pull request diff for common issues
+- Files to read: the diff output (provided by the user)
+
+## Instructions
+1. Check for: security issues, missing error handling, unclear naming, dead code.
+2. For each issue found, state: file, line, what is wrong, and suggested fix.
+3. End with a summary: "Approve", "Approve with minor fixes", or "Request changes".
+4. Do not suggest style changes unless they affect readability.
+
+## Output
+Print to screen (do not save to file).
+"@ | Out-File "code-review-checklist.md"
+```
+
+### Step 4 — Add a README to the prompts directory
+
+**macOS / Linux**
+
+```bash
+cat > README.md << 'EOF'
+# Prompt Library
+
+Reusable session briefs and prompt templates for Claude.
+
+## Usage
+1. Copy the relevant `.md` file content.
+2. Paste it into Claude Code as your opening prompt.
+3. Follow any setup instructions in the brief.
+
+## Available Prompts
+| File | Purpose |
+|------|---------|
+| `session-brief-template.md` | Blank template for new prompts |
+| `standup-summary.md` | Generate daily standup from git log |
+| `code-review-checklist.md` | Review a PR diff for common issues |
+
+## Contributing
+1. Copy `session-brief-template.md` as your starting point.
+2. Fill in all sections — do not leave placeholders.
+3. Test the prompt yourself before committing.
+4. Add your new prompt to the table above.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Prompt Library
+
+Reusable session briefs and prompt templates for Claude.
+
+## Usage
+1. Copy the relevant ``.md`` file content.
+2. Paste it into Claude Code as your opening prompt.
+3. Follow any setup instructions in the brief.
+
+## Available Prompts
+| File | Purpose |
+|------|---------|
+| ``session-brief-template.md`` | Blank template for new prompts |
+| ``standup-summary.md`` | Generate daily standup from git log |
+| ``code-review-checklist.md`` | Review a PR diff for common issues |
+
+## Contributing
+1. Copy ``session-brief-template.md`` as your starting point.
+2. Fill in all sections - do not leave placeholders.
+3. Test the prompt yourself before committing.
+4. Add your new prompt to the table above.
+"@ | Out-File "README.md"
+```
+
+### Step 5 — Commit the prompt library
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project
+git add prompts/
+git commit -m "docs: add shared prompt library with session brief template"
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"
+git add prompts/
+git commit -m "docs: add shared prompt library with session brief template"
+```
+
+### Step 6 — Verify a teammate can use a prompt
+
+The best test: have someone else on your team open `prompts/standup-summary.md`, paste it into Claude Code, and check that the output matches the expected format. If they need to modify the prompt to get it working, update the shared version.
+
+> **Real danger:** A prompt library nobody uses is wasted effort. The prompts must be tested, clearly named, and easy to find. If teammates keep writing their own prompts from scratch, the library needs better discoverability or the prompts need improvement.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Teammates ignore the prompt library | They do not know it exists or it is hard to find | Add a link to the prompts directory in the project README |
+| Prompt works for you but not for a teammate | Prompt assumes your local setup (e.g., specific branch name) | Replace hardcoded values with placeholders and add a "Before you start" checklist |
+| Prompts produce inconsistent results across sessions | Claude interprets vague instructions differently each time | Add stricter output format rules and explicit constraints to the prompt |
+| Library grows large and unorganized | No naming convention | Use the pattern `[category]-[action].md` (e.g., `review-pr-diff.md`, `report-weekly.md`) |
+| Sensitive context leaks into shared prompts | Someone included API keys or internal URLs in a prompt | Review prompts during PR review; add a note in the README: "Never include secrets in prompts" |
+
+<VerificationBlock
+  deliverable="A git-tracked prompts/ directory with a README, a session brief template, and at least two concrete prompt files that produce consistent results."
+  verifyCheck="A teammate can pick any prompt from the library, paste it into Claude Code, and get a correctly formatted output without modifications."
+/>

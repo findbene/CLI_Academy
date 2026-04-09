@@ -1,0 +1,177 @@
+---
+title: "Create a weekly status report"
+lessonNumber: "10.1.2"
+chapterNumber: "10.1"
+pathNumber: "10"
+tutorPreload: "Help me compile a week of git activity into a Progress / Plans / Problems report."
+verifyType: "terminal_output"
+---
+
+# Create a weekly status report
+
+## Objective
+
+By the end of this lesson you will produce a structured weekly status report in Progress / Plans / Problems format by combining real git history with your own context. The report will be saved as a markdown file you can share with a manager, a team channel, or your own records.
+
+## Walkthrough
+
+### Step 1 — Set up a reports directory
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/weekly-reports
+cd ~/weekly-reports
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\weekly-reports"
+Set-Location "$HOME\weekly-reports"
+```
+
+### Step 2 — Gather the week's commit activity
+
+Navigate to your project repository and generate a shortlog for the past seven days.
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project
+git shortlog --since="7 days ago" --no-merges -n > ~/weekly-reports/week-shortlog.txt
+cat ~/weekly-reports/week-shortlog.txt
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"
+git shortlog --since="7 days ago" --no-merges -n | Out-File "$HOME\weekly-reports\week-shortlog.txt"
+Get-Content "$HOME\weekly-reports\week-shortlog.txt"
+```
+
+`git shortlog` groups commits by author and counts them. The `--no-merges` flag strips merge commits that add noise.
+
+> **Safety note:** `git shortlog` is read-only. It will not change any files or branches.
+
+### Step 3 — Collect file-level change stats
+
+This gives you a sense of which parts of the codebase moved.
+
+**macOS / Linux**
+
+```bash
+git diff --stat HEAD~20 HEAD > ~/weekly-reports/week-diffstat.txt
+cat ~/weekly-reports/week-diffstat.txt
+```
+
+**Windows PowerShell**
+
+```powershell
+git diff --stat HEAD~20 HEAD | Out-File "$HOME\weekly-reports\week-diffstat.txt"
+Get-Content "$HOME\weekly-reports\week-diffstat.txt"
+```
+
+If `HEAD~20` goes further back than one week, adjust the number. The goal is to capture roughly one week of change.
+
+### Step 4 — Write a brief Plans and Problems note by hand
+
+Create a small text file with what you know that git does not:
+
+**macOS / Linux**
+
+```bash
+cat > ~/weekly-reports/context.txt << 'EOF'
+Plans for next week:
+- Finish the API rate-limit middleware
+- Write integration tests for the auth flow
+
+Problems:
+- Staging environment DNS is misconfigured, blocking QA
+- Waiting on design review for the settings page
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+Plans for next week:
+- Finish the API rate-limit middleware
+- Write integration tests for the auth flow
+
+Problems:
+- Staging environment DNS is misconfigured, blocking QA
+- Waiting on design review for the settings page
+"@ | Out-File "$HOME\weekly-reports\context.txt"
+```
+
+Replace the example lines with your real plans and blockers. This human-written context is critical — Claude cannot invent your future plans accurately.
+
+### Step 5 — Ask Claude to compile the report
+
+Open Claude Code in `~/weekly-reports` and prompt:
+
+```
+Read week-shortlog.txt, week-diffstat.txt, and context.txt.
+
+Produce a weekly status report in this format:
+
+## Weekly Status Report — [date range]
+
+### Progress (what got done)
+- (bullets grouped by theme, referencing real commits)
+
+### Plans (what's next)
+- (pulled from context.txt, not invented)
+
+### Problems (blockers and risks)
+- (pulled from context.txt, not invented)
+
+Use plain English. Each bullet under 20 words. Do not invent plans or problems that are not in context.txt.
+```
+
+### Step 6 — Save and verify the report
+
+Ask Claude to save the output:
+
+```
+Save that report to report-YYYY-MM-DD.md using today's date.
+```
+
+Then verify:
+
+**macOS / Linux**
+
+```bash
+cat ~/weekly-reports/report-$(date +%Y-%m-%d).md
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content "$HOME\weekly-reports\report-$((Get-Date).ToString('yyyy-MM-dd')).md"
+```
+
+Read every line. Confirm:
+1. Each Progress bullet maps to real commits in `week-shortlog.txt`.
+2. Plans and Problems match `context.txt` exactly — nothing added.
+3. The date range is correct.
+
+> **Real danger:** A status report that overstates progress or invents blockers damages trust with your team. Always verify the Progress section against actual commits and never let Claude fabricate Plans or Problems.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `git shortlog` is empty | No commits in the last 7 days, or author name mismatch | Run `git log --oneline -10` to check recent history; verify `git config user.name` |
+| Progress section lists work you did not do | Claude inferred from file names or commit messages | Cross-check each bullet against `week-shortlog.txt` and delete anything unverifiable |
+| Plans section contains items you never wrote | Claude invented likely next steps | Add to your prompt: "Only use Plans from context.txt — do not guess" |
+| `HEAD~20` error on a new repo | Fewer than 20 commits exist | Use `git diff --stat $(git rev-list --max-parents=0 HEAD) HEAD` to diff from the first commit |
+| Report tone is too corporate or jargon-heavy | Claude defaults to formal business writing | Add "Write like a teammate giving a casual update, not a consultant" to your prompt |
+
+<VerificationBlock
+  deliverable="A dated Progress / Plans / Problems markdown report where Progress traces to real commits and Plans/Problems come from your own context file."
+  verifyCheck="Every Progress bullet matches a line in week-shortlog.txt, and every Plan and Problem matches a line in context.txt."
+/>

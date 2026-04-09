@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { startTransition, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getOnboardingStartHref } from "@/lib/learning";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface OnboardingAnswers {
@@ -125,7 +126,7 @@ export function OnboardingWizard() {
       }
 
       startTransition(() => {
-        router.push("/dashboard");
+        router.push(getOnboardingStartHref(answers.primary_goal));
         router.refresh();
       });
     } catch (error: unknown) {

@@ -1,0 +1,226 @@
+---
+title: "Narrow down a bug with binary search prompts"
+lessonNumber: "5.1.3"
+chapterNumber: "5.1"
+pathNumber: "5"
+tutorPreload: "Help me isolate which function in this script is producing the wrong output."
+verifyType: "terminal_output"
+---
+
+# Narrow down a bug with binary search prompts
+
+## Objective
+
+When a script has several functions and the output is wrong, you need a strategy to find which function is broken without reading every line. The technique is called binary search debugging: ask Claude Code to test half the pipeline, see which half breaks, then test half of that half, and repeat until you find the guilty function. By the end of this lesson you will have isolated a bug across four functions using only three prompts.
+
+## Walkthrough
+
+### Step 1 — Create a multi-function script with one subtle bug
+
+This script processes a list of product orders. It has four functions in a pipeline: one cleans the data, one calculates totals, one applies a discount, and one formats the output. Exactly one function has a bug.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/projects/debug-practice && cd ~/projects/debug-practice
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force ~\projects\debug-practice | Set-Location
+```
+
+**JavaScript version — `orders.js`**
+
+```js
+// orders.js — one of these four functions has a bug
+
+function cleanOrders(raw) {
+  return raw.map(order => ({
+    name: order.name.trim(),
+    quantity: parseInt(order.quantity, 10),
+    price: parseFloat(order.price),
+  }));
+}
+
+function calculateTotals(orders) {
+  return orders.map(o => ({
+    ...o,
+    total: o.quantity + o.price, // BUG: should be quantity * price
+  }));
+}
+
+function applyDiscount(orders, rate) {
+  return orders.map(o => ({
+    ...o,
+    total: o.total * (1 - rate),
+  }));
+}
+
+function formatReport(orders) {
+  return orders.map(o => `${o.name}: $${o.total.toFixed(2)}`).join("\n");
+}
+
+// --- main pipeline ---
+const rawOrders = [
+  { name: " Widget ", quantity: "3", price: "9.99" },
+  { name: "Gadget", quantity: "1", price: "24.50" },
+  { name: " Doohickey ", quantity: "5", price: "4.75" },
+];
+
+const cleaned = cleanOrders(rawOrders);
+const totaled = calculateTotals(cleaned);
+const discounted = applyDiscount(totaled, 0.1);
+const report = formatReport(discounted);
+console.log(report);
+```
+
+**Python version — `orders.py`**
+
+```python
+# orders.py — one of these four functions has a bug
+
+def clean_orders(raw):
+    return [
+        {"name": o["name"].strip(), "qty": int(o["qty"]), "price": float(o["price"])}
+        for o in raw
+    ]
+
+def calculate_totals(orders):
+    for o in orders:
+        o["total"] = o["qty"] + o["price"]  # BUG: should be qty * price
+    return orders
+
+def apply_discount(orders, rate):
+    for o in orders:
+        o["total"] = o["total"] * (1 - rate)
+    return orders
+
+def format_report(orders):
+    return "\n".join(f'{o["name"]}: ${o["total"]:.2f}' for o in orders)
+
+# --- main pipeline ---
+raw = [
+    {"name": " Widget ", "qty": "3", "price": "9.99"},
+    {"name": "Gadget", "qty": "1", "price": "24.50"},
+    {"name": " Doohickey ", "qty": "5", "price": "4.75"},
+]
+
+cleaned = clean_orders(raw)
+totaled = calculate_totals(cleaned)
+discounted = apply_discount(totaled, 0.1)
+report = format_report(discounted)
+print(report)
+```
+
+### Step 2 — Run the script and see that the numbers are wrong
+
+**macOS / Linux**
+
+```bash
+node orders.js
+```
+
+**Windows PowerShell**
+
+```powershell
+node orders.js
+```
+
+Output:
+
+```
+Widget: $11.69
+Gadget: $22.95
+Doohickey: $8.78
+```
+
+Widget should be 3 × $9.99 = $29.97 before discount, which is $26.97 after 10% off. The output says $11.69 — clearly wrong. But which function broke?
+
+### Step 3 — Binary search prompt 1: test the first half
+
+Ask Claude Code to check the output after just the first two functions:
+
+```
+Something is wrong with the final numbers in orders.js. Can you add a temporary console.log after calculateTotals to show me the totals array? I want to see if the bug is in the first half (cleanOrders + calculateTotals) or the second half (applyDiscount + formatReport).
+```
+
+Claude adds a log line and you run the script. The output shows:
+
+```
+[ { name: 'Widget', quantity: 3, price: 9.99, total: 12.99 }, ... ]
+```
+
+Widget total is 12.99. If `quantity * price` were correct, it should be 29.97. The bug is in the **first half**.
+
+### Step 4 — Binary search prompt 2: narrow to one function
+
+```
+The totals are already wrong right after calculateTotals. Can you add a console.log after cleanOrders too? I want to know if cleanOrders parsed the data correctly or if calculateTotals computed the wrong total.
+```
+
+Claude adds another log. You run and see:
+
+```
+[ { name: 'Widget', quantity: 3, price: 9.99 }, ... ]
+```
+
+The cleaned data looks correct — quantity is 3 and price is 9.99. So `cleanOrders` is fine. The bug must be in **calculateTotals**.
+
+### Step 5 — Binary search prompt 3: pinpoint the line
+
+```
+calculateTotals is producing wrong totals. The cleaned data has quantity 3 and price 9.99 but the total comes out as 12.99 instead of 29.97. Read calculateTotals and tell me what's wrong.
+```
+
+Claude reads the function and immediately spots it:
+
+> `total: o.quantity + o.price` uses **addition** instead of **multiplication**. Change `+` to `*`.
+
+Accept the fix. Remove the temporary logging:
+
+```
+Fix looks good. Now remove all the temporary console.log lines you added.
+```
+
+### Step 6 — Run the fixed script
+
+**macOS / Linux**
+
+```bash
+node orders.js
+```
+
+**Windows PowerShell**
+
+```powershell
+node orders.js
+```
+
+Output:
+
+```
+Widget: $26.97
+Gadget: $22.05
+Doohickey: $21.38
+```
+
+Widget is now $26.97 (3 × 9.99 = 29.97, minus 10% = 26.97). Correct.
+
+> **Why binary search matters.** This script had only four functions, but real projects have hundreds. Checking the midpoint first means you eliminate half the code in every step. Three prompts narrowed the scope from the entire file down to a single operator.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude says all the functions look correct | Claude did not run the code, it only read it | Ask Claude to add logging so you can see the actual runtime values instead of relying on static analysis |
+| The midpoint log shows correct data but the final output is still wrong | The bug is in the second half, not the first | Repeat the binary search on the second half (applyDiscount + formatReport) |
+| Claude proposes rewriting the entire pipeline instead of fixing one line | You asked a broad question like "fix the script" | Be specific: "Only look at calculateTotals — what is wrong with the total computation?" |
+| Numbers look close but not exact (e.g., 26.971 vs 26.97) | Floating point rounding, not a logic bug | This is normal — `.toFixed(2)` or `round(..., 2)` handles display rounding |
+| Python version gives a different error | Variable name mismatch (`qty` vs `quantity`) | Check that the dictionary keys match between functions — `clean_orders` uses `qty` |
+
+<VerificationBlock
+  deliverable="A multi-function script with a bug found via binary search debugging in three or fewer Claude Code prompts."
+  verifyCheck="Run the fixed script and confirm the order totals are mathematically correct."
+/>

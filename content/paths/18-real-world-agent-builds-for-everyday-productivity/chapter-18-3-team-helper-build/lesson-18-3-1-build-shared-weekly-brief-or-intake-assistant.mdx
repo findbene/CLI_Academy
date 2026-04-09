@@ -10,50 +10,105 @@ verifyType: "terminal_output"
 # Build: shared weekly brief or intake assistant
 
 ## Objective
-We'll create a foundational command-line workflow for team tasks like preparing a weekly brief or tidying intake notes. Our goal is a simple, shared process that everyone can use reliably and safely, ensuring clear ownership from the start.
+Build a team-shared assistant that creates either:
+- a weekly engineering brief from multiple contributors' git logs, or
+- an intake assistant that reads `requests.md` and categorizes incoming work.
 
 ## Walkthrough
+### Step 1: Create shared inputs
 
-1.  **Create a Safe Workspace:**
-    First, let's create a dedicated folder to safely build our tool without affecting existing files.
-    ```bash
-    mkdir cli-team-brief
-    cd cli-team-brief
-    ```
-    *Why this is safe:* `mkdir` creates an empty folder; `cd` changes your location. No existing files are modified.
+```bash
+mkdir -p team
+cat > team/members.txt <<'EOF'
+alice
+bob
+EOF
+cat > requests.md <<'EOF'
+- Need onboarding checklist for new contractors
+- API timeout bug reported by support
+- Request for weekly KPI dashboard export
+EOF
+```
 
-2.  **Start Your Workflow File:**
-    Create an empty file for our workflow instructions.
-    ```bash
-    touch weekly-brief.sh
-    ```
-    *Why this is safe:* `touch` creates a new, empty file or updates its modification time. It never overwrites content.
+```powershell
+New-Item -ItemType Directory -Path team -Force | Out-Null
+@"
+alice
+bob
+"@ | Set-Content team/members.txt
+@"
+- Need onboarding checklist for new contractors
+- API timeout bug reported by support
+- Request for weekly KPI dashboard export
+"@ | Set-Content requests.md
+```
 
-3.  **Add Your First Instructions (Placeholder):**
-    Add a simple message to confirm the script works before adding complex logic.
-    ```bash
-    echo '#!/bin/bash' > weekly-brief.sh
-    echo 'echo "Hello Team! This is our weekly brief/intake assistant."' >> weekly-brief.sh
-    ```
-    *Why this is safe:* `echo` prints text. `>` and `>>` safely write to *our own* file in *our safe folder*.
+### Step 2: Define team-safe contract in CLAUDE.md
 
-4.  **Make it Executable:**
-    Allow your system to run this script like a command.
-    ```bash
-    chmod +x weekly-brief.sh
-    ```
-    *Why this is safe:* `chmod +x` only adds "executable" permission to *this specific file*, not affecting other files or system settings.
+```md
+# Team Helper Contract
 
-5.  **Run Your Workflow:**
-    Time to see our assistant in action!
-    ```bash
-    ./weekly-brief.sh
-    ```
-    *What to expect:* You'll see "Hello Team! This is our weekly brief/intake assistant." This confirms your basic workflow is running.
+## Option A: Weekly brief
+- Read team/members.txt
+- For each member, gather last-week git highlights from agreed repos
+- Produce team-weekly-brief-YYYY-MM-DD.md
 
-This script is your starting point. When shared with a team, ensure it's in a controlled environment (like a version control repository) and its purpose and owner are clearly documented.
+## Option B: Intake assistant
+- Read requests.md
+- Categorize each item as Bug, Ops, Content, or Feature
+- Produce intake-triage-YYYY-MM-DD.md
+
+## Safety
+- Read-only access except writing one output file
+- No deletions, no commits, no pushes
+- If source files missing, stop and report
+```
+
+### Step 3: Run one assistant mode
+Weekly brief prompt:
+
+```text
+Read CLAUDE.md and run Option A. Create one combined weekly brief with per-member highlights and a short risks section.
+```
+
+Intake prompt:
+
+```text
+Read CLAUDE.md and run Option B. Categorize each request and output a triage table with owner suggestions.
+```
+
+### Step 4: Validate team artifact
+
+```bash
+ls *-YYYY-*.md 2>/dev/null || ls team-weekly-brief-*.md intake-triage-*.md
+```
+
+```powershell
+Get-ChildItem team-weekly-brief-*.md, intake-triage-*.md -ErrorAction SilentlyContinue
+```
+
+Open the generated file and confirm it is understandable by teammates who did not run the assistant.
+
+### Step 5: Add owner and cadence metadata
+At the top of the output file, include:
+- Owner
+- Run date
+- Next scheduled run
+- Escalation contact
+
+This prevents "shared automation with no owner," which fails quickly in real teams.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| Team artifact has inconsistent format each run | No output schema in contract | Define fixed sections and required headings |
+| Intake categories are random | Categories not constrained | Limit categories to Bug/Ops/Content/Feature |
+| Assistant fails for one missing source file | Missing stop/continue policy | Define which missing inputs stop the run vs skip with warning |
+| Team distrusts output | No owner or traceability | Add owner, date, and source references in artifact |
+| Permission risk in shared repo | Assistant can write broadly | Restrict to one output filename pattern |
 
 <VerificationBlock 
-  deliverable="A team-facing workflow that prepares a weekly brief or cleans intake material."
-  verifyCheck="Workflow produces a useful team artifact with explicit owner."
+  deliverable="A generated team-weekly-brief-YYYY-MM-DD.md or intake-triage-YYYY-MM-DD.md with explicit owner metadata."
+  verifyCheck="You can show the assistant consumed shared inputs and produced a team-usable artifact under bounded write rules."
 />

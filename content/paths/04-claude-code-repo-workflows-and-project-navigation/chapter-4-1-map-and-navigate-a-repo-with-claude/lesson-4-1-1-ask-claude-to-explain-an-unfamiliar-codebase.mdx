@@ -1,0 +1,103 @@
+---
+title: "Ask Claude to explain an unfamiliar codebase"
+lessonNumber: "4.1.1"
+chapterNumber: "4.1"
+pathNumber: "4"
+tutorPreload: "Help me understand what this project does and how its code is organized."
+verifyType: "terminal_output"
+---
+
+# Ask Claude to explain an unfamiliar codebase
+
+## Objective
+
+Clone a real open-source repository you have never seen before and use Claude Code to understand what it does, how it is organized, and where to start reading. By the end of this lesson you will have a plain-English summary of the project confirmed against the actual source files.
+
+## Walkthrough
+
+### Step 1 — Pick and clone a real project
+
+Choose a small, well-known open-source project. We will use **json-server** (a fake REST API tool built with Node.js) as our running example throughout Path 04. Python learners can substitute any small FastAPI or Flask project.
+
+**macOS / Linux**
+
+```bash
+cd ~/projects
+git clone https://github.com/typicode/json-server.git
+cd json-server
+```
+
+**Windows PowerShell**
+
+```powershell
+cd ~\projects
+git clone https://github.com/typicode/json-server.git
+cd json-server
+```
+
+> **Real danger — cloned repos can contain post-install scripts.** Do not run `npm install` or `pip install` on an unfamiliar repo until you understand what it does. Cloning and reading source code is safe. Installing dependencies executes code on your machine, including arbitrary `postinstall` scripts listed in `package.json`.
+
+### Step 2 — Ask Claude Code what the project does
+
+Open the project folder in your terminal and start Claude Code. Then prompt:
+
+```
+What does this project do? Give me a two-paragraph summary a beginner would understand.
+```
+
+Claude reads the README, the package manifest, and key source files, then returns a plain-English explanation. Read its answer and compare it to the repo's own README to see if the summary is accurate.
+
+### Step 3 — Ask Claude Code to describe the folder structure
+
+```
+Show me the folder structure of this project and explain what each top-level directory and important file is for.
+```
+
+Claude returns a tree listing directories like `src/`, `bin/`, `test/`, and files like `package.json`, `LICENSE`, and `.gitignore`. Each gets a short explanation. You should now be able to say "tests live in X, source code lives in Y, config lives in Z."
+
+### Step 4 — Ask Claude Code where to start reading
+
+```
+If I wanted to understand how this project works, which file should I read first and why?
+```
+
+Claude points to the main entry point — for json-server that is typically `src/app.js` or the `bin/` CLI script. Write down the file path Claude names. You will verify it in the next step.
+
+### Step 5 — Verify the answer yourself
+
+Open the file Claude named and skim the first 30 lines:
+
+**macOS / Linux**
+
+```bash
+head -30 src/app.js
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content src\app.js -TotalCount 30
+```
+
+Does the file match Claude's description? If the first lines set up an Express app, require core modules, or export a server factory, Claude was right. If something looks off, ask a follow-up:
+
+```
+Are you sure about src/app.js? The first lines look like [paste what you see]. Is there a different entry point?
+```
+
+Claude will correct itself or explain what you are seeing.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `git clone` fails with "repository not found" | URL typo or the repo was renamed | Double-check the URL on github.com before retrying |
+| Claude says "I don't have access to the files" | You started Claude Code outside the project folder | Close Claude Code, `cd` into the cloned directory, and relaunch |
+| Claude's summary sounds wrong or vague | The repo has minimal or outdated documentation | Ask Claude to read the main source file directly: "Read src/app.js and tell me what it does" |
+| `head` is not recognized on Windows | `head` is a Unix command | Use `Get-Content <file> -TotalCount 30` in PowerShell instead |
+| Clone is very slow or large | You accidentally picked a huge repo | Cancel with Ctrl+C, pick something smaller (under 5,000 lines of source) |
+
+<VerificationBlock
+  deliverable="A plain-English summary of the cloned project confirmed by reading the entry-point file."
+  verifyCheck="Learner can state what the project does, name the main entry file, and describe at least two top-level directories."
+/>

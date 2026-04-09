@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight } from "lucide-react";
+import ShaderBackground from "@/components/ui/shader-background";
 
 export function HeroPick() {
   return (
@@ -9,7 +10,7 @@ export function HeroPick() {
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
-      className="group relative w-full rounded-3xl overflow-hidden cursor-pointer"
+      className="group relative w-full overflow-hidden rounded-3xl"
     >
       {/* Background layer with blur */}
       <div className="absolute inset-0 bg-white/5 backdrop-blur-2xl transition-all duration-500 group-hover:bg-white/10" />
@@ -37,13 +38,12 @@ export function HeroPick() {
         </div>
 
         {/* Right Side: Visual */}
-        <div className="w-full md:w-1/2 h-[300px] md:h-full relative overflow-hidden">
+        <div className="relative h-[300px] w-full overflow-hidden bg-[#030712] md:h-full md:w-1/2">
+          <ShaderBackground className="opacity-95" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.22),transparent_40%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.16),transparent_45%)]" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0F1117] to-transparent z-10 md:w-1/4 hidden md:block" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F1117] to-transparent z-10 h-1/4 bottom-0 md:hidden block" />
-          <div 
-            className="w-full h-full bg-cover bg-center transform group-hover:scale-105 transition-transform duration-700 ease-out" 
-            style={{ backgroundImage: 'url("/assets/placeholders/lounge-hero.svg")' }} 
-          />
         </div>
       </div>
     </motion.div>

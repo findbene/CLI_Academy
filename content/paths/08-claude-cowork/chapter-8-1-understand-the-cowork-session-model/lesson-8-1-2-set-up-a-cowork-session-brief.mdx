@@ -1,0 +1,192 @@
+---
+title: "Set up a Cowork session brief"
+lessonNumber: "8.1.2"
+chapterNumber: "8.1"
+pathNumber: "8"
+tutorPreload: "Review my session brief and tell me what's missing before I start the Cowork session."
+verifyType: "terminal_output"
+---
+
+# Set up a Cowork session brief
+
+## Objective
+
+By the end of this lesson you will have a written session brief — a short document that tells Claude exactly what you want to accomplish, what context it needs, and how you will judge success. A good brief is the single biggest factor in whether a Cowork session produces useful output or wanders off track.
+
+## Walkthrough
+
+### Step 1 — Understand why a brief matters
+
+Starting a Cowork session without a brief is like hiring a contractor and saying "build something." You will get output, but it probably will not be what you wanted. A brief solves this by answering four questions up front:
+
+1. **Goal** — What is the deliverable?
+2. **Context** — What files, background, or constraints does Claude need?
+3. **Success criteria** — How will you know the output is good enough?
+4. **Boundaries** — What should Claude avoid doing?
+
+### Step 2 — Create the brief file
+
+Open your terminal and create a project folder for this exercise. Then create the brief file.
+
+**macOS / Linux:**
+
+```bash
+mkdir -p cowork-practice
+cd cowork-practice
+cat > cowork-session-brief.md << 'EOF'
+# Cowork Session Brief
+
+## Goal
+Write a project README for a CLI tool called `lintr` that checks markdown
+files for broken links.
+
+## Context
+- The tool is written in Node.js (ES modules).
+- It has one command: `lintr check <file-or-directory>`.
+- It exits 0 on success, 1 on broken links found.
+- Repository layout: `src/`, `bin/`, `tests/`, `package.json`.
+
+## Success criteria
+- README includes: project description, installation, usage, example output,
+  contributing section, and license.
+- All shell commands include both macOS/Linux and Windows PowerShell variants.
+- Tone is direct and technical — no emoji, no marketing language.
+
+## Boundaries
+- Do not generate the actual source code for `lintr`.
+- Do not add a changelog — the project does not have releases yet.
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+New-Item -ItemType Directory -Force -Path cowork-practice | Out-Null
+Set-Location cowork-practice
+
+@"
+# Cowork Session Brief
+
+## Goal
+Write a project README for a CLI tool called ``lintr`` that checks markdown
+files for broken links.
+
+## Context
+- The tool is written in Node.js (ES modules).
+- It has one command: ``lintr check <file-or-directory>``.
+- It exits 0 on success, 1 on broken links found.
+- Repository layout: ``src/``, ``bin/``, ``tests/``, ``package.json``.
+
+## Success criteria
+- README includes: project description, installation, usage, example output,
+  contributing section, and license.
+- All shell commands include both macOS/Linux and Windows PowerShell variants.
+- Tone is direct and technical — no emoji, no marketing language.
+
+## Boundaries
+- Do not generate the actual source code for ``lintr``.
+- Do not add a changelog — the project does not have releases yet.
+"@ | Set-Content -Path cowork-session-brief.md -Encoding utf8
+```
+
+### Step 3 — Review your brief against the checklist
+
+Read your brief back and check each item:
+
+| Checklist item | Present? |
+|---|---|
+| Goal is a single concrete deliverable (not "help me with stuff") | ✅ or ❌ |
+| Context includes technology, file layout, or domain knowledge Claude needs | ✅ or ❌ |
+| Success criteria are specific enough that you could grade the output | ✅ or ❌ |
+| Boundaries tell Claude what NOT to do | ✅ or ❌ |
+
+If any item is missing, edit the file now. A brief with all four sections is far more likely to produce a useful first draft.
+
+### Step 4 — Verify the file exists and looks right
+
+**macOS / Linux:**
+
+```bash
+cat cowork-session-brief.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content cowork-session-brief.md
+```
+
+You should see your four sections printed cleanly in the terminal. This is the file you will hand to Claude at the start of your Cowork session in the next lesson.
+
+### Step 5 — Adapt the template for your own tasks
+
+The brief above is for a README. Here are examples of how the same four-section structure works for completely different tasks:
+
+**Brief for a code review session:**
+- Goal: Review `api/routes.ts` for security issues and suggest fixes.
+- Context: The file uses Express.js with JWT auth. Share the file contents.
+- Success criteria: Every finding includes the line number, the risk, and a fix.
+- Boundaries: Do not refactor for style — only flag security problems.
+
+**Brief for a document editing session:**
+- Goal: Rewrite the "Getting Started" section of our docs to target beginners.
+- Context: Current version is at `docs/getting-started.md`. Audience is first-time users who have never used a terminal.
+- Success criteria: No jargon without an explanation. Every step is testable.
+- Boundaries: Do not change the rest of the documentation.
+
+Save a blank version of the template for future use:
+
+**macOS / Linux:**
+
+```bash
+cat > cowork-brief-template.md << 'EOF'
+# Cowork Session Brief
+
+## Goal
+[One sentence: what is the deliverable?]
+
+## Context
+[What does Claude need to know? List files, tech stack, audience, constraints.]
+
+## Success criteria
+[How will you judge the output? Be specific.]
+
+## Boundaries
+[What should Claude NOT do?]
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@"
+# Cowork Session Brief
+
+## Goal
+[One sentence: what is the deliverable?]
+
+## Context
+[What does Claude need to know? List files, tech stack, audience, constraints.]
+
+## Success criteria
+[How will you judge the output? Be specific.]
+
+## Boundaries
+[What should Claude NOT do?]
+"@ | Set-Content -Path cowork-brief-template.md -Encoding utf8
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude delivers something completely off-topic | The Goal section was vague or missing | Rewrite the Goal as a single concrete deliverable: "Write a README" not "help me with my project" |
+| Output is technically correct but wrong tone or audience | Context did not mention the target audience or style | Add audience and tone to the Context section: "Audience: junior developers. Tone: direct, no jargon." |
+| Claude includes things you explicitly did not want | No Boundaries section in the brief | Add a Boundaries section listing what to exclude |
+| You cannot tell whether the output is good or bad | Success criteria were too vague ("make it good") | Rewrite criteria so a stranger could grade the output: "Includes install, usage, and contributing sections" |
+| Brief file has encoding issues or garbled characters on Windows | File was saved with BOM or wrong encoding | Use `-Encoding utf8` in PowerShell's `Set-Content` to ensure clean UTF-8 |
+
+<VerificationBlock
+  deliverable="A `cowork-session-brief.md` file with Goal, Context, Success criteria, and Boundaries sections filled in for a real task."
+  verifyCheck="Brief contains all four sections and each section has at least one specific, actionable statement."
+/>

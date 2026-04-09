@@ -1,0 +1,225 @@
+---
+title: "Create a contribution guide or onboarding doc"
+lessonNumber: "9.1.2"
+chapterNumber: "9.1"
+pathNumber: "9"
+tutorPreload: "Help me write a CONTRIBUTING.md that covers environment setup, PR workflow, and coding standards based on my actual project."
+verifyType: "terminal_output"
+---
+
+# Create a contribution guide or onboarding doc
+
+## Objective
+
+By the end of this lesson you will use Claude Code to generate a `CONTRIBUTING.md` for a real project that covers environment setup, pull request process, and coding standards — all verified against the actual project structure and tooling.
+
+## Walkthrough
+
+### Step 1 — Prepare a project with real tooling to describe
+
+You need a project that has enough structure for a meaningful contribution guide. Reuse the `readme-lab` project from lesson 9.1.1, or create a fresh one.
+
+**macOS / Linux:**
+
+```bash
+mkdir contrib-lab && cd contrib-lab
+git init
+
+cat > app.py << 'EOF'
+"""Bookmark manager — save and list URLs."""
+import json, os
+
+DB = "bookmarks.json"
+
+def load():
+    if os.path.exists(DB):
+        with open(DB) as f:
+            return json.load(f)
+    return []
+
+def save(data):
+    with open(DB, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add(url, tag="general"):
+    bm = load()
+    bm.append({"url": url, "tag": tag})
+    save(bm)
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) >= 2:
+        add(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "general")
+    else:
+        for b in load():
+            print(f"  [{b['tag']}] {b['url']}")
+EOF
+
+echo "bookmarks.json" > .gitignore
+
+mkdir tests
+cat > tests/test_app.py << 'EOF'
+import app, os, json
+
+def test_add_and_load():
+    app.DB = "test_bookmarks.json"
+    app.add("https://example.com", "test")
+    data = app.load()
+    assert len(data) == 1
+    assert data[0]["url"] == "https://example.com"
+    os.remove("test_bookmarks.json")
+EOF
+
+git add -A
+git commit -m "Initial bookmark manager with tests"
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir contrib-lab; cd contrib-lab
+git init
+
+@"
+"""Bookmark manager — save and list URLs."""
+import json, os
+
+DB = "bookmarks.json"
+
+def load():
+    if os.path.exists(DB):
+        with open(DB) as f:
+            return json.load(f)
+    return []
+
+def save(data):
+    with open(DB, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add(url, tag="general"):
+    bm = load()
+    bm.append({"url": url, "tag": tag})
+    save(bm)
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) >= 2:
+        add(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "general")
+    else:
+        for b in load():
+            print(f"  [{b['tag']}] {b['url']}")
+"@ | Out-File -Encoding utf8 app.py
+
+"bookmarks.json" | Out-File -Encoding utf8 .gitignore
+
+mkdir tests
+@"
+import app, os, json
+
+def test_add_and_load():
+    app.DB = "test_bookmarks.json"
+    app.add("https://example.com", "test")
+    data = app.load()
+    assert len(data) == 1
+    assert data[0]["url"] == "https://example.com"
+    os.remove("test_bookmarks.json")
+"@ | Out-File -Encoding utf8 tests/test_app.py
+
+git add -A
+git commit -m "Initial bookmark manager with tests"
+```
+
+### Step 2 — Ask Claude to draft a CONTRIBUTING.md from the real project
+
+Open Claude Code in the `contrib-lab` directory and use this prompt:
+
+```
+Read all files in this project. Write a CONTRIBUTING.md that includes:
+1. Prerequisites (Python version, any tools)
+2. Environment setup (clone, install, run)
+3. How to run tests
+4. Pull request process (branch naming, commit messages, review)
+5. Coding standards (file naming, import style, docstrings)
+
+Base every instruction on what actually exists in this repo — do not invent tools or workflows that are not present.
+```
+
+Claude reads `app.py`, `tests/test_app.py`, and `.gitignore`, then produces a draft.
+
+### Step 3 — Walk through the setup steps yourself
+
+The most common error in contribution guides is setup instructions that do not work. Follow every step Claude wrote as if you were a new contributor.
+
+**macOS / Linux:**
+
+```bash
+# Does the test command Claude listed actually work?
+python -m pytest tests/
+```
+
+**Windows PowerShell:**
+
+```powershell
+# Does the test command Claude listed actually work?
+python -m pytest tests/
+```
+
+If Claude wrote `pip install -r requirements.txt` but no `requirements.txt` exists (this project has no external dependencies), that instruction is wrong. Tell Claude:
+
+```
+There is no requirements.txt in this project. Remove the pip install step
+and note that the project uses only Python standard library modules.
+```
+
+### Step 4 — Verify the PR workflow section
+
+Check that the branching and commit message conventions Claude described are realistic for a solo or small-team project. Common mistakes:
+
+- Describing a CI pipeline that does not exist
+- Referencing a linter config that is not in the repo
+- Naming a default branch `main` when `git branch` shows it is `master`
+
+Verify:
+
+```bash
+git branch
+```
+
+If the output shows `master` but CONTRIBUTING.md says `main`, ask Claude to correct it.
+
+### Step 5 — Check the coding standards section against real code
+
+Open `app.py` and compare what Claude wrote about coding standards to what the code actually does.
+
+```bash
+head -20 app.py
+```
+
+If Claude says "all functions must have docstrings" but `add()` and `load()` have none, either:
+- Ask Claude to soften the standard to match reality, or
+- Add the docstrings first, then keep the standard
+
+Pick whichever is honest. The contribution guide must not describe a codebase that does not exist.
+
+### Step 6 — Commit the verified CONTRIBUTING.md
+
+```bash
+git add CONTRIBUTING.md
+git diff --staged
+git commit -m "Add CONTRIBUTING.md generated with Claude"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Setup instructions fail for a new clone | Claude assumed dependencies or config files that do not exist | Follow every step on a clean directory and feed errors back to Claude |
+| PR section references CI checks that are not configured | Claude added generic GitHub Actions advice | Remove CI references or tell Claude to mark them as "planned, not yet configured" |
+| Coding standards contradict actual code | Claude described best practices instead of your real conventions | Point Claude at specific files and ask it to describe what is there, not what should be |
+| Test command fails | Claude guessed the test runner or path | Run the test command, share the error output, and ask Claude to correct |
+| Default branch name is wrong | Claude assumed `main` but repo uses `master` or vice versa | Run `git branch` and share the output with Claude |
+
+<VerificationBlock
+  deliverable="A CONTRIBUTING.md whose setup steps, test command, and PR workflow all work when followed literally."
+  verifyCheck="A new contributor can clone the repo, follow CONTRIBUTING.md, run tests, and open a PR without asking questions."
+/>

@@ -1,0 +1,278 @@
+---
+title: "Mini project: research, extract, and document"
+lessonNumber: "9.3.3"
+chapterNumber: "9.3"
+pathNumber: "9"
+tutorPreload: "Walk me through the full pipeline — research a topic, extract key data, produce a formatted document, review for accuracy, and commit."
+verifyType: "terminal_output"
+---
+
+# Mini project: research, extract, and document
+
+## Objective
+
+By the end of this lesson you will complete a full research-to-document pipeline: research a topic with Claude, extract key data into structured formats, produce a polished summary document, verify every claim for accuracy, and commit the entire package to Git.
+
+## Walkthrough
+
+This mini-project ties together everything from Path 09. You will work through five phases: research, extraction, formatting, review, and commit. The topic is **"Static site generators for documentation sites"** — comparing three tools (MkDocs, Docusaurus, and Jekyll).
+
+### Step 1 — Set up the project workspace
+
+**macOS / Linux:**
+
+```bash
+mkdir ssg-research && cd ssg-research
+git init
+mkdir raw output
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir ssg-research; cd ssg-research
+git init
+mkdir raw, output
+```
+
+The `raw` folder will hold research drafts and messy data. The `output` folder will hold cleaned, final deliverables. This separation makes it easy to see what is a draft versus what is finished.
+
+```bash
+git add .
+git commit -m "Initialize research project structure" --allow-empty
+```
+
+### Step 2 — Phase 1: Research with Claude
+
+Open Claude Code in the `ssg-research` directory and run the research prompt:
+
+```
+Research static site generators for documentation sites. Compare MkDocs,
+Docusaurus, and Jekyll. Save a raw research file to raw/research-notes.md
+with these sections:
+
+## MkDocs
+- Language/runtime required
+- Default theme and customization
+- Markdown flavor supported
+- Plugin ecosystem (approximate count)
+- Search built-in? How does it work?
+- Deployment options
+
+## Docusaurus
+(same categories)
+
+## Jekyll
+(same categories)
+
+## Raw comparison notes
+Any other differences worth noting.
+
+For each fact, note your confidence level: HIGH (from official docs),
+MEDIUM (widely known), or LOW (uncertain). Flag LOW-confidence items
+with ⚠️.
+```
+
+Verify the output:
+
+```bash
+cat raw/research-notes.md
+```
+
+Look for `⚠️` markers. If Claude flagged nothing as uncertain, push back:
+
+```
+You marked everything as HIGH confidence. Plugin counts and search
+implementation details are likely to change across versions. Re-assess
+and mark any version-specific claims as MEDIUM.
+```
+
+Commit the raw research:
+
+```bash
+git add raw/research-notes.md
+git commit -m "Add raw research notes on SSGs"
+```
+
+### Step 3 — Phase 2: Extract structured data
+
+Now ask Claude to extract the research into structured formats:
+
+```
+Read raw/research-notes.md and create two files:
+
+1. raw/comparison-table.csv with columns:
+   Feature, MkDocs, Docusaurus, Jekyll
+
+   Rows: Language, Runtime/Install, Default theme, Markdown flavor,
+   Plugin count (approximate), Built-in search, Deployment
+
+2. raw/scores.json with this structure:
+   {
+     "criteria": ["ease_of_setup", "theme_quality", "plugin_ecosystem",
+                   "search_quality", "deployment_simplicity"],
+     "tools": {
+       "mkdocs": {"ease_of_setup": N, "theme_quality": N, ...},
+       "docusaurus": {...},
+       "jekyll": {...}
+     },
+     "scale": "1-5 where 5 is best"
+   }
+
+   Score based on the research notes. Add a brief justification for
+   each score as a sibling field (e.g., "ease_of_setup_reason": "...").
+```
+
+Validate the CSV and JSON:
+
+**macOS / Linux:**
+
+```bash
+cat raw/comparison-table.csv
+python3 -c "import json; d=json.load(open('raw/scores.json')); print(json.dumps(d, indent=2))"
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content raw/comparison-table.csv
+python -c "import json; d=json.load(open('raw/scores.json')); print(json.dumps(d, indent=2))"
+```
+
+If the JSON fails to parse, share the error with Claude. If the CSV has uneven columns, Claude made a formatting mistake — ask it to fix the specific row.
+
+```bash
+git add raw/comparison-table.csv raw/scores.json
+git commit -m "Add extracted comparison table and scores"
+```
+
+### Step 4 — Phase 3: Produce the final document
+
+```
+Read raw/research-notes.md, raw/comparison-table.csv, and raw/scores.json.
+Produce output/ssg-decision.md with this structure:
+
+# Static Site Generator Decision: Documentation Sites
+
+## Executive summary (3-4 sentences)
+## Comparison table (formatted Markdown table from the CSV)
+## Detailed analysis
+  ### MkDocs
+  ### Docusaurus
+  ### Jekyll
+## Scoring summary (formatted from scores.json, show totals)
+## Recommendation (pick one, explain why in 3-4 sentences)
+## Caveats and review notes
+  - List every LOW/MEDIUM confidence item from the research
+  - Note the date this research was done
+  - Note that plugin counts and features change across versions
+```
+
+Review the output:
+
+```bash
+cat output/ssg-decision.md
+```
+
+### Step 5 — Phase 4: Review for accuracy
+
+This is the most important step. Go through the final document and cross-check every claim back to the raw research.
+
+Check the comparison table:
+
+**macOS / Linux:**
+
+```bash
+# Compare the CSV source to the rendered table in the final doc
+diff <(head -3 raw/comparison-table.csv) <(grep -A 3 "Feature" output/ssg-decision.md)
+```
+
+**Windows PowerShell:**
+
+```powershell
+# Look at both side by side
+Get-Content raw/comparison-table.csv | Select-Object -First 3
+Select-String -Pattern "Feature|MkDocs|Language" output/ssg-decision.md
+```
+
+Check the scoring math — Claude should show totals for each tool. Verify at least one total manually. For example, if MkDocs scores are 4, 4, 3, 4, 5, the total should be 20.
+
+Check that the Caveats section actually lists every `⚠️` item from the raw research:
+
+**macOS / Linux:**
+
+```bash
+grep "⚠️" raw/research-notes.md | wc -l
+grep -c "uncertain\|approximate\|may change\|varies" output/ssg-decision.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+(Select-String -Pattern "⚠️" raw/research-notes.md).Count
+(Select-String -Pattern "uncertain|approximate|may change|varies" output/ssg-decision.md).Count
+```
+
+The final document should have at least as many caveats as the raw research had `⚠️` markers. If items were dropped, tell Claude:
+
+```
+The raw research had N items marked ⚠️ but the Caveats section only
+mentions M. Add the missing caveats.
+```
+
+### Step 6 — Phase 5: Final commit and review the full package
+
+```bash
+git add output/ssg-decision.md
+git commit -m "Add final SSG decision document"
+```
+
+Review the full project at a glance:
+
+**macOS / Linux:**
+
+```bash
+find . -type f -not -path './.git/*' | sort
+git log --oneline
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch '\.git' } | Select-Object FullName
+git log --oneline
+```
+
+You should see a clean structure:
+
+```
+raw/research-notes.md       ← raw research with confidence markers
+raw/comparison-table.csv    ← extracted structured data
+raw/scores.json             ← extracted scores with justifications
+output/ssg-decision.md      ← polished final document
+```
+
+And a commit history that shows each phase:
+
+```
+4a5b6c7 Add final SSG decision document
+3d4e5f6 Add extracted comparison table and scores
+2a3b4c5 Add raw research notes on SSGs
+1f2g3h4 Initialize research project structure
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| JSON scores file fails to parse | Trailing commas or missing quotes in Claude's JSON | Share the parse error with Claude and ask it to fix the syntax |
+| Scoring totals in the final document are wrong | Claude added the scores incorrectly | Ask Claude to show the addition step by step and correct the total |
+| Final document drops caveats from the raw research | Claude summarized away the uncertainty markers | Count `⚠️` in raw and compare to caveats in the final doc, ask Claude to restore missing ones |
+| Comparison table in the final doc does not match the CSV | Claude rewrote data instead of formatting the CSV | Tell Claude to use the CSV as the single source of truth for the table |
+| Recommendation contradicts the scores | Claude's narrative preference overrode its own scoring | Ask Claude: "The scores say X wins but you recommended Y — resolve this contradiction" |
+| Research contains outdated version-specific claims | Claude's training data has a cutoff | Add a datestamp to the Caveats section and note that version-specific details should be reverified |
+
+<VerificationBlock
+  deliverable="A complete research package with raw notes, extracted CSV and JSON, a polished decision document, and a Git history showing each phase."
+  verifyCheck="The JSON parses, scoring totals are correct, every caveat from the raw research appears in the final doc, and git log shows at least 4 commits."
+/>

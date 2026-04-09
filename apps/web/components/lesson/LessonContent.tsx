@@ -233,7 +233,7 @@ export async function LessonContent({ pathSlug, lessonSlug }: LessonContentProps
     .filter(Boolean);
 
   return (
-    <article className="lesson-prose">
+    <article className="lesson-prose" data-lesson-body>
       {lesson.description ? <p>{lesson.description}</p> : null}
       {blocks.map((block, index) => renderBlock(block, index))}
     </article>

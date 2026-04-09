@@ -11,34 +11,77 @@ verifyType: "terminal_output"
 
 ## Objective
 
-Our goal in this lesson is to confidently install a new command-line tool called `Claude Code` and then safely verify that it's working correctly and that we know which version we have. A solid installation is the foundation for a smooth learning experience, and knowing your version helps tremendously with troubleshooting!
+Install Claude Code from npm, authenticate with your Anthropic account, and confirm the tool is ready to use by checking its version. When you finish you will have a working `claude` command available from any terminal window.
 
 ## Walkthrough
 
-Let's get `Claude Code` installed and ready to go. We'll prioritize safety and understanding every step of the way.
+### Step 1 — Check your Node.js version
 
-1.  **Install Claude Code:**
-    To get `Claude Code` on your system, we'll use a common package manager. For many CLI tools, `npm` (Node Package Manager) is used, especially if the tool is built with JavaScript. Don't worry if you don't have `npm` yet; the AI Tutor will guide you through getting it setup for your operating system first. Once `npm` is ready, you'll typically use a command like this:
+Claude Code requires Node.js 18 or newer. Open a terminal and run:
 
-    ```bash
-    npm install -g claude-code
-    ```
+**macOS / Linux**
+```bash
+node --version
+```
 
-    *Why is this command safe?* `npm` is a widely trusted package manager that handles downloading and placing software in designated system locations. The `-g` flag means "global," making the `claude-code` command available from any directory in your terminal. It's designed to manage software installations reliably without interfering with other parts of your system.
+**Windows PowerShell**
+```powershell
+node --version
+```
 
-2.  **Verify the Installation:**
-    Once the installation finishes, it's crucial to confirm everything is in place *before* trying to use `Claude Code` for anything complex. We'll ask `Claude Code` directly for its version:
+You need `v18.0.0` or higher. If the command is not found or the version is too old, install Node.js from [nodejs.org](https://nodejs.org) (choose the LTS installer) and reopen your terminal before continuing.
 
-    ```bash
-    claude-code --version
-    ```
+### Step 2 — Install Claude Code globally
 
-    *Why is this command safe?* This command simply asks the newly installed `claude-code` program to report its version number. It doesn't modify any files, delete anything, or send information outside your computer. It's a read-only operation designed specifically for verification.
+**macOS / Linux**
+```bash
+npm install -g @anthropic-ai/claude-code
+```
 
-3.  **Capture Your Version:**
-    Take note of the version number displayed in your terminal after running `claude-code --version`. Copy this exact output into your personal notes. This is a vital piece of information that helps confirm your setup and can be very useful if you ever need to look up documentation or troubleshoot.
+**Windows PowerShell (run as Administrator)**
+```powershell
+npm install -g @anthropic-ai/claude-code
+```
 
-<VerificationBlock 
-  deliverable="A verified Claude Code install with version captured in notes."
-  verifyCheck="Version command succeeds and learner uploads install notes."
+> **Why Administrator on Windows?** Global npm installs write to a system-level folder. Without elevated permissions the install fails with an `EPERM` error. On macOS / Linux you may need to prefix the command with `sudo` if you see a similar permissions error.
+
+Wait for the install to finish. You will see a summary line like `added X packages`.
+
+### Step 3 — Verify the installation
+
+Close your terminal completely and open a fresh one so your shell picks up the new PATH entry. Then run:
+
+**macOS / Linux**
+```bash
+claude --version
+```
+
+**Windows PowerShell**
+```powershell
+claude --version
+```
+
+You should see a version string such as `1.0.16` (your number may differ). If you see it, the binary is installed correctly.
+
+### Step 4 — Authenticate with your Anthropic account
+
+```bash
+claude auth login
+```
+
+This opens a browser window where you sign in to your Anthropic account and authorize the CLI. After you approve, the terminal prints a success message. If no browser opens, copy the URL shown in the terminal and paste it into any browser on the same machine.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `npm: command not found` | Node.js is not installed or not on PATH | Install Node.js LTS from nodejs.org and restart your terminal |
+| `EACCES` or `EPERM` during install | Missing write permissions to the global npm folder | macOS/Linux: re-run with `sudo`. Windows: reopen PowerShell as Administrator |
+| `claude: command not found` after install | Shell PATH has not refreshed | Close the terminal completely and open a new one |
+| `claude --version` works but `auth login` shows a network error | Corporate proxy or firewall blocking HTTPS | Set the `HTTPS_PROXY` environment variable to your proxy URL and retry |
+| Browser does not open during `auth login` | Headless server, WSL, or SSH session without a GUI | Copy the URL from the terminal and open it in any browser on the same machine |
+
+<VerificationBlock
+  deliverable="claude --version prints a version number and authentication succeeds."
+  verifyCheck="Learner runs claude --version and shares output showing a valid version string."
 />

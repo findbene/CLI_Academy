@@ -10,34 +10,147 @@ verifyType: "terminal_output"
 # Create a project skeleton from scratch
 
 ## Objective
-Learn how to create new folders and empty files entirely from the terminal, building a structured project skeleton without ever touching your mouse.
+
+Build a multi-level project folder from the terminal using `mkdir` and verify the result with `tree` or `Get-ChildItem -Recurse`. By the end you will have a real `tiny-agent-project/` with `src/`, `docs/`, and `tests/` subdirectories, plus starter files in the right places.
 
 ## Walkthrough
 
-It's time to become a creator! Instead of right-clicking and selecting "New Folder", you can do it ten times faster using terminal commands.
+### Step 1 — Start from a known location
 
-**Step 1: Make a Directory (Folder)**
-To create a new folder, we use `mkdir`, which stands for **Make Directory**.
-Type: `mkdir tiny-agent-project` and press Enter.
+Make sure you are in your home directory (or in the `cli-academy/projects/` folder if you created one in Path 01).
 
-*Safety tip*: If a folder already exists with that name, the terminal will politely tell you and refuse to overwrite it. It is entirely safe.
+**macOS / Linux**
 
-**Step 2: Step into your new creation**
-Use your moving skills to step into the folder you just made:
-`cd tiny-agent-project`
+```bash
+cd ~
+pwd
+```
 
-**Step 3: Create empty files**
-Now let's create a few empty files to act as our project starter files.
-- On Mac/Linux: Use the `touch` command. Type `touch README.md` and press Enter.
-- On Windows (PowerShell): Use `New-Item README.md` or simply `ni README.md`.
+**Windows PowerShell**
 
-Try creating two more files inside this folder: `app.py` and `notes.txt`.
+```powershell
+cd ~
+Get-Location
+```
 
-**Your Task:**
-Create the `tiny-agent-project/` folder in your workspace. Step into it. Then create three files inside it: `README.md`, `app.py`, and `notes.txt`. 
-Finally, run `ls` (or `dir`) inside that folder, copy the output, and paste it here for your tutor to verify!
+### Step 2 — Create nested folders in one command
 
-<VerificationBlock 
-  deliverable="A `tiny-agent-project/` with subfolders and starter files."
-  verifyCheck="Folder tree matches checker and files contain expected starter text."
+You need `tiny-agent-project/` with three subdirectories: `src`, `docs`, and `tests`. Instead of creating each one separately, use a single command.
+
+**macOS / Linux**
+
+```bash
+mkdir -p tiny-agent-project/src tiny-agent-project/docs tiny-agent-project/tests
+```
+
+The `-p` flag creates parent directories as needed and does not complain if a folder already exists.
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Path tiny-agent-project\src, tiny-agent-project\docs, tiny-agent-project\tests -Force
+```
+
+`-Force` is the PowerShell equivalent of `-p` — it creates the parent and silently skips existing folders.
+
+### Step 3 — Add starter files
+
+Move into the project and create a few files that make it feel like a real project.
+
+**macOS / Linux**
+
+```bash
+cd tiny-agent-project
+echo "# Tiny Agent Project" > README.md
+echo "# To-do" > docs/plan.md
+echo "print('hello world')" > src/main.py
+echo "# Tests go here" > tests/test_main.py
+```
+
+**Windows PowerShell**
+
+```powershell
+cd tiny-agent-project
+Set-Content README.md "# Tiny Agent Project"
+Set-Content docs\plan.md "# To-do"
+Set-Content src\main.py "print('hello world')"
+Set-Content tests\test_main.py "# Tests go here"
+```
+
+`Set-Content` writes text to a file and creates the file if it does not exist. On macOS/Linux, `echo "text" > file` does the same thing.
+
+### Step 4 — Verify the full tree
+
+Now see everything you built in one view.
+
+**macOS / Linux**
+
+```bash
+tree .
+```
+
+If `tree` is not installed, use `find . -type f` instead.
+
+Expected output:
+
+```
+.
+├── README.md
+├── docs
+│   └── plan.md
+├── src
+│   └── main.py
+└── tests
+    └── test_main.py
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Name
+```
+
+Expected output:
+
+```
+docs
+src
+tests
+README.md
+docs\plan.md
+src\main.py
+tests\test_main.py
+```
+
+### Step 5 — Confirm file contents
+
+Spot-check one of the files to make sure the content was written correctly.
+
+**macOS / Linux**
+
+```bash
+cat src/main.py
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content src\main.py
+```
+
+You should see `print('hello world')`.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `mkdir: cannot create directory: File exists` | The folder already exists from a previous attempt | Safe to ignore — `mkdir -p` (macOS/Linux) and `-Force` (Windows) handle this silently |
+| `tree: command not found` | `tree` is not installed on your system | Use `find . -type f` (macOS/Linux) or `Get-ChildItem -Recurse -Name` (Windows) instead |
+| Files end up in the wrong folder | You forgot to `cd tiny-agent-project` before creating files | Check with `pwd` / `Get-Location`, then move the files with `mv` or `Move-Item` |
+| PowerShell `Set-Content` creates a file with BOM encoding | Default PowerShell behavior on older versions | Add `-Encoding utf8` to the command: `Set-Content README.md "# Tiny Agent Project" -Encoding utf8` |
+| `echo` creates a file named `"#` on macOS | Quotes were mangled by copy-paste | Re-type the command manually, making sure the double quotes wrap the entire string |
+
+<VerificationBlock
+  deliverable="A tiny-agent-project/ folder containing src/main.py, docs/plan.md, tests/test_main.py, and README.md — all created from the terminal."
+  verifyCheck="Run tree . (macOS/Linux) or Get-ChildItem -Recurse -Name (Windows) inside tiny-agent-project and confirm all four files and three subdirectories appear."
 />

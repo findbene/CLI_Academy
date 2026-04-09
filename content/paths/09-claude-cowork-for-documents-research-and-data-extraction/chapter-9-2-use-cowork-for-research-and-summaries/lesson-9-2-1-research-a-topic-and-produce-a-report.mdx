@@ -1,0 +1,147 @@
+---
+title: "Research a topic and produce a report"
+lessonNumber: "9.2.1"
+chapterNumber: "9.2"
+pathNumber: "9"
+tutorPreload: "Help me research a technical topic thoroughly, iterate on depth, and produce a Markdown report I can trust."
+verifyType: "terminal_output"
+---
+
+# Research a topic and produce a report
+
+## Objective
+
+By the end of this lesson you will ask Claude Code to research a technical topic — "Compare SQLite vs PostgreSQL for small projects" — iterate on the depth and accuracy of its answer, and produce a structured Markdown report that you have cross-checked against known facts.
+
+## Walkthrough
+
+### Step 1 — Create a workspace for the research output
+
+**macOS / Linux:**
+
+```bash
+mkdir db-research && cd db-research
+git init
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir db-research; cd db-research
+git init
+```
+
+Having a Git repo lets you track each iteration of the report. You will commit drafts as you refine them.
+
+### Step 2 — Ask Claude for a first draft with a structured prompt
+
+Open Claude Code in the `db-research` directory and use a prompt that defines the output format upfront:
+
+```
+Write a Markdown report comparing SQLite and PostgreSQL for small projects
+(under 10,000 users). Structure it as:
+
+# SQLite vs PostgreSQL for Small Projects
+
+## Summary (3-4 sentences)
+## Comparison Table (columns: Feature, SQLite, PostgreSQL)
+  Include: setup complexity, concurrent writes, max practical DB size,
+  hosting requirements, backup method, and licensing.
+## When to choose SQLite
+## When to choose PostgreSQL
+## Sources and caveats
+
+For every factual claim, note whether it comes from official docs or your
+general training knowledge. Flag anything you are not sure about.
+```
+
+Claude will produce the report and save it as a file (e.g., `report.md`). If it prints to the chat instead, ask:
+
+```
+Save that report as report.md in the current directory.
+```
+
+### Step 3 — Verify the comparison table row by row
+
+Open the report and check each claim in the comparison table.
+
+```bash
+cat report.md
+```
+
+Look for these common errors:
+
+- **Concurrent writes:** SQLite uses a single-writer lock. If Claude says SQLite supports "multiple concurrent writers," that is wrong.
+- **Max DB size:** SQLite supports up to 281 TB in theory but practical limits are much lower. PostgreSQL has no hard limit. If Claude cites a specific number for PostgreSQL, verify it.
+- **Licensing:** SQLite is public domain. PostgreSQL uses a permissive license similar to MIT/BSD. If Claude says "GPL," that is wrong.
+
+For each error you find, give Claude a correction prompt:
+
+```
+In the comparison table, the "concurrent writes" row says SQLite supports
+multiple writers. That is incorrect — SQLite has a single-writer lock (WAL
+mode allows concurrent reads but only one writer at a time). Fix this and
+add a note citing the SQLite documentation.
+```
+
+### Step 4 — Ask Claude to deepen a weak section
+
+If the "When to choose SQLite" section is vague (e.g., "for small apps"), push for specifics:
+
+```
+The "When to choose SQLite" section is too vague. Add concrete criteria:
+- Estimated read/write ratio
+- Whether the app is single-server or distributed
+- Whether the data needs to be embedded in the application binary
+Give a real-world example for each criterion.
+```
+
+After Claude updates the file:
+
+```bash
+cat report.md
+```
+
+Confirm the new content adds substance rather than filler.
+
+### Step 5 — Check the Sources and Caveats section
+
+This is the most important section for a research report. Claude should clearly separate:
+
+1. Claims based on official documentation (e.g., sqlite.org, postgresql.org)
+2. Claims based on general training knowledge
+3. Claims it is uncertain about
+
+If the Sources section is missing or just says "Based on general knowledge," ask:
+
+```
+Add specific documentation links where possible:
+- sqlite.org/whentouse.html for use-case guidance
+- postgresql.org/docs/current/limits.html for PostgreSQL limits
+Mark any claim you cannot tie to a specific source as "unverified — confirm before relying on this."
+```
+
+### Step 6 — Commit the final report
+
+```bash
+git add report.md
+git diff --staged
+git commit -m "Add SQLite vs PostgreSQL research report"
+```
+
+Read `git diff --staged` to see the complete report one more time before committing.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude invents statistics (e.g., "PostgreSQL handles 50,000 transactions/sec") | LLMs generate plausible-sounding numbers | Ask Claude to remove any number it cannot tie to a specific source, or mark it as "approximate, unverified" |
+| The report reads like marketing copy for one option | Claude picked up bias from its training data | Ask Claude to add a "Drawbacks" subsection for whichever option it is favoring |
+| Sources section is empty or says "general knowledge" | Claude did not distinguish sourced vs unsourced claims | Ask Claude to add explicit source annotations and flag uncertain claims |
+| The report is too shallow (bullet lists with no explanation) | The initial prompt was not specific enough about depth | Re-prompt with "Expand each bullet into a 2-3 sentence paragraph with a concrete example" |
+| Outdated information (e.g., referencing PostgreSQL 12 features) | Claude's training data has a cutoff date | Ask Claude to flag version-specific claims and note its knowledge cutoff |
+
+<VerificationBlock
+  deliverable="A Markdown report with a comparison table, use-case guidance, and a sources section that distinguishes verified from unverified claims."
+  verifyCheck="Every row in the comparison table has been cross-checked and the sources section flags uncertain claims."
+/>

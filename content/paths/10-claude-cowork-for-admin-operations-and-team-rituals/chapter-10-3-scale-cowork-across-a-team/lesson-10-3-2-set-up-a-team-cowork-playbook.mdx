@@ -1,0 +1,229 @@
+---
+title: "Set up a team Cowork playbook"
+lessonNumber: "10.3.2"
+chapterNumber: "10.3"
+pathNumber: "10"
+tutorPreload: "Help me write a playbook that tells my team when and how to use Cowork effectively."
+verifyType: "terminal_output"
+---
+
+# Set up a team Cowork playbook
+
+## Objective
+
+By the end of this lesson you will have a team Cowork playbook — a single markdown document that defines when to use Claude Cowork, which session templates to start with, how to review outputs, and what conventions to follow. This playbook lives in your repo and becomes the team's shared reference for AI-assisted workflows.
+
+## Walkthrough
+
+### Step 1 — Create the playbook file
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/my-project/docs
+cd ~/my-project/docs
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\my-project\docs"
+Set-Location "$HOME\my-project\docs"
+```
+
+### Step 2 — Write the playbook structure by hand
+
+Start with the sections that only a human can define: when to use Cowork, and when not to.
+
+**macOS / Linux**
+
+```bash
+cat > cowork-playbook.md << 'EOF'
+# Team Cowork Playbook
+
+## When to use Cowork
+Use Claude Cowork for tasks where AI speeds up the work without creating risk:
+- Drafting documentation from existing source files
+- Generating standup summaries and status reports from git history
+- Reviewing code diffs for common issues
+- Extracting structured data from messy text files
+- Creating first drafts of runbooks, SOPs, or knowledge base articles
+
+## When NOT to use Cowork
+Do not use Claude Cowork for:
+- Decisions that affect production infrastructure (deployments, database changes)
+- Customer-facing communications without human review
+- Security-sensitive operations (credential rotation, access control changes)
+- Legal or compliance documents without legal review
+- Anything where a wrong output could cause financial or reputational damage
+
+**Rule: Cowork drafts. Humans approve.**
+
+## Session templates
+Start every Cowork session with a brief from the prompt library (`prompts/` directory):
+1. Copy the relevant session brief.
+2. Paste it as your first message to Claude.
+3. Follow the output instructions in the brief.
+
+See `prompts/README.md` for the full list.
+
+## Output review checklist
+Before using any Cowork output:
+- [ ] Every factual claim traces to a source file or command output
+- [ ] No hallucinated names, dates, or statistics
+- [ ] Output format matches what was requested
+- [ ] No sensitive data (API keys, passwords, internal URLs) appears in the output
+- [ ] A human has read the full output, not just skimmed it
+
+## Shared conventions
+- Save all prompts to `prompts/` and commit them.
+- Save generated reports to a dated file (e.g., `report-2025-04-09.md`).
+- Always include a "Last verified" date on generated docs.
+- Use conventional commit messages: `docs:`, `chore:`, etc.
+- If you improve a prompt, update the shared version — do not keep a private fork.
+
+## Feedback loop
+When Cowork produces a bad output:
+1. Note what went wrong (hallucination, wrong format, missed context).
+2. Update the prompt to prevent it next time.
+3. Commit the improved prompt with a message explaining the fix.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Team Cowork Playbook
+
+## When to use Cowork
+Use Claude Cowork for tasks where AI speeds up the work without creating risk:
+- Drafting documentation from existing source files
+- Generating standup summaries and status reports from git history
+- Reviewing code diffs for common issues
+- Extracting structured data from messy text files
+- Creating first drafts of runbooks, SOPs, or knowledge base articles
+
+## When NOT to use Cowork
+Do not use Claude Cowork for:
+- Decisions that affect production infrastructure (deployments, database changes)
+- Customer-facing communications without human review
+- Security-sensitive operations (credential rotation, access control changes)
+- Legal or compliance documents without legal review
+- Anything where a wrong output could cause financial or reputational damage
+
+**Rule: Cowork drafts. Humans approve.**
+
+## Session templates
+Start every Cowork session with a brief from the prompt library (prompts/ directory):
+1. Copy the relevant session brief.
+2. Paste it as your first message to Claude.
+3. Follow the output instructions in the brief.
+
+See prompts/README.md for the full list.
+
+## Output review checklist
+Before using any Cowork output:
+- [ ] Every factual claim traces to a source file or command output
+- [ ] No hallucinated names, dates, or statistics
+- [ ] Output format matches what was requested
+- [ ] No sensitive data (API keys, passwords, internal URLs) appears in the output
+- [ ] A human has read the full output, not just skimmed it
+
+## Shared conventions
+- Save all prompts to prompts/ and commit them.
+- Save generated reports to a dated file (e.g., report-2025-04-09.md).
+- Always include a "Last verified" date on generated docs.
+- Use conventional commit messages: docs:, chore:, etc.
+- If you improve a prompt, update the shared version - do not keep a private fork.
+
+## Feedback loop
+When Cowork produces a bad output:
+1. Note what went wrong (hallucination, wrong format, missed context).
+2. Update the prompt to prevent it next time.
+3. Commit the improved prompt with a message explaining the fix.
+"@ | Out-File "cowork-playbook.md"
+```
+
+### Step 3 — Ask Claude to review and extend the playbook
+
+Open Claude Code in the docs directory:
+
+```
+Read cowork-playbook.md. Review it and:
+1. Add a "Quick Start" section at the top with 3 steps for someone who has never used Cowork.
+2. Add an "Escalation" section: what to do if Cowork output is wrong and you already shared it.
+3. Check for contradictions or gaps.
+4. Keep the tone practical — no marketing language.
+Save the updated version to the same file.
+```
+
+### Step 4 — Validate the playbook against your actual workflow
+
+Read the final playbook and answer these questions:
+
+1. Does the "When to use" list match tasks your team actually does with Claude?
+2. Does the "When NOT to use" list cover your real risk areas?
+3. Does the review checklist catch the mistakes you have actually seen Claude make?
+4. Can a new team member follow the Quick Start section?
+
+If any answer is "no", update the playbook now.
+
+**macOS / Linux**
+
+```bash
+# Verify the file exists and has content
+wc -l ~/my-project/docs/cowork-playbook.md
+head -30 ~/my-project/docs/cowork-playbook.md
+```
+
+**Windows PowerShell**
+
+```powershell
+# Verify the file exists and has content
+(Get-Content "$HOME\my-project\docs\cowork-playbook.md").Count
+Get-Content "$HOME\my-project\docs\cowork-playbook.md" | Select-Object -First 30
+```
+
+### Step 5 — Commit and share the playbook
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project
+git add docs/cowork-playbook.md
+git commit -m "docs: add team Cowork playbook with review checklist and conventions"
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"
+git add docs/cowork-playbook.md
+git commit -m "docs: add team Cowork playbook with review checklist and conventions"
+```
+
+Link to the playbook from your project's main README so new team members find it:
+
+```markdown
+## Team Conventions
+- [Cowork Playbook](docs/cowork-playbook.md) — when and how to use Claude Cowork
+- [Prompt Library](prompts/README.md) — reusable session briefs
+```
+
+> **Real danger:** A playbook that lives in a docs folder but never gets referenced is invisible. The playbook only works if it is linked from places people actually look — the README, the onboarding doc, or the team wiki.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Team ignores the playbook | It is buried in a folder nobody checks | Link it from the project README and mention it during onboarding |
+| Playbook is too long and nobody reads it | Too much detail for a reference doc | Keep it under 100 lines; move detailed guides to separate files |
+| "When NOT to use" section is incomplete | You did not think of all risky use cases | Review past Cowork failures and add each category to the list |
+| Review checklist feels like busywork | Checklist items are too generic | Replace generic items with specific checks tied to your team's actual mistakes |
+| Conventions section contradicts existing team practices | Playbook was written without checking current workflows | Review with the team before merging; resolve conflicts in the PR |
+
+<VerificationBlock
+  deliverable="A cowork-playbook.md in docs/ with When to use, When NOT to use, Review checklist, and Conventions sections — linked from the project README."
+  verifyCheck="The playbook covers your team's real Cowork use cases, the review checklist catches known failure modes, and the file is reachable from the project README."
+/>

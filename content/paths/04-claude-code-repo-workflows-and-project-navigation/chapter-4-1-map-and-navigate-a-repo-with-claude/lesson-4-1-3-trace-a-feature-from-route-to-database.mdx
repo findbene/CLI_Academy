@@ -1,0 +1,122 @@
+---
+title: "Trace a feature from route to database"
+lessonNumber: "4.1.3"
+chapterNumber: "4.1"
+pathNumber: "4"
+tutorPreload: "Walk me through how one feature flows from the route handler to the data layer."
+verifyType: "terminal_output"
+---
+
+# Trace a feature from route to database
+
+## Objective
+
+Use Claude Code to trace how a single feature works end-to-end — from the incoming HTTP request through the route handler, any middleware or service layers, and down to the data store. By the end you will have a numbered step-by-step trace naming every file and function involved in handling one request.
+
+## Walkthrough
+
+Continue in the same cloned project. If you are using json-server, you will trace how a GET request to `/posts` is handled. If you are using a different project, pick any route that reads data.
+
+### Step 1 — Ask Claude to trace the route
+
+```
+How does a GET request to /posts work in this project? Trace the flow from the incoming HTTP request through every file and function it touches until the response is sent back. Name each file and function in order.
+```
+
+Claude walks through something like:
+1. `src/server/router/index.js` — sets up the Express router
+2. `src/server/router/plural.js` — handles GET for collection resources
+3. `src/server/mixins/...` — applies filtering and pagination
+4. Reads from the lowdb database instance, returns JSON response
+
+The exact files depend on the project. The important thing is you get an ordered list of hops.
+
+### Step 2 — Verify the first file in the trace
+
+Open the first file Claude named and look for the routing setup:
+
+**macOS / Linux**
+
+```bash
+cat src/server/router/index.js
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content src\server\router\index.js
+```
+
+Look for the line that maps GET requests to a handler function. You should see something like `router.get('/:resource', ...)` or `app.use(router)`.
+
+### Step 3 — Verify the next hop
+
+Open the second file and find the handler:
+
+**macOS / Linux**
+
+```bash
+grep -n "function\|module.exports\|export" src/server/router/plural.js | head -10
+```
+
+**Windows PowerShell**
+
+```powershell
+Select-String -Path src\server\router\plural.js -Pattern "function|module.exports|export" | Select-Object -First 10
+```
+
+You should find a function that receives the request and calls the data layer. This confirms the second hop in Claude's trace.
+
+### Step 4 — Ask Claude to explain the data layer
+
+When you reach the bottom of the trace, ask Claude directly:
+
+```
+In src/server/router/plural.js, I see a call to db.get(name).value(). What is `db` here, where is it created, and how does data get loaded?
+```
+
+Claude explains that `db` is a lowdb (or similar) instance created during server startup and loaded from a JSON file. This is the "database" in json-server's case — a flat JSON file on disk.
+
+### Step 5 — Confirm the data layer with a search
+
+Verify Claude's explanation by searching for where the database is initialized:
+
+**macOS / Linux**
+
+```bash
+grep -rn "lowdb\|new Low\|JSONFile\|readFileSync.*\.json" src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "lowdb|new Low|JSONFile|readFileSync.*\.json"
+```
+
+The results should point to the file Claude described. If you see a different file, ask Claude: "I found the database setup in [file]. Is this what you meant?"
+
+### Step 6 — Produce the clean trace
+
+Ask Claude to format the complete trace:
+
+```
+Write a numbered trace of the GET /posts flow as a markdown list. For each step include the file path, the function or export name, and a one-sentence explanation of what it does.
+```
+
+Save this trace — it is your deliverable and the foundation for understanding how changes ripple through the project.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude's trace skips middleware | Middleware runs before the route handler but Claude focused on routing only | Ask: "Are there any middleware functions that execute before this route handler?" |
+| `grep` returns too many results | The search term is too generic (e.g., "get") | Narrow your search: use a more specific function name or file path |
+| A file in the trace does not exist at the path Claude gave | The project reorganized since the version Claude knows about | Ask Claude: "List all files in src/server/router/ so I can find the right one" |
+| You cannot find any database layer | The project stores data in memory only | Ask Claude: "Where is data stored — disk, a database, or just in memory?" — some projects do not persist data |
+| PowerShell `Select-String` misses nested files | The glob pattern does not recurse | Pipe `Get-ChildItem -Recurse -Filter *.js` into `Select-String` instead of using a flat path pattern |
+| Trace has 10+ steps and feels overwhelming | The project has many abstraction layers | Ask Claude: "Simplify the trace to only the five most important files and skip any thin wrappers" |
+
+<VerificationBlock
+  deliverable="A numbered trace of one feature from HTTP route to data layer with file paths and function names."
+  verifyCheck="Trace names at least three files in the correct order, confirmed by manual inspection of at least two of them."
+/>

@@ -1,0 +1,359 @@
+---
+title: "Mini-project: same task, three environments"
+lessonNumber: "7.3.2"
+chapterNumber: "7.3"
+pathNumber: "7"
+tutorPreload: "Help me compare how the same refactoring task works across Claude Code CLI, Claude Desktop, and claude.ai."
+verifyType: "terminal_output"
+---
+
+# Mini-project: same task, three environments
+
+## Objective
+
+By the end of this lesson you will perform the same coding task — refactoring a messy function — in all three Claude environments (CLI, Desktop, Browser), document what each environment did well and where it struggled, and produce a comparison table in a Markdown file. This gives you firsthand experience choosing the right tool for the job.
+
+## Walkthrough
+
+### Step 1 — Create the project folder and starter file
+
+Set up a small project with a deliberately messy function that needs refactoring.
+
+**macOS / Linux:**
+
+```bash
+mkdir env-comparison && cd env-comparison
+git init
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir env-comparison; cd env-comparison
+git init
+```
+
+Now create a file with a function that does too much:
+
+**macOS / Linux:**
+
+```bash
+cat > messy.js << 'EOF'
+function processOrder(order) {
+  // validate
+  if (!order.name) { console.log("ERROR: no name"); return null; }
+  if (!order.items || order.items.length === 0) { console.log("ERROR: no items"); return null; }
+  if (!order.email || !order.email.includes("@")) { console.log("ERROR: bad email"); return null; }
+
+  // calculate total
+  let total = 0;
+  for (let i = 0; i < order.items.length; i++) {
+    total += order.items[i].price * order.items[i].qty;
+  }
+  if (order.coupon === "SAVE10") { total = total * 0.9; }
+  if (order.coupon === "SAVE20") { total = total * 0.8; }
+
+  // format receipt
+  let receipt = "Receipt for " + order.name + "\n";
+  receipt += "Email: " + order.email + "\n";
+  receipt += "---\n";
+  for (let i = 0; i < order.items.length; i++) {
+    receipt += order.items[i].name + " x" + order.items[i].qty + " = $" + (order.items[i].price * order.items[i].qty) + "\n";
+  }
+  receipt += "---\n";
+  receipt += "Total: $" + total.toFixed(2) + "\n";
+  if (order.coupon) { receipt += "Coupon: " + order.coupon + "\n"; }
+
+  console.log(receipt);
+  return { total: total, receipt: receipt };
+}
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@'
+function processOrder(order) {
+  // validate
+  if (!order.name) { console.log("ERROR: no name"); return null; }
+  if (!order.items || order.items.length === 0) { console.log("ERROR: no items"); return null; }
+  if (!order.email || !order.email.includes("@")) { console.log("ERROR: bad email"); return null; }
+
+  // calculate total
+  let total = 0;
+  for (let i = 0; i < order.items.length; i++) {
+    total += order.items[i].price * order.items[i].qty;
+  }
+  if (order.coupon === "SAVE10") { total = total * 0.9; }
+  if (order.coupon === "SAVE20") { total = total * 0.8; }
+
+  // format receipt
+  let receipt = "Receipt for " + order.name + "\n";
+  receipt += "Email: " + order.email + "\n";
+  receipt += "---\n";
+  for (let i = 0; i < order.items.length; i++) {
+    receipt += order.items[i].name + " x" + order.items[i].qty + " = $" + (order.items[i].price * order.items[i].qty) + "\n";
+  }
+  receipt += "---\n";
+  receipt += "Total: $" + total.toFixed(2) + "\n";
+  if (order.coupon) { receipt += "Coupon: " + order.coupon + "\n"; }
+
+  console.log(receipt);
+  return { total: total, receipt: receipt };
+}
+'@ | Out-File -Encoding utf8 messy.js
+```
+
+Commit the starter file:
+
+```bash
+git add messy.js
+git commit -m "Add messy processOrder function for refactoring exercise"
+```
+
+The function does three things (validation, calculation, formatting) all in one place, uses index-based loops, and has hardcoded coupon logic. It is a realistic candidate for refactoring.
+
+### Step 2 — Refactor with Claude Code CLI
+
+Open your terminal in the `env-comparison` folder and start Claude Code:
+
+```bash
+claude
+```
+
+Give it this prompt:
+
+```
+Refactor messy.js. Split processOrder into three smaller functions:
+1. validateOrder — returns true/false
+2. calculateTotal — returns the total with coupon applied
+3. formatReceipt — returns the receipt string
+
+Keep the behavior identical. Use modern JavaScript (const, arrow functions, .map/.reduce where appropriate).
+```
+
+Claude Code reads `messy.js`, rewrites it, and saves the changes directly to disk. When it finishes:
+
+```bash
+cat messy.js       # macOS/Linux
+Get-Content messy.js  # Windows PowerShell
+```
+
+You should see the refactored code with three clean functions. Commit the result:
+
+```bash
+git add messy.js
+git commit -m "Refactor: split processOrder into validate, calculate, format (CLI)"
+```
+
+Now restore the original for the next test:
+
+```bash
+git checkout HEAD~1 -- messy.js
+```
+
+### Step 3 — Refactor with Claude Desktop
+
+Open Claude Desktop and start a new conversation. Bring in the file:
+
+1. Drag `messy.js` from your file manager into the Claude Desktop chat window. Or use the attachment button.
+2. Give the same prompt:
+
+```
+Refactor this function. Split processOrder into three smaller functions:
+1. validateOrder — returns true/false
+2. calculateTotal — returns the total with coupon applied
+3. formatReceipt — returns the receipt string
+
+Keep the behavior identical. Use modern JavaScript.
+```
+
+Claude Desktop reads the file content from your upload and generates the refactored code in the chat. Note the key difference: **the code appears in the conversation — it is not written to disk.**
+
+To save the result:
+
+1. Copy the generated code from the chat.
+2. Paste it into `messy.js` using your editor or terminal.
+
+**macOS:**
+
+```bash
+pbpaste > messy-desktop.js
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Clipboard | Out-File -Encoding utf8 messy-desktop.js
+```
+
+Save it alongside the original for comparison, then restore:
+
+```bash
+git checkout HEAD~1 -- messy.js
+```
+
+### Step 4 — Refactor with claude.ai in the browser
+
+Open [claude.ai](https://claude.ai) in your browser and start a new conversation.
+
+1. Click the paperclip icon and upload `messy.js`.
+2. Give the same prompt as before:
+
+```
+Refactor this function. Split processOrder into three smaller functions:
+1. validateOrder — returns true/false
+2. calculateTotal — returns the total with coupon applied
+3. formatReceipt — returns the receipt string
+
+Keep the behavior identical. Use modern JavaScript.
+```
+
+Claude responds with the refactored code. If it creates an artifact, you can view and copy from the code tab.
+
+Save the result for comparison:
+
+1. Copy the code from the browser.
+2. Paste into a file:
+
+**macOS:**
+
+```bash
+pbpaste > messy-browser.js
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Clipboard | Out-File -Encoding utf8 messy-browser.js
+```
+
+### Step 5 — Build the comparison table
+
+Now create a Markdown file documenting what you observed. Create it manually based on your real experience:
+
+**macOS / Linux:**
+
+```bash
+cat > comparison.md << 'EOF'
+# Refactoring comparison: three environments
+
+## The task
+Refactor `processOrder()` into three functions: `validateOrder`, `calculateTotal`, `formatReceipt`.
+
+## Results
+
+| Criterion                     | Claude Code CLI        | Claude Desktop         | claude.ai (browser)    |
+|-------------------------------|------------------------|------------------------|------------------------|
+| File read                     | Automatic — reads from disk | Manual — drag and drop | Manual — upload button |
+| File write                    | Automatic — saves to disk | Copy-paste required    | Copy-paste required    |
+| Time to get refactored code   | Fastest — one prompt   | Medium — prompt + paste | Medium — prompt + paste |
+| Code quality                  | (your notes here)      | (your notes here)      | (your notes here)      |
+| Live preview                  | No                     | No                     | Yes — artifact panel   |
+| Git integration               | Yes — can commit after | No                     | No                     |
+| Follow-up edits               | "Now add JSDoc comments" — writes directly | Must re-paste | Must re-paste |
+
+## Observations
+
+- **CLI** was fastest for the full loop (read → refactor → save → commit).
+- **Desktop** was useful for reviewing the code in a graphical conversation before committing to changes.
+- **Browser** was easiest to start (no install) and the artifact preview helped verify the logic.
+- All three produced comparable code quality for a straightforward refactoring task.
+
+## When I would use each
+
+- **CLI:** Active development, multi-file changes, anything involving Git.
+- **Desktop:** Planning sessions, reviewing code with images/diagrams, sharing context via MCP.
+- **Browser:** Quick prototypes, brainstorming, when I only have a browser available.
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@'
+# Refactoring comparison: three environments
+
+## The task
+Refactor `processOrder()` into three functions: `validateOrder`, `calculateTotal`, `formatReceipt`.
+
+## Results
+
+| Criterion                     | Claude Code CLI        | Claude Desktop         | claude.ai (browser)    |
+|-------------------------------|------------------------|------------------------|------------------------|
+| File read                     | Automatic — reads from disk | Manual — drag and drop | Manual — upload button |
+| File write                    | Automatic — saves to disk | Copy-paste required    | Copy-paste required    |
+| Time to get refactored code   | Fastest — one prompt   | Medium — prompt + paste | Medium — prompt + paste |
+| Code quality                  | (your notes here)      | (your notes here)      | (your notes here)      |
+| Live preview                  | No                     | No                     | Yes — artifact panel   |
+| Git integration               | Yes — can commit after | No                     | No                     |
+| Follow-up edits               | "Now add JSDoc comments" — writes directly | Must re-paste | Must re-paste |
+
+## Observations
+
+- **CLI** was fastest for the full loop (read → refactor → save → commit).
+- **Desktop** was useful for reviewing the code in a graphical conversation before committing to changes.
+- **Browser** was easiest to start (no install) and the artifact preview helped verify the logic.
+- All three produced comparable code quality for a straightforward refactoring task.
+
+## When I would use each
+
+- **CLI:** Active development, multi-file changes, anything involving Git.
+- **Desktop:** Planning sessions, reviewing code with images/diagrams, sharing context via MCP.
+- **Browser:** Quick prototypes, brainstorming, when I only have a browser available.
+'@ | Out-File -Encoding utf8 comparison.md
+```
+
+Edit the `(your notes here)` placeholders with your real observations after running each step.
+
+### Step 6 — Commit your comparison
+
+```bash
+git add comparison.md messy-desktop.js messy-browser.js
+git commit -m "Add environment comparison from refactoring exercise"
+```
+
+Run `git log --oneline` to see the full history of this exercise:
+
+```bash
+git log --oneline
+```
+
+You should see commits for the original file, the CLI refactor, and the comparison artifacts.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude Code does not find `messy.js` | You started Claude from the wrong directory | Run `pwd` (or `Get-Location`) and confirm you are inside `env-comparison` |
+| `git checkout HEAD~1 -- messy.js` fails | Not enough commits in history | Make sure you committed the starter file (Step 1) and the CLI refactor (Step 2) before checking out |
+| Copy-paste from Claude Desktop loses indentation | Some terminal paste modes strip whitespace | Paste into VS Code instead of directly into a terminal redirect |
+| Browser artifact shows a blank panel | JavaScript error in the generated code | Ask Claude to fix: "The artifact is blank — check for errors" |
+| `pbpaste` not found on Linux | macOS-only command | Use `xclip -selection clipboard -o` instead, or paste manually in your editor |
+| PowerShell here-string `@'...'@` fails | The closing `'@` must be at the start of a line with no leading spaces | Make sure `'@` is flush-left on its own line |
+| Git says "pathspec did not match" on checkout | Typo in the filename | Run `git log --oneline --stat` to see exact filenames in each commit |
+
+<VerificationBlock>
+Run these commands from the `env-comparison` folder to confirm everything is in place:
+
+```bash
+git log --oneline
+```
+
+You should see at least two commits — the original messy function and the comparison artifacts.
+
+```bash
+cat comparison.md | head -5      # macOS/Linux
+Get-Content comparison.md | Select-Object -First 5   # Windows PowerShell
+```
+
+You should see the title "Refactoring comparison: three environments" and the start of the table.
+
+```bash
+ls *.js        # macOS/Linux
+Get-ChildItem *.js   # Windows PowerShell
+```
+
+You should see `messy.js` (the original), plus `messy-desktop.js` and `messy-browser.js` (saved outputs from the other environments). If all three are present and the comparison file exists, you have completed the mini-project.
+</VerificationBlock>

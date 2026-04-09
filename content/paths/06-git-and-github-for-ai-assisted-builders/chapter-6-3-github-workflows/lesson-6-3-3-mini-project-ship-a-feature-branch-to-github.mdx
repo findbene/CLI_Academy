@@ -1,0 +1,278 @@
+---
+title: "Mini project: Ship a feature branch to GitHub"
+lessonNumber: "6.3.3"
+chapterNumber: "6.3"
+pathNumber: "6"
+tutorPreload: "Coach me through the full branch-to-merge workflow for this feature."
+verifyType: "terminal_output"
+---
+
+# Mini project: Ship a feature branch to GitHub
+
+## Objective
+
+In this mini project you will complete the full feature branch workflow from start to finish: create a branch, implement a small feature, commit, push to GitHub, open a pull request, review, merge, and clean up. This is the daily workflow used by professional development teams.
+
+## Walkthrough
+
+### Step 1 — Start from a clean main branch
+
+If you completed the previous lessons, reuse your `pr-lab` repository. Otherwise, create a new repo and push it to GitHub now.
+
+```bash
+cd pr-lab
+git switch main
+git pull
+git status
+```
+
+Confirm you see `nothing to commit, working tree clean` and `Your branch is up to date with 'origin/main'`.
+
+### Step 2 — Create a feature branch
+
+Pick a descriptive branch name that reflects the work:
+
+```bash
+git switch -c feature-contact-page
+```
+
+Good branch names follow patterns like `feature-contact-page`, `fix-header-typo`, or `docs-update-readme`. Avoid spaces or special characters.
+
+### Step 3 — Implement the feature
+
+Create a contact page for the project.
+
+**macOS / Linux:**
+
+```bash
+cat > contact.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head><title>Contact</title></head>
+<body>
+  <h1>Contact Us</h1>
+  <p>Email: hello@prlab.example.com</p>
+  <p><a href="index.html">Back to Home</a></p>
+</body>
+</html>
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@"
+<!DOCTYPE html>
+<html>
+<head><title>Contact</title></head>
+<body>
+  <h1>Contact Us</h1>
+  <p>Email: hello@prlab.example.com</p>
+  <p><a href="index.html">Back to Home</a></p>
+</body>
+</html>
+"@ | Out-File -Encoding utf8 contact.html
+```
+
+Now add a link from the homepage to the contact page:
+
+**macOS / Linux:**
+
+```bash
+cat > index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head><title>Home</title></head>
+<body>
+  <h1>Welcome to PR Lab</h1>
+  <p><a href="contact.html">Contact Us</a></p>
+</body>
+</html>
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@"
+<!DOCTYPE html>
+<html>
+<head><title>Home</title></head>
+<body>
+  <h1>Welcome to PR Lab</h1>
+  <p><a href="contact.html">Contact Us</a></p>
+</body>
+</html>
+"@ | Out-File -Encoding utf8 index.html
+```
+
+### Step 4 — Stage, review, and commit
+
+Check what changed:
+
+```bash
+git status
+```
+
+You should see `contact.html` as a new file and `index.html` as modified.
+
+Review the diff:
+
+```bash
+git diff
+```
+
+This shows the link you added to `index.html`. New files do not appear in `git diff` until staged.
+
+Stage everything and review the staged diff:
+
+```bash
+git add .
+git diff --staged
+```
+
+Now you see all changes that will go into the commit — including the new `contact.html`.
+
+Commit with a clear message:
+
+```bash
+git commit -m "Add contact page and link from homepage"
+```
+
+### Step 5 — Push the branch to GitHub
+
+```bash
+git push -u origin feature-contact-page
+```
+
+### Step 6 — Open a pull request
+
+**With the GitHub CLI:**
+
+```bash
+gh pr create \
+  --title "Add contact page" \
+  --body "Adds a contact page with email info and links it from the homepage. Closes #1." \
+  --base main
+```
+
+On Windows PowerShell, use backticks for line continuation:
+
+```powershell
+gh pr create `
+  --title "Add contact page" `
+  --body "Adds a contact page with email info and links it from the homepage." `
+  --base main
+```
+
+**Or on the web:** Visit your repo on GitHub, click **Compare & pull request**, fill in the title and description, and create it.
+
+### Step 7 — Review the pull request
+
+View the PR:
+
+```bash
+gh pr view
+```
+
+Check the diff:
+
+```bash
+gh pr diff
+```
+
+Confirm that `contact.html` is a new file and `index.html` has the added link. In a team workflow, a teammate would review here. For this project, you are your own reviewer.
+
+Leave a review:
+
+```bash
+gh pr review --approve --body "Contact page looks good. Links work correctly."
+```
+
+### Step 8 — Merge and clean up
+
+Merge the PR and delete the remote branch:
+
+```bash
+gh pr merge --merge --delete-branch
+```
+
+Update your local repo:
+
+```bash
+git switch main
+git pull
+```
+
+Delete the local feature branch:
+
+```bash
+git branch -d feature-contact-page
+```
+
+### Step 9 — Final verification
+
+Check the complete state:
+
+```bash
+git log --oneline --graph
+```
+
+You should see a merge commit integrating the contact page into `main`.
+
+```bash
+git branch
+```
+
+Only `main`.
+
+```bash
+git branch -r
+```
+
+No `origin/feature-contact-page` (run `git fetch --prune` if it still shows).
+
+Open your repo on GitHub — the contact page file should appear in the file list, and the PR should be marked "Merged".
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `gh pr create` says "no commits between main and feature-contact-page" | You forgot to commit, or committed on main by mistake | Run `git log --oneline --all` to check; if commits are on main, cherry-pick them to the feature branch |
+| Push is rejected | Remote main has new commits | Run `git pull --rebase origin main` on your feature branch, then push again |
+| `git branch -d` refuses to delete | Branch not fully merged (e.g., squash merge) | Use `git branch -D feature-contact-page` |
+| Merge conflict during PR | Someone else changed the same file on main | Pull main into your branch locally: `git switch feature-contact-page && git merge main`, resolve conflicts, push |
+| `gh pr merge` says "merge not allowed" | Branch protection rules in repo settings | Adjust settings or use the web merge button |
+| PR description is empty | Forgot `--body` flag | Edit on GitHub or run `gh pr edit --body "..."` |
+
+<VerificationBlock>
+Run these commands and confirm each:
+
+```bash
+git log --oneline --graph
+```
+
+You should see the merge commit for "Add contact page" integrated into `main`.
+
+```bash
+git branch
+```
+
+Only `main` listed.
+
+```bash
+gh pr list
+```
+
+No open PRs.
+
+```bash
+gh pr view --json state --jq .state
+```
+
+Output: `MERGED`.
+
+Visit your GitHub repository. You should see `contact.html` in the file listing and the merged PR in the "Pull requests → Closed" tab.
+
+You have completed the full feature branch workflow — branch, implement, commit, push, PR, review, merge, clean up.
+</VerificationBlock>

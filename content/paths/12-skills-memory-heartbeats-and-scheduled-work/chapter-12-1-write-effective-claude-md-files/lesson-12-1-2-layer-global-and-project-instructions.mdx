@@ -1,0 +1,165 @@
+---
+title: "Layer global and project instructions"
+lessonNumber: "12.1.2"
+chapterNumber: "12.1"
+pathNumber: "12"
+tutorPreload: "Show me how global and project CLAUDE.md files interact when both exist."
+verifyType: "terminal_output"
+---
+
+# Layer global and project instructions
+
+## Objective
+
+By the end of this lesson you will understand the three layers of Claude Code instructions — global `~/.claude/CLAUDE.md`, project `CLAUDE.md`, and `.claude/rules/*.md` — and prove which layer wins when they conflict. You will set up all three layers and run a conflict test so you can see the priority order firsthand.
+
+## Walkthrough
+
+### Step 1 — Create a global CLAUDE.md for your user account
+
+The global file lives at `~/.claude/CLAUDE.md`. It applies to every project you open with Claude Code.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/.claude
+cat > ~/.claude/CLAUDE.md << 'EOF'
+# Global CLAUDE.md
+
+## Preferences
+- Always respond in plain English.
+- Use bullet lists for multi-item answers.
+- Default to concise answers (under 200 words).
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.claude"
+@"
+# Global CLAUDE.md
+
+## Preferences
+- Always respond in plain English.
+- Use bullet lists for multi-item answers.
+- Default to concise answers (under 200 words).
+"@ | Set-Content -Path "$HOME\.claude\CLAUDE.md" -Encoding UTF8
+```
+
+### Step 2 — Create a project CLAUDE.md with a conflicting rule
+
+Navigate to your practice project (or create one) and write a project-level file that deliberately contradicts the global preference.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/layering-lab && cd ~/layering-lab && git init
+cat > CLAUDE.md << 'EOF'
+# CLAUDE.md
+
+## Mission
+A test project for instruction layering.
+
+## Hard rules
+1. Always respond in numbered paragraphs, not bullet lists.
+2. Do not modify files outside this project.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\layering-lab"
+Set-Location "$HOME\layering-lab"
+git init
+@"
+# CLAUDE.md
+
+## Mission
+A test project for instruction layering.
+
+## Hard rules
+1. Always respond in numbered paragraphs, not bullet lists.
+2. Do not modify files outside this project.
+"@ | Set-Content -Path "CLAUDE.md" -Encoding UTF8
+```
+
+Notice the conflict: global says "Use bullet lists," but the project says "Use numbered paragraphs."
+
+### Step 3 — Add a rules file for fine-grained project rules
+
+Claude Code also reads any `.md` files inside `.claude/rules/`. This is where you put rules you want to keep separate from the main `CLAUDE.md`.
+
+**macOS / Linux**
+
+```bash
+mkdir -p .claude/rules
+cat > .claude/rules/naming.md << 'EOF'
+# Naming conventions
+- Use kebab-case for all filenames.
+- Prefix test files with `test-`.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path ".claude\rules"
+@"
+# Naming conventions
+- Use kebab-case for all filenames.
+- Prefix test files with ``test-``.
+"@ | Set-Content -Path ".claude\rules\naming.md" -Encoding UTF8
+```
+
+### Step 4 — Test the layering by asking Claude Code
+
+Start Claude Code in the `layering-lab` directory:
+
+```
+claude
+```
+
+Ask this question:
+
+```
+List three benefits of version control.
+```
+
+Watch the format of Claude's response. If the project rule is working, Claude should use numbered paragraphs instead of bullet points — because project-level instructions override global preferences when they conflict.
+
+Then ask:
+
+```
+What are my naming conventions?
+```
+
+Claude should cite the kebab-case rule from `.claude/rules/naming.md`. This proves all three layers are loading.
+
+### Step 5 — Understand the priority order
+
+The layering works like this (highest priority first):
+
+1. **`.claude/rules/*.md`** — Project-specific rule files. Most specific wins.
+2. **`CLAUDE.md` at project root** — Project-wide instructions.
+3. **`~/.claude/CLAUDE.md`** — Global user preferences. Lowest priority.
+
+When a project rule contradicts a global preference, the project rule wins. When a rules file contradicts the project `CLAUDE.md`, the rules file wins.
+
+This is useful because you can set comfortable defaults globally (like "be concise" or "use plain English") and override them per project when needed (like "use formal language" for a work project).
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude uses bullets despite the project rule saying numbered paragraphs | Project `CLAUDE.md` is not at the repo root | Run `ls CLAUDE.md` (macOS/Linux) or `Test-Path CLAUDE.md` (PowerShell) from the repo root to confirm the file exists there |
+| Claude does not know about naming conventions | `.claude/rules/` folder is in the wrong location | The folder must be at the project root: `<repo>/.claude/rules/`, not `~/.claude/rules/` |
+| Global preferences do not apply in a new project | `~/.claude/CLAUDE.md` does not exist or has a typo in the path | Run `cat ~/.claude/CLAUDE.md` (macOS/Linux) or `Get-Content "$HOME\.claude\CLAUDE.md"` (PowerShell) to confirm it exists |
+| Rules file is ignored | File does not have a `.md` extension | Claude Code only reads Markdown files from `.claude/rules/`. Rename any `.txt` files to `.md` |
+| Changes to CLAUDE.md do not take effect | Claude Code session was already running | Restart Claude Code. It reads instruction files at session start, not dynamically during a session |
+
+<VerificationBlock
+  deliverable="A working three-layer setup: global CLAUDE.md, project CLAUDE.md with a conflicting rule, and a .claude/rules/ file."
+  verifyCheck="Claude Code follows the project rule over the global preference when they conflict, and cites rules from .claude/rules/ when asked."
+/>

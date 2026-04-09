@@ -1,0 +1,225 @@
+---
+title: "Save useful patterns as reusable templates"
+lessonNumber: "8.3.2"
+chapterNumber: "8.3"
+pathNumber: "8"
+tutorPreload: "Help me turn this successful Cowork session into a template I can reuse next time."
+verifyType: "terminal_output"
+---
+
+# Save useful patterns as reusable templates
+
+## Objective
+
+By the end of this lesson you will have a `cowork-patterns/` folder containing reusable templates extracted from your successful Cowork sessions. These templates capture what worked — the prompt structures, the brief format, and the review checklists — so you never have to reinvent them.
+
+## Walkthrough
+
+### Step 1 — Identify what is worth templating
+
+Not every Cowork session produces a reusable pattern. Ask yourself:
+
+- **Will I do this kind of task again?** If yes, template it.
+- **Did the prompt structure lead to a good first draft?** If yes, save the prompt.
+- **Did I develop a review checklist during the session?** If yes, extract it.
+
+From the previous lessons, you already have two reusable artifacts:
+1. The **session brief format** (Goal, Context, Success criteria, Boundaries).
+2. The **accuracy checklist** (factual, complete, boundary-compliant, tone, platform coverage).
+
+### Step 2 — Create the patterns folder
+
+**macOS / Linux:**
+
+```bash
+mkdir -p cowork-patterns
+```
+
+**Windows PowerShell:**
+
+```powershell
+New-Item -ItemType Directory -Force -Path cowork-patterns | Out-Null
+```
+
+### Step 3 — Save the session brief template
+
+You already created a blank brief template in Lesson 8.1.2. Copy it into the patterns folder.
+
+**macOS / Linux:**
+
+```bash
+cp cowork-practice/cowork-brief-template.md cowork-patterns/brief-template.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+Copy-Item cowork-practice\cowork-brief-template.md cowork-patterns\brief-template.md
+```
+
+### Step 4 — Save a prompt pattern
+
+A prompt pattern is the exact wording you used to get a good result. Save the opening prompt from Lesson 8.2.1 as a reusable pattern:
+
+**macOS / Linux:**
+
+```bash
+cat > cowork-patterns/prompt-readme-outline.md << 'EOF'
+# Prompt Pattern: README Outline Request
+
+## When to use
+When starting a Cowork session to generate project documentation.
+
+## The prompt
+```
+Read cowork-session-brief.md and confirm you understand the goal, context,
+success criteria, and boundaries. Summarize them back to me before we start.
+```
+
+Then after confirmation:
+
+```
+Start with an outline for the README. Include section headings and a one-line
+description of what each section will cover. Do not write the full content yet.
+```
+
+## Why it works
+- Forces Claude to confirm understanding before writing.
+- Requests an outline first, giving you a review checkpoint before full content.
+- Explicit "do not write full content yet" prevents a wall of text you cannot easily redirect.
+
+## Variations
+- For API documentation: replace "README" with "API reference" and adjust headings.
+- For onboarding guides: replace with "Getting Started guide" and specify audience.
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@"
+# Prompt Pattern: README Outline Request
+
+## When to use
+When starting a Cowork session to generate project documentation.
+
+## The prompt
+``````
+Read cowork-session-brief.md and confirm you understand the goal, context,
+success criteria, and boundaries. Summarize them back to me before we start.
+``````
+
+Then after confirmation:
+
+``````
+Start with an outline for the README. Include section headings and a one-line
+description of what each section will cover. Do not write the full content yet.
+``````
+
+## Why it works
+- Forces Claude to confirm understanding before writing.
+- Requests an outline first, giving you a review checkpoint before full content.
+- Explicit "do not write full content yet" prevents a wall of text you cannot easily redirect.
+
+## Variations
+- For API documentation: replace "README" with "API reference" and adjust headings.
+- For onboarding guides: replace with "Getting Started guide" and specify audience.
+"@ | Set-Content -Path cowork-patterns\prompt-readme-outline.md -Encoding utf8
+```
+
+### Step 5 — Save the review checklist
+
+Extract the accuracy checklist from Lesson 8.3.1 into its own file:
+
+**macOS / Linux:**
+
+```bash
+cat > cowork-patterns/review-checklist.md << 'EOF'
+# Post-Session Review Checklist
+
+Use this after every Cowork session before saving deliverables.
+
+## Accuracy checks
+- [ ] Every shell command runs successfully on the target OS
+- [ ] File paths, flag names, and version numbers are correct
+- [ ] All sections from the success criteria are present
+- [ ] Nothing from the boundaries list was included
+- [ ] Tone matches the intended audience
+- [ ] Both macOS/Linux and Windows commands are present (if required)
+
+## Save checks
+- [ ] Final version saved (not an intermediate draft)
+- [ ] File encoding is UTF-8
+- [ ] Session logs saved separately from deliverables
+- [ ] Only deliverables are staged for Git commit
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@"
+# Post-Session Review Checklist
+
+Use this after every Cowork session before saving deliverables.
+
+## Accuracy checks
+- [ ] Every shell command runs successfully on the target OS
+- [ ] File paths, flag names, and version numbers are correct
+- [ ] All sections from the success criteria are present
+- [ ] Nothing from the boundaries list was included
+- [ ] Tone matches the intended audience
+- [ ] Both macOS/Linux and Windows commands are present (if required)
+
+## Save checks
+- [ ] Final version saved (not an intermediate draft)
+- [ ] File encoding is UTF-8
+- [ ] Session logs saved separately from deliverables
+- [ ] Only deliverables are staged for Git commit
+"@ | Set-Content -Path cowork-patterns\review-checklist.md -Encoding utf8
+```
+
+### Step 6 — Verify your patterns folder
+
+**macOS / Linux:**
+
+```bash
+ls -la cowork-patterns/
+cat cowork-patterns/brief-template.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-ChildItem cowork-patterns\
+Get-Content cowork-patterns\brief-template.md
+```
+
+You should see three files:
+- `brief-template.md` — the blank session brief structure.
+- `prompt-readme-outline.md` — the prompt pattern that worked for documentation.
+- `review-checklist.md` — the post-session accuracy checklist.
+
+### Step 7 — Use a pattern in a future session
+
+Next time you need to write documentation with Claude, your workflow becomes:
+
+1. Copy `brief-template.md` and fill it in for your new task.
+2. Open a Cowork session and use the prompt from `prompt-readme-outline.md`.
+3. After the session, run through `review-checklist.md` before saving.
+
+Over time, add more patterns to this folder: prompt patterns for code review, for refactoring, for writing tests, for editing prose. Each pattern captures what worked so you start every future session with an advantage.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| You save a pattern but never use it again | The pattern was too specific to one session and not generalized | When saving, strip out project-specific details and replace them with placeholders like `[PROJECT_NAME]` |
+| Patterns folder gets cluttered with dozens of files | You saved everything instead of only what was reusable | Review the folder monthly. Delete patterns you have not used in the last 30 days. |
+| You reuse a prompt pattern but get worse results than the original session | The context or constraints were different | The prompt pattern is only the starting point. Always pair it with a fresh session brief that describes the current task. |
+| Another team member cannot use your patterns because they reference your local paths | Patterns contained hardcoded paths like `/Users/yourname/project` | Use relative paths and placeholders in all templates |
+
+<VerificationBlock
+  deliverable="A `cowork-patterns/` folder containing at least three files: a brief template, a prompt pattern, and a review checklist."
+  verifyCheck="Each file is generalized (uses placeholders, not hardcoded project details) and could be used for a different project without modification."
+/>

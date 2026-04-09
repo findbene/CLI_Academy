@@ -1,0 +1,232 @@
+---
+title: "Run untrusted code in a Docker container"
+lessonNumber: "11.2.1"
+chapterNumber: "11.2"
+pathNumber: "11"
+tutorPreload: "Walk me through building a locked-down Docker container for running code I did not write."
+verifyType: "terminal_output"
+---
+
+# Run untrusted code in a Docker container
+
+## Objective
+
+By the end of this lesson you will build a minimal Docker image designed for sandboxing, run untrusted code inside it with file system, network, and resource limits, and prove that the container cannot affect your host machine.
+
+## Walkthrough
+
+### Step 1 — Create a sandbox project folder
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/sandbox-lab && cd ~/sandbox-lab
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\sandbox-lab"
+Set-Location "$HOME\sandbox-lab"
+```
+
+### Step 2 — Write a minimal Dockerfile
+
+This image includes only Python and nothing else. No shell utilities, no package managers, no extras.
+
+**macOS / Linux**
+
+```bash
+cat > Dockerfile << 'EOF'
+FROM python:3.12-slim
+RUN useradd --create-home --shell /bin/false sandboxuser
+USER sandboxuser
+WORKDIR /home/sandboxuser
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+FROM python:3.12-slim
+RUN useradd --create-home --shell /bin/false sandboxuser
+USER sandboxuser
+WORKDIR /home/sandboxuser
+"@ | Out-File -Encoding utf8 Dockerfile
+```
+
+Key security choices:
+- **Non-root user** — even if code exploits a bug, it runs as `sandboxuser`, not root.
+- **No shell for the user** — `--shell /bin/false` prevents interactive shell escape.
+- **Slim base** — fewer installed tools means fewer attack surfaces.
+
+### Step 3 — Build the sandbox image
+
+**macOS / Linux**
+
+```bash
+docker build -t sandbox-runner .
+```
+
+**Windows PowerShell**
+
+```powershell
+docker build -t sandbox-runner .
+```
+
+You should see `Successfully tagged sandbox-runner:latest` at the end.
+
+### Step 4 — Write an untrusted script to test
+
+Create a script that tries to do three dangerous things: read the host file system, access the internet, and write outside its home directory.
+
+**macOS / Linux**
+
+```bash
+cat > evil_test.py << 'PYEOF'
+import os, sys
+
+print("=== Attempting dangerous operations ===")
+
+# Attempt 1: Read host files
+try:
+    contents = os.listdir("/etc")
+    print(f"1. Can see /etc: {contents[:3]}... (container's /etc, not host)")
+except PermissionError as e:
+    print(f"1. BLOCKED from /etc: {e}")
+
+# Attempt 2: Write outside home directory
+try:
+    with open("/tmp/escape.txt", "w") as f:
+        f.write("escaped!")
+    print("2. Wrote to /tmp — but it is the container's /tmp, not host")
+except PermissionError as e:
+    print(f"2. BLOCKED from writing /tmp: {e}")
+
+# Attempt 3: Access the network
+try:
+    import urllib.request
+    urllib.request.urlopen("https://example.com", timeout=3)
+    print("3. NETWORK ACCESS SUCCEEDED — sandbox is not locked down")
+except Exception as e:
+    print(f"3. Network BLOCKED: {e}")
+
+print("\n=== Test complete ===")
+PYEOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+import os, sys
+
+print("=== Attempting dangerous operations ===")
+
+# Attempt 1: Read host files
+try:
+    contents = os.listdir("/etc")
+    print(f"1. Can see /etc: {contents[:3]}... (container's /etc, not host)")
+except PermissionError as e:
+    print(f"1. BLOCKED from /etc: {e}")
+
+# Attempt 2: Write outside home directory
+try:
+    with open("/tmp/escape.txt", "w") as f:
+        f.write("escaped!")
+    print("2. Wrote to /tmp — but it is the container's /tmp, not host")
+except PermissionError as e:
+    print(f"2. BLOCKED from writing /tmp: {e}")
+
+# Attempt 3: Access the network
+try:
+    import urllib.request
+    urllib.request.urlopen("https://example.com", timeout=3)
+    print("3. NETWORK ACCESS SUCCEEDED — sandbox is not locked down")
+except Exception as e:
+    print(f"3. Network BLOCKED: {e}")
+
+print("\n=== Test complete ===")
+"@ | Out-File -Encoding utf8 evil_test.py
+```
+
+### Step 5 — Run the untrusted script in the locked-down container
+
+Use every sandbox flag: read-only file system, no network, drop all Linux capabilities, restrict memory.
+
+**macOS / Linux**
+
+```bash
+docker run \
+  --rm \
+  --network none \
+  --read-only \
+  --tmpfs /tmp:size=10m \
+  --memory=64m \
+  --cpus=0.5 \
+  -v "$(pwd)/evil_test.py:/home/sandboxuser/evil_test.py:ro" \
+  sandbox-runner \
+  python /home/sandboxuser/evil_test.py
+```
+
+**Windows PowerShell**
+
+```powershell
+docker run `
+  --rm `
+  --network none `
+  --read-only `
+  --tmpfs /tmp:size=10m `
+  --memory=64m `
+  --cpus=0.5 `
+  -v "${PWD}/evil_test.py:/home/sandboxuser/evil_test.py:ro" `
+  sandbox-runner `
+  python /home/sandboxuser/evil_test.py
+```
+
+Flag breakdown:
+
+| Flag | What it does |
+|---|---|
+| `--rm` | Delete the container and its file system when the process exits |
+| `--network none` | No internet, no DNS, no outbound connections |
+| `--read-only` | The container's root file system is mounted read-only |
+| `--tmpfs /tmp:size=10m` | Allow writes only to `/tmp`, capped at 10 MB |
+| `--memory=64m` | Kill the container if it uses more than 64 MB RAM |
+| `--cpus=0.5` | Limit to half a CPU core so it cannot starve your machine |
+| `-v ... :ro` | Mount only the script file, read-only — no other host files are visible |
+
+Expected output: the script can see the container's own `/etc` (not yours), can write to the container's `/tmp` (not yours), and the network attempt is blocked.
+
+### Step 6 — Confirm nothing leaked to your host
+
+**macOS / Linux**
+
+```bash
+ls /tmp/escape.txt 2>/dev/null && echo "LEAK DETECTED" || echo "Host is clean — nothing escaped"
+```
+
+**Windows PowerShell**
+
+```powershell
+if (Test-Path "$env:TEMP\escape.txt") { Write-Host "LEAK DETECTED" } else { Write-Host "Host is clean — nothing escaped" }
+```
+
+> **Real danger:** If you use `-v $HOME:/host` to mount your home directory into a container, all sandboxing is worthless. The `:ro` (read-only) flag on volume mounts is the minimum when you must share files. Never mount broad directories into untrusted containers.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `docker build` fails with `permission denied` | Docker daemon not running or user not in docker group | Start Docker Desktop, or run `sudo usermod -aG docker $USER` and log out/in |
+| `--read-only` causes Python import errors | Python tries to write `.pyc` bytecode cache files | Add `--tmpfs /home/sandboxuser/__pycache__:size=5m` or set `PYTHONDONTWRITEBYTECODE=1` via `-e` flag |
+| Script says `NETWORK ACCESS SUCCEEDED` | You forgot `--network none` | Add the flag and rerun — without it the container has full internet |
+| `OCI runtime error` on Windows | Docker Desktop has WSL 2 backend issue | Open Docker Desktop → Settings → General → confirm "Use the WSL 2 based engine" is checked and restart |
+| Volume mount path error on Windows | PowerShell `$PWD` resolves differently | Use `${PWD}` or provide the absolute path explicitly |
+| Container exits instantly with code 137 | Out-of-memory kill from `--memory=64m` | Increase to `--memory=128m` if the script needs more RAM |
+
+<VerificationBlock
+  deliverable="Terminal output showing the sandboxed script was blocked from network access, could only write to the container's /tmp, and your host file system has no escape.txt file."
+  verifyCheck="The evil_test.py output shows network BLOCKED, and the host check confirms no file leaked from the container."
+/>

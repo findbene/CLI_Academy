@@ -1,0 +1,181 @@
+---
+title: "Paste an error and get a real fix"
+lessonNumber: "5.1.1"
+chapterNumber: "5.1"
+pathNumber: "5"
+tutorPreload: "Help me read this error traceback and fix the bug in my code."
+verifyType: "terminal_output"
+---
+
+# Paste an error and get a real fix
+
+## Objective
+
+Create a small script that has a deliberate bug, run it, watch it crash, and then paste the full error into Claude Code. Claude reads the traceback, identifies the broken line, and proposes a fix. You accept or reject the fix and run the script again to confirm the bug is gone. By the end you will know the fastest debugging loop available in Claude Code.
+
+## Walkthrough
+
+### Step 1 — Create a project folder and a buggy script
+
+We need a tiny script with a real bug so we can practice the full error-to-fix cycle. We will create a JavaScript version and a Python version — use whichever language you are more comfortable with.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/projects/debug-practice && cd ~/projects/debug-practice
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force ~\projects\debug-practice | Set-Location
+```
+
+Now create the buggy file. Pick **one** of the two options below.
+
+**Option A — JavaScript (`buggy.js`)**
+
+Create `buggy.js` with this content (the bug is on the last line — `users` is an object, not an array, so `.filter` will crash):
+
+```js
+// buggy.js — a script that crashes on purpose
+const users = {
+  alice: { age: 30, active: true },
+  bob: { age: 22, active: false },
+  carol: { age: 27, active: true },
+};
+
+// BUG: .filter does not exist on a plain object
+const activeUsers = users.filter(u => u.active);
+console.log("Active users:", activeUsers);
+```
+
+**Option B — Python (`buggy.py`)**
+
+Create `buggy.py` with this content (the bug is on the last line — `scores` is a dict and you cannot index a dict with an integer):
+
+```python
+# buggy.py — a script that crashes on purpose
+scores = {"math": 92, "english": 85, "history": 78}
+
+# BUG: dicts are not indexable by integer
+top_score = scores[0]
+print(f"Top score: {top_score}")
+```
+
+### Step 2 — Run the script and watch it fail
+
+**macOS / Linux (JavaScript)**
+
+```bash
+node buggy.js
+```
+
+**macOS / Linux (Python)**
+
+```bash
+python3 buggy.py
+```
+
+**Windows PowerShell (JavaScript)**
+
+```powershell
+node buggy.js
+```
+
+**Windows PowerShell (Python)**
+
+```powershell
+python buggy.py
+```
+
+You will see an error. For the JavaScript version it looks like:
+
+```
+TypeError: users.filter is not a function
+    at Object.<anonymous> (/home/you/projects/debug-practice/buggy.js:9:28)
+```
+
+For the Python version:
+
+```
+KeyError: 0
+```
+
+Do not try to fix it yourself yet. Copy the **entire** terminal output including the error.
+
+### Step 3 — Paste the error into Claude Code
+
+Open Claude Code in the same directory and paste the full error as your prompt. A good pattern is:
+
+```
+I ran `node buggy.js` and got this error. What is wrong and how do I fix it?
+
+TypeError: users.filter is not a function
+    at Object.<anonymous> (/home/you/projects/debug-practice/buggy.js:9:28)
+```
+
+Claude reads the traceback, opens `buggy.js`, and explains:
+
+- **Line 9** calls `.filter()` on `users`, but `users` is a plain object, not an array.
+- `.filter` is an array method. For an object you need `Object.values(users).filter(...)`.
+
+Claude then proposes a code change. It will show you a diff — the old line and the new line.
+
+### Step 4 — Accept or reject the fix
+
+Claude Code asks whether to apply the change. Read the diff carefully:
+
+- **Accept** if the replacement line makes sense to you. Claude writes the change directly into the file.
+- **Reject** if you want to understand more first. Ask a follow-up like "Why Object.values and not Object.entries?"
+
+After accepting, run the script again:
+
+**macOS / Linux**
+
+```bash
+node buggy.js
+```
+
+**Windows PowerShell**
+
+```powershell
+node buggy.js
+```
+
+You should now see:
+
+```
+Active users: [ { age: 30, active: true }, { age: 27, active: true } ]
+```
+
+No crash. The bug is gone.
+
+### Step 5 — Try the same loop with the Python version
+
+If you used Python, the conversation looks like:
+
+```
+I ran `python buggy.py` and got this error:
+
+KeyError: 0
+```
+
+Claude explains that dictionaries are keyed by name not by integer index, and proposes replacing `scores[0]` with something like `max(scores.values())` or `list(scores.values())[0]` depending on your intent. Accept the fix and re-run to confirm.
+
+> **Real danger — always read the diff before accepting.** Claude occasionally proposes fixes that change your program's meaning. If a fix replaces your entire function with a different algorithm, ask Claude to explain the change before you accept.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `node` or `python` not recognized | Runtime not installed or not on PATH | Install Node.js or Python; on Windows restart your terminal after installing |
+| Claude says "I can't see that file" | Claude Code was started in a different directory | Close Claude Code, `cd` into `~/projects/debug-practice`, and relaunch |
+| Claude proposes a fix that changes the program's purpose | The error is ambiguous about your intent | Reject the fix and add context: "I want the first value from the dictionary, not the max" |
+| Fix applied but script still fails with a different error | The file had more than one bug | Repeat the loop — paste the new error and ask Claude to fix that one too |
+| Traceback is too long to paste | Error came from deep inside a library | Paste only the last 20 lines — Claude can usually diagnose from the bottom of a traceback |
+
+<VerificationBlock
+  deliverable="A script that crashed, a Claude Code conversation showing the fix, and the script running cleanly after the fix."
+  verifyCheck="Run the script and confirm it produces correct output with no errors."
+/>

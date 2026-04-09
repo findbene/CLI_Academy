@@ -10,31 +10,142 @@ verifyType: "terminal_output"
 # Read files like a developer
 
 ## Objective
-Learn how to peek inside text files directly from your terminal so you can read instructions and configurations without opening another application.
+
+Read text files from the terminal using `cat`, `head`, `tail`, `wc`, and their PowerShell equivalents. By the end you will peek at files, grab the first or last few lines, and count lines — all without opening an editor.
 
 ## Walkthrough
 
-You now know how to navigate folders and create files. But what if you want to read those files?
+### Step 1 — Read an entire file with `cat` / `Get-Content`
 
-A developer's favorite tool for reading files quickly is the `cat` command. 
-`cat` is short for **concatenate** (which means linking things together), but most people just use it to dump the text of a file straight onto their screen.
+Make sure you are inside `tiny-agent-project/` (or wherever your project files live).
 
-**Step 1: Reading a file safely**
-Imagine someone gave you a file called `instructions.txt`. You want to read it, but you are afraid of accidentally modifying it. 
-Using `cat` is purely read-only. It is impossible to accidentally ruin a file using just `cat file.txt`.
+**macOS / Linux**
 
-Let's practice reading. If you have a file in your directory called `README.md`, you read it by typing:
-`cat README.md`
-(On Windows PowerShell, `cat` is aliased to `Get-Content`, so it does exactly the same thing!)
+```bash
+cd ~/tiny-agent-project
+cat INSTRUCTIONS.md
+```
 
-*Safety Tip:* If the file is extremely long, `cat` will dump the whole thing, causing it to scroll violently. That's harmless, but it can be annoying!
+**Windows PowerShell**
 
-**Your Task:**
-Use the `echo` command to put some text into a file, like this:
-`echo "Welcome to the academy!" > welcome.txt`
-Then, use `cat welcome.txt` to read the file out loud to the terminal. Copy the output and paste it here so the tutor can verify your developer reading skills!
+```powershell
+cd ~/tiny-agent-project
+Get-Content INSTRUCTIONS.md
+```
 
-<VerificationBlock 
-  deliverable="A filled troubleshooting worksheet based on a config file."
-  verifyCheck="Learner answers file-reading questions correctly."
+The full contents print to the screen. `cat` is short for *concatenate* — it dumps the file's text straight to your terminal. PowerShell's `Get-Content` does the same thing and also accepts `cat` as an alias.
+
+### Step 2 — Read just the first few lines
+
+Larger files may be hundreds or thousands of lines long. Grab only the top.
+
+**macOS / Linux**
+
+```bash
+head -n 3 INSTRUCTIONS.md
+```
+
+`head -n 3` prints the first three lines.
+
+**Windows PowerShell**
+
+```powershell
+Get-Content INSTRUCTIONS.md | Select-Object -First 3
+```
+
+`Select-Object -First 3` takes only the first three lines from the pipeline.
+
+### Step 3 — Read the last few lines
+
+Sometimes the most recent information is at the bottom — for example, in log files.
+
+**macOS / Linux**
+
+```bash
+tail -n 2 INSTRUCTIONS.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content INSTRUCTIONS.md | Select-Object -Last 2
+```
+
+### Step 4 — Count lines, words, and characters
+
+How big is a file? Check without reading the whole thing.
+
+**macOS / Linux**
+
+```bash
+wc INSTRUCTIONS.md
+```
+
+`wc` (word count) prints three numbers: lines, words, and characters.
+
+```bash
+wc -l INSTRUCTIONS.md
+```
+
+`-l` gives only the line count.
+
+**Windows PowerShell**
+
+```powershell
+Get-Content INSTRUCTIONS.md | Measure-Object -Line -Word -Character
+```
+
+This prints lines, words, and characters in a table.
+
+### Step 5 — Read a file you did not create
+
+Practice on a file that belongs to the system so you see how these commands work on real-world content.
+
+**macOS / Linux**
+
+```bash
+head -n 10 /etc/hosts
+```
+
+This shows the first 10 lines of the network hosts file — a real config file that every Mac and Linux machine has.
+
+**Windows PowerShell**
+
+```powershell
+Get-Content C:\Windows\System32\drivers\etc\hosts | Select-Object -First 10
+```
+
+Same file, same idea. You are reading a real system config safely.
+
+### Step 6 — Combine commands to answer a question
+
+Count how many Python files are in your project.
+
+**macOS / Linux**
+
+```bash
+find . -name "*.py" | wc -l
+```
+
+**Windows PowerShell**
+
+```powershell
+(Get-ChildItem -Recurse -Filter "*.py").Count
+```
+
+You should see `2` (main.py and test_main.py) if you are inside `tiny-agent-project/`.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `cat: file: No such file or directory` | File name is misspelled or you are in the wrong folder | Run `ls` / `Get-ChildItem -Name` to see available files, then correct the name |
+| Output floods the screen and scrolls too fast | The file is very long | Use `head -n 20 file` (macOS/Linux) or `Get-Content file | Select-Object -First 20` (Windows) to limit output |
+| `wc` shows 0 lines | The file has content but no newline at the end | `wc -l` counts newline characters. A file with one line and no trailing newline shows 0. Add a newline: `echo "" >> file` |
+| `head: command not found` on Windows | `head` is a Unix command, not available in PowerShell by default | Use `Get-Content file | Select-Object -First N` instead |
+| `Get-Content` shows garbled characters | File uses a non-UTF-8 encoding | Add `-Encoding` parameter: `Get-Content file -Encoding utf8` |
+
+<VerificationBlock
+  deliverable="Terminal output showing the contents of INSTRUCTIONS.md, the first 3 lines of INSTRUCTIONS.md, a line count of INSTRUCTIONS.md, and a count of .py files in the project."
+  verifyCheck="Output includes full file content, a head/Select-Object excerpt, a numeric line count, and a .py file count of 2."
 />

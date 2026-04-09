@@ -1,0 +1,154 @@
+---
+title: "Add a new feature file to an existing project"
+lessonNumber: "4.2.3"
+chapterNumber: "4.2"
+pathNumber: "4"
+tutorPreload: "Help me add a new feature to this project that integrates with the existing code."
+verifyType: "terminal_output"
+---
+
+# Add a new feature file to an existing project
+
+## Objective
+
+Use Claude Code to add a new feature file — such as a middleware module or utility — to the project you have been working in. Then verify it integrates correctly by importing it, running the project, and confirming the existing tests still pass. By the end you will have a new working file wired into the existing codebase with a clean commit.
+
+## Walkthrough
+
+### Step 1 — Define the feature with Claude
+
+Ask Claude to suggest a small addition that connects to existing code:
+
+```
+What small feature could I add to this project in a single new file? I want something that integrates with existing code — not a standalone script. Suggest something specific and tell me where the new file should live.
+```
+
+For json-server, Claude might suggest a custom middleware file like `src/server/request-logger.js` that logs every incoming request. For a Python project it might suggest a new endpoint or a utility module. Pick whichever suggestion makes sense.
+
+### Step 2 — Ask Claude to create the file and wire it in
+
+Give a specific instruction:
+
+```
+Create src/server/request-logger.js that logs the HTTP method, URL path, and timestamp for every incoming request. Then wire it into the server setup so it runs on every request. Show me both the new file and every existing file you changed.
+```
+
+Claude will:
+1. Create the new file with the middleware implementation
+2. Modify the server setup file to import and register the middleware
+3. Show you exactly what it created and what it changed
+
+Review both outputs carefully before moving on.
+
+### Step 3 — Verify the new file exists
+
+**macOS / Linux**
+
+```bash
+ls -la src/server/request-logger.js
+cat src/server/request-logger.js
+```
+
+**Windows PowerShell**
+
+```powershell
+Test-Path src\server\request-logger.js
+Get-Content src\server\request-logger.js
+```
+
+Confirm the file exists and the code matches what Claude showed you.
+
+### Step 4 — Verify it is imported and registered
+
+Search for the integration point in the existing server code:
+
+**macOS / Linux**
+
+```bash
+grep -n "request-logger\|requestLogger" src/server/*.js
+```
+
+**Windows PowerShell**
+
+```powershell
+Select-String -Path src\server\*.js -Pattern "request-logger|requestLogger"
+```
+
+You should see both an import/require line and a registration line (e.g., `app.use(requestLogger)`). If either is missing, tell Claude: "I see the import but not the `app.use()` call. Did you forget to register the middleware?"
+
+### Step 5 — Run the project and test manually
+
+Start the server:
+
+**Node.js**
+
+```bash
+npx json-server db.json
+```
+
+**Python**
+
+```bash
+python -m uvicorn main:app --reload
+```
+
+In a second terminal, send a test request:
+
+**macOS / Linux**
+
+```bash
+curl http://localhost:3000/posts
+```
+
+**Windows PowerShell**
+
+```powershell
+Invoke-WebRequest -Uri http://localhost:3000/posts -UseBasicParsing | Select-Object StatusCode
+```
+
+Check the server's terminal output. You should see your logger printing the method, URL, and timestamp for each request. Stop the server with Ctrl+C when done.
+
+### Step 6 — Run the existing test suite
+
+```bash
+npm test
+```
+
+If all tests pass, the new feature integrates cleanly. If tests fail, ask Claude:
+
+```
+Tests failed after adding request-logger.js. Here is the error:
+[paste output]
+Did the middleware break an existing test?
+```
+
+A common fix is to skip the logger during test runs by checking an environment variable:
+
+```javascript
+if (process.env.NODE_ENV !== 'test') {
+  app.use(requestLogger)
+}
+```
+
+### Step 7 — Commit the new feature
+
+```bash
+git add -A
+git commit -m "feat: add request logger middleware"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Server starts but logger output never appears | The middleware was not registered with `app.use()` | Ask Claude: "Show me exactly where you added the app.use() call" and verify it exists |
+| "Cannot find module" error on startup | Import path typo or the file was created in the wrong directory | Compare the import path in the error to the file's actual location on disk |
+| Tests fail because stdout output changed | The logger writes to stdout and some tests capture or assert on stdout | Guard the logger with `if (process.env.NODE_ENV !== 'test')` |
+| `curl` not recognized on Windows | Windows PowerShell does not have a standalone `curl` binary by default | Use `Invoke-WebRequest -Uri <url> -UseBasicParsing` instead |
+| Port 3000 is already in use | Another process is using that port | Stop the other process or start on a different port: `npx json-server --port 3001 db.json` |
+| Claude creates the file but does not wire it in | The instruction was not specific enough about integration | Tell Claude explicitly: "Now add a require() and app.use() call in src/server/index.js for the new middleware" |
+
+<VerificationBlock
+  deliverable="A new feature file added to the project, imported by existing code, and verified working."
+  verifyCheck="New file exists, is imported by at least one existing file, server runs with the feature active, and tests pass."
+/>

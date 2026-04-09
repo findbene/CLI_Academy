@@ -1,0 +1,140 @@
+---
+title: "Launch a Cowork session with a clear goal"
+lessonNumber: "8.2.1"
+chapterNumber: "8.2"
+pathNumber: "8"
+tutorPreload: "Walk me through starting my first real Cowork session and tell me if my opening prompt is strong enough."
+verifyType: "terminal_output"
+---
+
+# Launch a Cowork session with a clear goal
+
+## Objective
+
+By the end of this lesson you will start a real Cowork session — either in Claude Code (terminal) or in a claude.ai Project — by sharing your session brief and giving Claude its first task. You will see how a well-structured opening prompt produces a better first draft than a vague one.
+
+## Walkthrough
+
+### Step 1 — Choose your environment
+
+You can run a Cowork session in two places. Pick whichever you have access to:
+
+| Environment | How to start | Best for |
+|---|---|---|
+| **Claude Code (terminal)** | Run `claude` in your project directory | File-heavy tasks, code generation, repo work |
+| **claude.ai Projects** | Create a new Project at claude.ai, upload files to Project Knowledge | Document drafting, research, planning tasks without a local repo |
+
+Both give you the same sustained-context collaboration. The difference is where your files live.
+
+### Step 2 — Open the session and share your brief
+
+**Option A — Claude Code (terminal):**
+
+Make sure you are in the folder that contains your session brief from Lesson 8.1.2.
+
+**macOS / Linux:**
+
+```bash
+cd cowork-practice
+claude
+```
+
+**Windows PowerShell:**
+
+```powershell
+Set-Location cowork-practice
+claude
+```
+
+Once Claude Code is running, share the brief:
+
+```
+> Read cowork-session-brief.md and confirm you understand the goal, context,
+> success criteria, and boundaries. Summarize them back to me before we start.
+```
+
+Claude will read the file from your working directory and echo back its understanding. This confirmation step catches misunderstandings before any work begins.
+
+**Option B — claude.ai Projects:**
+
+1. Go to claude.ai and click **Create Project**.
+2. Name the project (e.g., "lintr README session").
+3. Upload `cowork-session-brief.md` to Project Knowledge.
+4. In the chat, type:
+
+```
+Read the session brief I uploaded. Summarize the goal, context, success
+criteria, and boundaries back to me before we start.
+```
+
+### Step 3 — Give the first task
+
+Once Claude confirms it understands the brief, give it the first concrete task. Do not say "go ahead and do everything." Break the work into steps so you can review along the way.
+
+Good opening prompt:
+
+```
+> Start with an outline for the README. Include section headings and a one-line
+> description of what each section will cover. Do not write the full content yet.
+```
+
+Claude returns an outline. You review it. This is the Cowork rhythm: **task → review → steer → next task.**
+
+Bad opening prompt (avoid this):
+
+```
+> Write the README.
+```
+
+This skips the review step. You will get a full document with no chance to redirect before Claude commits to a structure.
+
+### Step 4 — Review the outline and steer
+
+Read Claude's outline carefully. Check it against your success criteria:
+
+- Does it include installation, usage, example output, contributing, and license?
+- Did Claude stay within your boundaries (no source code, no changelog)?
+
+If something is wrong, tell Claude directly:
+
+```
+> Move "Contributing" above "License". Add a "Troubleshooting" section after
+> "Usage". Remove the "Changelog" heading — I said no changelog in the brief.
+```
+
+Claude revises the outline while keeping all your prior context. This is the advantage of a sustained session over a one-shot prompt.
+
+### Step 5 — Request the first full section
+
+Once the outline is approved, ask Claude to write one section at a time:
+
+```
+> Write the "Installation" section. Include both macOS/Linux (bash) and Windows
+> PowerShell commands. Assume the reader has Node.js installed but has never
+> used this tool before.
+```
+
+Review the section. If it meets your criteria, move to the next section. If not, give specific feedback:
+
+```
+> The PowerShell command is wrong — `npm install -g` works the same on
+> PowerShell, you don't need `sudo`. Fix that and also add a note about
+> verifying the install with `lintr --version`.
+```
+
+Continue this cycle — **task → review → steer** — until all sections are done.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude says it cannot read your file | You are not in the right directory, or the file name is misspelled | Run `ls` (macOS/Linux) or `Get-ChildItem` (PowerShell) to confirm the file exists in your current directory |
+| Claude's summary of the brief misses a key constraint | The brief was ambiguous or the constraint was buried in a long paragraph | Edit the brief to use bullet points and re-share it |
+| Claude writes the entire document in one shot instead of an outline | Your prompt said "write" without specifying "outline only" | Be explicit: "Give me an outline with headings only. Do not write full content yet." |
+| The session feels stuck in a loop of small corrections | You are editing at the sentence level too early | Approve the structure first (outline), then section content, then polish. Work top-down. |
+| Claude loses earlier context after many turns | The conversation hit the context window limit | Start a fresh session, paste in the approved outline and the last completed section as starting context |
+
+<VerificationBlock
+  deliverable="A Claude conversation containing: (1) a confirmed brief summary, (2) a reviewed outline, and (3) at least one fully written section with both macOS/Linux and Windows commands."
+  verifyCheck="The conversation shows at least one review-and-steer cycle where the learner redirected Claude's output before continuing."
+/>

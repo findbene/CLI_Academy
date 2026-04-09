@@ -1,0 +1,116 @@
+---
+title: "What computer use means for AI agents"
+lessonNumber: "16.1.1"
+chapterNumber: "16.1"
+pathNumber: "16"
+tutorPreload: "Explain Anthropic's computer use capability and when an AI should interact with a screen versus call an API."
+verifyType: "terminal_output"
+---
+
+# What computer use means for AI agents
+
+## Objective
+
+By the end of this lesson you will be able to explain what "computer use" means in the context of AI agents, describe how Anthropic's computer use API works at a high level, and articulate both the capabilities and the hard limits of letting an AI control a mouse and keyboard. You will also understand the observe–plan–act–verify loop that underpins every computer use session.
+
+## Walkthrough
+
+Most of the time you interact with an AI through text — you type a prompt, the model returns text. Computer use flips the relationship. Instead of *you* operating the screen, the AI sees what is on the screen and sends mouse clicks, keyboard input, and scroll actions on your behalf. Think of it as giving the model a remote desktop session.
+
+### Step 1 — Understand what computer use actually is
+
+Computer use means an AI agent can:
+
+- **See the screen** — the model receives a screenshot of the current desktop, browser, or application window.
+- **Move the mouse** — the model sends a coordinate-based click, double-click, or drag.
+- **Type on the keyboard** — the model sends keystrokes, including shortcuts like Ctrl+C.
+- **Scroll** — the model can scroll up, down, left, or right.
+- **Take another screenshot** — after each action the model captures the new state of the screen to decide the next step.
+
+This creates a loop:
+
+```
+┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│ Observe  │ ──▶ │   Plan   │ ──▶ │   Act    │ ──▶ │  Verify  │
+│(screenshot)    │(decide   │     │(click /  │     │(new      │
+│          │     │ next step)│     │ type)    │     │screenshot)│
+└──────────┘     └──────────┘     └──────────┘     └────┬─────┘
+       ▲                                                 │
+       └─────────────────────────────────────────────────┘
+```
+
+The agent repeats this loop until the task is finished or it encounters something it cannot resolve.
+
+### Step 2 — See how Anthropic's API structures a computer use call
+
+Below is a simplified version of what a computer use API request looks like. You do not need to run this — it is here so you can see the shape of the interaction.
+
+```python
+# Conceptual example — not runnable without API credentials
+import anthropic
+
+client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    max_tokens=1024,
+    tools=[
+        {
+            "type": "computer_20250124",
+            "name": "computer",
+            "display_width_px": 1920,
+            "display_height_px": 1080,
+        }
+    ],
+    messages=[
+        {
+            "role": "user",
+            "content": "Open the calculator app and compute 1337 * 42."
+        }
+    ],
+)
+```
+
+Key things to notice:
+
+- The tool declaration tells Claude the screen resolution so it can calculate click coordinates.
+- Claude responds with a `tool_use` block that includes an action like `{"action": "click", "x": 540, "y": 320}`.
+- Your code executes that action on the real screen, captures a new screenshot, and sends it back.
+- The loop repeats until Claude sends a final text response with the result.
+
+### Step 3 — Know the hard limits
+
+Computer use is powerful, but it has real constraints:
+
+| Capability | Limit |
+|---|---|
+| Precision | Click coordinates can miss small targets — buttons under 20 px are risky |
+| Speed | Each loop iteration requires a screenshot upload and an API call — expect 2–5 seconds per action |
+| Context | The model sees only the current screenshot; it has no DOM or accessibility tree unless you provide one |
+| Reliability | UI changes (a popup, a layout shift) can derail a plan mid-run |
+| Safety | The model can click anything it can see — including "Delete", "Purchase", or "Send" |
+
+### Step 4 — Map the observe–plan–act–verify loop to a real scenario
+
+Think of a concrete example: you want the agent to check the current price of a stock on a financial website.
+
+1. **Observe** — The agent sees the browser with a search engine open.
+2. **Plan** — It decides to type the stock ticker into the search bar and hit Enter.
+3. **Act** — It clicks the search bar, types the ticker, presses Enter.
+4. **Verify** — It takes a new screenshot and reads the price from the results page.
+
+If the results page shows a cookie-consent banner instead of the price, the agent loops back: observe the banner, plan to click "Accept", act on the click, verify the banner is gone, then continue.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Agent clicks the wrong button | Screen resolution mismatch between declared and actual display | Ensure `display_width_px` and `display_height_px` match the real screen |
+| Agent gets stuck in an infinite loop | A popup or overlay blocks the expected element every iteration | Add a maximum iteration count and a human-review fallback |
+| Sensitive action executed (purchase, delete) | No guard rails on destructive actions | Always run computer use in a sandboxed VM or container; never give it access to real payment methods |
+| API returns an error about tool type | Wrong model or tool version string | Use a model that supports computer use (check Anthropic docs for the latest supported model) |
+| Screenshot is blank or black | Screen is locked or display server is not running | Ensure a virtual display (Xvfb on Linux) or an active desktop session is available |
+
+<VerificationBlock>
+Write a short paragraph (3–5 sentences) in your own words explaining the observe–plan–act–verify loop and one real limit of computer use. Save it as `computer-use-notes.md` in your project folder. Open the file and confirm it contains your explanation.
+</VerificationBlock>

@@ -7,49 +7,195 @@ tutorPreload: "Explain the manager-worker pattern using my own planned workflow.
 verifyType: "terminal_output"
 ---
 
-# Manager-worker pattern
+# What multi-agent means in Claude Code
 
 ## Objective
-In this lesson, you'll discover the "manager-worker" pattern, a powerful way to organize tasks, especially when dealing with many similar items. We'll explore how this pattern can make your workflows more efficient and safer by breaking down complex jobs. You'll then apply this pattern to one of your own routine tasks, creating a clear "pattern card" and a conceptual "toy implementation plan" to solidify your understanding.
+
+By the end of this lesson you will understand what "multi-agent" actually means inside Claude Code — separate sessions or subagents, each governed by its own `CLAUDE.md` instructions, collaborating on parts of a larger task. You will create a minimal two-agent directory structure, run both agents, and see the handoff in practice.
+
+This is **not** about external frameworks like AutoGen or LangChain. Everything here uses native Claude Code patterns: `CLAUDE.md` contracts, the Task tool for subagent spawning, and file-based handoffs.
 
 ## Walkthrough
 
-Let's demystify the manager-worker pattern together and apply it to a task you're familiar with.
+### Step 1 — Understand the core concept
 
-1.  **Understand the Core Idea:**
-    Imagine you have a long list of tasks (e.g., processing many files, checking many websites). Instead of doing them one by one yourself, you delegate. The "manager" handles the list, assigns individual tasks, and collects results. The "workers" each take one task, complete it, and report back. This makes the overall job faster and more organized!
+In Claude Code, "multi-agent" means running more than one Claude session where each session has a distinct `CLAUDE.md` that constrains what it can do. The agents share a filesystem — one agent writes a file, the next agent reads it.
 
-2.  **Identify *Your* Workflow:**
-    Think about a task you often do on your computer that involves processing multiple, similar items. This could be:
-    *   Renaming many files.
-    *   Processing log entries from several files.
-    *   Performing a specific analysis on a list of data inputs.
-    *   *Choose one specific task you know well.*
+Key pieces:
+- **Agent** = a Claude Code session scoped by a `CLAUDE.md` file.
+- **Contract** = the `CLAUDE.md` that defines the agent's role, allowed outputs, and stop condition.
+- **Handoff** = one agent writes an output file; the next agent's contract names that file as its input.
+- **Coordinator** = a top-level `CLAUDE.md` (or a human) that runs agents in order.
 
-3.  **Create Your Pattern Card:**
-    Now, let's create a simple card to describe how the manager-worker pattern applies to *your chosen workflow*. Grab a pen and paper, or open a text editor.
+### Step 2 — Create a project with two agent contracts
 
-    *   **Pattern Name:** Manager-Worker
-    *   **Problem Solved (in your context):** How does this pattern help you with *your specific task*? (e.g., "Efficiently processing X number of Y files.")
-    *   **Manager Role (in your workflow):** What part of your task would be the "manager"? (e.g., "Script that finds all files, then loops to pass each filename to a worker, and gathers output.")
-    *   **Worker Role (in your workflow):** What would a "worker" do? (e.g., "A small script that takes a single filename, performs the specific action, and returns a result.")
-    *   **Example Flow (for your task):** Briefly describe the steps from start to finish using this pattern for *your task*. (e.g., "Manager lists all .log files, passes each to a worker. Worker processes one .log file and extracts errors. Manager collects all error reports.")
+**macOS / Linux:**
+```bash
+mkdir -p multi-agent-intro && cd multi-agent-intro
+```
 
-4.  **Develop Your Toy Implementation Plan:**
-    This isn't about writing actual code, but sketching out the *commands or conceptual steps* you'd use if you were to implement this pattern for your chosen task.
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path multi-agent-intro -Force; Set-Location multi-agent-intro
+```
 
-    *   **Manager's Conceptual Steps/Commands:**
-        *   How would the manager get the list of items to process? (e.g., `ls *.csv`, `cat items.txt`)
-        *   How would the manager *give* an item to a worker? (e.g., "Loop through list, passing each item as an argument to a worker script.")
-        *   How would the manager collect results? (e.g., "Write worker output to a file, then combine files.")
-    *   **Worker's Conceptual Steps/Commands:**
-        *   What input would the worker expect for a single item? (e.g., "Receives a filename as `$1`.")
-        *   What specific commands would the worker run on that single item? (e.g., `grep "ERROR" $1`, `sed -i 's/old/new/' $1`).
-        *   What output would the worker produce? (e.g., "Prints filtered lines to standard output," "modifies the file in place.")
+Now create the first agent contract — a **Lister** that inventories Markdown files:
 
-    *   **Safety Reminder:** Always remember that when working with real commands like `sed -i` (in-place modification) or `rm` (remove), they are powerful! Your toy plan is a safe thought exercise. When you do write scripts later, always test them on copies of your files first to prevent accidental data loss. We're planning safely here!
+**macOS / Linux:**
+```bash
+cat > lister-CLAUDE.md << 'EOF'
+# Lister Agent Contract
 
-<VerificationBlock 
-  deliverable="A pattern card and toy implementation plan."
-  verifyCheck="Learner names manager input, worker output, and stop condition."
+## Role
+You list every `.md` file in the current directory and write the list to `file-inventory.md`.
+
+## Outputs
+- `file-inventory.md` — one filename per line.
+
+## Boundaries
+- Do NOT read file contents.
+- Do NOT create any file other than `file-inventory.md`.
+
+## Stop Condition
+Stop after writing `file-inventory.md`.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Lister Agent Contract
+
+## Role
+You list every ``.md`` file in the current directory and write the list to ``file-inventory.md``.
+
+## Outputs
+- ``file-inventory.md`` — one filename per line.
+
+## Boundaries
+- Do NOT read file contents.
+- Do NOT create any file other than ``file-inventory.md``.
+
+## Stop Condition
+Stop after writing ``file-inventory.md``.
+"@ | Set-Content lister-CLAUDE.md
+```
+
+Next, create the second agent — a **Summarizer** that reads the inventory:
+
+**macOS / Linux:**
+```bash
+cat > summarizer-CLAUDE.md << 'EOF'
+# Summarizer Agent Contract
+
+## Role
+You read `file-inventory.md` and write a one-sentence summary of how many files exist and their naming pattern.
+
+## Inputs
+- `file-inventory.md` (produced by the Lister agent)
+
+## Outputs
+- `summary.md` — a short paragraph.
+
+## Boundaries
+- Do NOT modify `file-inventory.md`.
+- Do NOT create files other than `summary.md`.
+- If `file-inventory.md` does not exist, STOP and output an error message.
+
+## Stop Condition
+Stop after writing `summary.md`.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Summarizer Agent Contract
+
+## Role
+You read ``file-inventory.md`` and write a one-sentence summary of how many files exist and their naming pattern.
+
+## Inputs
+- ``file-inventory.md`` (produced by the Lister agent)
+
+## Outputs
+- ``summary.md`` — a short paragraph.
+
+## Boundaries
+- Do NOT modify ``file-inventory.md``.
+- Do NOT create files other than ``summary.md``.
+- If ``file-inventory.md`` does not exist, STOP and output an error message.
+
+## Stop Condition
+Stop after writing ``summary.md``.
+"@ | Set-Content summarizer-CLAUDE.md
+```
+
+### Step 3 — Run the agents in sequence
+
+Open Claude Code in the `multi-agent-intro/` directory.
+
+First, tell Claude Code to act as the Lister:
+
+```
+Follow the instructions in lister-CLAUDE.md exactly. Do not deviate from the contract.
+```
+
+After it finishes, verify the output:
+
+**macOS / Linux:**
+```bash
+cat file-inventory.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content file-inventory.md
+```
+
+Now run the second agent:
+
+```
+Follow the instructions in summarizer-CLAUDE.md exactly. Do not deviate from the contract.
+```
+
+Check the final output:
+
+**macOS / Linux:**
+```bash
+cat summary.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content summary.md
+```
+
+You just ran a multi-agent workflow. Two agents, two contracts, one handoff file.
+
+### Step 4 — Understand what makes this "multi-agent"
+
+The pattern has three distinctive properties:
+
+1. **Isolation** — each agent only sees its own contract. The Lister cannot summarize; the Summarizer cannot list.
+2. **Explicit handoff** — the file `file-inventory.md` is the only bridge. There is no shared memory or hidden state.
+3. **Independent stop conditions** — each agent stops on its own terms, not because the other agent told it to.
+
+If you removed the contracts and told one Claude session to "list files and then summarize them," it would work — but you would lose the ability to audit each step independently or swap one agent for a different one later.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Summarizer says `file-inventory.md` not found | Lister did not run first or failed silently | Run Lister and verify the file exists before starting Summarizer |
+| Lister reads file contents instead of listing names | Contract boundary not strict enough | Add "Do NOT open or read any file" to the Lister contract |
+| Both agents write to the same filename | Output names collide in contracts | Give each agent a unique output filename |
+| Agent keeps going after producing its file | Missing or vague stop condition | Use "Stop immediately after writing X. Do not iterate." |
+| Claude ignores the contract | Prompt phrasing too soft | Start with "Follow the instructions in X-CLAUDE.md exactly" |
+
+> **Cost warning:** If an agent's stop condition is missing or ambiguous, it can keep generating output indefinitely. Every token costs money. Always define explicit stop conditions and test with cheap, small tasks first.
+
+<VerificationBlock
+  deliverable="A `multi-agent-intro/` directory containing `lister-CLAUDE.md`, `summarizer-CLAUDE.md`, `file-inventory.md`, and `summary.md`."
+  verifyCheck="Two separate contracts exist. The Summarizer's output references only data from `file-inventory.md`. Each contract has an explicit stop condition."
 />

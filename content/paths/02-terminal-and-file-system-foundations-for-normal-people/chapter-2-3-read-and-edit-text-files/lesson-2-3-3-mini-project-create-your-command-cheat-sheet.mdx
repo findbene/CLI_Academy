@@ -10,35 +10,222 @@ verifyType: "terminal_output"
 # Mini project: create your command cheat sheet
 
 ## Objective
-Consolidate all the commands you've learned into your own personal `terminal-cheatsheet.md` that you can reference throughout the rest of your journey.
+
+Build a real `command-cheat-sheet.md` file by running every command you learned in Path 02, recording the output, and organizing it into a reference you will actually use going forward.
 
 ## Walkthrough
 
-You've learned the fundamental building blocks of terminal and file-system manipulation. You now have complete autonomy over your digital workspace!
+### Step 1 — Create the cheat sheet workspace
 
-You can:
-- Look at a map: `pwd` / `cd`
-- Scan the room: `ls` / `dir`
-- Walk into folders: `cd <folder>`
-- Walk out of folders: `cd ..`
-- Create folders: `mkdir <folder>`
-- Rename and Move: `mv <old> <new>`
-- Read files: `cat <file>`
-- Duplicate and Backup: `cp <file> <backup>`
+Start from your home directory.
 
-**The Project Task:**
-It's time to build your first real asset. 
+**macOS / Linux**
 
-1. Create a brand new folder called `cheatsheets`.
-2. Step inside it.
-3. Create a file called `terminal-cheatsheet.md`.
-4. Open it in a text editor (Notepad, VS Code, or whatever you are comfortable with) and write down the commands you've learned to form a real reference sheet.
-5. Save the file.
-6. Use `cat terminal-cheatsheet.md` to display your final masterpiece in the terminal!
+```bash
+cd ~
+mkdir -p cli-academy/cheatsheets
+cd cli-academy/cheatsheets
+pwd
+```
 
-Paste the output of your `cat` command here so the tutor can verify your beautiful cheat sheet. Congratulations on completing Path 2! You're ready to start coworking with AI.
+**Windows PowerShell**
 
-<VerificationBlock 
-  deliverable="A personal `terminal-cheatsheet.md` populated from work already done."
-  verifyCheck="Cheat sheet contains at least 10 validated commands from prior lessons."
+```powershell
+cd ~
+New-Item -ItemType Directory -Path cli-academy\cheatsheets -Force
+cd cli-academy\cheatsheets
+Get-Location
+```
+
+### Step 2 — Create the file and write the header
+
+**macOS / Linux**
+
+```bash
+echo "# Terminal Command Cheat Sheet" > command-cheat-sheet.md
+echo "" >> command-cheat-sheet.md
+echo "Commands I learned in CLI Academy Path 02." >> command-cheat-sheet.md
+echo "" >> command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Content command-cheat-sheet.md "# Terminal Command Cheat Sheet"
+Add-Content command-cheat-sheet.md ""
+Add-Content command-cheat-sheet.md "Commands I learned in CLI Academy Path 02."
+Add-Content command-cheat-sheet.md ""
+```
+
+### Step 3 — Add the navigation section
+
+Run each command and then record it in your cheat sheet.
+
+**macOS / Linux**
+
+```bash
+echo "## Navigation" >> command-cheat-sheet.md
+echo "- pwd — print current directory" >> command-cheat-sheet.md
+echo "- ls — list files and folders" >> command-cheat-sheet.md
+echo "- ls -la — list with details and hidden files" >> command-cheat-sheet.md
+echo "- cd <folder> — move into a folder" >> command-cheat-sheet.md
+echo "- cd .. — move up one level" >> command-cheat-sheet.md
+echo "- cd ~ — jump to home directory" >> command-cheat-sheet.md
+echo "" >> command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Add-Content command-cheat-sheet.md "## Navigation"
+Add-Content command-cheat-sheet.md "- Get-Location (pwd) — print current directory"
+Add-Content command-cheat-sheet.md "- Get-ChildItem (ls) — list files and folders"
+Add-Content command-cheat-sheet.md "- Get-ChildItem -Force — list with hidden files"
+Add-Content command-cheat-sheet.md "- cd <folder> — move into a folder"
+Add-Content command-cheat-sheet.md "- cd .. — move up one level"
+Add-Content command-cheat-sheet.md "- cd ~ — jump to home directory"
+Add-Content command-cheat-sheet.md ""
+```
+
+### Step 4 — Add the file creation section
+
+**macOS / Linux**
+
+```bash
+echo "## Creating files and folders" >> command-cheat-sheet.md
+echo "- mkdir <name> — create a folder" >> command-cheat-sheet.md
+echo "- mkdir -p a/b/c — create nested folders" >> command-cheat-sheet.md
+echo '- echo "text" > file — create file with content' >> command-cheat-sheet.md
+echo '- echo "text" >> file — append to file' >> command-cheat-sheet.md
+echo "" >> command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Add-Content command-cheat-sheet.md "## Creating files and folders"
+Add-Content command-cheat-sheet.md "- mkdir <name> — create a folder"
+Add-Content command-cheat-sheet.md "- New-Item -ItemType Directory -Path a\b\c -Force — create nested folders"
+Add-Content command-cheat-sheet.md "- Set-Content file 'text' — create file with content"
+Add-Content command-cheat-sheet.md "- Add-Content file 'text' — append to file"
+Add-Content command-cheat-sheet.md ""
+```
+
+### Step 5 — Add the move / rename / copy section
+
+**macOS / Linux**
+
+```bash
+echo "## Moving, renaming, copying" >> command-cheat-sheet.md
+echo "- mv old new — rename a file" >> command-cheat-sheet.md
+echo "- mv file folder/ — move a file into a folder" >> command-cheat-sheet.md
+echo "- cp file backup — copy a file" >> command-cheat-sheet.md
+echo "- cp -r folder/ backup/ — copy a folder recursively" >> command-cheat-sheet.md
+echo "" >> command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Add-Content command-cheat-sheet.md "## Moving, renaming, copying"
+Add-Content command-cheat-sheet.md "- Rename-Item old new — rename a file"
+Add-Content command-cheat-sheet.md "- Move-Item file folder\ — move a file into a folder"
+Add-Content command-cheat-sheet.md "- Copy-Item file backup — copy a file"
+Add-Content command-cheat-sheet.md "- Copy-Item -Recurse folder\ backup\ — copy a folder recursively"
+Add-Content command-cheat-sheet.md ""
+```
+
+### Step 6 — Add the reading and editing section
+
+**macOS / Linux**
+
+```bash
+echo "## Reading and editing" >> command-cheat-sheet.md
+echo "- cat file — print entire file" >> command-cheat-sheet.md
+echo "- head -n 5 file — first 5 lines" >> command-cheat-sheet.md
+echo "- tail -n 5 file — last 5 lines" >> command-cheat-sheet.md
+echo "- wc -l file — count lines" >> command-cheat-sheet.md
+echo "- diff file1 file2 — compare two files" >> command-cheat-sheet.md
+echo "- code file — open in VS Code" >> command-cheat-sheet.md
+echo "" >> command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Add-Content command-cheat-sheet.md "## Reading and editing"
+Add-Content command-cheat-sheet.md "- Get-Content file — print entire file"
+Add-Content command-cheat-sheet.md "- Get-Content file | Select-Object -First 5 — first 5 lines"
+Add-Content command-cheat-sheet.md "- Get-Content file | Select-Object -Last 5 — last 5 lines"
+Add-Content command-cheat-sheet.md "- Get-Content file | Measure-Object -Line — count lines"
+Add-Content command-cheat-sheet.md "- Compare-Object (Get-Content f1) (Get-Content f2) — compare two files"
+Add-Content command-cheat-sheet.md "- code file — open in VS Code"
+Add-Content command-cheat-sheet.md ""
+```
+
+### Step 7 — Add the safety habits section
+
+**macOS / Linux**
+
+```bash
+echo "## Safety habits" >> command-cheat-sheet.md
+echo "- Always run pwd before doing anything destructive" >> command-cheat-sheet.md
+echo "- Always cp a file before editing it" >> command-cheat-sheet.md
+echo "- Use >> (append) not > (overwrite) unless you mean it" >> command-cheat-sheet.md
+echo "- Use ls before mv to check the destination is clear" >> command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Add-Content command-cheat-sheet.md "## Safety habits"
+Add-Content command-cheat-sheet.md "- Always run Get-Location before doing anything destructive"
+Add-Content command-cheat-sheet.md "- Always Copy-Item a file before editing it"
+Add-Content command-cheat-sheet.md "- Use Add-Content (append) not Set-Content (overwrite) unless you mean it"
+Add-Content command-cheat-sheet.md "- Use Get-ChildItem before Move-Item to check the destination is clear"
+```
+
+### Step 8 — Read back your finished cheat sheet
+
+**macOS / Linux**
+
+```bash
+cat command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content command-cheat-sheet.md
+```
+
+### Step 9 — Count the commands you documented
+
+**macOS / Linux**
+
+```bash
+grep -c "^-" command-cheat-sheet.md
+```
+
+**Windows PowerShell**
+
+```powershell
+(Select-String -Path command-cheat-sheet.md -Pattern "^-").Count
+```
+
+You should see at least 20 lines, proving you have documented a solid set of commands.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| Used `>` instead of `>>` and wiped the whole file | Single arrow overwrites | Start from Step 2 and rebuild. This time watch for `>>` on every append line |
+| File contains weird characters or blank lines | Copy-paste from a website introduced invisible characters | Open the file in VS Code (`code command-cheat-sheet.md`) and clean up manually |
+| Quotes appear literally in the file with quotes | Some shells preserve outer quotes | Open in VS Code and remove them, or use single quotes on macOS/Linux |
+| `grep: command not found` on Windows | `grep` is a Unix command | Use `Select-String` as shown in the Windows PowerShell command above |
+| File ends up in the wrong folder | You forgot to `cd` into `cheatsheets/` | Move it: `mv command-cheat-sheet.md cli-academy/cheatsheets/` or `Move-Item command-cheat-sheet.md cli-academy\cheatsheets\` |
+
+<VerificationBlock
+  deliverable="A command-cheat-sheet.md in cli-academy/cheatsheets/ with at least 20 command entries organized into sections, built entirely from the terminal."
+  verifyCheck="Run cat command-cheat-sheet.md (macOS/Linux) or Get-Content command-cheat-sheet.md (Windows) and confirm at least five sections and 20 dash-prefixed command entries."
 />

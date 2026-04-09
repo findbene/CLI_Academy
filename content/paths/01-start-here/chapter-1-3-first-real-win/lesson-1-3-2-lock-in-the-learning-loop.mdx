@@ -11,30 +11,140 @@ verifyType: "terminal_output"
 
 ## Objective
 
-Before you move on to the more advanced paths (like installing Claude Code or deploying servers), you need to internalize the CLI Academy Learning Loop. 
-
-This platform does not work if you passively read it. It is an active engine.
+You will create a `learning-log.md` file, write your first dated entry describing what you built in Path 01, and establish a concrete ritual you will repeat after every future lesson. By the end you will have a running log that proves your progress over time.
 
 ## Walkthrough
 
-For every future lesson on this platform, you will follow this 4-step loop:
+### Step 1 — Navigate to your notes folder
 
-### 1. Try
-Read the walkthrough and try the commands on your own machine. Do not skip steps.
+**macOS / Linux:**
+```bash
+cd ~/cli-academy/notes
+```
 
-### 2. Get Stuck
-You **will** get stuck. You will see red error text. This is a normal part of engineering. When it happens, do not close the window.
+**Windows PowerShell:**
+```powershell
+Set-Location ~/cli-academy/notes
+```
 
-### 3. Ask Tutor
-Open the Floating Tutor (bottom right). Change your learning mode to **Hint-based** on the left. Explain your error to the Tutor and let it guide you toward the answer instead of doing it for you.
+### Step 2 — Create learning-log.md with your first entry
 
-### 4. Verify
-At the bottom of every lesson is a **Verification Block**. Paste your final output or code into it. The platform will automatically verify your success. Do not move to the next lesson until you pass the verification block!
+Write a real log entry — not a template. Describe what you actually did in Path 01.
 
-> [!TIP]
-> You are officially ready to start Path 2: Claude Code for Beginners! Go ace that Verification Block below and claim your victory!
+**macOS / Linux:**
+```bash
+cat <<'EOF' > learning-log.md
+# CLI Academy Learning Log
 
-<VerificationBlock 
-  deliverable="A personal `how-i-learn-best.md` and next-path recommendation."
-  verifyCheck="Learner selects Guided/Hint/Independent starting mode and sees the next recommended path."
+## Entry 1 — $(date +%Y-%m-%d)
+
+### What I did today
+- Created the cli-academy/ workspace with notes/, projects/, and screenshots/ folders
+- Captured my machine baseline (OS, shell, Node, editor)
+- Wrote a safety checklist with personal stop rules
+- Practiced Ctrl+C, git checkout, and mv to stop/undo/recover
+- Built my first project: a README.md written entirely from the terminal
+
+### What surprised me
+(Write one thing that was different from what you expected)
+
+### What I want to learn next
+(Write one specific thing — for example: "How to use Claude Code to generate a file for me")
+
+### Lesson rating
+- Difficulty: easy / medium / hard
+- Confidence after finishing: low / medium / high
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# CLI Academy Learning Log
+
+## Entry 1 — $(Get-Date -Format yyyy-MM-dd)
+
+### What I did today
+- Created the cli-academy/ workspace with notes/, projects/, and screenshots/ folders
+- Captured my machine baseline (OS, shell, Node, editor)
+- Wrote a safety checklist with personal stop rules
+- Practiced Ctrl+C, git checkout, and Move-Item to stop/undo/recover
+- Built my first project: a README.md written entirely from the terminal
+
+### What surprised me
+(Write one thing that was different from what you expected)
+
+### What I want to learn next
+(Write one specific thing — for example: "How to use Claude Code to generate a file for me")
+
+### Lesson rating
+- Difficulty: easy / medium / hard
+- Confidence after finishing: low / medium / high
+"@ | Set-Content learning-log.md
+```
+
+### Step 3 — Fill in the personal sections
+
+Open the file in your editor:
+
+**Any OS:**
+```bash
+code learning-log.md
+```
+
+Or open it in Notepad (Windows) / TextEdit (macOS) and replace the two placeholder lines:
+- **"What surprised me"** — write one honest sentence
+- **"What I want to learn next"** — write one specific thing
+- **"Lesson rating"** — delete the options you did not pick, leaving one for each
+
+Save the file.
+
+### Step 4 — Read the completed entry
+
+**macOS / Linux:**
+```bash
+cat learning-log.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content learning-log.md
+```
+
+You should see a complete dated entry with your personal notes filled in.
+
+### Step 5 — Understand the ritual
+
+After every CLI Academy lesson going forward, you will:
+
+1. Open `learning-log.md`
+2. Add a new `## Entry N — YYYY-MM-DD` section at the bottom
+3. Write what you did, what surprised you, and what you want next
+4. Rate the lesson difficulty and your confidence
+
+This takes about two minutes and builds a personal record of everything you learn. When you look back after 10 lessons, you will be amazed at how far you have come.
+
+### Step 6 — Commit your log
+
+```bash
+cd ~/cli-academy
+git add notes/learning-log.md
+git commit -m "Start learning log with Path 01 entry"
+```
+
+(Same commands on macOS, Linux, and Windows PowerShell.)
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| Placeholder text is still in the file | You did not edit the file in Step 3 | Open it in your editor and replace the parenthetical prompts with real sentences |
+| `code: command not found` | VS Code is not on your PATH | Open the file with any text editor — Notepad, TextEdit, nano, vim all work |
+| `git commit` says "nothing to commit" | You already committed this file | This is fine — your work is saved |
+| Date shows the wrong format | Different locale settings | The date is just a label — any readable date format is acceptable |
+| You forgot what you did in earlier lessons | Normal — this is exactly why the log exists | Scroll up through Path 01 lessons and jot down one bullet per lesson |
+
+<VerificationBlock
+  deliverable="A learning-log.md in cli-academy/notes/ with a dated Entry 1 that includes personal notes about what you did, what surprised you, and what you want to learn next."
+  verifyCheck="Run cat learning-log.md (macOS/Linux) or Get-Content learning-log.md (Windows) and confirm Entry 1 has a real date, filled-in personal sections (not placeholder text), and a difficulty/confidence rating."
 />

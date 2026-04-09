@@ -1,0 +1,159 @@
+---
+title: "Monitor progress and steer the session"
+lessonNumber: "8.2.2"
+chapterNumber: "8.2"
+pathNumber: "8"
+tutorPreload: "My Cowork session is drifting off track. Help me figure out how to redirect Claude without starting over."
+verifyType: "terminal_output"
+---
+
+# Monitor progress and steer the session
+
+## Objective
+
+By the end of this lesson you will know how to monitor a running Cowork session, catch when Claude goes off track, and redirect it with clear, specific feedback. You will also know how to handle the common situation where Claude says "I don't have enough information" — without panicking.
+
+## Walkthrough
+
+### Step 1 — Set up a progress checkpoint habit
+
+Once a Cowork session is running, it is tempting to let Claude keep writing turn after turn. Resist this. The longer you wait to review, the harder it is to course-correct.
+
+**Rule of thumb:** Review after every major output, not at the end of the session.
+
+After Claude delivers a section or draft, stop and ask yourself three questions:
+
+1. **Does this match the brief?** Compare the output against your Goal and Success criteria from the session brief.
+2. **Is anything outside the boundaries?** Check for content you explicitly told Claude to avoid.
+3. **Would I be comfortable using this as-is?** If not, identify the specific problem before giving feedback.
+
+### Step 2 — Practice giving precise steering prompts
+
+Vague feedback wastes turns. Compare these two approaches:
+
+**Vague (wastes a turn):**
+
+```
+> This isn't quite right. Can you redo it?
+```
+
+Claude does not know what "not quite right" means. It will guess, and it will probably guess wrong.
+
+**Precise (fixes the issue in one turn):**
+
+```
+> The "Usage" section is missing the --verbose flag. Add a subsection showing
+> `lintr check ./docs --verbose` and explain that it prints each URL it
+> checks. Also, the output example shows Linux paths — add a Windows
+> equivalent using backslashes.
+```
+
+Claude knows exactly what to change and can do it in a single revision.
+
+### Step 3 — Handle "I don't have enough information"
+
+Sometimes Claude will say something like:
+
+> "I don't have enough information about your project structure to write this section accurately. Could you share the contents of `package.json`?"
+
+This is not an error. It is Claude doing the right thing — asking instead of guessing. Respond by providing the requested context:
+
+```
+> Here is the package.json:
+> {
+>   "name": "lintr",
+>   "version": "0.1.0",
+>   "type": "module",
+>   "bin": { "lintr": "./bin/lintr.js" },
+>   "scripts": { "test": "node --test tests/" }
+> }
+> Now continue with the Installation section.
+```
+
+If you are in Claude Code and the file exists in your project, you can also say:
+
+```
+> Read package.json from my project directory and use it to continue.
+```
+
+### Step 4 — Recognize the signs of a derailing session
+
+Watch for these patterns during a multi-turn session:
+
+| Warning sign | What is happening | How to fix it |
+|---|---|---|
+| Claude starts repeating itself with minor variations | It has lost the thread of what you want | Re-state your goal in one sentence: "Remember, the deliverable is a README for lintr. Here is the approved outline. Continue from the 'Contributing' section." |
+| Output suddenly drops in quality or becomes generic | The conversation may be approaching the context window limit | Copy the approved work so far into a file, start a new session, and paste it in as starting context |
+| Claude adds features or sections you did not ask for | It is filling gaps on its own instead of asking you | Redirect immediately: "Remove the Changelog section. I did not request it and it is outside the boundaries in my brief." |
+| You realize the brief itself was wrong | Your goal or constraints have changed mid-session | Pause and update the brief file, then share the updated version: "I have revised the brief. Read `cowork-session-brief.md` again and adjust your approach." |
+
+### Step 5 — Practice a mid-session redirect
+
+Open a Cowork session (continuing from Lesson 8.2.1) and deliberately practice a redirect. Ask Claude to write a section, then give it corrective feedback even if the output is decent. The point is to build the muscle memory for steering.
+
+Example sequence:
+
+Turn 1 — Request:
+
+```
+> Write the "Troubleshooting" section. List three common problems and their
+> fixes.
+```
+
+Turn 2 — Claude delivers the section.
+
+Turn 3 — You redirect:
+
+```
+> Good problems listed, but the fixes are too vague. For each fix, include the
+> exact command the user should run. Also add a fourth problem: "lintr hangs
+> on large directories" with the fix being to use the --timeout flag.
+```
+
+Turn 4 — Claude revises with specific commands and the fourth item.
+
+That redirect only worked because you gave Claude something concrete to do. "Make it better" would have produced a coin flip.
+
+### Step 6 — Save your progress before the session ends
+
+At any point you can ask Claude to save the current state:
+
+**In Claude Code:**
+
+```
+> Save everything we have written so far to README.md in the current directory.
+```
+
+**In claude.ai:**
+
+Copy the latest approved text and save it locally.
+
+**macOS / Linux:**
+
+```bash
+# After copying Claude's output to your clipboard:
+pbpaste > README.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+# After copying Claude's output to your clipboard:
+Get-Clipboard | Set-Content -Path README.md -Encoding utf8
+```
+
+This way, if the session crashes or you run out of context, your work is preserved.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude ignores your correction and keeps the old version | Your correction was mixed in with other feedback and Claude prioritized the other part | Send the correction as a standalone message with nothing else: "Change X to Y. That is the only task for this turn." |
+| Session suddenly feels slow or Claude's replies are truncated | Context window is nearly full | Save your work, start a new session, and re-share only the essential context |
+| You accidentally approved a bad section and Claude built on it | You did not review carefully before moving to the next task | It is fine. Tell Claude: "Go back to the Usage section. The install command was wrong. Fix it to [correct command] and then regenerate everything that depended on it." |
+| Claude asks for information you already provided earlier | Long session — context may have dropped older turns | Re-share the specific information: "Here is the package.json again: [contents]" |
+
+<VerificationBlock
+  deliverable="A Cowork session log showing at least two steering corrections — one where you gave precise redirect feedback, and one where you responded to Claude asking for more information."
+  verifyCheck="Both corrections are specific (not 'make it better') and Claude's revised output reflects the feedback accurately."
+/>

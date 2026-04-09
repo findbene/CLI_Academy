@@ -10,25 +10,161 @@ verifyType: "terminal_output"
 # Write the case study and demo script
 
 ## Objective
-
-You're ready to transform your capstone project into a compelling narrative! In this lesson, you will craft a concise case study that explains the "why" and "what" of your project. Then, you'll develop a 3-minute demo script that walks an audience through the "how" in an engaging and easy-to-understand way. This deliverable will be a **case study plus a 3-minute demo script**.
+Package the knowledge workflow so another person can understand the problem, see the evidence, and watch a short demo without extra explanation from you. In this lesson, you will create a case study and a 3-minute demo script based on the real TODO report you generated.
 
 ## Walkthrough
 
-It's natural to feel a bit daunted by presenting, but remember, you've built something great! Let's break down how to tell its story.
+### Step 1: Collect the evidence you will cite
+Your case study should only claim what the artifacts prove.
 
-1.  **Revisit Your Capstone's Purpose:** Before writing, take a moment to reflect. What problem were you trying to solve? How did your project help? There are no wrong answers here, just clarity!
-2.  **Write Your Case Study (The Story Arc):**
-    *   **Identify the Problem:** Start by clearly stating the challenge or pain point your project addresses. *Example: "Users struggle to quickly find available network ports."*
-    *   **Describe Your Solution:** Briefly explain how your capstone project provides a unique solution to that problem.
-    *   **Highlight the Impact:** What's the benefit? How does your solution make things better, faster, or easier? Keep this section short, focusing on one or two key outcomes.
-3.  **Outline Your 3-Minute Demo Script (The Action):**
-    *   **The Hook (15-30 seconds):** Start by restating the problem and immediately introduce your project as the solution.
-    *   **The "Show" (1.5-2 minutes):** Walk through 2-3 core features or steps that demonstrate your solution in action. Think about the most impactful things you can show. Don't worry about showing *everything*; focus on what best illustrates your case study's points.
-    *   **The Wrap-Up (30-45 seconds):** Briefly summarize the main benefit and reiterate how your project solves the initial problem. End with a clear, positive statement.
-4.  **Practice and Refine:** Read your script aloud. Does it flow well? Is it genuinely 3 minutes? Don't hesitate to trim jargon or simplify explanations. This isn't about perfection right away, but about clear communication. You've got this!
+macOS/Linux:
+```bash
+cat source-snapshots/raw-findings.txt
+cat todo-report.md
+cat logs/run-001.md
+cat logs/edge-cases.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content source-snapshots/raw-findings.txt
+Get-Content todo-report.md
+Get-Content logs/run-001.md
+Get-Content logs/edge-cases.md
+```
+
+### Step 2: Write CASE-STUDY.md around the real workflow
+Use a problem -> approach -> result -> lessons structure and tie every claim to the artifacts you already have.
+
+macOS/Linux:
+```bash
+cat > CASE-STUDY.md <<'EOF'
+# Case Study: Codebase TODO Extraction Workflow
+
+## Problem
+Important cleanup work often hides inside scattered TODO, FIXME, and XXX markers that are easy to miss in normal feature work.
+
+## Approach
+I designed a bounded Claude Code workflow that reads one captured dataset of raw TODO-style findings, groups the results by folder, and produces one review-friendly markdown report.
+
+## Result
+The workflow transformed source-snapshots/raw-findings.txt into todo-report.md, logged the run in logs/run-001.md, and recorded edge-case handling in logs/edge-cases.md.
+
+## Evidence
+- Raw dataset: source-snapshots/raw-findings.txt
+- Structured report: todo-report.md
+- Run log: logs/run-001.md
+- Edge-case handling: logs/edge-cases.md
+
+## Lessons Learned
+- Capturing the dataset before summarization reduces hallucinated findings.
+- Empty-result behavior must be designed up front.
+- A schema with path, line number, and context makes the report reusable for real cleanup work.
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Case Study: Codebase TODO Extraction Workflow
+
+## Problem
+Important cleanup work often hides inside scattered TODO, FIXME, and XXX markers that are easy to miss in normal feature work.
+
+## Approach
+I designed a bounded Claude Code workflow that reads one captured dataset of raw TODO-style findings, groups the results by folder, and produces one review-friendly markdown report.
+
+## Result
+The workflow transformed source-snapshots/raw-findings.txt into todo-report.md, logged the run in logs/run-001.md, and recorded edge-case handling in logs/edge-cases.md.
+
+## Evidence
+- Raw dataset: source-snapshots/raw-findings.txt
+- Structured report: todo-report.md
+- Run log: logs/run-001.md
+- Edge-case handling: logs/edge-cases.md
+
+## Lessons Learned
+- Capturing the dataset before summarization reduces hallucinated findings.
+- Empty-result behavior must be designed up front.
+- A schema with path, line number, and context makes the report reusable for real cleanup work.
+"@ | Set-Content CASE-STUDY.md
+```
+
+### Step 3: Write a 3-minute demo script with timestamps
+Keep the script short enough that you could actually deliver it in an interview or portfolio video.
+
+macOS/Linux:
+```bash
+cat > demo-script.md <<'EOF'
+# Demo Script: Codebase TODO Extraction Workflow
+
+## 0:00-0:30
+I start with a common maintenance problem: TODO markers are everywhere, but they are hard to review in bulk.
+
+## 0:30-1:15
+I show the raw dataset in source-snapshots/raw-findings.txt so the audience can see the unprocessed evidence.
+
+## 1:15-2:15
+I open todo-report.md and explain how the workflow groups findings by folder, highlights the highest-priority review items, and preserves path and line number detail.
+
+## 2:15-2:45
+I show logs/run-001.md and logs/edge-cases.md to prove the workflow behavior was logged and that empty-result or rate-limit scenarios were considered.
+
+## 2:45-3:00
+I close by explaining how this workflow turns a noisy code scan into a report a team can actually use during cleanup planning.
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Demo Script: Codebase TODO Extraction Workflow
+
+## 0:00-0:30
+I start with a common maintenance problem: TODO markers are everywhere, but they are hard to review in bulk.
+
+## 0:30-1:15
+I show the raw dataset in source-snapshots/raw-findings.txt so the audience can see the unprocessed evidence.
+
+## 1:15-2:15
+I open todo-report.md and explain how the workflow groups findings by folder, highlights the highest-priority review items, and preserves path and line number detail.
+
+## 2:15-2:45
+I show logs/run-001.md and logs/edge-cases.md to prove the workflow behavior was logged and that empty-result or rate-limit scenarios were considered.
+
+## 2:45-3:00
+I close by explaining how this workflow turns a noisy code scan into a report a team can actually use during cleanup planning.
+"@ | Set-Content demo-script.md
+```
+
+### Step 4: Read the package in presentation order
+Review it in the same order your audience will see it.
+
+macOS/Linux:
+```bash
+cat CASE-STUDY.md
+cat demo-script.md
+cat todo-report.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content CASE-STUDY.md
+Get-Content demo-script.md
+Get-Content todo-report.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The demo script sounds generic | You described a workflow pattern instead of your actual run | Mention the real files and real artifact names |
+| The case study overstates impact | You inferred outcomes not shown in the evidence | Limit claims to what the dataset, report, and logs prove |
+| The script runs longer than 3 minutes | You are trying to show every finding | Focus on raw dataset, final report, and one edge-case note |
+| The audience cannot follow the workflow | The presentation jumps between files randomly | Present raw dataset first, report second, logs third |
+| The package hides failure handling | Edge cases are not visible in the story | Show logs/edge-cases.md explicitly in the demo |
 
 <VerificationBlock 
-  deliverable="A case study plus 3-minute demo script."
-  verifyCheck="Demo script is short, concrete, and evidence-led."
+  deliverable="A presentation-ready package containing CASE-STUDY.md, demo-script.md, todo-report.md, and the supporting evidence files."
+  verifyCheck="Someone else can read the case study, deliver the 3-minute script, and point to the raw dataset, final report, and edge-case log without needing extra explanation from you."
 />

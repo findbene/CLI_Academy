@@ -1,0 +1,430 @@
+---
+title: "Mini project: build a three-agent pipeline"
+lessonNumber: "13.3.4"
+chapterNumber: "13.3"
+pathNumber: "13"
+tutorPreload: "Walk me through each handoff in my three-agent pipeline and confirm nothing is missing."
+verifyType: "terminal_output"
+---
+
+# Mini project: build a three-agent pipeline
+
+## Objective
+
+This is the capstone for Path 13. You will combine everything from the previous lessons — contracts, sequential orchestration, review gates, error handling — into a single three-agent pipeline: **Researcher → Writer → Reviewer**. The pipeline will include handoff verification, a capped review loop, retry logic, and a final commit of the approved article to Git.
+
+By the end you will have a production-style pipeline directory that you can adapt for any research-and-write task.
+
+## Walkthrough
+
+### Step 1 — Create the project directory
+
+**macOS / Linux:**
+```bash
+mkdir -p three-agent-pipeline && cd three-agent-pipeline
+git init
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path three-agent-pipeline -Force; Set-Location three-agent-pipeline
+git init
+```
+
+### Step 2 — Write all three agent contracts
+
+**macOS / Linux:**
+```bash
+cat > researcher-CLAUDE.md << 'EOF'
+# Researcher Agent Contract
+
+## Role
+Gather 5–8 factual bullet points on the assigned topic.
+
+## Topic
+"What are the most important things to check before pushing code to a shared repository?"
+
+## Outputs
+- `research-findings.md` — bullet list with brief explanations and a confidence note.
+
+## Boundaries
+- No prose, analysis, or recommendations.
+- Only create `research-findings.md`.
+
+## Stop Condition
+Stop after writing `research-findings.md`. One pass only.
+EOF
+
+cat > writer-CLAUDE.md << 'EOF'
+# Writer Agent Contract
+
+## Role
+Turn raw findings into a clear, beginner-friendly article.
+
+## Inputs
+- `research-findings.md`
+- If `review-feedback.md` exists, incorporate its corrections.
+
+## Outputs
+- `article-draft.md` — titled article with introduction, one section per finding, and a conclusion.
+
+## Boundaries
+- Every claim must trace to a bullet in `research-findings.md`.
+- Do not modify `research-findings.md` or `review-feedback.md`.
+- Only create `article-draft.md`.
+- If `research-findings.md` is missing or empty, STOP and report the error.
+
+## Stop Condition
+Stop after writing `article-draft.md`.
+EOF
+
+cat > reviewer-CLAUDE.md << 'EOF'
+# Reviewer Agent Contract
+
+## Role
+Compare `article-draft.md` against `research-findings.md` for factual accuracy.
+
+## Inputs
+- `research-findings.md` (source of truth)
+- `article-draft.md` (document under review)
+
+## Outputs
+- `review-verdict.md` — line 1 is PASS or FAIL. If FAIL, include a numbered list of issues.
+- If FAIL, also write `review-feedback.md` with specific corrections for the Writer.
+
+## Boundaries
+- Do NOT modify `research-findings.md` or `article-draft.md`.
+- Do NOT rewrite the article.
+- Only create `review-verdict.md` and (if FAIL) `review-feedback.md`.
+
+## Stop Condition
+Stop after writing output files.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Researcher Agent Contract
+
+## Role
+Gather 5-8 factual bullet points on the assigned topic.
+
+## Topic
+"What are the most important things to check before pushing code to a shared repository?"
+
+## Outputs
+- ``research-findings.md`` — bullet list with brief explanations and a confidence note.
+
+## Boundaries
+- No prose, analysis, or recommendations.
+- Only create ``research-findings.md``.
+
+## Stop Condition
+Stop after writing ``research-findings.md``. One pass only.
+"@ | Set-Content researcher-CLAUDE.md
+
+@"
+# Writer Agent Contract
+
+## Role
+Turn raw findings into a clear, beginner-friendly article.
+
+## Inputs
+- ``research-findings.md``
+- If ``review-feedback.md`` exists, incorporate its corrections.
+
+## Outputs
+- ``article-draft.md`` — titled article with introduction, one section per finding, and a conclusion.
+
+## Boundaries
+- Every claim must trace to a bullet in ``research-findings.md``.
+- Do not modify ``research-findings.md`` or ``review-feedback.md``.
+- Only create ``article-draft.md``.
+- If ``research-findings.md`` is missing or empty, STOP and report the error.
+
+## Stop Condition
+Stop after writing ``article-draft.md``.
+"@ | Set-Content writer-CLAUDE.md
+
+@"
+# Reviewer Agent Contract
+
+## Role
+Compare ``article-draft.md`` against ``research-findings.md`` for factual accuracy.
+
+## Inputs
+- ``research-findings.md`` (source of truth)
+- ``article-draft.md`` (document under review)
+
+## Outputs
+- ``review-verdict.md`` — line 1 is PASS or FAIL. If FAIL, include a numbered list of issues.
+- If FAIL, also write ``review-feedback.md`` with specific corrections for the Writer.
+
+## Boundaries
+- Do NOT modify ``research-findings.md`` or ``article-draft.md``.
+- Do NOT rewrite the article.
+- Only create ``review-verdict.md`` and (if FAIL) ``review-feedback.md``.
+
+## Stop Condition
+Stop after writing output files.
+"@ | Set-Content reviewer-CLAUDE.md
+```
+
+### Step 3 — Write the full pipeline script (macOS / Linux)
+
+```bash
+cat > run-full-pipeline.sh << 'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+MAX_RETRIES=2
+MAX_REVISIONS=2
+TIMEOUT_SECONDS=120
+
+run_agent() {
+  local contract="$1"
+  local prompt="$2"
+  local expected_output="$3"
+  local attempt=0
+
+  while [ $attempt -lt $MAX_RETRIES ]; do
+    attempt=$((attempt + 1))
+    echo "  Attempt $attempt/$MAX_RETRIES..."
+    if timeout "$TIMEOUT_SECONDS" claude --print "$prompt" 2>/dev/null; then
+      if [ -s "$expected_output" ]; then
+        echo "  OK: $expected_output ($(wc -l < "$expected_output") lines)"
+        return 0
+      else
+        echo "  WARN: $expected_output missing or empty."
+      fi
+    else
+      echo "  WARN: Timeout or error."
+    fi
+  done
+  return 1
+}
+
+# === STAGE 1: RESEARCHER ===
+echo "=== Stage 1: Researcher ==="
+if ! run_agent "researcher-CLAUDE.md" \
+    "Follow researcher-CLAUDE.md exactly." \
+    "research-findings.md"; then
+  echo "ABORT: Researcher failed after $MAX_RETRIES attempts."
+  echo "$(date): Researcher FAILED" >> pipeline-errors.log
+  exit 1
+fi
+
+# === STAGE 2: WRITER (initial) ===
+echo ""
+echo "=== Stage 2: Writer (initial draft) ==="
+if ! run_agent "writer-CLAUDE.md" \
+    "Follow writer-CLAUDE.md exactly." \
+    "article-draft.md"; then
+  echo "ABORT: Writer failed on initial draft."
+  echo "$(date): Writer FAILED (initial)" >> pipeline-errors.log
+  exit 1
+fi
+
+# === STAGE 3: REVIEW LOOP ===
+revision=0
+while [ $revision -lt $MAX_REVISIONS ]; do
+  echo ""
+  echo "=== Stage 3: Reviewer (round $((revision + 1))) ==="
+  rm -f review-verdict.md review-feedback.md
+
+  if ! run_agent "reviewer-CLAUDE.md" \
+      "Follow reviewer-CLAUDE.md exactly." \
+      "review-verdict.md"; then
+    echo "ABORT: Reviewer failed."
+    echo "$(date): Reviewer FAILED" >> pipeline-errors.log
+    exit 1
+  fi
+
+  verdict=$(head -1 review-verdict.md | tr -d '[:space:]')
+  if [ "$verdict" = "PASS" ]; then
+    echo "  Review PASSED."
+    break
+  fi
+
+  echo "  Review FAILED. Revising..."
+  revision=$((revision + 1))
+  if [ $revision -lt $MAX_REVISIONS ]; then
+    if ! run_agent "writer-CLAUDE.md" \
+        "Follow writer-CLAUDE.md exactly. Read review-feedback.md and fix all issues." \
+        "article-draft.md"; then
+      echo "ABORT: Writer failed during revision."
+      echo "$(date): Writer FAILED (revision $revision)" >> pipeline-errors.log
+      exit 1
+    fi
+  else
+    echo "  WARNING: Max revisions reached. Proceeding with current draft."
+  fi
+done
+
+# === STAGE 4: COMMIT ===
+echo ""
+echo "=== Stage 4: Commit results ==="
+git add research-findings.md article-draft.md review-verdict.md
+git commit -m "feat: three-agent pipeline output — researched, written, reviewed"
+echo "Pipeline complete. Committed to Git."
+SCRIPT
+
+chmod +x run-full-pipeline.sh
+```
+
+### Step 4 — Write the full pipeline script (Windows PowerShell)
+
+```powershell
+@"
+`$ErrorActionPreference = "Stop"
+`$MAX_RETRIES = 2
+`$MAX_REVISIONS = 2
+`$TIMEOUT_SECONDS = 120
+
+function Run-Agent {
+    param([string]`$Contract, [string]`$Prompt, [string]`$ExpectedOutput)
+    for (`$attempt = 1; `$attempt -le `$MAX_RETRIES; `$attempt++) {
+        Write-Host "  Attempt `$attempt/`$MAX_RETRIES..."
+        try {
+            `$job = Start-Job -ScriptBlock { param(`$p) claude --print `$p } -ArgumentList `$Prompt
+            `$finished = Wait-Job `$job -Timeout `$TIMEOUT_SECONDS
+            if (`$null -eq `$finished) {
+                Stop-Job `$job; Remove-Job `$job -Force
+                Write-Host "  WARN: Timeout."; continue
+            }
+            Receive-Job `$job; Remove-Job `$job
+            if ((Test-Path `$ExpectedOutput) -and (Get-Item `$ExpectedOutput).Length -gt 0) {
+                `$lines = (Get-Content `$ExpectedOutput).Count
+                Write-Host "  OK: `$ExpectedOutput (`$lines lines)"
+                return `$true
+            } else { Write-Host "  WARN: `$ExpectedOutput missing or empty." }
+        } catch { Write-Host "  WARN: Error: `$_" }
+    }
+    return `$false
+}
+
+# Stage 1: Researcher
+Write-Host "=== Stage 1: Researcher ==="
+if (-not (Run-Agent "researcher-CLAUDE.md" "Follow researcher-CLAUDE.md exactly." "research-findings.md")) {
+    Write-Host "ABORT: Researcher failed."
+    Add-Content pipeline-errors.log "`$(Get-Date): Researcher FAILED"
+    exit 1
+}
+
+# Stage 2: Writer (initial)
+Write-Host "`n=== Stage 2: Writer (initial draft) ==="
+if (-not (Run-Agent "writer-CLAUDE.md" "Follow writer-CLAUDE.md exactly." "article-draft.md")) {
+    Write-Host "ABORT: Writer failed on initial draft."
+    Add-Content pipeline-errors.log "`$(Get-Date): Writer FAILED (initial)"
+    exit 1
+}
+
+# Stage 3: Review loop
+`$revision = 0
+while (`$revision -lt `$MAX_REVISIONS) {
+    Write-Host "`n=== Stage 3: Reviewer (round `$(`$revision + 1)) ==="
+    Remove-Item review-verdict.md, review-feedback.md -ErrorAction SilentlyContinue
+
+    if (-not (Run-Agent "reviewer-CLAUDE.md" "Follow reviewer-CLAUDE.md exactly." "review-verdict.md")) {
+        Write-Host "ABORT: Reviewer failed."
+        Add-Content pipeline-errors.log "`$(Get-Date): Reviewer FAILED"
+        exit 1
+    }
+
+    `$verdict = (Get-Content review-verdict.md -First 1).Trim()
+    if (`$verdict -eq "PASS") {
+        Write-Host "  Review PASSED."; break
+    }
+
+    Write-Host "  Review FAILED. Revising..."
+    `$revision++
+    if (`$revision -lt `$MAX_REVISIONS) {
+        if (-not (Run-Agent "writer-CLAUDE.md" "Follow writer-CLAUDE.md exactly. Read review-feedback.md and fix all issues." "article-draft.md")) {
+            Write-Host "ABORT: Writer failed during revision."
+            Add-Content pipeline-errors.log "`$(Get-Date): Writer FAILED (revision `$revision)"
+            exit 1
+        }
+    } else {
+        Write-Host "  WARNING: Max revisions reached. Proceeding with current draft."
+    }
+}
+
+# Stage 4: Commit
+Write-Host "`n=== Stage 4: Commit results ==="
+git add research-findings.md article-draft.md review-verdict.md
+git commit -m "feat: three-agent pipeline output - researched, written, reviewed"
+Write-Host "Pipeline complete. Committed to Git."
+"@ | Set-Content run-full-pipeline.ps1
+```
+
+### Step 5 — Run the complete pipeline
+
+**macOS / Linux:**
+```bash
+./run-full-pipeline.sh
+```
+
+**Windows PowerShell:**
+```powershell
+.\run-full-pipeline.ps1
+```
+
+Watch the output stage by stage. You should see:
+1. Researcher produces findings — handoff verified.
+2. Writer produces initial draft — handoff verified.
+3. Reviewer checks the draft — verdict is PASS or FAIL.
+4. If FAIL, Writer revises (up to `MAX_REVISIONS` times).
+5. Final result committed to Git.
+
+### Step 6 — Verify the Git commit
+
+**macOS / Linux:**
+```bash
+git log --oneline -1
+git show --stat HEAD
+```
+
+**Windows PowerShell:**
+```powershell
+git log --oneline -1
+git show --stat HEAD
+```
+
+You should see the commit with the three output files. This confirms the pipeline ran end-to-end and preserved its results.
+
+### Step 7 — Review what you built
+
+Your `three-agent-pipeline/` directory should contain:
+
+| File | Purpose |
+|------|---------|
+| `researcher-CLAUDE.md` | Agent 1 contract |
+| `writer-CLAUDE.md` | Agent 2 contract |
+| `reviewer-CLAUDE.md` | Agent 3 contract |
+| `run-full-pipeline.sh` | Orchestrator (macOS/Linux) |
+| `run-full-pipeline.ps1` | Orchestrator (Windows) |
+| `research-findings.md` | Agent 1 output |
+| `article-draft.md` | Agent 2 output (final) |
+| `review-verdict.md` | Agent 3 output |
+| `review-feedback.md` | Agent 3 feedback (if FAIL occurred) |
+| `pipeline-errors.log` | Error log (if any failures occurred) |
+
+Every file has a single purpose. Every agent has a contract. The orchestrator handles sequencing, verification, retries, and the review gate.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `git commit` fails with "nothing to commit" | Files were already committed or not created | Check that agent output files exist before running `git add` |
+| Pipeline takes 10+ minutes | Three agents × retries × review loop | Narrow the topic, reduce `TIMEOUT_SECONDS`, and test contracts individually first |
+| Review loop never passes | Reviewer criteria too strict or Writer ignores feedback | Lower review strictness or improve the feedback specificity in the Reviewer contract |
+| API costs spike unexpectedly | `MAX_RETRIES=2` × `MAX_REVISIONS=2` = up to 7 agent sessions | Test each agent individually first, then run the full pipeline once |
+| Pipeline script runs on wrong OS | `.sh` on Windows or `.ps1` on Linux | Use the correct script for your operating system |
+
+> **Cost and safety warning:** This pipeline can run up to **7 agent sessions** in the worst case (Researcher × 2 retries, Writer × 2 retries, Reviewer × 2 rounds, Writer revision × 1). At typical token costs, that adds up. **Always test agent contracts individually on trivial topics before running the full pipeline.** Never set `MAX_RETRIES` or `MAX_REVISIONS` above 3 unless you have confirmed your budget can absorb the cost.
+
+<VerificationBlock
+  deliverable="A `three-agent-pipeline/` directory with three agent contracts, orchestration scripts for both macOS/Linux and Windows, output files from all three agents, and a Git commit containing the final results."
+  verifyCheck="The pipeline runs Researcher → Writer → Reviewer in sequence with handoff checks. The review loop is capped at MAX_REVISIONS. Failed agents are retried up to MAX_RETRIES. The approved article is committed to Git."
+/>

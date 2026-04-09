@@ -1,0 +1,156 @@
+---
+title: "Review a PR and merge on GitHub"
+lessonNumber: "6.3.2"
+chapterNumber: "6.3"
+pathNumber: "6"
+tutorPreload: "Summarize what this PR changes and whether it is safe to merge."
+verifyType: "terminal_output"
+---
+
+# Review a PR and merge on GitHub
+
+## Objective
+
+By the end of this lesson you will review a pull request — read the diff, leave a comment, approve, and merge it — using both the GitHub web interface and the GitHub CLI. You will also delete the merged feature branch to keep your repo clean.
+
+## Walkthrough
+
+This lesson picks up from Lesson 6.3.1. You should have an open PR titled "Add homepage" on the `pr-lab` repository. If not, complete that lesson first.
+
+### Step 1 — View the PR details from the terminal
+
+```bash
+gh pr view 1
+```
+
+(Replace `1` with your PR number if different.)
+
+Output shows the title, description, branch names, status, and URL. This is a quick way to check a PR without leaving the terminal.
+
+For a more detailed look:
+
+```bash
+gh pr diff 1
+```
+
+This shows the exact file changes — the same diff you see on GitHub's "Files changed" tab.
+
+### Step 2 — Review the PR on the web
+
+Open the PR URL in your browser (shown in the `gh pr view` output) and go to the **Files changed** tab.
+
+1. **Read the diff.** Green lines are additions, red lines are deletions. For this PR you should see `index.html` added.
+2. **Leave a comment** on a specific line: hover over a line number, click the blue `+` icon, type a comment like "Looks good — clean HTML structure", and click **Add single comment**.
+3. **Submit a review:** Click **Review changes** in the top-right, select **Approve**, and click **Submit review**.
+
+### Step 3 — Leave a review comment from the CLI
+
+You can also comment from the terminal:
+
+```bash
+gh pr comment 1 --body "Reviewed the homepage HTML — looks clean. Approving."
+```
+
+And approve:
+
+```bash
+gh pr review 1 --approve --body "LGTM — ready to merge."
+```
+
+### Step 4 — Merge the PR from the web
+
+On the PR page, click the green **Merge pull request** button. Choose **Create a merge commit** (the default). Click **Confirm merge**.
+
+GitHub shows "Pull request successfully merged and closed."
+
+Now click **Delete branch** to remove `feature-homepage` from GitHub.
+
+### Step 5 — Merge the PR from the CLI
+
+If you prefer the terminal:
+
+```bash
+gh pr merge 1 --merge --delete-branch
+```
+
+Flags:
+- `--merge` creates a merge commit (alternatives: `--squash`, `--rebase`)
+- `--delete-branch` removes the remote feature branch after merging
+
+### Step 6 — Clean up locally
+
+After merging on GitHub, your local repo still has the old branch. Update it:
+
+```bash
+git switch main
+git pull
+```
+
+Now your local `main` has the merged changes.
+
+Delete the local feature branch:
+
+```bash
+git branch -d feature-homepage
+```
+
+`-d` is the safe delete — Git refuses if the branch has unmerged work. Use `-D` only if you are certain you want to force-delete.
+
+Verify:
+
+```bash
+git branch
+```
+
+Only `main` remains.
+
+```bash
+git log --oneline
+```
+
+You should see the merge commit and the "Add homepage" commit in the history.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `gh pr merge` says "not mergeable" | Merge conflicts exist | Resolve conflicts locally, push, then merge |
+| `error: The branch 'feature-homepage' is not fully merged` | Using `git branch -d` but branch was squash-merged | Use `git branch -D feature-homepage` to force-delete locally |
+| `gh pr review` fails with "author cannot review" | You are reviewing your own PR on a solo repo | This is expected for solo repos — skip the formal review and merge directly |
+| `git pull` shows merge conflicts | Someone else pushed to main since your PR | Resolve conflicts locally, commit, and push |
+| PR shows "This branch has no conflicts with the base branch" but merge button is grey | Branch protection rules require a review | Approve the PR first (or adjust repo settings) |
+| Deleted branch on GitHub but it still shows locally | Remote deletion is not synced | Run `git fetch --prune` to remove stale remote branches |
+
+<VerificationBlock>
+Run these commands and confirm:
+
+```bash
+gh pr list
+```
+
+Output should show no open pull requests (the list is empty).
+
+```bash
+gh pr view 1 --json state --jq .state
+```
+
+Output should be `MERGED`.
+
+```bash
+git branch
+```
+
+Only `main` should be listed.
+
+```bash
+git log --oneline
+```
+
+The merge commit and "Add homepage" commit should appear in the history.
+
+```bash
+git branch -r
+```
+
+`origin/feature-homepage` should not appear (or run `git fetch --prune` first if it does).
+</VerificationBlock>

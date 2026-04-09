@@ -113,12 +113,9 @@ export async function getLessonsForPath(pathSlug: string) {
 
   try {
     const files = await fs.readdir(directory, { recursive: true });
-    // files could be nested like "chapter-1/lesson.mdx"
-    // we convert them to full paths before working heavily
-    const lessonFiles = typeof files[0] === 'string' 
-      ? files.filter((file) => file.endsWith(".mdx"))
-      // If the node type varies, falling back to string mapping just in case
-      : files.map(f => String(f)).filter(file => file.endsWith(".mdx"));
+    const lessonFilePattern = /(^|[\\/])lesson-\d+-\d+-\d+-.*\.mdx$/;
+    const nestedFiles = Array.isArray(files) ? files.map((entry) => String(entry)) : [];
+    const lessonFiles = nestedFiles.filter((file) => lessonFilePattern.test(file));
 
     const records = await Promise.all(
       lessonFiles.map(async (fileName) => {
@@ -128,7 +125,7 @@ export async function getLessonsForPath(pathSlug: string) {
       }),
     );
 
-    return records.sort((a, b) => a.lessonNumber - b.lessonNumber);
+    return records.sort((a, b) => a.lessonNumber - b.lessonNumber || a.sourcePath.localeCompare(b.sourcePath));
   } catch {
     return [] satisfies LessonRecord[];
   }

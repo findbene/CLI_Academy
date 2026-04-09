@@ -1,0 +1,229 @@
+---
+title: "Automate a form fill or data extraction"
+lessonNumber: "16.2.2"
+chapterNumber: "16.2"
+pathNumber: "16"
+tutorPreload: "Review my Playwright script and tell me if I am selecting elements reliably."
+verifyType: "terminal_output"
+---
+
+# Automate a form fill or data extraction
+
+## Objective
+
+By the end of this lesson you will have written a Playwright script that navigates to a public web page, fills in a form, submits it, and verifies the result. You will also write a second script that extracts data from an HTML table and saves it to a JSON file. You will understand locator strategies and why they matter for long-term reliability.
+
+## Walkthrough
+
+Form filling and data extraction are the two most common browser automation tasks. Both require selecting the right elements on the page — and selecting them in a way that survives minor layout changes.
+
+### Step 1 — Navigate to a practice form and fill it in
+
+We will use the public Playwright test page at `https://demo.playwright.dev/todomvc/` — a simple to-do list app that does not require login or personal data.
+
+Create `tests/form-fill.spec.ts`:
+
+**macOS / Linux:**
+
+```bash
+cd ~/cli-academy-16/browser-automation
+cat > tests/form-fill.spec.ts << 'TESTEOF'
+import { test, expect } from '@playwright/test';
+
+test('add three items to the to-do list', async ({ page }) => {
+  await page.goto('https://demo.playwright.dev/todomvc/#/');
+
+  // The input field has a placeholder "What needs to be done?"
+  const input = page.getByPlaceholder('What needs to be done?');
+
+  // Add three items
+  await input.fill('Buy groceries');
+  await input.press('Enter');
+
+  await input.fill('Write automation script');
+  await input.press('Enter');
+
+  await input.fill('Review pull request');
+  await input.press('Enter');
+
+  // Verify all three items appear in the list
+  const items = page.getByTestId('todo-title');
+  await expect(items).toHaveCount(3);
+  await expect(items.nth(0)).toHaveText('Buy groceries');
+  await expect(items.nth(1)).toHaveText('Write automation script');
+  await expect(items.nth(2)).toHaveText('Review pull request');
+
+  // Take a screenshot of the completed list
+  await page.screenshot({ path: 'screenshots/todo-filled.png' });
+});
+TESTEOF
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Set-Location "$HOME\cli-academy-16\browser-automation"
+@"
+import { test, expect } from '@playwright/test';
+
+test('add three items to the to-do list', async ({ page }) => {
+  await page.goto('https://demo.playwright.dev/todomvc/#/');
+
+  // The input field has a placeholder "What needs to be done?"
+  const input = page.getByPlaceholder('What needs to be done?');
+
+  // Add three items
+  await input.fill('Buy groceries');
+  await input.press('Enter');
+
+  await input.fill('Write automation script');
+  await input.press('Enter');
+
+  await input.fill('Review pull request');
+  await input.press('Enter');
+
+  // Verify all three items appear in the list
+  const items = page.getByTestId('todo-title');
+  await expect(items).toHaveCount(3);
+  await expect(items.nth(0)).toHaveText('Buy groceries');
+  await expect(items.nth(1)).toHaveText('Write automation script');
+  await expect(items.nth(2)).toHaveText('Review pull request');
+
+  // Take a screenshot of the completed list
+  await page.screenshot({ path: 'screenshots/todo-filled.png' });
+});
+"@ | Set-Content tests/form-fill.spec.ts
+```
+
+**Key concepts in this script:**
+
+- `getByPlaceholder()` finds an input by its placeholder text — a human-readable locator that is more stable than CSS selectors.
+- `fill()` clears the field and types the value.
+- `press('Enter')` simulates the Enter key to submit the item.
+- `getByTestId()` uses a `data-testid` attribute — the most reliable locator strategy because test IDs are added specifically for automation.
+
+### Step 2 — Run the form-fill test
+
+```bash
+npx playwright test tests/form-fill.spec.ts --project=chromium
+```
+
+Expected output:
+
+```
+  ✓  tests/form-fill.spec.ts:3:5 › add three items to the to-do list (Xs)
+
+  1 passed (Xs)
+```
+
+### Step 3 — Extract data from a web page table
+
+Now write a test that reads data from a page and saves it to a file. We will scrape the Playwright release notes page as an example.
+
+Create `tests/extract-data.spec.ts`:
+
+**macOS / Linux:**
+
+```bash
+cat > tests/extract-data.spec.ts << 'TESTEOF'
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+
+test('extract release note headings from the Playwright docs', async ({ page }) => {
+  await page.goto('https://playwright.dev/docs/release-notes');
+
+  // Grab all h2 headings on the page (each release version is an h2)
+  const headings = await page.locator('article h2').allTextContents();
+
+  // Keep only the first 10 for a manageable output
+  const top10 = headings.slice(0, 10);
+
+  // Save to a JSON file
+  const output = { extractedAt: new Date().toISOString(), headings: top10 };
+  fs.writeFileSync('screenshots/release-headings.json', JSON.stringify(output, null, 2));
+
+  // Verify we captured at least one heading
+  expect(top10.length).toBeGreaterThan(0);
+  console.log('Extracted headings:', top10);
+});
+TESTEOF
+```
+
+**Windows (PowerShell):**
+
+```powershell
+@"
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+
+test('extract release note headings from the Playwright docs', async ({ page }) => {
+  await page.goto('https://playwright.dev/docs/release-notes');
+
+  // Grab all h2 headings on the page (each release version is an h2)
+  const headings = await page.locator('article h2').allTextContents();
+
+  // Keep only the first 10 for a manageable output
+  const top10 = headings.slice(0, 10);
+
+  // Save to a JSON file
+  const output = { extractedAt: new Date().toISOString(), headings: top10 };
+  fs.writeFileSync('screenshots/release-headings.json', JSON.stringify(output, null, 2));
+
+  // Verify we captured at least one heading
+  expect(top10.length).toBeGreaterThan(0);
+  console.log('Extracted headings:', top10);
+});
+"@ | Set-Content tests/extract-data.spec.ts
+```
+
+### Step 4 — Run the extraction test
+
+```bash
+npx playwright test tests/extract-data.spec.ts --project=chromium
+```
+
+Then inspect the result:
+
+**macOS / Linux:**
+
+```bash
+cat screenshots/release-headings.json
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Get-Content screenshots\release-headings.json
+```
+
+You should see a JSON object with an `extractedAt` timestamp and an array of heading strings.
+
+### Step 5 — Understand locator reliability
+
+Playwright offers several locator strategies. Use the most stable one available:
+
+| Strategy | Stability | Example |
+|---|---|---|
+| `getByTestId()` | Highest — test IDs are added for automation | `page.getByTestId('submit-btn')` |
+| `getByRole()` | High — based on ARIA roles | `page.getByRole('button', { name: 'Submit' })` |
+| `getByPlaceholder()` | High — tied to user-visible text | `page.getByPlaceholder('Email')` |
+| `getByText()` | Medium — text can change with i18n | `page.getByText('Sign in')` |
+| `page.locator('css')` | Low — CSS classes change often | `page.locator('.btn-primary')` |
+| XPath | Lowest — extremely brittle | Avoid unless nothing else works |
+
+Prefer the top of this list. If a page has `data-testid` attributes, use them. If not, `getByRole` or `getByPlaceholder` are your next best options.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `locator.fill: Error: Element is not an input` | Locator matched the wrong element (a label, not the input) | Use a more specific locator like `getByPlaceholder` or `getByRole('textbox')` |
+| Test passes locally but fails in CI | CI has no display server or different browser version | Use `headless: true` (the default) and pin the Playwright version in `package.json` |
+| `strict mode violation: getByText resolved to 3 elements` | Multiple elements match the locator | Add `.first()`, `.nth(1)`, or use a more specific locator |
+| Extracted data is empty (`[]`) | Page content loads asynchronously after initial render | Add `await page.waitForSelector('article h2')` before extracting |
+| `page.goto: net::ERR_NAME_NOT_RESOLVED` | No internet connection or DNS failure | Check your network; verify the URL is correct |
+| JSON file contains HTML entities instead of clean text | `allTextContents()` returns raw text including markup fragments | Use `allInnerTexts()` instead, or post-process with a regex to strip tags |
+
+<VerificationBlock>
+Run both tests: `npx playwright test tests/form-fill.spec.ts tests/extract-data.spec.ts --project=chromium`. Confirm `2 passed` in the output. Verify that `screenshots/todo-filled.png` exists and `screenshots/release-headings.json` contains at least one heading.
+</VerificationBlock>

@@ -7,58 +7,283 @@ tutorPreload: "Define review triggers for this multi-agent workflow."
 verifyType: "terminal_output"
 ---
 
-# Escalation and human review
+# Add a review gate between agents
 
 ## Objective
 
-In multi-agent workflows, automation is powerful, but human oversight is crucial for safety and accuracy. By the end of this lesson, you will have defined a foundational *review policy* for your multi-agent work. This policy will specify clear triggers for when a human should pause the automated process and conduct a manual review, ensuring you maintain control and prevent unintended outcomes.
+A two-agent pipeline can produce output that looks polished but contains factual errors, invented claims, or drift from the source material. In this lesson you will add a third agent — a **Reviewer** — that checks the Writer's article against the Researcher's findings. If the review fails, the pipeline loops back to the Writer with specific feedback. You will cap the loop to prevent runaway iterations.
+
+By the end you will have a three-stage pipeline (Researcher → Writer → Reviewer) with a gated review loop and a hard iteration limit.
 
 ## Walkthrough
 
-It's exciting to see agents work together, but even the smartest systems need a safety net. Let's create a simple document outlining when *you* step in to review.
+### Step 1 — Set up the project
 
-1.  **Understand the Need for Review:**
-    Imagine a scenario where agents are collaborating on a task. What if one agent expresses uncertainty, or proposes an action that seems high-risk? This is where human review becomes indispensable. It's your personal safety switch.
+**macOS / Linux:**
+```bash
+mkdir -p review-gate-pipeline && cd review-gate-pipeline
+```
 
-2.  **Create Your Review Policy Document:**
-    We'll start by creating a simple markdown file to document your policy. This isn't a command you run, but a living document for *your* workflow.
-    ```bash
-    touch review_policy.md
-    ```
-    *Why `touch` is safe:* The `touch` command simply creates an empty file if it doesn't exist, or updates its modification timestamp if it does. It doesn't modify any existing content or run any programs, making it a very safe command for file management.
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path review-gate-pipeline -Force; Set-Location review-gate-pipeline
+```
 
-3.  **Open and Edit Your Policy:**
-    Now, open `review_policy.md` using your preferred text editor (e.g., `nano`, `vi`, VS Code).
-    ```bash
-    nano review_policy.md
-    ```
-    *Why `nano` is safe:* `nano` is a simple, user-friendly text editor. It only allows you to edit the content of the specified file. It won't execute any commands or scripts on its own, ensuring your system's safety while you write your policy.
+### Step 2 — Create the Researcher and Writer contracts
 
-4.  **Define Your Review Triggers:**
-    Inside `review_policy.md`, add the following content, thinking about how *you* would want to be alerted. Feel free to customize this:
+Re-use the contracts from Lesson 13.2.2 (copy them into this directory or recreate them). The key files are `researcher-CLAUDE.md` and `writer-CLAUDE.md` with the same structure you already know.
 
-    ```markdown
-    # Multi-Agent Workflow Human Review Policy
+**macOS / Linux:**
+```bash
+cat > researcher-CLAUDE.md << 'EOF'
+# Researcher Agent Contract
+## Role
+Gather 5–8 factual bullet points on "best practices for writing commit messages."
+## Outputs
+- `research-findings.md`
+## Boundaries
+- No prose. No analysis. Only facts.
+- Only create `research-findings.md`.
+## Stop Condition
+Stop after writing `research-findings.md`. One pass.
+EOF
 
-    This policy outlines the conditions under which a human operator must pause the multi-agent workflow and conduct a manual review.
+cat > writer-CLAUDE.md << 'EOF'
+# Writer Agent Contract
+## Role
+Turn findings into a beginner-friendly article.
+## Inputs
+- `research-findings.md`
+- If a file called `review-feedback.md` exists, incorporate its feedback.
+## Outputs
+- `article-draft.md`
+## Boundaries
+- Every claim must trace to a bullet in `research-findings.md`.
+- Do not modify `research-findings.md`.
+- Only create `article-draft.md`.
+## Stop Condition
+Stop after writing `article-draft.md`.
+EOF
+```
 
-    ## Review Triggers:
+**Windows PowerShell:**
+```powershell
+@"
+# Researcher Agent Contract
+## Role
+Gather 5-8 factual bullet points on "best practices for writing commit messages."
+## Outputs
+- ``research-findings.md``
+## Boundaries
+- No prose. No analysis. Only facts.
+- Only create ``research-findings.md``.
+## Stop Condition
+Stop after writing ``research-findings.md``. One pass.
+"@ | Set-Content researcher-CLAUDE.md
 
-    A human review is mandatory if any of the following conditions are met:
+@"
+# Writer Agent Contract
+## Role
+Turn findings into a beginner-friendly article.
+## Inputs
+- ``research-findings.md``
+- If a file called ``review-feedback.md`` exists, incorporate its feedback.
+## Outputs
+- ``article-draft.md``
+## Boundaries
+- Every claim must trace to a bullet in ``research-findings.md``.
+- Do not modify ``research-findings.md``.
+- Only create ``article-draft.md``.
+## Stop Condition
+Stop after writing ``article-draft.md``.
+"@ | Set-Content writer-CLAUDE.md
+```
 
-    1.  **Agent Expresses Uncertainty:** An agent's output contains phrases like "I am not sure," "I need clarification," "This might be risky," or similar expressions of doubt.
-    2.  **High-Impact Actions Proposed:** An agent proposes an action that could lead to significant data loss, system changes (e.g., deleting files, modifying core configurations), or financial implications.
-    3.  **Unexpected Output/Behavior:** The workflow produces an output that seems illogical, deviates significantly from the expected path, or appears to be stuck in a loop.
-    4.  **Specific Keywords Detected:** Any agent's output contains predefined keywords indicating sensitive operations, such as "production," "delete all," "reset database," or similar high-consequence terms.
-    5.  **User-Defined Checkpoints:** At pre-determined stages in a complex workflow (e.g., after initial planning, before execution of major steps).
-    ```
+### Step 3 — Create the Reviewer contract
 
-5.  **Save Your Policy:**
-    If you're using `nano`, press `Ctrl+S` (or `^S`) to save, then `Ctrl+X` (or `^X`) to exit.
+This is the new agent. Its job is to compare the article against the findings and produce a pass/fail verdict.
 
-You've now successfully defined a review policy, complete with specific triggers for human intervention. This document is a crucial step towards safely and effectively managing your multi-agent systems.
+**macOS / Linux:**
+```bash
+cat > reviewer-CLAUDE.md << 'EOF'
+# Reviewer Agent Contract
 
-<VerificationBlock 
-  deliverable="A review policy for multi-agent work."
-  verifyCheck="Policy names when to stop automation and ask a human."
+## Role
+You are a factual accuracy reviewer. Compare `article-draft.md` against `research-findings.md`.
+
+## Inputs
+- `research-findings.md` (source of truth)
+- `article-draft.md` (document under review)
+
+## Outputs
+- A file called `review-verdict.md` containing:
+  - A single word on line 1: PASS or FAIL
+  - If FAIL: a numbered list of specific issues (e.g., "Claim X in paragraph 2 has no source in findings")
+- If FAIL, also write `review-feedback.md` with actionable corrections for the Writer.
+
+## Boundaries
+- Do NOT modify `research-findings.md` or `article-draft.md`.
+- Do NOT rewrite the article yourself.
+- Only create `review-verdict.md` and (if FAIL) `review-feedback.md`.
+
+## Stop Condition
+Stop after writing your output files.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Reviewer Agent Contract
+
+## Role
+You are a factual accuracy reviewer. Compare ``article-draft.md`` against ``research-findings.md``.
+
+## Inputs
+- ``research-findings.md`` (source of truth)
+- ``article-draft.md`` (document under review)
+
+## Outputs
+- A file called ``review-verdict.md`` containing:
+  - A single word on line 1: PASS or FAIL
+  - If FAIL: a numbered list of specific issues
+- If FAIL, also write ``review-feedback.md`` with actionable corrections for the Writer.
+
+## Boundaries
+- Do NOT modify ``research-findings.md`` or ``article-draft.md``.
+- Do NOT rewrite the article yourself.
+- Only create ``review-verdict.md`` and (if FAIL) ``review-feedback.md``.
+
+## Stop Condition
+Stop after writing your output files.
+"@ | Set-Content reviewer-CLAUDE.md
+```
+
+### Step 4 — Write the orchestration script with review loop (macOS / Linux)
+
+```bash
+cat > run-review-pipeline.sh << 'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+MAX_REVISIONS=2
+revision=0
+
+echo "=== Running Researcher ==="
+claude --print "Follow researcher-CLAUDE.md exactly."
+[ -s research-findings.md ] || { echo "FAIL: no findings"; exit 1; }
+
+echo "=== Running Writer (initial draft) ==="
+claude --print "Follow writer-CLAUDE.md exactly."
+[ -s article-draft.md ] || { echo "FAIL: no article"; exit 1; }
+
+while [ $revision -lt $MAX_REVISIONS ]; do
+  echo "=== Running Reviewer (attempt $((revision + 1))) ==="
+  rm -f review-verdict.md review-feedback.md
+  claude --print "Follow reviewer-CLAUDE.md exactly."
+
+  if [ ! -s review-verdict.md ]; then
+    echo "FAIL: Reviewer produced no verdict"; exit 1
+  fi
+
+  verdict=$(head -1 review-verdict.md | tr -d '[:space:]')
+  if [ "$verdict" = "PASS" ]; then
+    echo "Review PASSED. Pipeline complete."
+    exit 0
+  fi
+
+  echo "Review FAILED. Sending feedback to Writer..."
+  revision=$((revision + 1))
+  if [ $revision -lt $MAX_REVISIONS ]; then
+    claude --print "Follow writer-CLAUDE.md exactly. Read review-feedback.md and fix the issues."
+  fi
+done
+
+echo "WARNING: Reached max revisions ($MAX_REVISIONS). Article may still have issues."
+echo "Final verdict: $(head -1 review-verdict.md)"
+SCRIPT
+
+chmod +x run-review-pipeline.sh
+```
+
+### Step 5 — Write the orchestration script (Windows PowerShell)
+
+```powershell
+@"
+`$ErrorActionPreference = "Stop"
+`$MAX_REVISIONS = 2
+`$revision = 0
+
+Write-Host "=== Running Researcher ==="
+claude --print "Follow researcher-CLAUDE.md exactly."
+if (-not (Test-Path research-findings.md) -or (Get-Item research-findings.md).Length -eq 0) {
+    Write-Host "FAIL: no findings"; exit 1
+}
+
+Write-Host "=== Running Writer (initial draft) ==="
+claude --print "Follow writer-CLAUDE.md exactly."
+if (-not (Test-Path article-draft.md) -or (Get-Item article-draft.md).Length -eq 0) {
+    Write-Host "FAIL: no article"; exit 1
+}
+
+while (`$revision -lt `$MAX_REVISIONS) {
+    Write-Host "=== Running Reviewer (attempt `$(`$revision + 1)) ==="
+    Remove-Item review-verdict.md, review-feedback.md -ErrorAction SilentlyContinue
+    claude --print "Follow reviewer-CLAUDE.md exactly."
+
+    if (-not (Test-Path review-verdict.md) -or (Get-Item review-verdict.md).Length -eq 0) {
+        Write-Host "FAIL: Reviewer produced no verdict"; exit 1
+    }
+
+    `$verdict = (Get-Content review-verdict.md -First 1).Trim()
+    if (`$verdict -eq "PASS") {
+        Write-Host "Review PASSED. Pipeline complete."
+        exit 0
+    }
+
+    Write-Host "Review FAILED. Sending feedback to Writer..."
+    `$revision++
+    if (`$revision -lt `$MAX_REVISIONS) {
+        claude --print "Follow writer-CLAUDE.md exactly. Read review-feedback.md and fix the issues."
+    }
+}
+
+Write-Host "WARNING: Reached max revisions (`$MAX_REVISIONS). Article may still have issues."
+Write-Host "Final verdict: `$((Get-Content review-verdict.md -First 1))"
+"@ | Set-Content run-review-pipeline.ps1
+```
+
+### Step 6 — Run and observe
+
+**macOS / Linux:**
+```bash
+./run-review-pipeline.sh
+```
+
+**Windows PowerShell:**
+```powershell
+.\run-review-pipeline.ps1
+```
+
+Watch the output. You will see one of two outcomes:
+- **PASS on first review** — the Writer nailed it. Pipeline exits cleanly.
+- **FAIL → revision → re-review** — the loop fires, and the Writer gets a second chance.
+
+After `MAX_REVISIONS`, the pipeline stops regardless. This cap is critical.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Review loop runs forever | No iteration cap or cap set too high | Always define `MAX_REVISIONS`. Start with 2. |
+| Reviewer always says PASS even with errors | Reviewer contract too lenient | Add specific criteria: "Flag any claim with no matching bullet in findings" |
+| Reviewer always says FAIL | Criteria too strict or Writer misunderstands feedback | Loosen review criteria or make feedback more specific |
+| Writer ignores `review-feedback.md` | Writer contract doesn't mention reading feedback | Add "If review-feedback.md exists, incorporate its feedback" to the Writer contract |
+| Runaway API costs from loop iterations | Large context × multiple revisions | Cap `MAX_REVISIONS` at 2–3, use small topics for testing |
+
+> **Cost and safety warning:** A review loop multiplies your token spend. With `MAX_REVISIONS=2`, you could run the Writer up to 3 times and the Reviewer up to 2 times — that is 5 agent sessions for one pipeline run. **Never set `MAX_REVISIONS` to an uncapped value.** An unbounded loop can burn through your API budget in minutes.
+
+<VerificationBlock
+  deliverable="A `review-gate-pipeline/` directory with Researcher, Writer, and Reviewer contracts, an orchestration script with `MAX_REVISIONS`, and output files including `review-verdict.md`."
+  verifyCheck="The orchestration script caps review iterations. The Reviewer compares the article against the findings. If the Reviewer says FAIL, the Writer runs again with feedback."
 />

@@ -1,0 +1,217 @@
+---
+title: "Understand test coverage basics"
+lessonNumber: "5.2.3"
+chapterNumber: "5.2"
+pathNumber: "5"
+tutorPreload: "Show me what test coverage means and help me add a test for an uncovered branch."
+verifyType: "terminal_output"
+---
+
+# Understand test coverage basics
+
+## Objective
+
+Run a coverage report on your test suite using `npx jest --coverage` or `pytest --cov`, read the report to find which lines and branches are not tested, and then ask Claude Code to write a test that covers one of those gaps. By the end of this lesson you will understand what the percentages in a coverage report mean and how to improve them intentionally.
+
+## Walkthrough
+
+### Step 1 — Add a function with branches to test
+
+We need a function with `if/else` paths so that coverage reporting has something interesting to show. Add a `clamp` function to your existing module.
+
+**JavaScript — add to `math-utils.js`**
+
+```js
+function clamp(value, min, max) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}
+
+module.exports = { add, multiply, clamp };
+```
+
+**Python — add to `math_utils.py`**
+
+```python
+def clamp(value, min_val, max_val):
+    if value < min_val:
+        return min_val
+    if value > max_val:
+        return max_val
+    return value
+```
+
+Do **not** add tests for `clamp` yet. We want the coverage report to show a gap.
+
+### Step 2 — Install coverage tooling
+
+**JavaScript — Jest has coverage built in. No extra install needed.**
+
+**Python — install pytest-cov**
+
+```bash
+pip install pytest-cov
+```
+
+**Windows PowerShell (Python)**
+
+```powershell
+pip install pytest-cov
+```
+
+### Step 3 — Run the coverage report
+
+**macOS / Linux (JavaScript)**
+
+```bash
+npx jest --coverage
+```
+
+**Windows PowerShell (JavaScript)**
+
+```powershell
+npx jest --coverage
+```
+
+Jest output includes a table:
+
+```
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+----------|---------|----------|---------|---------|-------------------
+math-utils.js | 72.73 | 0 | 66.67 | 72.73 | 10-12
+----------|---------|----------|---------|---------|-------------------
+```
+
+**macOS / Linux (Python)**
+
+```bash
+pytest --cov=. --cov-report=term-missing -v
+```
+
+**Windows PowerShell (Python)**
+
+```powershell
+pytest --cov=. --cov-report=term-missing -v
+```
+
+pytest output:
+
+```
+Name             Stmts   Miss  Cover   Missing
+------------------------------------------------
+math_utils.py        9      3    67%   9-11
+```
+
+### Step 4 — Read the coverage report
+
+The key columns are:
+
+- **% Stmts** (or **Cover**) — what percentage of lines in the file were executed during tests.
+- **% Branch** — what percentage of `if/else` paths were taken. 0% means no branches were tested.
+- **Uncovered Line #s** (or **Missing**) — the exact line numbers your tests never reached.
+
+Lines 10–12 (or 9–11 in Python) are the `clamp` function. Since we have no tests for `clamp`, those lines were never executed. That is the coverage gap.
+
+### Step 5 — Ask Claude Code to add a test for the uncovered function
+
+```
+My coverage report shows that the clamp function on lines 10-12 of math-utils.js is 0% covered. Write tests that cover all three branches: value below min, value above max, and value in range.
+```
+
+Claude generates tests like:
+
+```js
+test("clamp returns min when value is below range", () => {
+  expect(clamp(1, 5, 10)).toBe(5);
+});
+
+test("clamp returns max when value is above range", () => {
+  expect(clamp(15, 5, 10)).toBe(10);
+});
+
+test("clamp returns value when in range", () => {
+  expect(clamp(7, 5, 10)).toBe(7);
+});
+```
+
+Or for Python:
+
+```python
+def test_clamp_below():
+    assert clamp(1, 5, 10) == 5
+
+def test_clamp_above():
+    assert clamp(15, 5, 10) == 10
+
+def test_clamp_in_range():
+    assert clamp(7, 5, 10) == 7
+```
+
+Accept the changes.
+
+### Step 6 — Run coverage again and compare
+
+**macOS / Linux (JavaScript)**
+
+```bash
+npx jest --coverage
+```
+
+**Windows PowerShell (JavaScript)**
+
+```powershell
+npx jest --coverage
+```
+
+New output:
+
+```
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+----------|---------|----------|---------|---------|-------------------
+math-utils.js | 100 | 100 | 100 | 100 |
+----------|---------|----------|---------|---------|-------------------
+```
+
+100% across the board. Every line, every branch, every function is now tested.
+
+**Python**
+
+```bash
+pytest --cov=. --cov-report=term-missing -v
+```
+
+```
+Name             Stmts   Miss  Cover   Missing
+------------------------------------------------
+math_utils.py        9      0   100%
+```
+
+### Step 7 — Understand what 100% does and does not mean
+
+Ask Claude Code:
+
+```
+Does 100% test coverage mean my code is bug-free?
+```
+
+Claude explains that coverage only means every line was executed — it does not mean every possible input was tested or that the logic is actually correct. For example, if `clamp` had `>=` instead of `>` in one comparison, 100% coverage would still pass but boundary values would be wrong. Coverage is a tool for finding gaps, not a guarantee of correctness.
+
+> **Real danger — do not chase 100% coverage as a goal in itself.** In real projects, some code (error handlers, platform-specific branches) is hard to test and the effort is not worth it. Focus on testing the logic that matters most: calculations, data transformations, and business rules.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `npx jest --coverage` shows 0% for all files | Jest is not finding your test file | Make sure the test file ends in `.test.js` and is in the same directory |
+| pytest `--cov` says "No data was collected" | You passed the wrong path to `--cov` | Use `--cov=.` to measure coverage for files in the current directory |
+| Coverage is 100% but you never added tests for `clamp` | Another test accidentally calls `clamp` through a dependency | Check which test covers the line: `npx jest --coverage --verbose` shows per-test details |
+| Branch coverage is lower than line coverage | Some `if` paths are never taken | Add a test that triggers the untaken path — ask Claude which branch is missing |
+| The coverage HTML report does not open | Your terminal does not have a default browser | Open the `coverage/lcov-report/index.html` file manually in a browser |
+
+<VerificationBlock
+  deliverable="A coverage report showing uncovered lines, new tests for the gap, and a follow-up coverage report at 100%."
+  verifyCheck="Run the coverage report and confirm the previously uncovered function now shows full coverage."
+/>

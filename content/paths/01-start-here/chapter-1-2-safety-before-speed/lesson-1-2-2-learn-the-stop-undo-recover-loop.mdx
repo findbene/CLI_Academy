@@ -11,26 +11,195 @@ verifyType: "terminal_output"
 
 ## Objective
 
-Sometimes, despite our best efforts, an AI agent builds something totally broken or gets stuck in an infinite loop. When that happens, your smartest move is to hit the brakes. 
-
-We don't panic. We stop, undo, and recover.
+You will practice three emergency skills on your own machine: stopping a runaway command with `Ctrl+C`, undoing a file change with `git checkout`, and recovering a moved file with `mv`. After this lesson, you will have muscle memory for the three most common "oh no" moments in terminal work.
 
 ## Walkthrough
 
-### 1. Stop
-If an AI agent is printing massive amounts of text and seems to be out of control, click on your terminal window and press **`Ctrl` + `C`** on your keyboard (even on a Mac). This is the universal "Kill Command." It will instantly stop whatever your terminal is doing.
+### Step 1 — Go to your projects folder
 
-### 2. Undo
-If the AI wrote terrible code in your project, the fastest way back to safety is using `git`. If you use Git, simply typing `git restore .` will wipe away all the AI's uncommitted broken changes and magically restore your files to how they looked this morning.
+**macOS / Linux:**
+```bash
+cd ~/cli-academy/projects
+```
 
-### 3. Recover
-If things get permanently stuck, open the Floating Tutor in the bottom right and say:
-> *"I accidentally ran a bad command and I'm stuck. How do I recover?"*
+**Windows PowerShell:**
+```powershell
+Set-Location ~/cli-academy/projects
+```
 
-> [!TIP]
-> Keep this lesson open. If you ever feel overwhelmed in the future, scroll back to this page and remember that `Ctrl+C` is your emergency brake!
+### Step 2 — Practice STOP: Kill a running command
 
-<VerificationBlock 
-  deliverable="A one-page `undo-recover.md` playbook."
-  verifyCheck="Learner restores a test file successfully."
+We will start a harmless long-running command, then kill it.
+
+**macOS / Linux:**
+```bash
+ping localhost
+```
+
+**Windows PowerShell:**
+```powershell
+ping localhost -t
+```
+
+Your terminal will start printing lines nonstop. This is normal — `ping` runs forever until you stop it.
+
+**Now press `Ctrl+C`.**
+
+The command stops immediately. The terminal prints a summary and gives you your prompt back. `Ctrl+C` is your emergency brake. It works on every operating system, in every terminal, for almost every command.
+
+> **Important:** `Ctrl+C` does not delete anything. It simply tells the running program to quit. It is always safe to press.
+
+### Step 3 — Practice UNDO: Revert a file with Git
+
+First, create a test file and commit it so Git has a "known good" copy.
+
+**macOS / Linux:**
+```bash
+echo "This file is safe." > test-undo.txt
+git add test-undo.txt
+git commit -m "Add test file for undo practice"
+```
+
+**Windows PowerShell:**
+```powershell
+"This file is safe." | Set-Content test-undo.txt
+git add test-undo.txt
+git commit -m "Add test file for undo practice"
+```
+
+Now simulate a mistake — overwrite the file with bad content:
+
+**macOS / Linux:**
+```bash
+echo "OOPS I BROKE EVERYTHING" > test-undo.txt
+cat test-undo.txt
+```
+
+**Windows PowerShell:**
+```powershell
+"OOPS I BROKE EVERYTHING" | Set-Content test-undo.txt
+Get-Content test-undo.txt
+```
+
+You will see the broken text. Now restore the last committed version:
+
+```bash
+git checkout -- test-undo.txt
+```
+
+(This command is the same on macOS, Linux, and Windows PowerShell.)
+
+Read the file again:
+
+**macOS / Linux:**
+```bash
+cat test-undo.txt
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content test-undo.txt
+```
+
+It should say `This file is safe.` again. The damage is completely reversed.
+
+### Step 4 — Practice RECOVER: Rescue a moved file
+
+Accidentally moving or renaming a file is common. Let's practice finding it again.
+
+**macOS / Linux:**
+```bash
+mv test-undo.txt ../notes/lost-file.txt
+ls test-undo.txt
+```
+
+The `ls` command will say "No such file or directory" — the file is gone from this folder. But it is not deleted. Find it:
+
+```bash
+ls ../notes/lost-file.txt
+```
+
+Move it back:
+
+```bash
+mv ../notes/lost-file.txt test-undo.txt
+cat test-undo.txt
+```
+
+**Windows PowerShell:**
+```powershell
+Move-Item test-undo.txt ../notes/lost-file.txt
+Test-Path test-undo.txt
+```
+
+`Test-Path` returns `False` — the file is not here. Find it:
+
+```powershell
+Test-Path ../notes/lost-file.txt
+```
+
+Returns `True`. Move it back:
+
+```powershell
+Move-Item ../notes/lost-file.txt test-undo.txt
+Get-Content test-undo.txt
+```
+
+Your file is home again.
+
+### Step 5 — Create your undo-recover playbook
+
+Save what you learned as a quick-reference card.
+
+**macOS / Linux:**
+```bash
+cat <<'EOF' > ../notes/undo-recover.md
+# Stop, Undo, Recover Playbook
+
+## STOP — Ctrl+C
+Kill any running terminal command instantly. Safe to press anytime.
+
+## UNDO — git checkout -- filename
+Restores a file to its last committed state. Only works on files tracked by Git.
+
+## RECOVER — mv / Move-Item
+If a file was moved, not deleted. Check nearby folders. Use mv (macOS/Linux) or Move-Item (Windows) to put it back.
+
+## Nuclear option — git restore .
+Reverts ALL uncommitted changes in the current folder. Use when everything is broken and you want to go back to your last commit.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Stop, Undo, Recover Playbook
+
+## STOP — Ctrl+C
+Kill any running terminal command instantly. Safe to press anytime.
+
+## UNDO — git checkout -- filename
+Restores a file to its last committed state. Only works on files tracked by Git.
+
+## RECOVER — mv / Move-Item
+If a file was moved, not deleted. Check nearby folders. Use mv (macOS/Linux) or Move-Item (Windows) to put it back.
+
+## Nuclear option — git restore .
+Reverts ALL uncommitted changes in the current folder. Use when everything is broken and you want to go back to your last commit.
+"@ | Set-Content ../notes/undo-recover.md
+```
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `Ctrl+C` did nothing | Your terminal window was not focused when you pressed it | Click inside the terminal window first, then press `Ctrl+C` again |
+| `error: pathspec 'test-undo.txt' did not match any file(s)` | The file was never committed with `git add` and `git commit` | Go back to Step 3 and run the `git add` / `git commit` commands first |
+| `fatal: not a git repository` | You are in a folder that was not initialized with `git init` | Run `cd ~/cli-academy` then `git init`, then return to `projects/` and retry |
+| `mv: cannot stat 'test-undo.txt': No such file or directory` | You already moved the file in a previous attempt | Check `../notes/` for the file — it may already be there as `lost-file.txt` |
+| `git checkout` is deprecated warning | Newer Git versions prefer `git restore` | Both work. You can use `git restore test-undo.txt` instead |
+
+<VerificationBlock
+  deliverable="A test-undo.txt file restored to its original content in cli-academy/projects/ plus an undo-recover.md playbook in cli-academy/notes/."
+  verifyCheck="Run cat test-undo.txt (macOS/Linux) or Get-Content test-undo.txt (Windows) and confirm it says 'This file is safe.' — proving the undo worked. Then verify undo-recover.md exists in notes/."
 />

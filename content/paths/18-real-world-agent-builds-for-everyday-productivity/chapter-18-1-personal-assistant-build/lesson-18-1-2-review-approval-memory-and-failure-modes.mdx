@@ -10,54 +10,99 @@ verifyType: "terminal_output"
 # Review: approval, memory, and failure modes
 
 ## Objective
-Welcome back, careful operator! In this lesson, we'll equip you with the skills to audit a system with a critical eye, focusing on how it handles **approval**, retains **memory**, and copes with **failure modes**. Your goal is to compile a "review pack" for a simulated daily brief assistant, demonstrating your ability to inspect its inner workings like a true professional. Don't worry, we'll guide you through safely exploring files without making any changes.
+Harden your daily brief assistant with human approval gates, brief memory, explicit failure handling, and stop conditions so the workflow is useful and safe to run every morning.
 
 ## Walkthrough
-Let's put on our investigator hats and delve into our daily brief assistant! We'll start by simulating its environment, then carefully inspect its files to understand its behavior.
+### Step 1: Add review gate and memory policy to CLAUDE.md
+Open your existing `CLAUDE.md` and add this section:
 
-1.  **Set up our simulated assistant:** We'll create some example files in your home directory to simulate the assistant's configuration, memory, and logs. This is a completely safe operation, creating new files without affecting existing ones.
+```md
+## Review and approval gate
+- Generate the brief draft first.
+- Ask for explicit human approval before any follow-up action.
+- If no approval is provided, stop.
 
-    ```bash
-    mkdir -p ~/brief-assistant/config ~/brief-assistant/memory ~/brief-assistant/logs
-    echo "approval_required=true
-email_on_failure=admin@example.com" > ~/brief-assistant/config/settings.conf
-    echo "Last successful brief: 2023-10-26 08:00 UTC" > ~/brief-assistant/memory/state.txt
-    echo "[ERROR] 2023-10-25 03:00 UTC: Brief generation failed due to API timeout." > ~/brief-assistant/logs/error.log
-    ```
-    *   `mkdir -p`: Safely creates directories, including any necessary parent folders.
-    *   `echo ... > file`: Safely creates a new file or overwrites an existing one with the given text. Here, we're intentionally creating our test environment.
+## Memory policy
+- Append a one-line summary of each run to brief-memory.md.
+- Keep only the latest 7 entries.
 
-2.  **Inspect for Approval Settings:** Does the assistant require approval? Let's check its configuration.
-    ```bash
-    cat ~/brief-assistant/config/settings.conf
-    ```
-    *   `cat`: This command is safe; it only displays a file's content to your terminal, making no modifications. Look for `approval_required`.
+## Failure handling
+- If TODO.md missing: report and stop.
+- If git log command errors: report stderr and stop.
+- If git log is empty: still create brief with "No commits yesterday".
+```
 
-3.  **Check its Memory:** How does our assistant remember past actions?
-    ```bash
-    cat ~/brief-assistant/memory/state.txt
-    ```
-    *   `cat` is safe for viewing. Observe the last successful brief entry.
+### Step 2: Create a memory file and a failure-playbook file
 
-4.  **Investigate Failure Modes:** What happens when things go wrong?
-    ```bash
-    cat ~/brief-assistant/logs/error.log
-    ```
-    *   Use `cat` to safely review the error log for signs of failure.
+```bash
+touch brief-memory.md
+cat > failure-playbook.md <<'EOF'
+# Failure Playbook
 
-5.  **Compile Your Review Pack:** Now, let's create our "review pack" document based on your observations. We'll store it in your home directory.
-    ```bash
-    echo "--- Daily Brief Assistant Review Pack ---" > ~/review_pack.txt
-    echo "Observation 1 (Approval): 'approval_required=true' found. Assistant requires approval." >> ~/review_pack.txt
-    echo "Observation 2 (Memory): Last successful brief recorded on 2023-10-26." >> ~/review_pack.txt
-    echo "Observation 3 (Failure Mode): Error log shows 'Brief generation failed' on 2023-10-25." >> ~/review_pack.txt
-    ```
-    *   `echo ... > file`: This creates a new `review_pack.txt` file (or overwrites if it existed) with the title.
-    *   `echo ... >> file`: This safely **appends** your observations to the end of the `review_pack.txt` file without deleting its existing content.
+- Missing TODO.md -> create TODO.md from template, rerun.
+- git log error -> verify you are in a git repo and rerun.
+- empty git log -> continue with explicit "No commits yesterday" note.
+EOF
+```
 
-You've successfully audited a simulated system and created a concise review pack! This is a fundamental skill for any careful operator.
+```powershell
+New-Item brief-memory.md -ItemType File -Force | Out-Null
+@"
+# Failure Playbook
+
+- Missing TODO.md -> create TODO.md from template, rerun.
+- git log error -> verify you are in a git repo and rerun.
+- empty git log -> continue with explicit "No commits yesterday" note.
+"@ | Set-Content failure-playbook.md
+```
+
+### Step 3: Run the assistant with explicit approval behavior
+Use this Claude Code prompt:
+
+```text
+Read CLAUDE.md. Draft today's brief first. Then stop and ask for approval before any additional action. If approved, append one memory line to brief-memory.md and keep only the latest 7 entries.
+```
+
+### Step 4: Test failure modes on purpose
+Test each case once so your safeguards are real, not theoretical.
+
+```bash
+mv TODO.md TODO.missing
+# rerun assistant and confirm it stops with a clear error
+mv TODO.missing TODO.md
+```
+
+```powershell
+Rename-Item TODO.md TODO.missing
+# rerun assistant and confirm it stops with a clear error
+Rename-Item TODO.missing TODO.md
+```
+
+### Step 5: Confirm stop rules and memory limits
+
+```bash
+tail -n 10 brief-memory.md
+wc -l brief-memory.md
+```
+
+```powershell
+Get-Content brief-memory.md -Tail 10
+(Get-Content brief-memory.md).Count
+```
+
+You should see recent run history and no uncontrolled growth.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| Assistant keeps acting without approval | Missing explicit review gate text | Add "ask for approval, then stop" language in CLAUDE.md |
+| Memory file grows indefinitely | No retention rule | Enforce "keep latest 7 entries" in contract |
+| Agent retries forever on failure | No stop condition on repeated errors | Add max attempts (for example, 2 retries) then stop |
+| Sensitive data ends up in memory | Logging raw terminal output | Store only concise, non-secret run summaries |
+| Unexpected cost increase | Re-running broad prompts during failures | Keep prompts narrow and failure handling deterministic |
 
 <VerificationBlock 
-  deliverable="A review pack for the daily brief assistant."
-  verifyCheck="Assistant has explicit approval and memory rules."
+  deliverable="A hardened daily brief workflow with review gate, brief-memory.md, and documented failure playbook."
+  verifyCheck="You can demonstrate: (1) assistant pauses for human approval, (2) failure cases stop safely, and (3) brief-memory.md retains only the latest entries."
 />

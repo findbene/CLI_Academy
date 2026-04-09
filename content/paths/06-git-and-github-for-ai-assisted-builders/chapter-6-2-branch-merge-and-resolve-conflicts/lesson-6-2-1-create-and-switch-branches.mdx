@@ -1,0 +1,209 @@
+---
+title: "Create and switch branches"
+lessonNumber: "6.2.1"
+chapterNumber: "6.2"
+pathNumber: "6"
+tutorPreload: "Show me what branch I am on and help me name this feature branch properly."
+verifyType: "terminal_output"
+---
+
+# Create and switch branches
+
+## Objective
+
+By the end of this lesson you will create a feature branch, switch to it, make changes on it, and use `git log --oneline --all --graph` to see your branch structure visually. You will understand that branches let you work on features without touching the stable `main` branch.
+
+## Walkthrough
+
+### Step 1 — Set up a repository with a commit on main
+
+**macOS / Linux:**
+
+```bash
+mkdir branch-lab && cd branch-lab
+git init
+echo "# Branch Lab" > README.md
+git add README.md
+git commit -m "Initial commit on main"
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir branch-lab; cd branch-lab
+git init
+"# Branch Lab" | Out-File -Encoding utf8 README.md
+git add README.md
+git commit -m "Initial commit on main"
+```
+
+You now have one commit on `main`.
+
+### Step 2 — Create a feature branch
+
+```bash
+git branch feature-greeting
+```
+
+This creates a new branch named `feature-greeting` that points to the same commit as `main`. No files change. Nothing is lost. You are still on `main`.
+
+Confirm:
+
+```bash
+git branch
+```
+
+Output:
+
+```
+  feature-greeting
+* main
+```
+
+The asterisk shows your current branch.
+
+### Step 3 — Switch to the feature branch
+
+```bash
+git switch feature-greeting
+```
+
+`git switch` is the modern, safe way to move between branches. (Older tutorials may use `git checkout`, which works but does more things.)
+
+Confirm you switched:
+
+```bash
+git branch
+```
+
+```
+* feature-greeting
+  main
+```
+
+### Step 4 — Make a change on the feature branch
+
+**macOS / Linux:**
+
+```bash
+echo "Hello from the feature branch!" > greeting.txt
+git add greeting.txt
+git commit -m "Add greeting file on feature branch"
+```
+
+**Windows PowerShell:**
+
+```powershell
+"Hello from the feature branch!" | Out-File -Encoding utf8 greeting.txt
+git add greeting.txt
+git commit -m "Add greeting file on feature branch"
+```
+
+### Step 5 — See the branch structure visually
+
+```bash
+git log --oneline --all --graph
+```
+
+Output looks like:
+
+```
+* d4e5f6a (HEAD -> feature-greeting) Add greeting file on feature branch
+* a1b2c3d (main) Initial commit on main
+```
+
+The graph shows that `feature-greeting` is one commit ahead of `main`. Once you add more branches the graph becomes a visual map of parallel work.
+
+### Step 6 — Switch back to main and verify isolation
+
+```bash
+git switch main
+ls
+```
+
+On Windows PowerShell use `Get-ChildItem` instead of `ls`.
+
+Notice that `greeting.txt` does not exist on `main`. Your feature work is safely isolated on its own branch.
+
+Switch back:
+
+```bash
+git switch feature-greeting
+ls
+```
+
+`greeting.txt` is back. Branches give you parallel workspaces inside the same folder.
+
+### Step 7 — Create a branch and switch in one command
+
+The shortcut `git switch -c` creates and switches in one step:
+
+```bash
+git switch main
+git switch -c feature-about
+```
+
+**macOS / Linux:**
+
+```bash
+echo "About this project." > about.txt
+git add about.txt
+git commit -m "Add about page on feature-about branch"
+```
+
+**Windows PowerShell:**
+
+```powershell
+"About this project." | Out-File -Encoding utf8 about.txt
+git add about.txt
+git commit -m "Add about page on feature-about branch"
+```
+
+Now view the full graph:
+
+```bash
+git log --oneline --all --graph
+```
+
+```
+* f7a8b9c (HEAD -> feature-about) Add about page on feature-about branch
+| * d4e5f6a (feature-greeting) Add greeting file on feature branch
+|/
+* a1b2c3d (main) Initial commit on main
+```
+
+Two branches diverge from `main`. Each has independent work.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `fatal: not a valid branch name` | Branch name contains spaces or special characters | Use lowercase letters, numbers, and hyphens: `feature-login` |
+| `error: Your local changes would be overwritten` | Uncommitted changes conflict with the target branch | Commit or stash first: `git stash`, then switch |
+| `fatal: a branch named 'feature-x' already exists` | Branch was already created | Switch to it: `git switch feature-x` |
+| `git checkout` switches but also restored a file | `checkout` has two meanings (branch switch and file restore) | Prefer `git switch` for branches and `git restore` for files |
+| `ls` shows different files after switching | This is correct — branches isolate changes | Switch back to confirm your work is still there |
+
+<VerificationBlock>
+Run these commands and confirm the output:
+
+```bash
+git branch
+```
+
+You should see three branches: `feature-about`, `feature-greeting`, and `main`.
+
+```bash
+git log --oneline --all --graph
+```
+
+You should see a graph with two branches diverging from the initial commit on `main`. Each feature branch has one additional commit.
+
+```bash
+git switch main
+ls   # macOS/Linux
+Get-ChildItem   # Windows PowerShell
+```
+
+Only `README.md` should appear — no `greeting.txt` or `about.txt`.
+</VerificationBlock>

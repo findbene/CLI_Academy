@@ -10,40 +10,211 @@ verifyType: "terminal_output"
 # Plan the workflow and scope
 
 ## Objective
-By the end of this lesson, you will have created a foundational plan for your capstone project. This plan will clearly define its user, the problem it solves, its initial boundaries, and how you will determine its success. This crucial step will give you a clear roadmap and help you approach your project with confidence, ensuring you focus on essential features.
+Define a real capstone workflow you can defend in a portfolio. In this lesson, you will scope one bounded automation workflow, write a real SCOPE.md, choose the exact input and output artifacts, and document stop rules that prevent irreversible commits, deployed secrets, or runaway agent behavior.
 
 ## Walkthrough
 
-It's natural to feel excited about building your capstone, but a solid plan is your best friend! It helps you avoid getting overwhelmed and ensures you build something truly valuable. Let's create a clear scope for your project together.
+### Step 1: Pick one real workflow and create the capstone workspace
+Use a workflow that solves a repeat problem for a real repo. Good options are a daily git digest, a pull request summary helper, or an issue triage helper. If you want the safest fully local option, use a daily git digest.
 
-1.  **Prepare Your Workspace Safely:**
-    First, let's create a file for your plan. Navigate to your projects directory, or use `mkdir` to make a new one (e.g., `mkdir my_capstone` then `cd my_capstone`). Now, create an empty file named `capstone_plan.md` using the `touch` command:
-    ```bash
-    touch capstone_plan.md
-    ```
-    *Why this is safe:* The `touch` command simply creates an empty file if it doesn't exist, or updates its modification timestamp if it does. It doesn't delete, overwrite, or change any existing content without specific flags, making it very safe for file creation.
+macOS/Linux:
+```bash
+mkdir -p capstone-1-automation/{logs,output,tests}
+cd capstone-1-automation
+pwd
+```
 
-2.  **Open Your Plan File:**
-    Now, open `capstone_plan.md` with a simple text editor like `nano`.
-    ```bash
-    nano capstone_plan.md
-    ```
-    *Why this is safe:* `nano` is a beginner-friendly terminal text editor. It only modifies the file you open and won't affect other system files. It's an excellent tool for writing plain text and code. If you prefer, you can use `code capstone_plan.md` if you have VS Code set up.
+Windows PowerShell:
+```powershell
+New-Item -ItemType Directory -Path capstone-1-automation, capstone-1-automation/logs, capstone-1-automation/output, capstone-1-automation/tests -Force | Out-Null
+Set-Location capstone-1-automation
+Get-Location
+```
 
-3.  **Draft Your Capstone Plan:**
-    Inside `capstone_plan.md`, write down the following sections. Don't worry about perfection; focus on clarity and being concise. Remember, the AI Tutor will help you "pressure-test" this later, so think about what's *truly essential*.
+Recommended default task for the rest of this chapter:
+- Workflow: daily git digest
+- Input: one local repository you can safely inspect
+- Output: output/daily-git-digest.md
+- Evidence: logs/scope-review.md and later logs/run-001.md
 
-    *   **User:** Who is this project for? (e.g., "A busy student," "A new command-line user," "Myself to organize notes.")
-    *   **Problem:** What specific problem does your project solve for the user? (e.g., "They forget deadlines," "They struggle with file management," "I need a quick way to look up syntax.")
-    *   **Boundaries (What it *won't* do initially):** This is crucial. List features you are intentionally *excluding* at first to keep the scope small. (e.g., "It won't save data permanently," "It won't connect to the internet," "It won't have a graphical interface.") *Cutting non-essential features now helps you succeed.*
-    *   **Acceptance Criteria:** How will you know your project is *done* and *successful*? These should be measurable actions. (e.g., "The user can input a task," "The user can see their remaining tasks," "The program displays a confirmation message.")
+### Step 2: Write a real SCOPE.md with deliverables and stop rules
+Write the scope file now, not after the build. This is the document that keeps the capstone bounded when the agent starts doing useful work.
 
-4.  **Save and Exit:**
-    Once you're done writing, save the file. In `nano`, press `Ctrl+O` (write out), then `Enter` to confirm the filename, and finally `Ctrl+X` to exit.
+macOS/Linux:
+```bash
+cat > SCOPE.md <<'EOF'
+# Capstone 1 Scope
 
-You now have a clear, focused plan. This is a huge step towards building a successful capstone project without feeling overwhelmed!
+## Workflow
+Daily Git Digest
+
+## User
+A developer or team lead who wants a fast morning summary of recent repo activity without reading every commit one by one.
+
+## Problem
+Recent work is spread across commit history, working tree changes, and partial notes. The workflow should turn that into one readable digest.
+
+## Input
+- One local git repository
+- The last 10 to 20 commits
+- Current working tree status
+
+## Output
+- output/daily-git-digest.md
+- logs/run-001.md
+
+## Required sections in the digest
+- Repo name
+- Commits reviewed
+- Working tree status
+- Risks or follow-up items
+- Recommended next action
+
+## Stop rules
+- Do not run in more than one repository per session
+- Do not commit, push, merge, rebase, or delete files
+- Do not read .env files, secrets files, or deployment credentials
+- Stop if the prompt starts asking for production access or live credentials
+- Stop after one digest file and one run log
+
+## Acceptance test
+The workflow is successful when another person can open output/daily-git-digest.md and understand what changed, what still needs review, and what the safest next action is.
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Capstone 1 Scope
+
+## Workflow
+Daily Git Digest
+
+## User
+A developer or team lead who wants a fast morning summary of recent repo activity without reading every commit one by one.
+
+## Problem
+Recent work is spread across commit history, working tree changes, and partial notes. The workflow should turn that into one readable digest.
+
+## Input
+- One local git repository
+- The last 10 to 20 commits
+- Current working tree status
+
+## Output
+- output/daily-git-digest.md
+- logs/run-001.md
+
+## Required sections in the digest
+- Repo name
+- Commits reviewed
+- Working tree status
+- Risks or follow-up items
+- Recommended next action
+
+## Stop rules
+- Do not run in more than one repository per session
+- Do not commit, push, merge, rebase, or delete files
+- Do not read .env files, secrets files, or deployment credentials
+- Stop if the prompt starts asking for production access or live credentials
+- Stop after one digest file and one run log
+
+## Acceptance test
+The workflow is successful when another person can open output/daily-git-digest.md and understand what changed, what still needs review, and what the safest next action is.
+"@ | Set-Content SCOPE.md
+```
+
+### Step 3: Add a CLAUDE.md contract that matches the scope
+Your capstone should not depend on vibe-based prompting. Give the agent a contract.
+
+macOS/Linux:
+```bash
+cat > CLAUDE.md <<'EOF'
+# Capstone 1 Agent Contract
+
+You are generating one daily git digest for one local repository.
+
+Allowed actions:
+- inspect git status
+- inspect recent git log
+- inspect diff summary when needed
+- write output/daily-git-digest.md
+- write logs/run-001.md
+
+Forbidden actions:
+- commit, push, merge, rebase, stash, reset, checkout, or delete files
+- open or summarize .env, secret, token, key, or credential files
+- inspect repositories outside the one named by the user
+
+Output quality bar:
+- be concrete
+- quote real commit subjects when relevant
+- separate observed facts from suggestions
+- if evidence is missing, say so instead of guessing
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Capstone 1 Agent Contract
+
+You are generating one daily git digest for one local repository.
+
+Allowed actions:
+- inspect git status
+- inspect recent git log
+- inspect diff summary when needed
+- write output/daily-git-digest.md
+- write logs/run-001.md
+
+Forbidden actions:
+- commit, push, merge, rebase, stash, reset, checkout, or delete files
+- open or summarize .env, secret, token, key, or credential files
+- inspect repositories outside the one named by the user
+
+Output quality bar:
+- be concrete
+- quote real commit subjects when relevant
+- separate observed facts from suggestions
+- if evidence is missing, say so instead of guessing
+"@ | Set-Content CLAUDE.md
+```
+
+### Step 4: Run a scope review before you build anything
+Open Claude Code in this folder and use a prompt that forces a review before implementation.
+
+Use this prompt:
+
+```text
+Read SCOPE.md and CLAUDE.md. Cut anything nonessential, flag any risk that could lead to irreversible commits, deployed secrets, or runaway agent behavior, and write the result to logs/scope-review.md. Do not build the workflow yet.
+```
+
+When the review finishes, inspect the result.
+
+macOS/Linux:
+```bash
+cat logs/scope-review.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content logs/scope-review.md
+```
+
+If the review says your task is too broad, reduce it now. A smaller workflow with clean evidence is stronger portfolio proof than a big workflow with weak controls.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The workflow reads like three projects at once | You combined digesting, triage, and deployment into one capstone | Cut back to one workflow and one output artifact in SCOPE.md |
+| The agent could reach secrets or production systems | Scope does not explicitly forbid .env files, keys, or deployed environments | Add direct forbidden actions to SCOPE.md and CLAUDE.md |
+| The workflow could make irreversible repo changes | Commit, push, reset, or delete actions were not banned | Add a hard stop list before the build step |
+| The agent can keep expanding the task forever | No stop condition on repo count, run count, or output count | Limit the run to one repo, one digest, and one log file |
+| Verification would only prove a file exists | Acceptance test does not describe what the digest must actually show | Require concrete sections such as commits reviewed, risks, and next action |
 
 <VerificationBlock 
-  deliverable="A capstone plan with user, problem, boundaries, and acceptance criteria."
-  verifyCheck="Plan is realistic for one learner on one machine."
+    deliverable="A capstone workspace containing SCOPE.md, CLAUDE.md, and logs/scope-review.md for one real automation workflow."
+    verifyCheck="A reviewer can see the exact repo input, output artifact, and stop rules, and can tell the workflow is bounded against irreversible repo changes and secret exposure."
 />

@@ -1,0 +1,211 @@
+---
+title: "Clean and reformat CSV or JSON with Claude"
+lessonNumber: "9.3.2"
+chapterNumber: "9.3"
+pathNumber: "9"
+tutorPreload: "Help me clean a messy CSV — fix date formats, normalize names, remove duplicates — and verify the output manually."
+verifyType: "terminal_output"
+---
+
+# Clean and reformat CSV or JSON with Claude
+
+## Objective
+
+By the end of this lesson you will take a messy CSV file with inconsistent dates, duplicate rows, and mixed formatting, ask Claude Code to clean it, and manually verify the output by comparing row counts and spot-checking specific fields.
+
+## Walkthrough
+
+### Step 1 — Create a realistically messy CSV
+
+Real data exports are messy — mixed date formats, inconsistent capitalization, trailing whitespace, and duplicate rows. Create a sample that reflects this.
+
+**macOS / Linux:**
+
+```bash
+mkdir csv-clean-lab && cd csv-clean-lab
+git init
+
+cat > contacts.csv << 'EOF'
+Name,Email,Phone,Signup Date,City
+John Smith,john@example.com,555-1234,2024-03-15,New York
+jane doe, jane@example.com ,5551234,03/15/2024, new york
+SARAH CONNOR,sarah.connor@example.com,555-9876,2024-04-01,Los Angeles
+John Smith,john@example.com,555-1234,2024-03-15,New York
+Marcus Johnson,marcus@test.com,,April 5 2024,chicago
+  Priya Patel ,priya@example.com,555-4567,2024/04/10,San Francisco
+jane doe,jane@example.com,555-1234,2024-03-15,New York
+Wei Zhang,wei@example.com,555-7890,2024-04-15,
+Marcus Johnson,marcus@test.com,,2024-04-05,Chicago
+sarah connor,SARAH.CONNOR@EXAMPLE.COM,555-9876,04-01-2024,los angeles
+EOF
+
+git add contacts.csv
+git commit -m "Add messy contacts CSV"
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir csv-clean-lab; cd csv-clean-lab
+git init
+
+@"
+Name,Email,Phone,Signup Date,City
+John Smith,john@example.com,555-1234,2024-03-15,New York
+jane doe, jane@example.com ,5551234,03/15/2024, new york
+SARAH CONNOR,sarah.connor@example.com,555-9876,2024-04-01,Los Angeles
+John Smith,john@example.com,555-1234,2024-03-15,New York
+Marcus Johnson,marcus@test.com,,April 5 2024,chicago
+  Priya Patel ,priya@example.com,555-4567,2024/04/10,San Francisco
+jane doe,jane@example.com,555-1234,2024-03-15,New York
+Wei Zhang,wei@example.com,555-7890,2024-04-15,
+Marcus Johnson,marcus@test.com,,2024-04-05,Chicago
+sarah connor,SARAH.CONNOR@EXAMPLE.COM,555-9876,04-01-2024,los angeles
+"@ | Out-File -Encoding utf8 contacts.csv
+
+git add contacts.csv
+git commit -m "Add messy contacts CSV"
+```
+
+This CSV has five real problems: duplicate rows, inconsistent date formats, mixed-case names, whitespace in fields, and missing values.
+
+### Step 2 — Count rows before cleaning
+
+Know your starting point so you can verify the cleaning later.
+
+**macOS / Linux:**
+
+```bash
+wc -l contacts.csv
+```
+
+**Windows PowerShell:**
+
+```powershell
+(Get-Content contacts.csv).Count
+```
+
+You should see 11 lines (1 header + 10 data rows).
+
+### Step 3 — Ask Claude to clean the CSV
+
+Open Claude Code in the `csv-clean-lab` directory:
+
+```
+Read contacts.csv and produce a cleaned version called contacts-clean.csv.
+
+Apply these cleaning rules:
+1. Normalize all names to Title Case (e.g., "jane doe" → "Jane Doe")
+2. Lowercase all email addresses and trim whitespace
+3. Normalize all dates to YYYY-MM-DD format
+4. Normalize city names to Title Case
+5. Remove exact duplicate rows (same person appearing twice)
+6. Remove near-duplicate rows (same name+email, different formatting)
+7. Format phone numbers as 555-XXXX (with hyphen)
+8. Mark empty fields with "MISSING" instead of leaving them blank
+
+Also create a cleaning-log.md that lists every change you made, grouped
+by type (duplicates removed, dates normalized, etc.) with row numbers.
+```
+
+### Step 4 — Verify row count after deduplication
+
+```bash
+cat contacts-clean.csv
+```
+
+Count the data rows. The original had 10 data rows with these duplicates:
+- "John Smith" appears twice (exact duplicate on rows 2 and 4)
+- "jane doe" appears twice (rows 2 and 7 — near-duplicate with different formatting)
+- "SARAH CONNOR" / "sarah connor" appear twice (rows 3 and 10 — near-duplicate)
+- "Marcus Johnson" appears twice (rows 5 and 9 — near-duplicate)
+
+After deduplication you should have 5 unique contacts: John Smith, Jane Doe, Sarah Connor, Marcus Johnson, Priya Patel, and Wei Zhang — 6 people total.
+
+**macOS / Linux:**
+
+```bash
+wc -l contacts-clean.csv
+```
+
+**Windows PowerShell:**
+
+```powershell
+(Get-Content contacts-clean.csv).Count
+```
+
+Expected: 7 lines (1 header + 6 data rows). If the count is different, check which rows Claude kept or removed incorrectly.
+
+### Step 5 — Spot-check specific fields
+
+Verify the cleaning rules were applied correctly for at least 3 rows.
+
+**macOS / Linux:**
+
+```bash
+# Check date normalization
+grep "Sarah Connor" contacts-clean.csv
+```
+
+**Windows PowerShell:**
+
+```powershell
+Select-String -Pattern "Sarah Connor" contacts-clean.csv
+```
+
+The date for Sarah Connor should be `2024-04-01` (normalized from both `2024-04-01` and `04-01-2024`). The email should be lowercase: `sarah.connor@example.com`. The city should be `Los Angeles` in title case.
+
+Check the fields Claude marked as MISSING:
+
+**macOS / Linux:**
+
+```bash
+grep "MISSING" contacts-clean.csv
+```
+
+**Windows PowerShell:**
+
+```powershell
+Select-String -Pattern "MISSING" contacts-clean.csv
+```
+
+Marcus Johnson should have `MISSING` in the Phone column. Wei Zhang should have `MISSING` in the City column.
+
+### Step 6 — Review the cleaning log
+
+```bash
+cat cleaning-log.md
+```
+
+The log should list specific changes, not vague summaries. Good: "Row 2: changed date from `03/15/2024` to `2024-03-15`." Bad: "Normalized some dates."
+
+If the log is vague, ask Claude to be specific:
+
+```
+The cleaning log is too vague. For each change, list the original value
+and the new value with the row number from the original file.
+```
+
+### Step 7 — Commit the cleaned data and log
+
+```bash
+git add contacts-clean.csv cleaning-log.md
+git diff --staged
+git commit -m "Add cleaned contacts CSV with cleaning log"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Row count after cleaning is wrong | Claude removed too many or too few duplicates | Ask Claude to list every row it removed and why, then verify each removal decision |
+| Dates are still in mixed formats | Claude normalized some dates but missed others | Search for non-YYYY-MM-DD patterns with `grep -v "2024-"` and share the results with Claude |
+| Claude merged data from near-duplicate rows incorrectly | When two rows have conflicting field values, Claude chose arbitrarily | Ask Claude which value it kept for each conflict and add a decision rule (e.g., "keep the more complete row") |
+| Missing fields are blank instead of marked MISSING | Claude overlooked the MISSING instruction | Search for empty fields with `grep ",,"` and ask Claude to fill them |
+| Phone numbers still have inconsistent formats | Claude missed the normalization rule | Point out specific rows and ask Claude to re-format |
+| The cleaning log is generic ("cleaned data") | Claude summarized instead of logging specifics | Ask for per-row change tracking with original and new values |
+
+<VerificationBlock
+  deliverable="A contacts-clean.csv with normalized dates, title-case names, no duplicates, and a cleaning-log.md listing every change made."
+  verifyCheck="Row count matches expected deduplicated total, spot-checked fields are correctly formatted, and empty fields are marked MISSING."
+/>

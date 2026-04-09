@@ -1,0 +1,179 @@
+---
+title: "Understand the skill file format"
+lessonNumber: "12.2.1"
+chapterNumber: "12.2"
+pathNumber: "12"
+tutorPreload: "Walk me through the anatomy of a Claude Code SKILL.md file."
+verifyType: "terminal_output"
+---
+
+# Understand the skill file format
+
+## Objective
+
+By the end of this lesson you will understand the exact structure of a Claude Code skill file, know where skills are stored on disk, and be able to read an existing skill to identify its trigger description, instructions, and examples. You will explore the `~/.claude/skills/` directory and inspect a real `SKILL.md` file.
+
+## Walkthrough
+
+### Step 1 — Understand what a skill is
+
+A Claude Code skill is a Markdown file named `SKILL.md` that lives in a named folder under `~/.claude/skills/`. When Claude Code starts a session, it reads the skill descriptions and decides which skills are relevant to your current request. Think of skills as specialized instruction manuals that Claude loads on demand.
+
+Each skill has three parts:
+
+1. **Trigger description** — a short paragraph that tells Claude *when* to load this skill. This is the most important part. If the description does not match the user's request, Claude will never read the rest of the file.
+2. **Instructions** — the detailed rules, steps, and constraints Claude should follow when the skill is active.
+3. **Examples** (optional) — sample inputs and outputs that show Claude what good results look like.
+
+### Step 2 — Find your skills directory
+
+**macOS / Linux**
+
+```bash
+ls ~/.claude/skills/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem "$HOME\.claude\skills" -Directory
+```
+
+If the directory does not exist yet, that is fine — it means you have no custom skills installed. Create it now:
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/.claude/skills
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills"
+```
+
+### Step 3 — Examine the anatomy of a SKILL.md file
+
+Here is the standard structure of a skill file. Read through it — do not create this file yet; just understand the layout.
+
+```markdown
+# Skill Name
+
+<description>
+A clear paragraph explaining WHEN this skill should trigger.
+Include specific keywords and phrases a user might say.
+Example: "Use this skill whenever the user asks to write a commit
+message, generate a conventional commit, or says 'commit this'."
+</description>
+
+## Instructions
+
+Step-by-step rules for Claude to follow when this skill is active.
+
+1. Read the staged git diff.
+2. Identify the type of change (feat, fix, refactor, docs, etc.).
+3. Write a commit message in conventional commit format.
+4. Keep the subject line under 72 characters.
+
+## Constraints
+
+- Never use emoji in commit messages.
+- Never combine unrelated changes in one commit message.
+
+## Examples
+
+**Input:** A diff that adds a login form component
+**Output:** `feat(auth): add login form with email and password fields`
+
+**Input:** A diff that fixes a null pointer in the API router
+**Output:** `fix(api): handle null user object in auth middleware`
+```
+
+The key file path is always: `~/.claude/skills/<skill-name>/SKILL.md`
+
+For example, a commit-message skill would live at:
+`~/.claude/skills/commit-message/SKILL.md`
+
+### Step 4 — Create a skeleton skill to confirm the path works
+
+Create an empty skill folder with a minimal `SKILL.md` just to prove Claude Code can find it.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/.claude/skills/hello-test
+cat > ~/.claude/skills/hello-test/SKILL.md << 'EOF'
+# Hello Test
+
+<description>
+Use this skill when the user says "hello test" or "test my skills setup."
+</description>
+
+## Instructions
+
+Respond with: "Your skills directory is working. This is the hello-test skill."
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills\hello-test"
+@"
+# Hello Test
+
+<description>
+Use this skill when the user says "hello test" or "test my skills setup."
+</description>
+
+## Instructions
+
+Respond with: "Your skills directory is working. This is the hello-test skill."
+"@ | Set-Content -Path "$HOME\.claude\skills\hello-test\SKILL.md" -Encoding UTF8
+```
+
+### Step 5 — Verify Claude Code loads the skill
+
+Start a new Claude Code session in any project:
+
+```
+claude
+```
+
+Type:
+
+```
+hello test
+```
+
+Claude should respond with something close to "Your skills directory is working." This confirms that Claude Code found and loaded your `SKILL.md`.
+
+After confirming it works, you can delete the test skill:
+
+**macOS / Linux**
+
+```bash
+rm -r ~/.claude/skills/hello-test
+```
+
+**Windows PowerShell**
+
+```powershell
+Remove-Item -Recurse -Force "$HOME\.claude\skills\hello-test"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude does not respond to "hello test" | The skill file is not named `SKILL.md` exactly (case matters on macOS/Linux) | Check spelling: `ls ~/.claude/skills/hello-test/` — the file must be `SKILL.md`, not `skill.md` or `Skill.md` |
+| Skills directory does not exist | You have never created skills before | Run `mkdir -p ~/.claude/skills` (macOS/Linux) or `New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills"` (PowerShell) |
+| Skill loads but Claude ignores the instructions | The `<description>` tag does not match what you asked | Rewrite the description to include the exact words you use in your prompt |
+| Claude loads the wrong skill | Two skills have overlapping trigger descriptions | Make each skill's description more specific — narrow the trigger phrases so they do not overlap |
+| Skill works in one project but not another | Not a real issue — user-level skills at `~/.claude/skills/` apply globally to all projects | Confirm the file is in `~/.claude/skills/`, not inside a project folder |
+
+<VerificationBlock
+  deliverable="A hello-test SKILL.md in ~/.claude/skills/hello-test/ that Claude Code responds to."
+  verifyCheck="Claude Code responds to 'hello test' with the message from your skill file."
+/>

@@ -11,26 +11,153 @@ verifyType: "terminal_output"
 
 ## Objective
 
-AI agents act differently depending on what system you are running. If you're on a Mac using `zsh`, Claude Code behaves completely differently than if you're on Windows using `PowerShell`. 
-
-To troubleshoot like a pro, you need to know exactly what system you are running. We are going to capture your system's "baseline" and save it.
+You will run a series of terminal commands to capture your operating system, shell, Node.js version, and other key details, then save them to a file called `machine-baseline.md`. This baseline helps you (and anyone helping you) troubleshoot problems in future lessons.
 
 ## Walkthrough
 
-1. Open your Terminal (or Command Prompt / PowerShell on Windows).
-2. We are going to run a command to see your Node version. Type the following and press **Enter**:
+### Step 1 — Open your terminal and enter the notes folder
+
+**macOS / Linux:**
+```bash
+cd ~/cli-academy/notes
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location ~/cli-academy/notes
+```
+
+### Step 2 — Capture your OS version
+
+**macOS:**
+```bash
+sw_vers
+```
+
+**Linux:**
+```bash
+cat /etc/os-release | head -4
+```
+
+**Windows PowerShell:**
+```powershell
+[System.Environment]::OSVersion.VersionString
+```
+
+Copy or remember the output — you will paste it in Step 6.
+
+### Step 3 — Capture your shell name and version
+
+**macOS / Linux (zsh):**
+```bash
+echo "$SHELL — $ZSH_VERSION"
+```
+
+If you use bash instead:
+```bash
+echo "$SHELL — $BASH_VERSION"
+```
+
+**Windows PowerShell:**
+```powershell
+"PowerShell $($PSVersionTable.PSVersion)"
+```
+
+### Step 4 — Capture your Node.js version
+
+This command is the same on every platform:
+
 ```bash
 node -v
 ```
-3. Highlight whatever the terminal prints out (for example, `v20.15.0`) and copy it.
-4. On your computer, navigate into your `cli-academy/notes` folder.
-5. Create a new simple text file called `machine-baseline.txt`.
-6. Paste your Node version inside it.
 
-> [!TIP]
-> Don't know how to open your Terminal? Got an error that said "node is not recognized"? Don't panic! Open the Tutor in the bottom right corner and type: *"My computer says node is not recognized. Help!"* The Tutor is trained exactly for this.
+If Node is not installed you will see an error — that is fine. Write "not installed" for now. Path 3 covers Node installation.
 
-<VerificationBlock 
-  deliverable="A starter `machine-profile.md` with OS, shell, package manager, editor, and login method."
-  verifyCheck="Learner can run the profile command block and paste results into the template."
+### Step 5 — Capture your default code editor
+
+**macOS / Linux:**
+```bash
+code --version 2>/dev/null || echo "VS Code not found"
+```
+
+**Windows PowerShell:**
+```powershell
+code --version 2>$null; if ($LASTEXITCODE -ne 0) { "VS Code not found" }
+```
+
+### Step 6 — Write the baseline file
+
+Create `machine-baseline.md` with the results you collected. Replace each placeholder with your real output.
+
+**macOS / Linux:**
+```bash
+cat <<'EOF' > machine-baseline.md
+# Machine Baseline
+Captured: $(date +%Y-%m-%d)
+
+## OS
+PASTE_YOUR_OS_OUTPUT_HERE
+
+## Shell
+PASTE_YOUR_SHELL_OUTPUT_HERE
+
+## Node.js
+PASTE_YOUR_NODE_VERSION_HERE
+
+## Editor
+PASTE_YOUR_EDITOR_VERSION_HERE
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Machine Baseline
+Captured: $(Get-Date -Format yyyy-MM-dd)
+
+## OS
+PASTE_YOUR_OS_OUTPUT_HERE
+
+## Shell
+PASTE_YOUR_SHELL_OUTPUT_HERE
+
+## Node.js
+PASTE_YOUR_NODE_VERSION_HERE
+
+## Editor
+PASTE_YOUR_EDITOR_VERSION_HERE
+"@ | Set-Content machine-baseline.md
+```
+
+Now open the file in your editor and replace each placeholder with the real values you captured in Steps 2–5.
+
+### Step 7 — Verify the file
+
+**macOS / Linux:**
+```bash
+cat machine-baseline.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content machine-baseline.md
+```
+
+You should see your actual OS, shell, Node, and editor versions printed to the screen.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `node: command not found` / `node is not recognized` | Node.js is not installed on this machine | Write "not installed" in the baseline for now — you will install Node in a later path |
+| `code: command not found` | VS Code is not on your PATH | Open VS Code manually, press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows), type "shell command", and select **Install 'code' command in PATH** |
+| `cat: No such file or directory` | You are not in `cli-academy/notes/` | Run `cd ~/cli-academy/notes` and retry |
+| File is empty after writing | Heredoc syntax error (macOS/Linux) | Make sure `EOF` appears on its own line with no spaces before it |
+| PowerShell shows red error text for the here-string | The `@"` must be the last thing on its line | Ensure nothing (not even a space) follows `@"` or precedes `"@` |
+
+> **Privacy note:** Your baseline file contains system info but no passwords or secrets. It is safe to keep locally. Do not paste it into public chat rooms — it reveals your OS and software versions.
+
+<VerificationBlock
+  deliverable="A machine-baseline.md file in cli-academy/notes/ containing your real OS, shell, Node.js, and editor versions."
+  verifyCheck="Run cat machine-baseline.md (macOS/Linux) or Get-Content machine-baseline.md (Windows) and confirm all four sections contain real values, not placeholders."
 />

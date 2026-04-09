@@ -1,0 +1,356 @@
+---
+title: "Mini-project: automate a team ritual"
+lessonNumber: "10.3.3"
+chapterNumber: "10.3"
+pathNumber: "10"
+tutorPreload: "Walk me through automating one team ritual end to end — from picking it to committing the template."
+verifyType: "terminal_output"
+---
+
+# Mini-project: automate a team ritual
+
+## Objective
+
+In this mini-project you will pick one recurring team ritual, automate it with Claude, document the process, save it as a reusable template, and commit the entire package to version control. By the end you will have a working, documented automation that anyone on the team can run.
+
+## Walkthrough
+
+### Step 1 — Pick a team ritual to automate
+
+Choose a ritual that:
+- Happens at least weekly
+- Involves gathering information and formatting it
+- Currently takes 15+ minutes of manual effort
+- Does not involve sensitive decisions (no deploys, no access changes)
+
+Good candidates:
+- Weekly standup summary from git history
+- Sprint retrospective notes from a shared doc
+- Changelog generation from merged PRs
+- Weekly metrics snapshot from a dashboard
+
+For this walkthrough, we will automate **weekly changelog generation from git**.
+
+### Step 2 — Create the automation directory
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/my-project/automations/weekly-changelog
+cd ~/my-project/automations/weekly-changelog
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\my-project\automations\weekly-changelog"
+Set-Location "$HOME\my-project\automations\weekly-changelog"
+```
+
+### Step 3 — Write the data-gathering script
+
+Create a script that collects the raw inputs for Claude.
+
+**macOS / Linux**
+
+```bash
+cat > gather-changelog-data.sh << 'SCRIPT'
+#!/bin/bash
+set -euo pipefail
+
+REPO_DIR="${1:-.}"
+OUTPUT_DIR="$(pwd)/output"
+mkdir -p "$OUTPUT_DIR"
+
+cd "$REPO_DIR"
+
+echo "Gathering commit log..."
+git log --since="7 days ago" --no-merges --format="%h %s (%an)" > "$OUTPUT_DIR/commits.txt"
+
+echo "Gathering diff stats..."
+git diff --stat "HEAD~$(git rev-list --count --since='7 days ago' HEAD)" HEAD > "$OUTPUT_DIR/diffstat.txt" 2>/dev/null || echo "No diff available" > "$OUTPUT_DIR/diffstat.txt"
+
+echo "Gathering merged branches..."
+git branch --merged main --no-color | grep -v "main" | sed 's/^[* ]*//' > "$OUTPUT_DIR/merged-branches.txt" 2>/dev/null || echo "None" > "$OUTPUT_DIR/merged-branches.txt"
+
+echo "Data gathered in $OUTPUT_DIR/"
+ls -la "$OUTPUT_DIR/"
+SCRIPT
+chmod +x gather-changelog-data.sh
+```
+
+**Windows PowerShell**
+
+```powershell
+@'
+param(
+    [string]$RepoDir = "."
+)
+
+$OutputDir = Join-Path (Get-Location) "output"
+New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+
+Push-Location $RepoDir
+
+Write-Host "Gathering commit log..."
+git log --since="7 days ago" --no-merges --format="%h %s (%an)" | Out-File "$OutputDir\commits.txt"
+
+Write-Host "Gathering diff stats..."
+try {
+    $count = git rev-list --count --since="7 days ago" HEAD
+    git diff --stat "HEAD~$count" HEAD | Out-File "$OutputDir\diffstat.txt"
+} catch {
+    "No diff available" | Out-File "$OutputDir\diffstat.txt"
+}
+
+Write-Host "Gathering merged branches..."
+try {
+    git branch --merged main --no-color | Where-Object { $_ -notmatch "main" } | ForEach-Object { $_.Trim("* ").Trim() } | Out-File "$OutputDir\merged-branches.txt"
+} catch {
+    "None" | Out-File "$OutputDir\merged-branches.txt"
+}
+
+Pop-Location
+
+Write-Host "Data gathered in $OutputDir/"
+Get-ChildItem $OutputDir
+'@ | Out-File "gather-changelog-data.ps1"
+```
+
+### Step 4 — Write the Claude session brief for this ritual
+
+**macOS / Linux**
+
+```bash
+cat > changelog-prompt.md << 'EOF'
+# Session Brief: Weekly Changelog
+
+## Context
+- Project: [repo name]
+- Goal: Generate a user-friendly changelog from this week's git activity
+- Files to read: output/commits.txt, output/diffstat.txt, output/merged-branches.txt
+
+## Instructions
+1. Read all three files in the output/ directory.
+2. Group commits by theme (features, fixes, docs, chores).
+3. Write each entry as a single clear sentence a non-developer can understand.
+4. Skip merge commits and trivial chores (typo fixes, formatting).
+5. If a commit message is unclear, keep it brief rather than guessing.
+
+## Format
+```markdown
+# Changelog — Week of [date]
+
+## New Features
+- [description]
+
+## Bug Fixes
+- [description]
+
+## Documentation
+- [description]
+
+## Other
+- [description]
+```
+
+## Output
+Save to: output/changelog-YYYY-MM-DD.md
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Session Brief: Weekly Changelog
+
+## Context
+- Project: [repo name]
+- Goal: Generate a user-friendly changelog from this week's git activity
+- Files to read: output/commits.txt, output/diffstat.txt, output/merged-branches.txt
+
+## Instructions
+1. Read all three files in the output/ directory.
+2. Group commits by theme (features, fixes, docs, chores).
+3. Write each entry as a single clear sentence a non-developer can understand.
+4. Skip merge commits and trivial chores (typo fixes, formatting).
+5. If a commit message is unclear, keep it brief rather than guessing.
+
+## Format
+
+# Changelog - Week of [date]
+
+## New Features
+- [description]
+
+## Bug Fixes
+- [description]
+
+## Documentation
+- [description]
+
+## Other
+- [description]
+
+## Output
+Save to: output/changelog-YYYY-MM-DD.md
+"@ | Out-File "changelog-prompt.md"
+```
+
+### Step 5 — Run the full automation
+
+Execute the data-gathering script, then feed the results to Claude.
+
+**macOS / Linux**
+
+```bash
+# Step A: Gather the data
+./gather-changelog-data.sh ~/my-project
+
+# Step B: Verify the data was collected
+cat output/commits.txt
+cat output/diffstat.txt
+
+# Step C: Open Claude Code in this directory and paste changelog-prompt.md
+```
+
+**Windows PowerShell**
+
+```powershell
+# Step A: Gather the data
+.\gather-changelog-data.ps1 -RepoDir "$HOME\my-project"
+
+# Step B: Verify the data was collected
+Get-Content output\commits.txt
+Get-Content output\diffstat.txt
+
+# Step C: Open Claude Code in this directory and paste changelog-prompt.md
+```
+
+### Step 6 — Verify the changelog against the raw data
+
+After Claude generates the changelog, check every entry:
+
+**macOS / Linux**
+
+```bash
+# Show the generated changelog
+cat output/changelog-*.md
+
+# Compare against raw commits
+diff <(grep -oP '(?<=^[a-f0-9]+ ).*' output/commits.txt | sort) <(echo "manual comparison")
+```
+
+**Windows PowerShell**
+
+```powershell
+# Show the generated changelog
+Get-Content output\changelog-*.md
+
+# Show raw commits for comparison
+Get-Content output\commits.txt
+```
+
+Confirm:
+1. Every changelog entry maps to at least one real commit.
+2. No invented features or fixes appear.
+3. The grouping (Features, Fixes, Docs) is accurate.
+
+> **Real danger:** Sharing a changelog with invented entries — features that were not built, bugs that were not fixed — misleads stakeholders and erodes trust. Always verify before distribution.
+
+### Step 7 — Document the process in a README
+
+**macOS / Linux**
+
+```bash
+cat > README.md << 'EOF'
+# Weekly Changelog Automation
+
+## What it does
+Generates a formatted changelog from the past week's git activity.
+
+## How to run
+1. `./gather-changelog-data.sh /path/to/repo` (or `.\gather-changelog-data.ps1` on Windows)
+2. Open Claude Code in this directory.
+3. Paste the contents of `changelog-prompt.md` as your first message.
+4. Review the generated changelog in `output/`.
+5. Verify every entry against `output/commits.txt`.
+
+## Files
+| File | Purpose |
+|------|---------|
+| `gather-changelog-data.sh` | Bash script to collect git data |
+| `gather-changelog-data.ps1` | PowerShell script to collect git data |
+| `changelog-prompt.md` | Session brief for Claude |
+| `output/` | Generated data and changelogs (gitignored) |
+
+## Schedule
+Run every Friday before the team sync.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Weekly Changelog Automation
+
+## What it does
+Generates a formatted changelog from the past week's git activity.
+
+## How to run
+1. Run ``gather-changelog-data.ps1 -RepoDir /path/to/repo`` (or ``./gather-changelog-data.sh`` on macOS/Linux)
+2. Open Claude Code in this directory.
+3. Paste the contents of ``changelog-prompt.md`` as your first message.
+4. Review the generated changelog in ``output/``.
+5. Verify every entry against ``output/commits.txt``.
+
+## Files
+| File | Purpose |
+|------|---------|
+| ``gather-changelog-data.sh`` | Bash script to collect git data |
+| ``gather-changelog-data.ps1`` | PowerShell script to collect git data |
+| ``changelog-prompt.md`` | Session brief for Claude |
+| ``output/`` | Generated data and changelogs (gitignored) |
+
+## Schedule
+Run every Friday before the team sync.
+"@ | Out-File "README.md"
+```
+
+### Step 8 — Gitignore output files and commit the template
+
+**macOS / Linux**
+
+```bash
+echo "output/" > .gitignore
+cd ~/my-project
+git add automations/weekly-changelog/
+git commit -m "feat: add weekly changelog automation with gather script and session brief"
+```
+
+**Windows PowerShell**
+
+```powershell
+"output/" | Out-File ".gitignore" -Encoding utf8
+Set-Location "$HOME\my-project"
+git add automations/weekly-changelog/
+git commit -m "feat: add weekly changelog automation with gather script and session brief"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Gather script finds zero commits | No commits in the last 7 days, or wrong repo path | Check the repo path argument and widen the date range |
+| Changelog groups entries incorrectly | Commit messages do not follow a convention (feat:, fix:, etc.) | Add a note in the README that conventional commits improve changelog quality |
+| Claude invents entries not in commits.txt | Vague commit messages triggered hallucination | Add to the prompt: "Only reference work explicitly described in commits.txt" |
+| Script fails on Windows with permission error | PowerShell execution policy blocks scripts | Run `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned` |
+| Output directory grows unbounded over weeks | Old changelogs accumulate | Add a cleanup step to the script or `.gitignore` the entire `output/` directory (already done in Step 8) |
+| Teammate cannot reproduce the results | Different git config or branch state | Document required branch (e.g., "Run from the main branch") in the README |
+
+<VerificationBlock
+  deliverable="A complete automation package in automations/weekly-changelog/ with a data-gathering script, a session brief, a README, and at least one verified changelog output."
+  verifyCheck="The gather script runs without errors, the session brief produces a correctly formatted changelog, and every changelog entry traces to a real commit."
+/>

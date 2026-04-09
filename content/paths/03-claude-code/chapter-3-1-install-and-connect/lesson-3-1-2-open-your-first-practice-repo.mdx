@@ -3,50 +3,138 @@ title: "Open your first practice repo"
 lessonNumber: "3.1.2"
 chapterNumber: "3.1"
 pathNumber: "3"
-tutorPreload: "I’m in this folder. Confirm whether it is the correct repo root for Claude Code."
+tutorPreload: "I'm in this folder. Confirm whether it is the correct repo root for Claude Code."
 verifyType: "terminal_output"
 ---
 
 # Open your first practice repo
 
 ## Objective
-By the end of this lesson, you will have successfully cloned your very first practice repository from GitHub onto your local machine. This repository will be your safe space for experimentation, ready for you to begin working with Claude Code without any risk to your system.
+
+Create a small practice project with real files, then launch Claude Code inside it so you can see the welcome screen and the interactive session prompt. By the end you will have a working repo that Claude Code can read and talk about.
 
 ## Walkthrough
 
-It's perfectly normal to feel a little hesitant when running new commands. We'll take it one safe step at a time, making sure you understand what each command does.
+### Step 1 — Create a project folder
 
-1.  **Create a dedicated space for your projects:**
-    It's a great habit to keep your coding projects organized. Let's create a new folder just for your practice repositories.
-    ```bash
-    mkdir practice-repos
-    ```
-    *   **Safety check:** The `mkdir` command (make directory) simply creates a new, empty folder in your current location. It's completely safe and doesn't affect any existing files or system settings.
+Pick a location where you keep coding projects and create a new folder:
 
-2.  **Move into your new projects folder:**
-    Now, let's navigate inside the folder we just created.
-    ```bash
-    cd practice-repos
-    ```
-    *   **Safety check:** The `cd` command (change directory) moves your current terminal location. It's like double-clicking a folder to open it. This command is also perfectly safe and only changes where your terminal is "looking."
+**macOS / Linux**
+```bash
+mkdir -p ~/projects/cli-practice && cd ~/projects/cli-practice
+```
 
-3.  **Clone your first practice repository:**
-    We'll use a widely recognized, simple repository from GitHub called "Spoon-Knife." It's designed for new users and is completely harmless.
-    ```bash
-    git clone https://github.com/octocat/Spoon-Knife.git
-    ```
-    *   **Safety check:** The `git clone` command downloads a copy of a remote repository to your computer. It creates a *new folder* (`Spoon-Knife` in this case) with all the project files inside. It *only reads* from GitHub and *only writes* into this new folder on your machine. It will not modify any existing files or execute any code automatically. It's a fundamental and very safe operation.
+**Windows PowerShell**
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\projects\cli-practice" | Out-Null
+Set-Location "$HOME\projects\cli-practice"
+```
 
-4.  **Enter your newly cloned repository:**
-    The `git clone` command created a new folder named `Spoon-Knife`. Let's go into it.
-    ```bash
-    cd Spoon-Knife
-    ```
-    *   **Safety check:** Again, `cd` just changes your terminal's location. Safe!
+### Step 2 — Initialize a Git repo
 
-You are now inside your `Spoon-Knife` repository! This is your safe practice environment. You should see something like `your_path/practice-repos/Spoon-Knife` in your prompt, indicating your current directory.
+Claude Code works best inside a Git repository because it uses the file history for context.
 
-<VerificationBlock 
-  deliverable="A cloned or starter repo ready for Claude Code work."
-  verifyCheck="Claude Code can read the repo and answer a codebase question."
+```bash
+git init
+```
+
+This is the same command on every platform. You should see `Initialized empty Git repository`.
+
+### Step 3 — Add starter files
+
+Create three files that give Claude Code something to read.
+
+**macOS / Linux**
+```bash
+cat > index.js << 'EOF'
+// A tiny greeter
+function greet(name) {
+  return `Hello, ${name}! Welcome to CLI Academy.`;
+}
+
+console.log(greet("Learner"));
+EOF
+
+cat > README.md << 'EOF'
+# cli-practice
+
+A small starter project for learning Claude Code.
+EOF
+
+cat > package.json << 'EOF'
+{
+  "name": "cli-practice",
+  "version": "1.0.0",
+  "description": "Starter project for CLI Academy Path 03",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
+EOF
+```
+
+**Windows PowerShell**
+```powershell
+@'
+// A tiny greeter
+function greet(name) {
+  return `Hello, ${name}! Welcome to CLI Academy.`;
+}
+
+console.log(greet("Learner"));
+'@ | Set-Content index.js
+
+@'
+# cli-practice
+
+A small starter project for learning Claude Code.
+'@ | Set-Content README.md
+
+@'
+{
+  "name": "cli-practice",
+  "version": "1.0.0",
+  "description": "Starter project for CLI Academy Path 03",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
+'@ | Set-Content package.json
+```
+
+### Step 4 — Make an initial commit
+
+```bash
+git add -A
+git commit -m "Initial commit: starter greeter project"
+```
+
+Having at least one commit lets Claude Code see your project history.
+
+### Step 5 — Launch Claude Code
+
+From inside the `cli-practice` folder, start a session:
+
+```bash
+claude
+```
+
+Claude Code prints a welcome banner and drops you into an interactive prompt (you will see a `>` or similar cursor). This is where you type natural-language requests — not shell commands. You are now inside a Claude Code session.
+
+Type `/help` to see the list of built-in slash commands, then type `/exit` to leave when you are done exploring.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `claude: command not found` | Claude Code is not installed or the terminal was not restarted after install | Follow Lesson 3.1.1 to install, then close and reopen your terminal |
+| `Not a git repository` warning on launch | You ran `claude` before running `git init` | Run `git init` and make an initial commit first |
+| Claude Code starts but says the project is empty | Files were created in a different folder | Run `ls` (macOS/Linux) or `Get-ChildItem` (PowerShell) to confirm `index.js`, `README.md`, and `package.json` are in the current directory |
+| `git commit` says "nothing to commit" | Files were not staged with `git add` | Run `git add -A` first, then `git commit` |
+
+<VerificationBlock
+  deliverable="A practice repo with starter files and a successful Claude Code launch."
+  verifyCheck="Learner launches claude inside cli-practice and types /help to confirm the session is live."
 />

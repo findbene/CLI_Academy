@@ -11,28 +11,141 @@ verifyType: "terminal_output"
 
 ## Objective
 
-AI agents like Claude Code aren't just chatbots—they can actually execute commands on your computer. When Claude realizes it needs to install something or delete something to solve your problem, it will pause and ask you for **permission**.
-
-This lesson establishes the "Golden Rule" of AI agents. If you follow this rule, you have nothing to fear.
+You will create a `safety-checklist.md` file that lists the rules you follow before saying "yes" to any AI agent command. Then you will practice one safety habit — running `git status` — so the checklist is not just words on a page.
 
 ## Walkthrough
 
-The Golden Rule is simple: **Never grant permission to a command you don't vaguely understand.**
+### Step 1 — Navigate to your notes folder
 
-If Claude asks to run `rm -rf /` or `npm publish`, and you've never heard of those commands, *say no*. 
+**macOS / Linux:**
+```bash
+cd ~/cli-academy/notes
+```
 
-Let's save this rule:
-1. Open your `cli-academy/notes` folder.
-2. Create a file called `safety-checklist.md`.
-3. Open it in any text editor (Notepad, TextEdit, VS Code).
-4. Copy and paste the Golden Rule inside:
-   ```markdown
-   # My Golden Rule
-   I will never press enter or say 'Yes' to an AI unless I vaguely understand what the command does. If I am confused, I will ask the AI or the Floating Tutor to explain the command first.
-   ```
-5. Save the file.
+**Windows PowerShell:**
+```powershell
+Set-Location ~/cli-academy/notes
+```
 
-<VerificationBlock 
-  deliverable="A filled `safety-checklist.md` covering secrets, permissions, backups, and stop rules."
-  verifyCheck="The learner checks all required items and can explain the stop rules."
+### Step 2 — Create safety-checklist.md
+
+Write the checklist directly from the terminal.
+
+**macOS / Linux:**
+```bash
+cat <<'EOF' > safety-checklist.md
+# My AI Safety Checklist
+
+## Before I say "Yes" to any AI command
+- [ ] I can describe in plain English what the command will do
+- [ ] The command will not delete files I have not backed up
+- [ ] The command will not publish or upload anything without my review
+- [ ] The command does not contain passwords, API keys, or secrets in plain text
+- [ ] If I am unsure, I will ask the AI to explain the command before I approve it
+
+## Stop rules
+- If the terminal is printing nonstop text I did not expect: press Ctrl+C immediately
+- If an AI wants to run rm, del, or any "remove" command outside my project folder: say No
+- If an AI asks for sudo or Administrator permission and I do not understand why: say No
+
+## Recovery steps
+- Undo unsaved file changes: Ctrl+Z in my editor
+- Undo uncommitted git changes: git checkout -- filename
+- Get help: open the CLI Academy Tutor and describe what happened
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# My AI Safety Checklist
+
+## Before I say "Yes" to any AI command
+- [ ] I can describe in plain English what the command will do
+- [ ] The command will not delete files I have not backed up
+- [ ] The command will not publish or upload anything without my review
+- [ ] The command does not contain passwords, API keys, or secrets in plain text
+- [ ] If I am unsure, I will ask the AI to explain the command before I approve it
+
+## Stop rules
+- If the terminal is printing nonstop text I did not expect: press Ctrl+C immediately
+- If an AI wants to run rm, del, or any "remove" command outside my project folder: say No
+- If an AI asks for sudo or Administrator permission and I do not understand why: say No
+
+## Recovery steps
+- Undo unsaved file changes: Ctrl+Z in my editor
+- Undo uncommitted git changes: git checkout -- filename
+- Get help: open the CLI Academy Tutor and describe what happened
+"@ | Set-Content safety-checklist.md
+```
+
+### Step 3 — Read the checklist back
+
+**macOS / Linux:**
+```bash
+cat safety-checklist.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content safety-checklist.md
+```
+
+Read each line aloud (or silently) to yourself. These are your new rules.
+
+### Step 4 — Practice a real safety habit: git status
+
+In later lessons you will use Git to track your work. The single most important safety command in Git is `git status` — it shows you exactly what has changed before you commit anything.
+
+Let's try it now. First, initialize a Git repository in your workspace.
+
+**macOS / Linux:**
+```bash
+cd ~/cli-academy
+git init
+git status
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location ~/cli-academy
+git init
+git status
+```
+
+You should see output similar to:
+
+```
+On branch main
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        notes/
+```
+
+This tells you Git is watching your workspace and nothing has been committed yet. Running `git status` before every commit is a safety habit you will use in every future lesson.
+
+> **If `git` is not installed:** You will see `command not found` or `not recognized`. That is okay — install Git from https://git-scm.com and retry. Path 6 covers Git in depth.
+
+### Step 5 — Add one personal rule
+
+Open `safety-checklist.md` in any text editor (VS Code, Notepad, TextEdit) and add one personal rule at the bottom of the "Before I say Yes" section. It can be anything, for example:
+
+```
+- [ ] I will not run commands after midnight when I am too tired to read them
+```
+
+Save the file.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `git: command not found` / `git is not recognized` | Git is not installed | Download it from https://git-scm.com — you can still finish this lesson by skipping Step 4 and returning later |
+| `fatal: not a git repository` | You ran `git status` outside a folder that has been initialized | Run `git init` first in `~/cli-academy`, then retry |
+| Here-string error in PowerShell | Something follows `@"` on the same line, or `"@` has leading spaces | `@"` must be the last thing on its line, and `"@` must be the first thing on its line |
+| File is empty | Heredoc `EOF` line was indented on macOS/Linux | Make sure `EOF` starts at column 1 with no leading spaces |
+
+<VerificationBlock
+  deliverable="A safety-checklist.md in cli-academy/notes/ with stop rules, permission rules, and at least one personal rule — plus a successful git status run."
+  verifyCheck="Run cat safety-checklist.md (macOS/Linux) or Get-Content safety-checklist.md (Windows) and confirm stop rules, permission rules, and your personal rule all appear. Run git status in cli-academy/ and confirm it prints status without errors."
 />

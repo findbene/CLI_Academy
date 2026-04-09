@@ -7,52 +7,262 @@ tutorPreload: "Give me the quality checklist for a small two-agent weekly brief 
 verifyType: "terminal_output"
 ---
 
-# Mini project: two-agent weekly brief
+# Handle agent failures gracefully
 
 ## Objective
-In this lesson, you will build the foundational structure for a simple two-agent workflow designed to create a weekly brief. You'll learn how to define distinct roles—a "gatherer" and an "editor"—and set up a basic script to orchestrate their interaction. This project will deepen your understanding of how to break down complex tasks into manageable agent-specific responsibilities within a CLI environment.
+
+Agents fail. They produce empty files, ignore their contracts, time out, or return garbled output. A robust pipeline does not crash when this happens — it detects the failure, reports what went wrong, and either retries or exits cleanly. In this lesson you will add error handling to your multi-agent pipeline: timeout detection, empty-output checks, retry logic with a cap, and a fallback strategy.
+
+By the end you will have a resilient pipeline script that can survive common agent failures without human intervention.
 
 ## Walkthrough
 
-Let's set up the files that will represent our agents and their workflow.
+### Step 1 — Set up the project
 
-1.  **Create your project directory:**
-    First, we'll make a dedicated space for our brief project.
-    ```bash
-    mkdir weekly_brief_project
-    ```
-    *Why this is safe:* `mkdir` (make directory) simply creates a new folder. It doesn't modify existing files or system settings, making it a very safe command for organizing your work.
+**macOS / Linux:**
+```bash
+mkdir -p resilient-pipeline && cd resilient-pipeline
+```
 
-2.  **Navigate into your new directory:**
-    ```bash
-    cd weekly_brief_project
-    ```
-    *Why this is safe:* `cd` (change directory) moves your current location within the file system. It doesn't alter any files or data, so it's completely safe to use.
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path resilient-pipeline -Force; Set-Location resilient-pipeline
+```
 
-3.  **Create the Gatherer Agent's file:**
-    This file will represent the "gatherer" agent, responsible for collecting raw information.
-    ```bash
-    touch gatherer_agent.sh
-    ```
-    *Why this is safe:* `touch` creates an empty file if it doesn't exist, or updates its modification timestamp if it does. It's safe because it doesn't write any content into the file, nor does it delete anything.
+Copy or recreate the Researcher and Writer contracts from previous lessons into this directory. The contracts stay the same — the error handling goes into the orchestration script.
 
-4.  **Create the Editor Agent's file:**
-    This file will represent the "editor" agent, responsible for refining and summarizing the gathered information.
-    ```bash
-    touch editor_agent.sh
-    ```
-    *Why this is safe:* Just like before, `touch` is a safe command that only creates an empty placeholder file.
+**macOS / Linux:**
+```bash
+cat > researcher-CLAUDE.md << 'EOF'
+# Researcher Agent Contract
+## Role
+Gather 5–8 factual bullet points on "common mistakes when using environment variables."
+## Outputs
+- `research-findings.md`
+## Boundaries
+- Only facts. No prose.
+- Only create `research-findings.md`.
+## Stop Condition
+Stop after writing `research-findings.md`.
+EOF
 
-5.  **Create the Main Briefing Workflow file:**
-    This file will orchestrate the interaction between our gatherer and editor.
-    ```bash
-    touch brief_workflow.sh
-    ```
-    *Why this is safe:* Another use of `touch`, creating a safe, empty file for our main script.
+cat > writer-CLAUDE.md << 'EOF'
+# Writer Agent Contract
+## Role
+Turn findings into a beginner-friendly article.
+## Inputs
+- `research-findings.md`
+## Outputs
+- `article-draft.md`
+## Boundaries
+- No invented facts.
+- Only create `article-draft.md`.
+- If `research-findings.md` is missing, STOP with error.
+## Stop Condition
+Stop after writing `article-draft.md`.
+EOF
+```
 
-You've now successfully set up the conceptual files for your two-agent weekly brief workflow! In a real scenario, you would fill these `.sh` files with commands and logic for your agents.
+**Windows PowerShell:**
+```powershell
+@"
+# Researcher Agent Contract
+## Role
+Gather 5-8 factual bullet points on "common mistakes when using environment variables."
+## Outputs
+- ``research-findings.md``
+## Boundaries
+- Only facts. No prose.
+- Only create ``research-findings.md``.
+## Stop Condition
+Stop after writing ``research-findings.md``.
+"@ | Set-Content researcher-CLAUDE.md
 
-<VerificationBlock 
-  deliverable="A weekly brief workflow with separate gatherer and editor roles."
-  verifyCheck="Workflow completes with traceable handoff and acceptable output."
+@"
+# Writer Agent Contract
+## Role
+Turn findings into a beginner-friendly article.
+## Inputs
+- ``research-findings.md``
+## Outputs
+- ``article-draft.md``
+## Boundaries
+- No invented facts.
+- Only create ``article-draft.md``.
+- If ``research-findings.md`` is missing, STOP with error.
+## Stop Condition
+Stop after writing ``article-draft.md``.
+"@ | Set-Content writer-CLAUDE.md
+```
+
+### Step 2 — Write the resilient pipeline script (macOS / Linux)
+
+```bash
+cat > run-resilient.sh << 'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+MAX_RETRIES=2
+TIMEOUT_SECONDS=120
+
+run_agent() {
+  local contract="$1"
+  local expected_output="$2"
+  local attempt=0
+
+  while [ $attempt -lt $MAX_RETRIES ]; do
+    attempt=$((attempt + 1))
+    echo "  Attempt $attempt of $MAX_RETRIES..."
+
+    # Run with timeout
+    if timeout "$TIMEOUT_SECONDS" claude --print "Follow $contract exactly." 2>/dev/null; then
+      # Check output exists and is non-empty
+      if [ -s "$expected_output" ]; then
+        echo "  OK: $expected_output produced ($(wc -l < "$expected_output") lines)"
+        return 0
+      else
+        echo "  WARN: Agent completed but $expected_output is missing or empty."
+      fi
+    else
+      echo "  WARN: Agent timed out after ${TIMEOUT_SECONDS}s or returned an error."
+    fi
+  done
+
+  echo "  FAIL: $contract failed after $MAX_RETRIES attempts."
+  return 1
+}
+
+echo "=== Stage 1: Researcher ==="
+if ! run_agent "researcher-CLAUDE.md" "research-findings.md"; then
+  echo "PIPELINE ABORT: Researcher failed. No findings to hand off."
+  echo "$(date): Researcher failed after $MAX_RETRIES attempts" >> pipeline-errors.log
+  exit 1
+fi
+
+echo ""
+echo "=== Stage 2: Writer ==="
+if ! run_agent "writer-CLAUDE.md" "article-draft.md"; then
+  echo "PIPELINE ABORT: Writer failed. Findings exist but article was not produced."
+  echo "$(date): Writer failed after $MAX_RETRIES attempts" >> pipeline-errors.log
+  echo ""
+  echo "FALLBACK: research-findings.md is still available for manual writing."
+  exit 1
+fi
+
+echo ""
+echo "=== Pipeline complete ==="
+ls -la research-findings.md article-draft.md
+SCRIPT
+
+chmod +x run-resilient.sh
+```
+
+### Step 3 — Write the resilient pipeline script (Windows PowerShell)
+
+```powershell
+@"
+`$ErrorActionPreference = "Stop"
+`$MAX_RETRIES = 2
+`$TIMEOUT_SECONDS = 120
+
+function Run-Agent {
+    param([string]`$Contract, [string]`$ExpectedOutput)
+
+    for (`$attempt = 1; `$attempt -le `$MAX_RETRIES; `$attempt++) {
+        Write-Host "  Attempt `$attempt of `$MAX_RETRIES..."
+
+        try {
+            `$job = Start-Job -ScriptBlock {
+                param(`$c) claude --print "Follow `$c exactly."
+            } -ArgumentList `$Contract
+
+            `$finished = Wait-Job `$job -Timeout `$TIMEOUT_SECONDS
+            if (`$null -eq `$finished) {
+                Stop-Job `$job
+                Remove-Job `$job -Force
+                Write-Host "  WARN: Agent timed out after `${TIMEOUT_SECONDS}s."
+                continue
+            }
+            Receive-Job `$job
+            Remove-Job `$job
+
+            if ((Test-Path `$ExpectedOutput) -and (Get-Item `$ExpectedOutput).Length -gt 0) {
+                `$lines = (Get-Content `$ExpectedOutput).Count
+                Write-Host "  OK: `$ExpectedOutput produced (`$lines lines)"
+                return `$true
+            } else {
+                Write-Host "  WARN: Agent completed but `$ExpectedOutput is missing or empty."
+            }
+        } catch {
+            Write-Host "  WARN: Agent returned an error: `$_"
+        }
+    }
+
+    Write-Host "  FAIL: `$Contract failed after `$MAX_RETRIES attempts."
+    return `$false
+}
+
+Write-Host "=== Stage 1: Researcher ==="
+if (-not (Run-Agent "researcher-CLAUDE.md" "research-findings.md")) {
+    Write-Host "PIPELINE ABORT: Researcher failed."
+    Add-Content pipeline-errors.log "`$(Get-Date): Researcher failed after `$MAX_RETRIES attempts"
+    exit 1
+}
+
+Write-Host ""
+Write-Host "=== Stage 2: Writer ==="
+if (-not (Run-Agent "writer-CLAUDE.md" "article-draft.md")) {
+    Write-Host "PIPELINE ABORT: Writer failed."
+    Add-Content pipeline-errors.log "`$(Get-Date): Writer failed after `$MAX_RETRIES attempts"
+    Write-Host "FALLBACK: research-findings.md is still available for manual writing."
+    exit 1
+}
+
+Write-Host ""
+Write-Host "=== Pipeline complete ==="
+Get-ChildItem research-findings.md, article-draft.md | Format-Table Name, Length
+"@ | Set-Content run-resilient.ps1
+```
+
+### Step 4 — Understand the error-handling patterns
+
+The script uses four patterns:
+
+1. **Timeout** — If an agent hangs (infinite loop, stuck API call), the script kills it after `TIMEOUT_SECONDS`. Without this, a broken agent blocks your pipeline forever.
+
+2. **Empty-output check** — An agent can exit cleanly without writing anything useful. The check `[ -s "$expected_output" ]` catches this.
+
+3. **Retry with cap** — Transient failures (network hiccups, temporary API errors) often succeed on retry. The cap (`MAX_RETRIES=2`) prevents infinite retry loops.
+
+4. **Fallback messaging** — When the Writer fails, the script tells you that `research-findings.md` still exists. You can finish the article manually instead of losing all progress.
+
+### Step 5 — Run and test
+
+**macOS / Linux:**
+```bash
+./run-resilient.sh
+```
+
+**Windows PowerShell:**
+```powershell
+.\run-resilient.ps1
+```
+
+To test failure handling, try renaming `researcher-CLAUDE.md` to something else before running. The script should report the failure, log it, and exit without crashing.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Agent hangs and `timeout` is not available | Some minimal Linux installs lack `timeout` | Install `coreutils` or use a manual `sleep` + `kill` pattern |
+| Retry succeeds but returns different content each time | LLM non-determinism | Accept this — the handoff check verifies the output meets the contract, not that it is identical |
+| Pipeline-errors.log grows huge | Repeated test failures pile up | Periodically clear the log or add log rotation |
+| Timeout too short for complex topics | Agent needs more than 120s for big research | Increase `TIMEOUT_SECONDS`, but set a hard ceiling (e.g., 300s) |
+| Retry mask a deeper problem | Agent always fails but retries hide this | After `MAX_RETRIES`, log the failure with details — do not retry silently |
+
+> **Cost and safety warning:** Every retry is a full agent session that costs tokens. With `MAX_RETRIES=2`, a single failing stage can triple your expected cost. The `TIMEOUT_SECONDS` cap prevents infinitely-long sessions, but even a 120-second session with a large context can be expensive. Always test with small, cheap topics before running expensive pipelines.
+
+<VerificationBlock
+  deliverable="A `resilient-pipeline/` directory containing agent contracts and a `run-resilient.sh` (or `.ps1`) script with timeout, retry, empty-output detection, and fallback messaging."
+  verifyCheck="The script retries failed agents up to MAX_RETRIES times, enforces a timeout, and exits with a useful error message when all retries are exhausted."
 />

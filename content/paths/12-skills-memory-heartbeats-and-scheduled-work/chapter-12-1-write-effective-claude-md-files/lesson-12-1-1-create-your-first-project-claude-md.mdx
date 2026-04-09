@@ -1,0 +1,148 @@
+---
+title: "Create your first project CLAUDE.md"
+lessonNumber: "12.1.1"
+chapterNumber: "12.1"
+pathNumber: "12"
+tutorPreload: "Help me write a CLAUDE.md that actually changes how Claude Code behaves in my project."
+verifyType: "terminal_output"
+---
+
+# Create your first project CLAUDE.md
+
+## Objective
+
+By the end of this lesson you will create a working `CLAUDE.md` file at the root of a project and confirm that Claude Code reads it automatically when you start a session. You will understand the four core sections every project `CLAUDE.md` needs — mission, read order, hard rules, and context loading — and prove that Claude follows the instructions you write.
+
+## Walkthrough
+
+### Step 1 — Create a practice project folder
+
+We need a real project directory. If you already have one, use it. Otherwise create a throwaway project.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/claude-md-lab
+cd ~/claude-md-lab
+git init
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\claude-md-lab"
+Set-Location "$HOME\claude-md-lab"
+git init
+```
+
+We initialize git because Claude Code looks for `CLAUDE.md` starting from the repo root.
+
+### Step 2 — Create the CLAUDE.md file with four sections
+
+Create the file at the root of the project.
+
+**macOS / Linux**
+
+```bash
+cat > CLAUDE.md << 'EOF'
+# CLAUDE.md
+
+## Mission
+This is a learning project for practicing Claude Code customization.
+Optimize for clarity and safety. Never modify files outside this directory.
+
+## Read order
+1. CLAUDE.md (this file)
+2. README.md (if it exists)
+
+## Hard rules
+1. Do not create files outside the project root.
+2. Do not install packages without asking first.
+3. Always explain what you are about to do before doing it.
+
+## Context loading
+- Read only the files directly relevant to the current task.
+- Prefer reading fewer files over scanning the whole project.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# CLAUDE.md
+
+## Mission
+This is a learning project for practicing Claude Code customization.
+Optimize for clarity and safety. Never modify files outside this directory.
+
+## Read order
+1. CLAUDE.md (this file)
+2. README.md (if it exists)
+
+## Hard rules
+1. Do not create files outside the project root.
+2. Do not install packages without asking first.
+3. Always explain what you are about to do before doing it.
+
+## Context loading
+- Read only the files directly relevant to the current task.
+- Prefer reading fewer files over scanning the whole project.
+"@ | Set-Content -Path "CLAUDE.md" -Encoding UTF8
+```
+
+### Step 3 — Verify the file exists and looks right
+
+**macOS / Linux**
+
+```bash
+cat CLAUDE.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content CLAUDE.md
+```
+
+You should see all four sections: Mission, Read order, Hard rules, and Context loading.
+
+### Step 4 — Open Claude Code and test that it reads your file
+
+Launch Claude Code in this directory:
+
+```
+claude
+```
+
+Once Claude Code starts, type this prompt:
+
+```
+What are my project rules?
+```
+
+Claude should respond with the three hard rules you wrote in `CLAUDE.md`. If it does, your file is working. Claude Code automatically reads `CLAUDE.md` from the repo root at session start — you do not need to tell it to load the file.
+
+### Step 5 — Test that a rule is actually enforced
+
+Give Claude a prompt that violates one of your rules:
+
+```
+Create a file at /tmp/test-escape.txt
+```
+
+Claude should either refuse or ask for confirmation, because your hard rule says "Do not create files outside the project root." If Claude creates the file without hesitation, strengthen your rule wording to be more explicit (e.g., "Never write to any path outside ~/claude-md-lab").
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude does not mention your rules when asked | `CLAUDE.md` is not at the repo root, or the folder is not a git repository | Run `git init` in the project folder and make sure `CLAUDE.md` is at the top level, not in a subfolder |
+| Claude reads the file but ignores a rule | Rule wording is too vague | Rewrite the rule as a direct, unambiguous instruction: "Do not X" instead of "Try to avoid X" |
+| Claude says it cannot find any project instructions | You launched Claude Code from a different directory | Run `pwd` (macOS/Linux) or `Get-Location` (PowerShell) to confirm you are in the project folder before starting Claude |
+| File has encoding issues on Windows | PowerShell saved with BOM or UTF-16 | Re-create the file using `Set-Content` with `-Encoding UTF8` as shown above |
+
+<VerificationBlock
+  deliverable="A CLAUDE.md at the project root with mission, read order, hard rules, and context loading sections."
+  verifyCheck="Claude Code responds to 'What are my project rules?' with the rules from your CLAUDE.md file."
+/>

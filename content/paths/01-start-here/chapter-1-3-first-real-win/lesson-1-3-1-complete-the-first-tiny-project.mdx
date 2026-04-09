@@ -11,33 +11,155 @@ verifyType: "terminal_output"
 
 ## Objective
 
-It's time for your first real win! We are going to prove that your workspace is set up correctly by writing a tiny configuration file, completely from scratch.
-
-By doing this manually once, you'll understand exactly *where* AI agents are putting files when they start doing this automatically for you.
+You will create a personal README.md file from the terminal, add real content to it, and then display it — proving your workspace is set up correctly and you can create, write, and read files entirely from the command line.
 
 ## Walkthrough
 
-1. Open your Terminal (or Command Prompt / PowerShell).
-2. Use the terminal to navigate into your new workspace. If you made the folder in your `Documents`, you would type:
-```bash
-cd Documents/cli-academy/projects
-```
-3. Let's create a tiny text file. Type the following command and hit **Enter**:
-```bash
-echo "workspace_status=ready" > config.txt
-```
-4. Now, let's verify it worked by asking the terminal to read the file back to us:
-```bash
-cat config.txt
-```
-*(On Windows Command Prompt, use `type config.txt` instead).*
+### Step 1 — Navigate to your projects folder
 
-If the terminal prints `workspace_status=ready`, congratulations! You just completed your first technical configuration using a command-line interface!
+**macOS / Linux:**
+```bash
+cd ~/cli-academy/projects
+```
 
-> [!TIP]
-> Did the terminal print an error like `cd: no such file or directory`? Open the **Floating Tutor** and tell it exactly what you typed and what the error says. The Tutor is built to handle this!
+**Windows PowerShell:**
+```powershell
+Set-Location ~/cli-academy/projects
+```
 
-<VerificationBlock 
-  deliverable="A neatly organized downloads or notes folder using manual CLI steps plus AI explanation."
-  verifyCheck="The folder contents match the target layout and the learner writes what each command did."
+### Step 2 — Create a project folder
+
+Give your first project its own folder.
+
+**macOS / Linux:**
+```bash
+mkdir my-first-project
+cd my-first-project
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path my-first-project -Force
+Set-Location my-first-project
+```
+
+### Step 3 — Write your personal README.md
+
+This is a real Markdown file — the same format used by every open-source project on GitHub.
+
+**macOS / Linux:**
+```bash
+cat <<'EOF' > README.md
+# My First CLI Academy Project
+
+**Author:** Your Name Here
+**Date:** $(date +%Y-%m-%d)
+
+## What this is
+This is my first project created entirely from the terminal.
+I did not use a file explorer or a graphical text editor to make this file.
+
+## What I learned
+- How to create folders with mkdir
+- How to write files from the command line
+- How to read files back with cat
+
+## Next steps
+- Complete the rest of Path 01
+- Start learning about Claude Code in Path 03
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# My First CLI Academy Project
+
+**Author:** Your Name Here
+**Date:** $(Get-Date -Format yyyy-MM-dd)
+
+## What this is
+This is my first project created entirely from the terminal.
+I did not use a file explorer or a graphical text editor to make this file.
+
+## What I learned
+- How to create folders with mkdir / New-Item
+- How to write files from the command line
+- How to read files back with Get-Content
+
+## Next steps
+- Complete the rest of Path 01
+- Start learning about Claude Code in Path 03
+"@ | Set-Content README.md
+```
+
+### Step 4 — Read it back and confirm
+
+**macOS / Linux:**
+```bash
+cat README.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content README.md
+```
+
+You should see your full README printed in the terminal. If the Author line still says "Your Name Here", open the file in any editor and replace it with your actual name, then save.
+
+### Step 5 — Count the lines in your file
+
+A quick way to prove the file has real content.
+
+**macOS / Linux:**
+```bash
+wc -l README.md
+```
+
+**Windows PowerShell:**
+```powershell
+(Get-Content README.md | Measure-Object -Line).Lines
+```
+
+You should see a number around 16–20. This confirms the file exists and is not empty.
+
+### Step 6 — List the project contents
+
+**macOS / Linux:**
+```bash
+ls -la
+```
+
+**Windows PowerShell:**
+```powershell
+Get-ChildItem
+```
+
+You should see `README.md` listed. This is a complete, real project folder — exactly how professional projects start.
+
+### Step 7 — Commit your first project
+
+If Git is set up from the previous lesson:
+
+```bash
+cd ~/cli-academy
+git add projects/my-first-project/README.md
+git commit -m "Add my first CLI Academy project"
+```
+
+(Same commands on macOS, Linux, and Windows PowerShell.)
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `cat: README.md: No such file or directory` | The file was not created, or you are in the wrong directory | Run `pwd` (macOS/Linux) or `Get-Location` (Windows) to check where you are, then `cd` into `my-first-project/` |
+| File is empty (0 lines) | Heredoc `EOF` was indented or the command had a typo | Delete the file and re-run the creation command. Make sure `EOF` is on its own line at column 1 |
+| `wc: command not found` | You are on Windows using PowerShell | Use `(Get-Content README.md \| Measure-Object -Line).Lines` instead |
+| `git commit` says "nothing to commit" | The file was already committed | This is fine — your work is already saved |
+| Author still says "Your Name Here" | You did not edit the placeholder yet | Open the file in VS Code (`code README.md`) or Notepad and replace the placeholder |
+
+<VerificationBlock
+  deliverable="A my-first-project/ folder inside cli-academy/projects/ containing a README.md with your name, date, and at least three sections of real content."
+  verifyCheck="Run cat README.md (macOS/Linux) or Get-Content README.md (Windows) inside my-first-project/ and confirm the file contains your name and all three sections (What this is, What I learned, Next steps)."
 />

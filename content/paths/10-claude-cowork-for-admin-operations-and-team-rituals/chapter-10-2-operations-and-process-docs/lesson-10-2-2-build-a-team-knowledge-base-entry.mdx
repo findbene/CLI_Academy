@@ -1,0 +1,158 @@
+---
+title: "Build a team knowledge base entry"
+lessonNumber: "10.2.2"
+chapterNumber: "10.2"
+pathNumber: "10"
+tutorPreload: "Help me document this team process so a new hire can follow it without asking questions."
+verifyType: "terminal_output"
+---
+
+# Build a team knowledge base entry
+
+## Objective
+
+By the end of this lesson you will create a knowledge base article that documents a real team process — "How to set up the dev environment" — complete with verified commands, troubleshooting notes, and a new-hire-friendly tone. The article will live in your project's `docs/` directory under version control.
+
+## Walkthrough
+
+### Step 1 — Create the knowledge base directory
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/my-project/docs/knowledge-base
+cd ~/my-project/docs/knowledge-base
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\my-project\docs\knowledge-base"
+Set-Location "$HOME\my-project\docs\knowledge-base"
+```
+
+### Step 2 — Capture the raw setup steps from your own experience
+
+Before involving Claude, write down the steps you actually follow when setting up this project from scratch. This is your source of truth.
+
+**macOS / Linux**
+
+```bash
+cat > raw-setup-notes.txt << 'EOF'
+1. Clone the repo: git clone git@github.com:team/my-project.git
+2. cd my-project
+3. Install Node 20 (I use nvm: nvm install 20)
+4. npm install
+5. Copy .env.example to .env and fill in the DATABASE_URL
+6. Run migrations: npm run db:migrate
+7. Start dev server: npm run dev
+8. Open http://localhost:3000 and check the home page loads
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+1. Clone the repo: git clone git@github.com:team/my-project.git
+2. cd my-project
+3. Install Node 20 (I use nvm-windows: nvm install 20)
+4. npm install
+5. Copy .env.example to .env and fill in the DATABASE_URL
+6. Run migrations: npm run db:migrate
+7. Start dev server: npm run dev
+8. Open http://localhost:3000 and check the home page loads
+"@ | Out-File "raw-setup-notes.txt"
+```
+
+Replace these with your actual steps. Accuracy here is more important than polish.
+
+### Step 3 — Ask Claude to expand the notes into a knowledge base article
+
+Open Claude Code in the knowledge-base directory:
+
+```
+Read raw-setup-notes.txt. Turn it into a polished knowledge base article called "Dev Environment Setup" with:
+
+1. A "Prerequisites" section listing required tools and versions.
+2. Each step as a numbered section with the exact command, what it does, and how to verify it worked.
+3. A "Troubleshooting" section at the bottom with common failure modes.
+4. Include both macOS/Linux and Windows PowerShell commands where they differ.
+5. Write for someone who has never seen this project before.
+6. Save the result as dev-environment-setup.md.
+```
+
+### Step 4 — Verify every command in the article
+
+This is non-negotiable. Open a fresh terminal and follow the article step by step as if you were a new hire.
+
+**macOS / Linux**
+
+```bash
+# Spot-check critical commands from the generated article:
+node --version          # Should show v20.x
+npm --version           # Should show 10.x or similar
+cat .env.example        # Should exist in the repo
+```
+
+**Windows PowerShell**
+
+```powershell
+# Spot-check critical commands from the generated article:
+node --version           # Should show v20.x
+npm --version            # Should show 10.x or similar
+Get-Content .env.example # Should exist in the repo
+```
+
+If any command fails or produces unexpected output, update the article. Do not commit a knowledge base entry with untested instructions.
+
+> **Real danger:** A new team member will follow this document on their first day. If Step 4 fails silently and Step 5 throws a cryptic error, they will lose hours and trust the docs less going forward. Every command must work.
+
+### Step 5 — Add a metadata header to the article
+
+Open the generated `dev-environment-setup.md` and ensure it starts with a clear header:
+
+```markdown
+# Dev Environment Setup
+
+**Last verified:** 2025-04-09
+**Verified on:** macOS 14.3 / Windows 11 23H2
+**Author:** [Your name]
+
+---
+```
+
+The "Last verified" date tells future readers whether to trust the instructions or re-test them.
+
+### Step 6 — Commit to version control
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project
+git add docs/knowledge-base/dev-environment-setup.md
+git commit -m "docs: add dev environment setup knowledge base entry"
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"
+git add docs/knowledge-base/dev-environment-setup.md
+git commit -m "docs: add dev environment setup knowledge base entry"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude adds steps you did not write (e.g., "Install Docker") | Claude assumed a common dev setup | Remove any step not in your raw notes; only add steps you have personally tested |
+| Commands work on your machine but fail for a teammate | Missing a machine-specific dependency or env var | Have a second person follow the doc on a clean machine and note failures |
+| `.env.example` is missing from the repo | Someone never committed it | Create one with placeholder values and add it to the article as Step 0 |
+| Article is too long and overwhelming | Claude over-explained each step | Ask Claude to "trim each step to command + one-sentence explanation + verify" |
+| Knowledge base entry goes stale after a dependency upgrade | No review cadence | Add a calendar reminder to re-verify the article quarterly; update the "Last verified" date |
+
+<VerificationBlock
+  deliverable="A dev-environment-setup.md in docs/knowledge-base/ with verified commands, troubleshooting section, and a Last verified date."
+  verifyCheck="A person unfamiliar with the project can follow the article from top to bottom and end up with a working dev environment."
+/>

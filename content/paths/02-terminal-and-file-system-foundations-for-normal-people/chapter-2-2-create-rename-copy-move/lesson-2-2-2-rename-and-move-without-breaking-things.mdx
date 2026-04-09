@@ -10,31 +10,182 @@ verifyType: "terminal_output"
 # Rename and move without breaking things
 
 ## Objective
-Master the art of moving and renaming files in the terminal without destroying your work or losing files by accident.
+
+Use `mv` / `Move-Item` and `cp` / `Copy-Item` to rename files, move them between folders, copy them for safety, and undo a bad move. By the end you will have reorganized `tiny-agent-project/` without losing any content.
 
 ## Walkthrough
 
-Ah, the `mv` command. In the terminal, **Move** and **Rename** are actually the exact same action! You are essentially "moving" a file from its old name to its new name.
+### Step 1 — Check your starting point
 
-**Step 1: Renaming a file**
-To use the `mv` command, you type `mv`, then the *current* name, then the *new* name.
-Let's say you want to rename `notes.txt` to `brainstorming.txt`.
-Type: `mv notes.txt brainstorming.txt`
-Press Enter. 
+Make sure you are inside `tiny-agent-project/` and review what you have.
 
-*Safety Hazard:* If you already have a file called `brainstorming.txt`, `mv` will silently overwrite it and destroy the old one! Always look before you move by running `ls` first to ensure the new name is perfectly empty and available.
+**macOS / Linux**
 
-**Step 2: Moving a file into a folder**
-If the second argument you provide is the name of an existing *folder*, `mv` will pluck your file up and drop it inside that folder.
+```bash
+cd ~/tiny-agent-project
+ls -la
+```
 
-Let's make a folder called `docs` using what we learned: `mkdir docs`
-Now move your text file inside it: `mv brainstorming.txt docs/`
-*(Notice the slash trailing the folder? That is good practice to remind yourself it is a folder!)*
+**Windows PowerShell**
 
-**Your Task:**
-Using your `tiny-agent-project` from the last lesson, rename `README.md` to `INSTRUCTIONS.md`. Then create a folder called `src` and move `app.py` into it. Once you finish, paste your terminal output showing what you did so your tutor can verify the final folder structure!
+```powershell
+cd ~/tiny-agent-project
+Get-ChildItem
+```
 
-<VerificationBlock 
-  deliverable="A cleaned-up folder structure after a naming refactor."
-  verifyCheck="Automated diff shows the final structure is correct."
+You should see `README.md`, plus the `src/`, `docs/`, and `tests/` folders from the previous lesson.
+
+### Step 2 — Rename a file
+
+On macOS/Linux, `mv` handles both renaming and moving. On Windows, `Rename-Item` is the clearest rename command. Let's rename `README.md` to `INSTRUCTIONS.md`.
+
+**macOS / Linux**
+
+```bash
+mv README.md INSTRUCTIONS.md
+ls
+```
+
+**Windows PowerShell**
+
+```powershell
+Rename-Item README.md INSTRUCTIONS.md
+Get-ChildItem -Name
+```
+
+Confirm `README.md` is gone and `INSTRUCTIONS.md` appears in its place.
+
+### Step 3 — Copy a file as a backup before moving it
+
+Before you move anything important, make a copy. If the move goes wrong you still have the original.
+
+**macOS / Linux**
+
+```bash
+cp src/main.py src/main.py.bak
+ls src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Copy-Item src\main.py src\main.py.bak
+Get-ChildItem src\ -Name
+```
+
+You now have both `main.py` and `main.py.bak` inside `src/`.
+
+### Step 4 — Move a file into a different folder
+
+Move the documentation plan file to the project root.
+
+**macOS / Linux**
+
+```bash
+mv docs/plan.md ./plan.md
+ls
+ls docs/
+```
+
+**Windows PowerShell**
+
+```powershell
+Move-Item docs\plan.md .\plan.md
+Get-ChildItem -Name
+Get-ChildItem docs\ -Name
+```
+
+`plan.md` now lives at the project root. The `docs/` folder is empty.
+
+### Step 5 — Undo the move
+
+Changed your mind? Move it back.
+
+**macOS / Linux**
+
+```bash
+mv plan.md docs/plan.md
+ls docs/
+```
+
+**Windows PowerShell**
+
+```powershell
+Move-Item plan.md docs\plan.md
+Get-ChildItem docs\ -Name
+```
+
+`plan.md` is safely back inside `docs/`. This is the terminal equivalent of Ctrl+Z.
+
+### Step 6 — See the danger: overwrite risk
+
+The `mv` command will silently overwrite an existing file if the destination name already exists. Try this safe demonstration.
+
+**macOS / Linux**
+
+```bash
+echo "file one" > alpha.txt
+echo "file two" > beta.txt
+cat alpha.txt
+cat beta.txt
+mv beta.txt alpha.txt
+cat alpha.txt
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Content alpha.txt "file one"
+Set-Content beta.txt "file two"
+Get-Content alpha.txt
+Get-Content beta.txt
+Move-Item beta.txt alpha.txt -Force
+Get-Content alpha.txt
+```
+
+After the move, `alpha.txt` contains "file two." The original "file one" content is gone. This is why Step 3 (backup copy) matters.
+
+Clean up the demo files:
+
+**macOS / Linux**
+
+```bash
+rm alpha.txt
+```
+
+**Windows PowerShell**
+
+```powershell
+Remove-Item alpha.txt
+```
+
+### Step 7 — Verify your final structure
+
+**macOS / Linux**
+
+```bash
+tree .
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Name
+```
+
+You should see `INSTRUCTIONS.md` at the root, `main.py` and `main.py.bak` in `src/`, `plan.md` in `docs/`, and `test_main.py` in `tests/`.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `mv: overwrite 'file'?` prompt appears | Some systems alias `mv` to `mv -i` (interactive mode) | Type `y` and Enter to confirm, or use `\mv` to bypass the alias |
+| `Move-Item` asks for confirmation | PowerShell `$ConfirmPreference` may be set low | Add `-Force` to the command to skip the prompt |
+| File disappears after `mv` and you cannot find it | You accidentally moved it inside a subfolder or used a wrong path | Run `find . -name "filename"` (macOS/Linux) or `Get-ChildItem -Recurse -Filter "filename"` (Windows) to locate it |
+| `Rename-Item` fails with "file already exists" | A file with the new name already exists | List the folder first to check, then pick a different name or remove/rename the conflicting file |
+| `cp` copies a folder name but not its contents | You need `-r` (recursive) to copy folders: `cp -r src/ src-backup/` | Use `cp -r` (macOS/Linux) or `Copy-Item -Recurse` (Windows) for directories |
+
+<VerificationBlock
+  deliverable="The reorganized tiny-agent-project/ with INSTRUCTIONS.md at the root, main.py.bak in src/, and plan.md back in docs/."
+  verifyCheck="Run tree . (macOS/Linux) or Get-ChildItem -Recurse -Name (Windows) and confirm INSTRUCTIONS.md, src/main.py, src/main.py.bak, docs/plan.md, and tests/test_main.py all appear."
 />

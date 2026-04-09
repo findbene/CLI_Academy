@@ -7,25 +7,211 @@ tutorPreload: "Read this run and tell me where the handoff broke down."
 verifyType: "terminal_output"
 ---
 
-# Run the workflow on a small real task
+# Build a two-agent research-and-write pipeline
 
 ## Objective
-Today, you'll put your understanding of agent workflows into practice. We'll run a two-agent system on a small, contained task. Your goal is to successfully execute this task, collect all the output and logs, and prepare to analyze how the agents collaborated (or where they might have struggled) to achieve their objective. This is a crucial step towards understanding and troubleshooting agent systems.
+
+In Lesson 13.2.1 you created agent contracts with defined roles, boundaries, and stop conditions. Now you will put those contracts to work. You will build a complete two-agent pipeline — a Researcher that gathers findings into a file and a Writer that turns those findings into a polished document — run it end-to-end on a real topic, and verify the handoff.
+
+By the end you will have a working `research-write-pipeline/` directory with contracts, a research output, and a finished document you can read.
 
 ## Walkthrough
 
-1.  **Prepare Your Workspace**: First, let's ensure we have a safe environment for our agents. In your terminal, navigate to your project directory. The tools we use for agent interaction are designed to operate strictly within your current directory, preventing any unintended changes elsewhere on your system.
-2.  **Assign a Two-Part Task**: We'll give our agents a focused task that requires a clear handoff: "Create a Python script named `hello.py` that prints 'Hello, CLI Academy!' and then execute this script, reporting its output." This encourages one agent to create and another to execute.
-3.  **Initiate the Agent Workflow**: Now, let's tell our agents to get to work! In your terminal, type the following command:
-    ```bash
-    your_agent_tool run --agents 2 --task "Create a Python script named hello.py that prints 'Hello, CLI Academy!' and then execute this script, reporting its output."
-    ```
-    *Safety First*: This command is designed with safety in mind. It will only create a new file (`hello.py`) and then execute *that specific script* within your current project directory. It will not modify any system files or access sensitive data, keeping your environment secure.
-4.  **Observe the Interaction**: As the workflow runs, you'll see a stream of logs in your terminal. This output details the agents' thought processes, their communication, and their actions. Pay attention to how they collaborate and how the task is passed between them.
-5.  **Verify the Task Completion**: Once the run completes, you should see the output from the executed Python script. You can also manually confirm the agent's work by typing `ls` to see `hello.py` and `cat hello.py` to view its contents.
-6.  **Capture the Full Run**: For the next step with your AI Tutor, please copy all the text from your terminal (the entire log of the agent run, from start to finish). This complete record of the agents' interaction is your deliverable!
+### Step 1 — Create the pipeline directory
 
-<VerificationBlock 
-  deliverable="A completed two-agent run with logs and outputs."
-  verifyCheck="Logs show clean handoff and final output quality is acceptable."
+**macOS / Linux:**
+```bash
+mkdir -p research-write-pipeline && cd research-write-pipeline
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path research-write-pipeline -Force; Set-Location research-write-pipeline
+```
+
+### Step 2 — Write the Researcher contract
+
+**macOS / Linux:**
+```bash
+cat > researcher-CLAUDE.md << 'EOF'
+# Researcher Agent Contract
+
+## Role
+You are a factual researcher. Gather information on the assigned topic.
+
+## Topic
+"What are the most common mistakes beginners make when learning the command line?"
+
+## Outputs
+- A file called `research-findings.md` containing:
+  - 5–8 bullet points of findings
+  - Each bullet includes a brief explanation
+  - A confidence note at the bottom: High / Medium / Low
+
+## Boundaries
+- Do NOT write prose, conclusions, or recommendations
+- Do NOT create any file except `research-findings.md`
+- Do NOT continue after writing the file
+
+## Stop Condition
+Stop immediately after writing `research-findings.md`. One pass. No iteration.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Researcher Agent Contract
+
+## Role
+You are a factual researcher. Gather information on the assigned topic.
+
+## Topic
+"What are the most common mistakes beginners make when learning the command line?"
+
+## Outputs
+- A file called ``research-findings.md`` containing:
+  - 5-8 bullet points of findings
+  - Each bullet includes a brief explanation
+  - A confidence note at the bottom: High / Medium / Low
+
+## Boundaries
+- Do NOT write prose, conclusions, or recommendations
+- Do NOT create any file except ``research-findings.md``
+- Do NOT continue after writing the file
+
+## Stop Condition
+Stop immediately after writing ``research-findings.md``. One pass. No iteration.
+"@ | Set-Content researcher-CLAUDE.md
+```
+
+### Step 3 — Write the Writer contract
+
+**macOS / Linux:**
+```bash
+cat > writer-CLAUDE.md << 'EOF'
+# Writer Agent Contract
+
+## Role
+You are a technical writer. Turn raw findings into a clear, beginner-friendly article.
+
+## Inputs
+- `research-findings.md` (produced by the Researcher agent)
+
+## Outputs
+- A file called `article-draft.md` containing:
+  - A title
+  - An introduction (2–3 sentences)
+  - A section for each finding, rewritten in plain English
+  - A short conclusion
+
+## Boundaries
+- Do NOT invent facts that are not in `research-findings.md`
+- Do NOT modify `research-findings.md`
+- Do NOT create any file except `article-draft.md`
+- If `research-findings.md` does not exist or is empty, STOP and report the error
+
+## Stop Condition
+Stop immediately after writing `article-draft.md`. Do not iterate.
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Writer Agent Contract
+
+## Role
+You are a technical writer. Turn raw findings into a clear, beginner-friendly article.
+
+## Inputs
+- ``research-findings.md`` (produced by the Researcher agent)
+
+## Outputs
+- A file called ``article-draft.md`` containing:
+  - A title
+  - An introduction (2-3 sentences)
+  - A section for each finding, rewritten in plain English
+  - A short conclusion
+
+## Boundaries
+- Do NOT invent facts that are not in ``research-findings.md``
+- Do NOT modify ``research-findings.md``
+- Do NOT create any file except ``article-draft.md``
+- If ``research-findings.md`` does not exist or is empty, STOP and report the error
+
+## Stop Condition
+Stop immediately after writing ``article-draft.md``. Do not iterate.
+"@ | Set-Content writer-CLAUDE.md
+```
+
+### Step 4 — Run the Researcher
+
+Open Claude Code in the `research-write-pipeline/` directory. Give it this prompt:
+
+```
+Follow the instructions in researcher-CLAUDE.md exactly. Do not deviate from the contract.
+```
+
+When it finishes, verify the handoff file exists and has real content:
+
+**macOS / Linux:**
+```bash
+test -s research-findings.md && echo "Handoff file OK" || echo "ERROR: file missing or empty"
+cat research-findings.md
+```
+
+**Windows PowerShell:**
+```powershell
+if (Test-Path research-findings.md) { Write-Host "Handoff file OK"; Get-Content research-findings.md } else { Write-Host "ERROR: file missing or empty" }
+```
+
+If the file is missing or empty, re-run the Researcher before continuing. The Writer cannot operate without valid input.
+
+### Step 5 — Run the Writer
+
+In the same directory, start a new Claude Code session (or a new prompt in the same session) and say:
+
+```
+Follow the instructions in writer-CLAUDE.md exactly. Do not deviate from the contract.
+```
+
+Verify the final output:
+
+**macOS / Linux:**
+```bash
+test -s article-draft.md && echo "Article created" || echo "ERROR: article missing"
+cat article-draft.md
+```
+
+**Windows PowerShell:**
+```powershell
+if (Test-Path article-draft.md) { Write-Host "Article created"; Get-Content article-draft.md } else { Write-Host "ERROR: article missing" }
+```
+
+### Step 6 — Audit the handoff
+
+Check that the Writer did not invent facts:
+
+1. Open `research-findings.md` and `article-draft.md` side-by-side.
+2. For every claim in the article, confirm it traces back to a bullet in the findings.
+3. If you find a claim with no source, the Writer violated its contract.
+
+This manual audit is how real multi-agent systems are validated. Automated checks are possible (and you will build them in Lesson 13.3.2), but the human eye catches subtle drift that scripts miss.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `research-findings.md` is empty | Researcher wrote nothing or misunderstood the topic | Check the contract's Topic section is clear and specific |
+| Writer invents facts not in the findings | Boundary rule ignored or too vague | Strengthen the contract: "Every claim MUST trace to a bullet in research-findings.md" |
+| Writer modifies `research-findings.md` | Contract boundary not enforced | Add "NEVER open research-findings.md for writing" to the contract |
+| Researcher writes an article instead of bullet points | Role description ambiguous | Add "Do NOT write prose, paragraphs, or conclusions" explicitly |
+| Pipeline takes many minutes and racks up cost | Agents iterating beyond stop condition | Verify each contract has "Stop immediately after writing X. One pass." |
+
+> **Cost warning:** Each agent session consumes API tokens proportional to context size plus output. A two-agent pipeline costs roughly twice what a single session costs. Run on small topics first to validate contracts before scaling to larger tasks.
+
+<VerificationBlock
+  deliverable="A `research-write-pipeline/` directory containing `researcher-CLAUDE.md`, `writer-CLAUDE.md`, `research-findings.md`, and `article-draft.md`."
+  verifyCheck="The Writer's article references only findings from the Researcher. Both agents have explicit stop conditions. The handoff file exists and is non-empty."
 />

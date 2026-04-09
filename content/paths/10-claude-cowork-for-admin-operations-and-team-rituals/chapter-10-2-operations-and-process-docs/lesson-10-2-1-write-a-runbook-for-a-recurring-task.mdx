@@ -1,0 +1,246 @@
+---
+title: "Write a runbook for a recurring task"
+lessonNumber: "10.2.1"
+chapterNumber: "10.2"
+pathNumber: "10"
+tutorPreload: "Turn this repeated task into a dead-simple runbook with checkpoints at every stage."
+verifyType: "terminal_output"
+---
+
+# Write a runbook for a recurring task
+
+## Objective
+
+By the end of this lesson you will have a complete deployment runbook — a step-by-step document that anyone on your team can follow to deploy your application safely. Each step includes the exact command to run and a verification command to confirm it worked before moving on.
+
+## Walkthrough
+
+### Step 1 — Create a runbooks directory in your project
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/my-project/docs/runbooks
+cd ~/my-project/docs/runbooks
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\my-project\docs\runbooks"
+Set-Location "$HOME\my-project\docs\runbooks"
+```
+
+### Step 2 — Draft the runbook skeleton by hand
+
+Start with a known structure so Claude has clear guardrails. Create the file:
+
+**macOS / Linux**
+
+```bash
+cat > deploy-runbook.md << 'EOF'
+# Deployment Runbook
+
+## Pre-deploy checklist
+- [ ] All tests pass on main
+- [ ] No unmerged hotfixes
+- [ ] Database migrations reviewed
+
+## Steps
+
+### Step 1 — Pull latest main
+**Command:**
+```
+git checkout main && git pull origin main
+```
+**Verify:**
+```
+git log --oneline -3
+```
+**Expected:** You see the latest merged PR at the top.
+
+### Step 2 — Run tests
+**Command:**
+```
+npm test
+```
+**Verify:**
+```
+echo $?
+```
+**Expected:** Exit code 0.
+
+### Step 3 — Build the application
+**Command:**
+```
+npm run build
+```
+**Verify:**
+```
+ls -la dist/ | head -5
+```
+**Expected:** dist/ directory contains fresh build artifacts.
+
+### Step 4 — Deploy
+**Command:**
+```
+npm run deploy
+```
+**Verify:**
+```
+curl -s -o /dev/null -w "%{http_code}" https://your-app.example.com/health
+```
+**Expected:** HTTP 200.
+
+## Rollback procedure
+If any step fails:
+1. Do NOT continue to the next step.
+2. Run: `git revert HEAD && npm run deploy`
+3. Notify the team channel.
+
+## Post-deploy
+- [ ] Smoke test critical user paths manually
+- [ ] Monitor error rate for 15 minutes
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# Deployment Runbook
+
+## Pre-deploy checklist
+- [ ] All tests pass on main
+- [ ] No unmerged hotfixes
+- [ ] Database migrations reviewed
+
+## Steps
+
+### Step 1 - Pull latest main
+**Command:**
+``````
+git checkout main; git pull origin main
+``````
+**Verify:**
+``````
+git log --oneline -3
+``````
+**Expected:** You see the latest merged PR at the top.
+
+### Step 2 - Run tests
+**Command:**
+``````
+npm test
+``````
+**Verify:**
+``````
+`$LASTEXITCODE
+``````
+**Expected:** Exit code 0.
+
+### Step 3 - Build the application
+**Command:**
+``````
+npm run build
+``````
+**Verify:**
+``````
+Get-ChildItem dist | Select-Object -First 5
+``````
+**Expected:** dist/ directory contains fresh build artifacts.
+
+### Step 4 - Deploy
+**Command:**
+``````
+npm run deploy
+``````
+**Verify:**
+``````
+(Invoke-WebRequest -Uri https://your-app.example.com/health -UseBasicParsing).StatusCode
+``````
+**Expected:** HTTP 200.
+
+## Rollback procedure
+If any step fails:
+1. Do NOT continue to the next step.
+2. Run: git revert HEAD; npm run deploy
+3. Notify the team channel.
+
+## Post-deploy
+- [ ] Smoke test critical user paths manually
+- [ ] Monitor error rate for 15 minutes
+"@ | Out-File "deploy-runbook.md"
+```
+
+### Step 3 — Ask Claude to review and improve the runbook
+
+Open Claude Code in the runbooks directory:
+
+```
+Read deploy-runbook.md. Improve it:
+1. Add a "Prerequisites" section listing required tools and access.
+2. Add estimated time for each step.
+3. Add a "Who to call" section with placeholder roles (on-call engineer, team lead).
+4. Make sure every Step has a Command, Verify, and Expected subsection.
+5. Do not remove the Rollback section.
+```
+
+### Step 4 — Test every verification command
+
+This is the most important step. Run each **Verify** command from the runbook in your actual project directory and confirm it produces the **Expected** result.
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project
+git log --oneline -3        # Step 1 verify
+npm test                    # Step 2 command
+echo $?                     # Step 2 verify
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"
+git log --oneline -3          # Step 1 verify
+npm test                      # Step 2 command
+$LASTEXITCODE                 # Step 2 verify
+```
+
+If any verify command does not match the expected result, update the runbook. A runbook with untested steps is worse than no runbook — someone will follow it during an outage and get stuck.
+
+> **Real danger:** An untested runbook creates false confidence. The person following it during an incident will discover the broken step at the worst possible moment. Test every command before committing.
+
+### Step 5 — Commit the runbook to version control
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project
+git add docs/runbooks/deploy-runbook.md
+git commit -m "docs: add deployment runbook with verification steps"
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"
+git add docs/runbooks/deploy-runbook.md
+git commit -m "docs: add deployment runbook with verification steps"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Verify command passes in dev but fails in CI | Environment differences (different Node version, missing env vars) | Add a Prerequisites section that pins exact tool versions and required env vars |
+| Runbook mentions commands that do not exist in this project | Claude assumed a standard toolchain (e.g., `npm run deploy` when you use a different deployer) | Replace every command with the actual command you use, then re-test |
+| Rollback section is vague ("undo changes") | Claude generated a generic rollback | Write the exact rollback commands yourself and test them on a branch |
+| Teammate follows the runbook and gets stuck at Step 3 | A step assumes context you have but they do not (e.g., VPN access) | Have someone unfamiliar with the process follow the runbook and note where they get confused |
+| Runbook drifts out of date after infra changes | No review process | Add a "Last verified" date at the top and schedule a quarterly review |
+
+<VerificationBlock
+  deliverable="A deploy-runbook.md committed to your project where every verification command has been tested and produces the documented expected result."
+  verifyCheck="Each Verify command in the runbook runs successfully in the project directory and matches its Expected output."
+/>

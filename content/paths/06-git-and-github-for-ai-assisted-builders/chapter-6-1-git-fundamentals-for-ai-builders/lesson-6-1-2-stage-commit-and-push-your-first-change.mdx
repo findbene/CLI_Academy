@@ -1,0 +1,212 @@
+---
+title: "Stage, commit, and push your first change"
+lessonNumber: "6.1.2"
+chapterNumber: "6.1"
+pathNumber: "6"
+tutorPreload: "Walk me through what git status is showing me and what my safest next step is."
+verifyType: "terminal_output"
+---
+
+# Stage, commit, and push your first change
+
+## Objective
+
+By the end of this lesson you will complete the full add → commit → push cycle, checking `git status` at every step. You will connect a local repository to GitHub using either HTTPS or SSH and push your first commit to a remote.
+
+## Walkthrough
+
+### Step 1 — Start a fresh repository with a file
+
+**macOS / Linux:**
+
+```bash
+mkdir first-push-lab && cd first-push-lab
+git init
+echo "# First Push Lab" > README.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir first-push-lab; cd first-push-lab
+git init
+"# First Push Lab" | Out-File -Encoding utf8 README.md
+```
+
+Check status:
+
+```bash
+git status
+```
+
+Output shows `README.md` as untracked. Git sees the file but is not watching it yet.
+
+### Step 2 — Stage the file and check status again
+
+```bash
+git add README.md
+git status
+```
+
+Now `README.md` appears under **Changes to be committed** in green. Staging is like placing items on a counter before packing them into a box. Nothing is permanent yet.
+
+### Step 3 — Commit and check status once more
+
+```bash
+git commit -m "Initial commit with README"
+git status
+```
+
+Output says `nothing to commit, working tree clean`. Your snapshot is saved locally.
+
+```bash
+git log --oneline
+```
+
+One commit with your message.
+
+### Step 4 — Create a GitHub repository
+
+Go to [github.com/new](https://github.com/new) and create a new repository. Use these settings:
+
+- **Repository name:** `first-push-lab`
+- **Visibility:** Public or Private — your choice
+- **Do NOT** check "Add a README file" (you already have one)
+
+Click **Create repository**. GitHub shows setup instructions — you will use the commands below.
+
+### Step 5 — Choose your authentication method
+
+GitHub requires authentication to push. You have two options.
+
+**Option A — HTTPS (simpler to start)**
+
+HTTPS uses a personal access token instead of a password.
+
+1. Go to **Settings → Developer settings → Personal access tokens → Tokens (classic)** on GitHub.
+2. Click **Generate new token (classic)**.
+3. Give it a note like `first-push-lab`, select the `repo` scope, click **Generate token**.
+4. Copy the token immediately — you will not see it again.
+
+When Git prompts for a password during push, paste the token.
+
+**Option B — SSH (recommended for daily use)**
+
+Check if you already have an SSH key:
+
+```bash
+ls ~/.ssh/id_ed25519.pub   # macOS/Linux
+```
+
+```powershell
+Test-Path $env:USERPROFILE\.ssh\id_ed25519.pub   # Windows PowerShell
+```
+
+If no key exists, generate one:
+
+```bash
+ssh-keygen -t ed25519 -C "your-email@example.com"
+```
+
+Accept the default location and set a passphrase (or leave blank for convenience). Then add the public key to GitHub:
+
+1. Copy the key: `cat ~/.ssh/id_ed25519.pub` (macOS/Linux) or `Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub` (Windows).
+2. On GitHub, go to **Settings → SSH and GPG keys → New SSH key**.
+3. Paste the key and save.
+
+Test the connection:
+
+```bash
+ssh -T git@github.com
+```
+
+You should see `Hi <username>! You've successfully authenticated`.
+
+### Step 6 — Connect and push
+
+Replace `YOUR_USERNAME` with your actual GitHub username.
+
+**HTTPS:**
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/first-push-lab.git
+git branch -M main
+git push -u origin main
+```
+
+**SSH:**
+
+```bash
+git remote add origin git@github.com:YOUR_USERNAME/first-push-lab.git
+git branch -M main
+git push -u origin main
+```
+
+`git remote add origin` links your local repo to GitHub. `git branch -M main` ensures your default branch is named `main`. `git push -u origin main` sends your commit to GitHub and sets `origin main` as the default target for future pushes.
+
+### Step 7 — Verify the push
+
+```bash
+git status
+```
+
+Output: `Your branch is up to date with 'origin/main'.`
+
+Now visit `https://github.com/YOUR_USERNAME/first-push-lab` in your browser. You should see your README file and your commit message.
+
+### Step 8 — Make a second change and push again
+
+**macOS / Linux:**
+
+```bash
+echo "Pushed from the command line." >> README.md
+git add README.md
+git commit -m "Add push confirmation line"
+git push
+```
+
+**Windows PowerShell:**
+
+```powershell
+Add-Content README.md "Pushed from the command line."
+git add README.md
+git commit -m "Add push confirmation line"
+git push
+```
+
+Check `git status` one more time. Clean tree, up to date with remote.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `fatal: remote origin already exists` | You already added a remote | Run `git remote set-url origin <URL>` instead |
+| `Permission denied (publickey)` | SSH key not added to GitHub, or wrong key | Run `ssh -T git@github.com` to test; re-add key to GitHub settings |
+| `Support for password authentication was removed` | Using HTTPS with a password instead of a token | Generate a personal access token and use it as the password |
+| `error: failed to push some refs` | Remote has commits you don't have locally | Run `git pull --rebase origin main` first, then push |
+| `fatal: The current branch main has no upstream branch` | First push without `-u` flag | Run `git push -u origin main` |
+| Branch is named `master` instead of `main` | Older Git default | Run `git branch -M main` to rename |
+
+<VerificationBlock>
+Run these commands and confirm each output:
+
+```bash
+git log --oneline
+```
+
+You should see two commits: "Add push confirmation line" and "Initial commit with README".
+
+```bash
+git remote -v
+```
+
+You should see `origin` pointing to your GitHub repository URL (fetch and push).
+
+```bash
+git status
+```
+
+Output should say `Your branch is up to date with 'origin/main'` and `nothing to commit`.
+
+Visit your repository URL on GitHub — both commits should appear in the commit history.
+</VerificationBlock>

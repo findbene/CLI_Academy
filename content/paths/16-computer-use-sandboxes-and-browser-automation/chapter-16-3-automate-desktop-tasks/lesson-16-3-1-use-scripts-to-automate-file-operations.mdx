@@ -1,0 +1,262 @@
+---
+title: "Use scripts to automate file operations"
+lessonNumber: "16.3.1"
+chapterNumber: "16.3"
+pathNumber: "16"
+tutorPreload: "Review my file-operations script and flag anything that could delete data I did not intend to lose."
+verifyType: "terminal_output"
+---
+
+# Use scripts to automate file operations
+
+## Objective
+
+By the end of this lesson you will have three working scripts: one that organizes a messy downloads folder by file type, one that batch-renames files with a consistent pattern, and one that cleans up old log files. Each script runs on your local machine with no browser or API required. You will write both a Bash version (macOS / Linux) and a PowerShell version (Windows).
+
+## Walkthrough
+
+File operations — sorting, renaming, deleting — are the bread and butter of automation. A well-written script does in seconds what would take you 30 minutes by hand, and it does it the same way every time.
+
+### Step 1 — Organize files by extension
+
+This script scans a folder and moves each file into a subfolder named after its extension (e.g., `.pdf` files go into `pdf/`, `.jpg` files go into `jpg/`).
+
+**macOS / Linux (`organize.sh`):**
+
+```bash
+mkdir -p ~/cli-academy-16/file-ops && cd ~/cli-academy-16/file-ops
+
+cat > organize.sh << 'SCRIPTEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+TARGET_DIR="${1:-.}"   # default to current directory if no argument
+
+echo "Organizing files in: $TARGET_DIR"
+
+for file in "$TARGET_DIR"/*; do
+  [ -f "$file" ] || continue          # skip directories
+  ext="${file##*.}"                     # extract extension
+  [ "$ext" = "$file" ] && ext="no-ext" # files without an extension
+  ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')  # normalize to lowercase
+
+  mkdir -p "$TARGET_DIR/$ext"
+  mv "$file" "$TARGET_DIR/$ext/"
+  echo "  Moved: $(basename "$file") -> $ext/"
+done
+
+echo "Done."
+SCRIPTEOF
+chmod +x organize.sh
+```
+
+**Windows (PowerShell — `organize.ps1`):**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy-16\file-ops" | Out-Null
+Set-Location "$HOME\cli-academy-16\file-ops"
+
+@'
+param(
+    [string]$TargetDir = "."
+)
+
+Write-Host "Organizing files in: $TargetDir"
+
+Get-ChildItem -Path $TargetDir -File | ForEach-Object {
+    $ext = if ($_.Extension) { $_.Extension.TrimStart('.').ToLower() } else { "no-ext" }
+    $destDir = Join-Path $TargetDir $ext
+
+    if (-not (Test-Path $destDir)) {
+        New-Item -ItemType Directory -Path $destDir | Out-Null
+    }
+
+    Move-Item $_.FullName -Destination $destDir
+    Write-Host "  Moved: $($_.Name) -> $ext/"
+}
+
+Write-Host "Done."
+'@ | Set-Content organize.ps1
+```
+
+**Test it safely** — create some dummy files first:
+
+**macOS / Linux:**
+
+```bash
+mkdir -p test-downloads && cd test-downloads
+touch report.pdf notes.txt photo.jpg data.csv backup.pdf readme.txt
+cd ..
+bash organize.sh test-downloads
+ls test-downloads/
+```
+
+**Windows (PowerShell):**
+
+```powershell
+New-Item -ItemType Directory -Force -Path test-downloads | Out-Null
+"report" | Set-Content test-downloads\report.pdf
+"notes" | Set-Content test-downloads\notes.txt
+"photo" | Set-Content test-downloads\photo.jpg
+"data" | Set-Content test-downloads\data.csv
+"backup" | Set-Content test-downloads\backup.pdf
+"readme" | Set-Content test-downloads\readme.txt
+.\organize.ps1 -TargetDir test-downloads
+Get-ChildItem test-downloads -Directory | Select-Object Name
+```
+
+You should see subfolders like `pdf/`, `txt/`, `jpg/`, `csv/` with the corresponding files inside.
+
+### Step 2 — Batch rename files
+
+This script adds a date prefix to every file in a folder — useful for photos, invoices, or any set of files you want sorted chronologically.
+
+**macOS / Linux (`batch-rename.sh`):**
+
+```bash
+cat > batch-rename.sh << 'SCRIPTEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+TARGET_DIR="${1:-.}"
+PREFIX=$(date +%Y-%m-%d)
+
+echo "Renaming files in: $TARGET_DIR with prefix $PREFIX"
+
+for file in "$TARGET_DIR"/*; do
+  [ -f "$file" ] || continue
+  base=$(basename "$file")
+  # Skip if already prefixed
+  if [[ "$base" == "$PREFIX"* ]]; then
+    echo "  Skipped (already prefixed): $base"
+    continue
+  fi
+  mv "$file" "$TARGET_DIR/${PREFIX}_${base}"
+  echo "  Renamed: $base -> ${PREFIX}_${base}"
+done
+
+echo "Done."
+SCRIPTEOF
+chmod +x batch-rename.sh
+```
+
+**Windows (PowerShell — `batch-rename.ps1`):**
+
+```powershell
+@'
+param(
+    [string]$TargetDir = "."
+)
+
+$prefix = Get-Date -Format "yyyy-MM-dd"
+Write-Host "Renaming files in: $TargetDir with prefix $prefix"
+
+Get-ChildItem -Path $TargetDir -File | ForEach-Object {
+    if ($_.Name.StartsWith($prefix)) {
+        Write-Host "  Skipped (already prefixed): $($_.Name)"
+        return
+    }
+    $newName = "${prefix}_$($_.Name)"
+    Rename-Item $_.FullName -NewName $newName
+    Write-Host "  Renamed: $($_.Name) -> $newName"
+}
+
+Write-Host "Done."
+'@ | Set-Content batch-rename.ps1
+```
+
+Test it:
+
+**macOS / Linux:**
+
+```bash
+mkdir -p test-rename && touch test-rename/invoice.pdf test-rename/receipt.pdf
+bash batch-rename.sh test-rename
+ls test-rename/
+```
+
+**Windows (PowerShell):**
+
+```powershell
+New-Item -ItemType Directory -Force -Path test-rename | Out-Null
+"inv" | Set-Content test-rename\invoice.pdf
+"rec" | Set-Content test-rename\receipt.pdf
+.\batch-rename.ps1 -TargetDir test-rename
+Get-ChildItem test-rename | Select-Object Name
+```
+
+### Step 3 — Clean up old log files
+
+This script deletes files older than a specified number of days. Always perform a dry run first.
+
+**macOS / Linux (`clean-logs.sh`):**
+
+```bash
+cat > clean-logs.sh << 'SCRIPTEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+LOG_DIR="${1:-.}"
+MAX_AGE_DAYS="${2:-30}"
+DRY_RUN="${3:-true}"
+
+echo "Cleaning files older than $MAX_AGE_DAYS days in: $LOG_DIR"
+echo "Dry run: $DRY_RUN"
+
+find "$LOG_DIR" -type f -mtime +"$MAX_AGE_DAYS" | while read -r file; do
+  if [ "$DRY_RUN" = "true" ]; then
+    echo "  [DRY RUN] Would delete: $file"
+  else
+    rm "$file"
+    echo "  Deleted: $file"
+  fi
+done
+
+echo "Done."
+SCRIPTEOF
+chmod +x clean-logs.sh
+```
+
+**Windows (PowerShell — `clean-logs.ps1`):**
+
+```powershell
+@'
+param(
+    [string]$LogDir = ".",
+    [int]$MaxAgeDays = 30,
+    [switch]$Force
+)
+
+$cutoff = (Get-Date).AddDays(-$MaxAgeDays)
+Write-Host "Cleaning files older than $MaxAgeDays days in: $LogDir"
+Write-Host "Dry run: $(-not $Force)"
+
+Get-ChildItem -Path $LogDir -File | Where-Object { $_.LastWriteTime -lt $cutoff } | ForEach-Object {
+    if (-not $Force) {
+        Write-Host "  [DRY RUN] Would delete: $($_.Name)"
+    } else {
+        Remove-Item $_.FullName
+        Write-Host "  Deleted: $($_.Name)"
+    }
+}
+
+Write-Host "Done."
+'@ | Set-Content clean-logs.ps1
+```
+
+**Safety note:** The default behavior is a dry run — it only prints what *would* be deleted. Pass `false` (Bash) or `-Force` (PowerShell) to actually delete. Always review the dry-run output before running for real.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Script moves files you did not intend to move | Ran the organize script on your real Downloads folder instead of a test folder | Always test on a dummy directory first; back up before running on real data |
+| `mv: cannot move — Permission denied` | Files are owned by another user or are read-only | Check permissions with `ls -la`; use `chmod` or run as the correct user |
+| Rename script creates double-prefixed names | Ran the script twice on the same folder | The `already prefixed` check prevents this — but verify your prefix format matches |
+| Clean script deletes files you wanted to keep | `MAX_AGE_DAYS` set too low, or ran without dry-run review | Always do a dry run first; set a conservative age threshold |
+| PowerShell script won't run — `execution policy` error | Windows blocks unsigned scripts by default | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once |
+| `find: unknown predicate` on macOS | GNU vs BSD `find` syntax difference | macOS uses BSD `find` — the `-mtime +N` syntax works on both, but more complex predicates may differ |
+
+<VerificationBlock>
+Run the organize script on the `test-downloads` folder and confirm files are sorted into extension-based subfolders. Run the batch-rename script on `test-rename` and confirm files have a date prefix. Run the clean-logs script in dry-run mode and confirm it lists files without deleting anything.
+</VerificationBlock>

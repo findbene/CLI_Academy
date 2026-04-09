@@ -1,0 +1,158 @@
+---
+title: "Use Playwright for browser automation"
+lessonNumber: "16.2.1"
+chapterNumber: "16.2"
+pathNumber: "16"
+tutorPreload: "Walk me through the Playwright test output and explain any failures."
+verifyType: "terminal_output"
+---
+
+# Use Playwright for browser automation
+
+## Objective
+
+By the end of this lesson you will have Playwright installed, written a test that navigates to a real web page, taken a screenshot from the automated browser, and run the test from the command line. You will understand the basic Playwright API well enough to extend the test on your own.
+
+## Walkthrough
+
+Playwright is an open-source browser automation library maintained by Microsoft. It can drive Chromium, Firefox, and WebKit from a single API. Unlike computer use, Playwright interacts with the DOM (the page's structure) rather than pixel coordinates, making it far more reliable for repeatable browser tasks.
+
+### Step 1 — Create a project and install Playwright
+
+**macOS / Linux:**
+
+```bash
+mkdir -p ~/cli-academy-16/browser-automation && cd ~/cli-academy-16/browser-automation
+npm init -y
+npm init playwright@latest -- --yes --quiet
+```
+
+**Windows (PowerShell):**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy-16\browser-automation" | Out-Null
+Set-Location "$HOME\cli-academy-16\browser-automation"
+npm init -y
+npm init playwright@latest -- --yes --quiet
+```
+
+The `npm init playwright` command does three things:
+
+1. Installs the `@playwright/test` package.
+2. Downloads browser binaries (Chromium, Firefox, WebKit) into a cache folder.
+3. Creates a `playwright.config.ts` and an example `tests/` folder.
+
+This can take a minute or two — the browser downloads are large (~200 MB each).
+
+### Step 2 — Write your first test
+
+Create a file called `tests/first-page.spec.ts` with the following content:
+
+**macOS / Linux:**
+
+```bash
+cat > tests/first-page.spec.ts << 'TESTEOF'
+import { test, expect } from '@playwright/test';
+
+test('load the Playwright homepage and take a screenshot', async ({ page }) => {
+  // Navigate to the Playwright docs
+  await page.goto('https://playwright.dev/');
+
+  // Verify the page title contains "Playwright"
+  await expect(page).toHaveTitle(/Playwright/);
+
+  // Take a screenshot and save it to disk
+  await page.screenshot({ path: 'screenshots/playwright-home.png', fullPage: true });
+});
+TESTEOF
+mkdir -p screenshots
+```
+
+**Windows (PowerShell):**
+
+```powershell
+@"
+import { test, expect } from '@playwright/test';
+
+test('load the Playwright homepage and take a screenshot', async ({ page }) => {
+  // Navigate to the Playwright docs
+  await page.goto('https://playwright.dev/');
+
+  // Verify the page title contains "Playwright"
+  await expect(page).toHaveTitle(/Playwright/);
+
+  // Take a screenshot and save it to disk
+  await page.screenshot({ path: 'screenshots/playwright-home.png', fullPage: true });
+});
+"@ | Set-Content tests/first-page.spec.ts
+New-Item -ItemType Directory -Force -Path screenshots | Out-Null
+```
+
+Let's break down what this test does:
+
+- `page.goto()` navigates the headless browser to a URL.
+- `expect(page).toHaveTitle()` asserts the page title matches a pattern — if it does not, the test fails.
+- `page.screenshot()` captures the rendered page as a PNG file.
+
+### Step 3 — Run the test
+
+**macOS / Linux / Windows (PowerShell):**
+
+```bash
+npx playwright test tests/first-page.spec.ts --project=chromium
+```
+
+Expected output:
+
+```
+Running 1 test using 1 worker
+
+  ✓  tests/first-page.spec.ts:3:5 › load the Playwright homepage and take a screenshot (Xs)
+
+  1 passed (Xs)
+```
+
+The number after the arrow is the duration in seconds. If you see `1 passed`, everything worked.
+
+### Step 4 — Verify the screenshot
+
+Check that the screenshot file exists:
+
+**macOS / Linux:**
+
+```bash
+ls -lh screenshots/playwright-home.png
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Get-Item screenshots\playwright-home.png | Select-Object Name, Length, LastWriteTime
+```
+
+You should see a PNG file that is at least a few hundred kilobytes. Open it in an image viewer to confirm it shows the Playwright homepage.
+
+### Step 5 — View the HTML report (optional)
+
+Playwright generates a rich HTML report after each run. Open it:
+
+```bash
+npx playwright show-report
+```
+
+This launches a local web server and opens the report in your default browser. You can see pass/fail status, timing, and even attach traces for deeper debugging.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `npm init playwright` fails with a network error | Corporate proxy or firewall blocking the browser download | Set `HTTPS_PROXY` env var or download browsers manually with `npx playwright install --with-deps` |
+| `Error: browserType.launch: Executable doesn't exist` | Browser binaries not downloaded | Run `npx playwright install chromium` |
+| Test fails with `Timeout exceeded` | Slow network or the target site is down | Increase the timeout in the test: `test.setTimeout(30_000)` or check your connection |
+| `ERR_CERT_AUTHORITY_INVALID` in the test | Corporate TLS inspection proxy | Set `ignoreHTTPSErrors: true` in `playwright.config.ts` (dev/test only — never in production) |
+| Screenshot file is 0 bytes | Test crashed before the screenshot step | Check the test output for earlier errors; fix those first |
+| `npx` is not recognized | Node.js is not installed or not in PATH | Install Node.js from https://nodejs.org (LTS version) and restart your terminal |
+
+<VerificationBlock>
+Run `npx playwright test tests/first-page.spec.ts --project=chromium` and confirm `1 passed` appears in the output. Then verify the screenshot file exists at `screenshots/playwright-home.png` and is larger than 0 bytes.
+</VerificationBlock>

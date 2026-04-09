@@ -1,207 +1,213 @@
 ---
-slug: "zero-claw-hello-world"
 title: "ZeroClaw Hello World – Your First Agent in Under 10 Minutes"
-description: "Experience the magic of running your very first local AI agent. No complex setup, no frustration—just an agent saying hello and working for you."
-lesson_number: 3
-chapterNumber: 3
-pathNumber: 1
-estimated_minutes: 10
-tier_required: "free"
-last_reviewed_at: "2026-04-08"
-has_safety_warning: false
-tutorPreload: "{\"context\": \"User is attempting their first ZeroClaw setup. Common errors: Node version. Help them debug gently.\", \"starter_prompts\": [\"Help me fix a permissions error\", \"I don't understand the API key step\", \"Can you explain the code snippet?\"]}"
-modeBalance: "guided"
-verifyType: "lab"
+lessonNumber: "1.3.3"
+chapterNumber: "1.3"
+pathNumber: "1"
+tutorPreload: "Help me debug my hello-agent script. Common errors: Node version, missing API key, module not found."
+verifyType: "terminal_output"
 ---
 
-Welcome to the **First Real Win** of CLI Academy! 
+# ZeroClaw Hello World – Your First Agent in Under 10 Minutes
 
-You've learned the safety rules, you've grasped the fundamentals of the terminal. Now, it's time for the payoff. Today, you are going to run your first real, functioning AI agent on your own machine. We will be using **ZeroClaw** — an ultra-lightweight, beginner-friendly spin-off of OpenClaw designed exactly for this moment.
+## Objective
 
-By the end of this 10-minute lesson, you will have a local agent that can greet you, summarize your text, and interact with you. 
+You will write a small Node.js script that sends a prompt to an AI model and prints the response in your terminal. By the end of this lesson you will have run your first AI agent locally — a real script that talks to a real model and gives you a real answer.
 
-<Screenshot
-  src="/assets/placeholders/zero_claw_hero.png"
-  alt="A clean terminal showing the ZeroClaw agent greeting the user."
-  caption="This is what success looks like! Minimalist, clean, and entirely yours."
-/>
+## Walkthrough
 
----
+### Step 1 — Check that Node.js is installed
 
-## The Guided Path: Your First Run
+This lesson requires Node.js. Run this command to confirm:
 
-Follow these exact steps to get your agent running safely. We’ll provide the code, you provide the execution. 
+**Any OS:**
+```bash
+node -v
+```
 
-### Step 1: Install ZeroClaw
+You should see a version number like `v18.20.0` or higher. If you see `command not found` or `not recognized`, install Node.js from https://nodejs.org before continuing.
 
-Open your terminal. Make sure you are in a safe directory (like your Desktop or a dedicated `CLI_Academy_Projects` folder). Run the following command:
+### Step 2 — Create a project folder
 
-<TerminalSimulation
-  command="npm i -g @openclaw/zeroclaw"
-  output="+ @openclaw/zeroclaw@1.0.0
-added 42 packages in 3s"
-  status="success"
-/>
+**macOS / Linux:**
+```bash
+cd ~/cli-academy/projects
+mkdir hello-agent
+cd hello-agent
+```
 
-<Screenshot
-  src="/assets/placeholders/install_success.png"
-  alt="NPM successfully installing ZeroClaw globally."
-  caption="ZeroClaw installs rapidly since it is dependency-light."
-/>
+**Windows PowerShell:**
+```powershell
+Set-Location ~/cli-academy/projects
+New-Item -ItemType Directory -Path hello-agent -Force
+Set-Location hello-agent
+```
 
-### Step 2: Set Up Your API Key Environment
+### Step 3 — Initialize a Node.js project
 
-Before ZeroClaw can talk to the LLM (Large Language Model), it needs a way to authenticate. 
+```bash
+npm init -y
+```
 
-*On Windows (PowerShell):*
-<CodeBlock language="powershell">
-$env:ANTHROPIC_API_KEY="your-api-key-here"
-</CodeBlock>
+This creates a `package.json` file. You should see a JSON block printed in the terminal.
 
-*On macOS / Linux:*
-<CodeBlock language="bash">
+### Step 4 — Install the Anthropic SDK
+
+```bash
+npm install @anthropic-ai/sdk
+```
+
+You should see output ending with `added X packages`. This gives your script the ability to talk to Claude.
+
+### Step 5 — Set your API key
+
+Your script needs an API key to authenticate with the Anthropic API.
+
+> **Safety warning:** Never paste your API key into a file you will commit to Git or share publicly. Environment variables keep the key in your terminal session only.
+
+**macOS / Linux:**
+```bash
 export ANTHROPIC_API_KEY="your-api-key-here"
-</CodeBlock>
+```
 
-<Hint title="API Key Safety Recap">
-Never type your API key directly into a script file if you plan to share it! Using environment variables (like we did above) keeps the key safely in your current terminal session and out of your source code.
-</Hint>
+**Windows PowerShell:**
+```powershell
+$env:ANTHROPIC_API_KEY="your-api-key-here"
+```
 
-### Step 3: Write the Agent Script
+Replace `your-api-key-here` with the real key from https://console.anthropic.com/settings/keys.
 
-In your terminal, you can download the starter files directly, or create a brand new file inside your project folder called `hello_agent.js`.
+To verify it is set:
 
-**Download Asset:** [Starter Code Folder](/assets/labs/zero_claw_hello_world/starter/)
+**macOS / Linux:**
+```bash
+echo $ANTHROPIC_API_KEY | cut -c1-8
+```
 
-Open the `hello_agent.js` file in your editor and paste the following code:
+**Windows PowerShell:**
+```powershell
+$env:ANTHROPIC_API_KEY.Substring(0,8)
+```
 
-<CodeBlock language="javascript" title="hello_agent.js">
-import { ZeroClaw } from '@openclaw/zeroclaw';
+You should see the first 8 characters of your key. Never print the full key.
 
-async function run() {
-  console.log("🤖 Booting ZeroClaw...");
+### Step 6 — Write the agent script
 
-  const agent = new ZeroClaw({
-    model: 'claude-3-haiku-20240307',
-    system: "You are a friendly, enthusiastic agent welcoming a user to CLI Academy."
-  });
+Create a file called `hello-agent.mjs`:
 
-  const response = await agent.prompt("Say a short hello and introduce yourself!");
-  
-  console.log("\nAgent says:");
-  console.log(response.text);
-}
+**macOS / Linux:**
+```bash
+cat <<'SCRIPT' > hello-agent.mjs
+import Anthropic from "@anthropic-ai/sdk";
 
-run().catch(console.error);
-</CodeBlock>
+const client = new Anthropic();
 
-<Screenshot
-  src="/assets/placeholders/vscode_hello_agent.png"
-  alt="The hello_agent.js code comfortably residing in VS Code."
-  caption="Notice how little code is required to instantiate the agent."
-/>
+async function main() {
+  console.log("Starting your first AI agent...\n");
 
-### Step 4: Run It!
-
-Back in your terminal, it's time to execute the script!
-
-<TerminalSimulation
-  command="node hello_agent.js"
-  output="🤖 Booting ZeroClaw...
-
-Agent says:
-Hello there! I'm your ZeroClaw assistant, and I couldn't be more thrilled to welcome you to CLI Academy! Let's get building!"
-  status="success"
-/>
-
-**Congratulations!** You just orchestrated an AI agent on your own machine. Take a moment to celebrate. This is the foundation of everything that comes next.
-
----
-
-## Hint-Based Scaffolding: Leveling Up
-
-Your agent can say hello, but let's make it work for you. Let's give it a task: summarizing a long sentence.
-
-<Hint title="How to adjust your script">
-Instead of asking it to "Say a short hello", try changing the `agent.prompt(...)` text to pass in a hard-coded paragraph of text, and instruct the agent to "Summarize the following text in one sentence: [YOUR TEXT HERE]". 
-</Hint>
-
-<Screenshot
-  src="/assets/placeholders/summarize_diff.png"
-  alt="A diff showing the change from a greeting prompt to a summarize prompt."
-  caption="Small prompt tweaks yield completely different agent behaviors."
-/>
-
----
-
-## Independent Challenge: Echo & List
-
-Now it is your turn to fly solo. We challenge you to create a new script named `file_agent.js`.
-
-**The Goal:**
-1. Start ZeroClaw.
-2. Ask the user for input via the standard node `readline` module (or just hardcode a directory path).
-3. Have the agent list the files in the directory by utilizing a basic tool integration.
-
-*Wait! Tool integration? ZeroClaw has a `tools` parameter you can pass during instantiation.*
-
-<CodeSandbox
-  title="ZeroClaw Tool Snippet"
-  code="
-  const agent = new ZeroClaw({
-    tools: [
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 256,
+    messages: [
       {
-        name: 'list_files',
-        description: 'Lists files in the current directory.',
-        execute: async () => {
-          // Can you figure out how to return an array of filenames here?
-        }
+        role: "user",
+        content: "Say hello to a CLI Academy student who just ran their first AI agent script. Keep it to 2-3 sentences."
       }
     ]
-  });"
+  });
+
+  console.log("Agent says:");
+  console.log(message.content[0].text);
+  console.log("\nTokens used:", message.usage.input_tokens + message.usage.output_tokens);
+}
+
+main().catch(console.error);
+SCRIPT
+```
+
+**Windows PowerShell:**
+```powershell
+@'
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic();
+
+async function main() {
+  console.log("Starting your first AI agent...\n");
+
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 256,
+    messages: [
+      {
+        role: "user",
+        content: "Say hello to a CLI Academy student who just ran their first AI agent script. Keep it to 2-3 sentences."
+      }
+    ]
+  });
+
+  console.log("Agent says:");
+  console.log(message.content[0].text);
+  console.log("\nTokens used:", message.usage.input_tokens + message.usage.output_tokens);
+}
+
+main().catch(console.error);
+'@ | Set-Content hello-agent.mjs
+```
+
+### Step 7 — Run it
+
+```bash
+node hello-agent.mjs
+```
+
+You should see output like:
+
+```
+Starting your first AI agent...
+
+Agent says:
+Hello and welcome! You just ran your very first AI agent script — that's a
+real accomplishment. The terminal might look intimidating now, but you're
+already making it work for you.
+
+Tokens used: 97
+```
+
+The exact words will be different every time — that is how generative AI works. The important thing is that you see a response and a token count.
+
+**Congratulations. You just ran a real AI agent on your own machine.**
+
+### Step 8 — Experiment (optional)
+
+Open `hello-agent.mjs` in your editor and change the `content` string to ask a different question — for example:
+
+```
+"Explain what an API key is in one sentence, for someone who has never programmed before."
+```
+
+Save the file and run `node hello-agent.mjs` again. Notice how the response changes completely based on what you ask.
+
+### Step 9 — Commit your work
+
+```bash
+cd ~/cli-academy
+git add projects/hello-agent/
+git commit -m "Add hello-agent: first AI agent script"
+```
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `node: command not found` / `not recognized` | Node.js is not installed | Install from https://nodejs.org, restart your terminal, then retry |
+| `npm ERR! code ENOENT` | You are not inside the `hello-agent/` folder | Run `cd ~/cli-academy/projects/hello-agent` and retry |
+| `Error: Could not load the default credentials` or `401 Unauthorized` | API key is missing or wrong | Re-run the `export` / `$env:` command from Step 5 with your real key. Keys start with `sk-ant-` |
+| `ERR_MODULE_NOT_FOUND` for `@anthropic-ai/sdk` | The package was not installed, or you are in the wrong folder | Run `npm install @anthropic-ai/sdk` inside `hello-agent/` |
+| `SyntaxError: Cannot use import statement outside a module` | The file extension is `.js` instead of `.mjs` | Rename the file to `hello-agent.mjs` or add `"type": "module"` to `package.json` |
+| `429 Too Many Requests` | You hit the API rate limit | Wait 60 seconds and try again |
+| Response is different from the example | This is normal for AI — responses vary every time | As long as you see text and a token count, the script worked correctly |
+
+<VerificationBlock
+  deliverable="A hello-agent/ project in cli-academy/projects/ containing package.json, hello-agent.mjs, and node_modules/ — with a successful run that printed an AI response and token count."
+  verifyCheck="Run node hello-agent.mjs inside the hello-agent/ folder and confirm the terminal prints an AI-generated greeting and a token count."
 />
-
-If you get stuck, feel free to download the [Solution Code Folder](/assets/labs/zero_claw_hello_world/solution/) to see how we built it.
-
----
-
-## Verification & Badge Unlock
-
-Ready to prove your skills and claim your **"Agent Initiator"** badge? Use the checklist below to verify your work.
-
-<VerificationChecklist
-  items={[
-    { id: "install", label: "Successfully installed @openclaw/zeroclaw globally" },
-    { id: "env", label: "Set the ANTHROPIC_API_KEY environment variable securely" },
-    { id: "run", label: "Successfully executed node hello_agent.js without errors" },
-    { id: "challenge", label: "Attempted the Independent Echo & List challenge" }
-  ]}
-  onCompleteAction="unlockBadge"
-  badgeId="agent_initiator"
-/>
-
-<Screenshot
-  src="/assets/placeholders/badge_unlock.png"
-  alt="A shiny Agent Initiator badge unlocking on the user's screen."
-  caption="Wear it as a badge of honor."
-/>
-
----
-
-## Next Steps
-
-**You did it.** Take a deep breath. 
-
-If you are feeling mentally fatigued, we highly recommend heading over to the **[Agent Lounge](/lounge)**. Grab a virtual coffee, read some light, relaxing articles on the future of OpenClaw, and unwind. 
-
-When you are ready to continue your journey, your next target is learning about core [Agentic Memory Patterns](/paths/02-terminal-and-file-system-foundations-for-normal-people/lesson-1).
-
-<div className="mt-8 p-6 bg-gradient-to-r from-[#00D4FF]/10 to-[#5CE1E6]/5 rounded-2xl border border-white/5 backdrop-blur-md">
-  <h3 className="text-xl font-semibold mb-2">Want to Go Pro?</h3>
-  <p className="text-gray-300">
-    The free tier is just the beginning. Our Pro capstones dive into creating fully autonomous orchestrators that can research, write, and deploy applications while you sleep.
-  </p>
-  <a href="/pricing" className="mt-4 inline-block px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
-    Explore Pro Capstones
-  </a>
-</div>

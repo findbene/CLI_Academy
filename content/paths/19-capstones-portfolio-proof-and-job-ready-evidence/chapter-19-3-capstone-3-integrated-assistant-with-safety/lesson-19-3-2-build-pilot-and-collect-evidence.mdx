@@ -10,29 +10,129 @@ verifyType: "terminal_output"
 # Build, pilot, and collect evidence
 
 ## Objective
-In this lesson, you'll conduct a safe, controlled "pilot" run of a simple CLI task. You will collect evidence of its execution, log potential risks, and record feedback on the experience. This prepares you to share your work and decide if it's ready for wider use.
+Run the integrated workflow on real repo data, capture the evidence that fed the brief, test one failure mode, and record at least one iteration based on what you learned. By the end of this lesson, you will have a real pilot artifact plus proof that you checked how the workflow behaves when the input is incomplete.
 
 ## Walkthrough
 
-Welcome! It's completely normal to feel a bit cautious when trying new things, especially with the command line. We'll take this step by step, focusing on safety.
+### Step 1: Capture the real integration inputs
+Use git to gather the evidence files the agent will summarize.
 
-1.  **Define Your Pilot Task:** Let's pick a very simple, safe command you've learned. For this pilot, use `ls` to list files in your current directory. It doesn't change anything; it just shows you information.
-2.  **Perform the Pilot Run and Capture Evidence:**
-    *   Open your terminal.
-    *   Run the command and redirect its output to a new file, which will serve as your evidence.
-    *   Type: `ls -l > pilot_evidence.txt`
-    *   **Safety Check:** The `>` symbol redirects the output of `ls -l` into a file named `pilot_evidence.txt`. If `pilot_evidence.txt` doesn't exist, it creates it. If it *does* exist, it will **overwrite** its contents. For this lesson, creating a new file is perfectly safe, but always be mindful of this when using `>` with existing files.
-    *   You can view your evidence file with `cat pilot_evidence.txt`.
-3.  **Create a Simple Risk Log:** Think about what could go wrong or be confusing with your `ls` command, however minor.
-    *   Type: `echo "Risk 1: Output might be too long." > pilot_risks.txt`
-    *   Type: `echo "Risk 2: User might not understand file permissions." >> pilot_risks.txt`
-    *   **Safety Check:** We used `>` for the first line (creating/overwriting) and `>>` for the second. `>>` appends to the file, which is safer when you want to add content without losing existing information.
-4.  **Gather Feedback:** What was your experience like?
-    *   Type: `echo "Feedback: The 'ls -l' command was straightforward." > pilot_feedback.txt`
-    *   Type: `echo "Feedback: Understanding columns like permissions (rwx) is still a bit new." >> pilot_feedback.txt`
-5.  **Review Your Pack:** You now have three files: `pilot_evidence.txt`, `pilot_risks.txt`, and `pilot_feedback.txt`. These form your pilot evidence pack. Take a moment to review them using `cat filename.txt` for each.
+macOS/Linux:
+```bash
+git status --short > portfolio-evidence/git-status.txt
+git diff --name-only -- ../content/paths > portfolio-evidence/content-files.txt
+git diff --stat -- ../content/paths > portfolio-evidence/content-diff-stat.txt
+```
+
+Windows PowerShell:
+```powershell
+git status --short | Set-Content portfolio-evidence/git-status.txt
+git diff --name-only -- ..\content\paths | Set-Content portfolio-evidence/content-files.txt
+git diff --stat -- ..\content\paths | Set-Content portfolio-evidence/content-diff-stat.txt
+```
+
+These files are the integrated seam: git generated them, and Claude Code will consume them.
+
+### Step 2: Run the pilot and create the curriculum change brief
+Use Claude Code to turn the evidence into a readable artifact.
+
+Use this prompt:
+
+```text
+Read INTEGRATION-PLAN.md, CLAUDE.md, portfolio-evidence/git-status.txt, portfolio-evidence/content-files.txt, and portfolio-evidence/content-diff-stat.txt. Read only the lesson files named in content-files.txt. Write pilot-output/curriculum-change-brief.md and portfolio-evidence/run-001.md. If there are no qualifying content files, write a no-op brief and stop.
+```
+
+After the run, inspect the output.
+
+macOS/Linux:
+```bash
+cat pilot-output/curriculum-change-brief.md
+cat portfolio-evidence/run-001.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content pilot-output/curriculum-change-brief.md
+Get-Content portfolio-evidence/run-001.md
+```
+
+### Step 3: Test a failure mode on purpose
+Create an empty file list and confirm the workflow refuses to invent a summary.
+
+macOS/Linux:
+```bash
+: > portfolio-evidence/empty-content-files.txt
+```
+
+Windows PowerShell:
+```powershell
+Set-Content portfolio-evidence/empty-content-files.txt ''
+```
+
+Now run this prompt:
+
+```text
+Read CLAUDE.md and portfolio-evidence/empty-content-files.txt. Write portfolio-evidence/failure-test.md showing how the workflow behaves when there are no qualifying content files. Do not invent any changes.
+```
+
+Inspect the failure result.
+
+macOS/Linux:
+```bash
+cat portfolio-evidence/failure-test.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content portfolio-evidence/failure-test.md
+```
+
+### Step 4: Record one iteration based on the pilot or failure test
+If the first brief was too broad or too vague, tighten the contract and document the change.
+
+macOS/Linux:
+```bash
+cat > portfolio-evidence/iteration-001.md <<'EOF'
+# Iteration 001
+
+## Trigger
+The pilot or failure test showed the workflow needed a clearer stop rule or tighter content scope.
+
+## Change made
+Updated the contract so the workflow stops on an empty content file list and summarizes only lesson files named by the git evidence.
+
+## Why it matters
+This prevents invented summaries and keeps the workflow tied to real repo state.
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Iteration 001
+
+## Trigger
+The pilot or failure test showed the workflow needed a clearer stop rule or tighter content scope.
+
+## Change made
+Updated the contract so the workflow stops on an empty content file list and summarizes only lesson files named by the git evidence.
+
+## Why it matters
+This prevents invented summaries and keeps the workflow tied to real repo state.
+"@ | Set-Content portfolio-evidence/iteration-001.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The brief summarizes files that never changed | The workflow ignored content-files.txt | Require the prompt to read only files named by the git evidence |
+| The pilot mutates the repo instead of summarizing it | The contract did not ban edits during the pilot | Add a no-edit rule for the build phase |
+| The failure test still produces a fake summary | No-op behavior is not explicit enough | Force the workflow to write a controlled no qualifying content changes note |
+| The pilot hides how the brief was produced | The run log is missing or vague | Record the evidence files read, the files summarized, and the output written |
+| The workflow could drift into secret or production data | Safety rules do not stop on credentials or deployed systems | Add hard stop language for secrets, tokens, and production access |
 
 <VerificationBlock 
-  deliverable="A pilot run with evidence pack, risk log, and feedback."
-  verifyCheck="Pilot runs end to end with bounded behavior."
+    deliverable="A pilot package containing pilot-output/curriculum-change-brief.md, portfolio-evidence/run-001.md, portfolio-evidence/failure-test.md, and portfolio-evidence/iteration-001.md."
+    verifyCheck="You can show a real integrated run, a tested no-op failure mode, and one documented iteration that made the workflow safer or more accurate."
 />

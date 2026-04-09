@@ -1,0 +1,146 @@
+---
+title: "When computer use is appropriate"
+lessonNumber: "16.1.2"
+chapterNumber: "16.1"
+pathNumber: "16"
+tutorPreload: "Help me decide whether this task needs computer use, a CLI tool, or a direct API call."
+verifyType: "terminal_output"
+---
+
+# When computer use is appropriate
+
+## Objective
+
+By the end of this lesson you will be able to apply a simple decision framework to determine whether a task should be solved with a direct API call, a CLI tool, or computer use (screen control). You will understand that computer use is a last resort — not a first choice — and you will be able to list the safety considerations that apply whenever screen control is on the table.
+
+## Walkthrough
+
+Just because an AI *can* click buttons on a screen does not mean it *should*. Most tasks have a faster, safer, and more reliable path that never touches the GUI. This lesson gives you a decision ladder to evaluate every automation idea before you commit to a strategy.
+
+### Step 1 — Learn the three-tier preference order
+
+Always evaluate options in this order:
+
+```
+ ① API / SDK call      — fastest, most reliable, easiest to test
+       ▼ not available
+ ② CLI tool / script   — nearly as reliable, works headlessly
+       ▼ not available
+ ③ Computer use (GUI)  — slowest, most fragile, hardest to test
+```
+
+**Why this order?**
+
+| Method | Speed | Reliability | Testability | Risk |
+|---|---|---|---|---|
+| API / SDK | Milliseconds | High — contract-based | Unit-testable | Low — scoped permissions |
+| CLI tool | Seconds | High — text in, text out | Script-testable | Low — runs headlessly |
+| Computer use | Seconds per click | Low — UI changes break it | Hard — screenshot diffs | High — can click anything visible |
+
+### Step 2 — Work through three real examples
+
+**Example A — Post a message to Slack**
+
+- API available? **Yes** — Slack has a well-documented Web API (`chat.postMessage`).
+- Decision: **Use the API.** Computer use would require opening a browser, navigating to the channel, clicking the message box, typing, and hitting Send — fragile and slow.
+
+**Example B — Rename 500 files in a folder**
+
+- API available? No web API is relevant here.
+- CLI available? **Yes** — a shell one-liner or a small script handles this instantly.
+- Decision: **Use a CLI script.** Computer use would mean opening a file manager, right-clicking each file, clicking Rename, typing the new name — absurd at scale.
+
+**Example C — Submit an expense report in a legacy web app with no API**
+
+- API available? No.
+- CLI tool available? No — the app is GUI-only with no command-line interface.
+- Decision: **Computer use is the last resort.** But wrap it in safety controls: run in a sandboxed browser, limit the agent to specific URLs, require human approval before the final "Submit" click.
+
+### Step 3 — Understand the safety considerations for computer use
+
+When computer use is the only option, these safeguards are non-negotiable:
+
+1. **Sandbox the environment.** Run the browser or desktop in a virtual machine or Docker container. If the agent clicks something destructive, the damage stays inside the sandbox.
+
+2. **Restrict the scope.** Limit which URLs or applications the agent can access. A browser profile with no saved passwords and no access to email or banking is a good baseline.
+
+3. **Require human approval for irreversible actions.** Before clicking "Purchase", "Delete", "Send", or "Submit", the agent should pause and show you a screenshot for confirmation.
+
+4. **Set cost and time budgets.** Cap the number of API calls (and therefore actions) per task. A runaway loop on a pay-per-use cloud VM can generate real charges.
+
+5. **Never expose real credentials.** If the agent needs to log in, use a dedicated test account with minimal permissions — never your primary account.
+
+6. **Log everything.** Every screenshot, every action, and every decision should be saved to disk so you can audit what happened after the fact.
+
+### Step 4 — Build your own decision sheet
+
+Create a file that documents the decision framework so you can reference it later.
+
+**macOS / Linux:**
+
+```bash
+mkdir -p ~/cli-academy-16 && cd ~/cli-academy-16
+cat > decision-framework.md << 'EOF'
+# Automation Decision Framework
+
+## Preference order
+1. API / SDK — use if available
+2. CLI tool / script — use if no API exists
+3. Computer use (GUI) — last resort only
+
+## Before choosing computer use, confirm:
+- [ ] No API exists for this service
+- [ ] No CLI tool or browser extension can do the job
+- [ ] The task cannot be restructured to avoid GUI interaction
+- [ ] I have a sandboxed environment ready
+- [ ] I have limited the agent's URL / app scope
+- [ ] Irreversible actions require my approval
+- [ ] I have set a cost / time budget
+- [ ] I am using a test account, not my real credentials
+- [ ] Logging is enabled for screenshots and actions
+EOF
+cat decision-framework.md
+```
+
+**Windows (PowerShell):**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy-16" | Out-Null
+Set-Location "$HOME\cli-academy-16"
+@"
+# Automation Decision Framework
+
+## Preference order
+1. API / SDK - use if available
+2. CLI tool / script - use if no API exists
+3. Computer use (GUI) - last resort only
+
+## Before choosing computer use, confirm:
+- [ ] No API exists for this service
+- [ ] No CLI tool or browser extension can do the job
+- [ ] The task cannot be restructured to avoid GUI interaction
+- [ ] I have a sandboxed environment ready
+- [ ] I have limited the agent's URL / app scope
+- [ ] Irreversible actions require my approval
+- [ ] I have set a cost / time budget
+- [ ] I am using a test account, not my real credentials
+- [ ] Logging is enabled for screenshots and actions
+"@ | Set-Content decision-framework.md
+Get-Content decision-framework.md
+```
+
+Both commands create the same file. Read through the checklist — this is your pre-flight list before any computer use project.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| You chose computer use but the task has a REST API | Did not research available APIs first | Search `[service name] API documentation` before writing any automation |
+| Agent accidentally clicks "Buy" or "Send" on a real account | No sandbox, no approval gate | Always use a sandboxed browser and require human confirmation for destructive actions |
+| Automation costs spike on a cloud VM | No iteration or time cap | Set a maximum loop count and a wall-clock timeout in your orchestration code |
+| Agent logs in with your real password | Credentials stored in the automation script | Use a dedicated test account; store credentials in environment variables, never in code |
+| Task works today but breaks tomorrow | The website changed its layout | This is inherent to computer use — prefer APIs and CLIs precisely because they have stable contracts |
+
+<VerificationBlock>
+Open `decision-framework.md` and confirm it contains the three-tier preference order and the pre-flight checklist. Pick one task you automate regularly and write a one-sentence justification for which tier it belongs to. Add that sentence to the bottom of the file.
+</VerificationBlock>

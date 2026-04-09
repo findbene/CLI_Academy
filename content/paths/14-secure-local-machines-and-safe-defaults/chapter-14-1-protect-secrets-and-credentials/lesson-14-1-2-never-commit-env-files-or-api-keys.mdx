@@ -1,0 +1,212 @@
+---
+title: "Never commit .env files or API keys"
+lessonNumber: "14.1.2"
+chapterNumber: "14.1"
+pathNumber: "14"
+tutorPreload: "Show me the fastest way to find secrets that were already committed to my repo."
+verifyType: "terminal_output"
+---
+
+# Never commit .env files or API keys
+
+## Objective
+
+In Lesson 14.1.1 you built a secrets strategy that prevents `.env` files from being committed. But what happens when secrets have **already** been committed — maybe by you, maybe by a teammate, maybe months ago?
+
+In this lesson you will learn to:
+
+1. Detect secrets that are already buried in your Git history.
+2. Remove them from the entire repository history using `git filter-repo` or BFG Repo-Cleaner.
+3. Respond to a real secret exposure incident — rotate, clean, verify.
+
+This is the lesson you wish you had read *before* your API key showed up on a GitHub leak scanner.
+
+## Walkthrough
+
+### Step 1 — Set up a practice repository
+
+Create a throwaway repo so you can safely practice history rewriting without touching anything real.
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/secrets-incident-lab && cd ~/cli-academy/projects/secrets-incident-lab
+git init
+```
+
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\secrets-incident-lab" -Force
+Set-Location "$HOME\cli-academy\projects\secrets-incident-lab"
+git init
+```
+
+### Step 2 — Simulate an accidental secret commit
+
+Create a file with a fake API key and commit it — this is the mistake you need to learn to detect and fix.
+
+**macOS / Linux:**
+```bash
+echo 'OPENAI_API_KEY=sk-proj-FAKE1234567890abcdef' > .env
+git add .env
+git commit -m "add config"
+```
+
+**Windows (PowerShell):**
+```powershell
+"OPENAI_API_KEY=sk-proj-FAKE1234567890abcdef" | Set-Content .env
+git add .env
+git commit -m "add config"
+```
+
+Now "fix" it the way most beginners do — delete the file and commit again:
+
+```bash
+git rm .env
+echo ".env" >> .gitignore
+git add .gitignore
+git commit -m "remove .env and add gitignore"
+```
+
+The file is gone from the working directory. But **the secret is still in Git history**.
+
+### Step 3 — Hunt for secrets in Git history
+
+These commands reveal secrets hiding in past commits. Run them in any real project you want to check.
+
+**Search for files that were ever committed:**
+```bash
+git log --all --diff-filter=A -- '*.env' '*.env.*'
+```
+This shows every commit that added a file matching `.env` or `.env.*`.
+
+**Search for specific secret patterns in file content:**
+```bash
+git log --all -p -S "API_KEY"
+```
+The `-S` flag (called the "pickaxe") searches through every commit diff for the string `API_KEY`. It will show you the exact commit and the exact line where the secret appeared.
+
+**Search for common key prefixes:**
+```bash
+git log --all -p -S "sk-proj-"
+git log --all -p -S "sk-ant-"
+git log --all -p -S "ghp_"
+git log --all -p -S "AKIA"
+```
+These catch OpenAI keys (`sk-proj-`), Anthropic keys (`sk-ant-`), GitHub tokens (`ghp_`), and AWS access keys (`AKIA`).
+
+Run these now against your practice repo:
+```bash
+git log --all -p -S "sk-proj-"
+```
+
+You should see the full diff including `OPENAI_API_KEY=sk-proj-FAKE1234567890abcdef`.
+
+### Step 4 — Remove secrets from history with git filter-repo
+
+`git filter-repo` is the modern, safe replacement for `git filter-branch`. It rewrites your entire history.
+
+> **Warning:** History rewriting changes every commit hash after the affected commit. Coordinate with your team before running this on a shared repo.
+
+**Install git filter-repo:**
+
+**macOS / Linux:**
+```bash
+pip install git-filter-repo
+# or: brew install git-filter-repo
+```
+
+**Windows (PowerShell):**
+```powershell
+pip install git-filter-repo
+```
+
+**Remove the .env file from all history:**
+```bash
+git filter-repo --invert-paths --path .env --force
+```
+
+Verify the secret is gone:
+```bash
+git log --all -p -S "sk-proj-"
+```
+
+This should return **nothing**. The secret no longer exists in any commit.
+
+### Step 5 — Alternative: BFG Repo-Cleaner for string replacement
+
+BFG is faster for large repos and can replace specific strings rather than removing whole files.
+
+**macOS / Linux:**
+```bash
+# Create a file listing secrets to remove (one per line)
+echo "sk-proj-FAKE1234567890abcdef" > ../secrets-to-remove.txt
+
+# Run BFG (requires Java)
+java -jar bfg.jar --replace-text ../secrets-to-remove.txt
+
+# Clean up
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+```
+
+**Windows (PowerShell):**
+```powershell
+# Create a file listing secrets to remove
+"sk-proj-FAKE1234567890abcdef" | Set-Content ..\secrets-to-remove.txt
+
+# Run BFG (requires Java)
+java -jar bfg.jar --replace-text ..\secrets-to-remove.txt
+
+# Clean up
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+```
+
+After BFG runs, the secret text is replaced with `***REMOVED***` in every commit.
+
+### Step 6 — Incident response: what to do when a real secret leaks
+
+If you discover a real secret in your repo (or get an alert from GitHub Secret Scanning), follow this exact sequence:
+
+1. **Rotate immediately.** Go to the service dashboard (OpenAI, AWS, Anthropic, etc.) and generate a new key. Revoke the old one. Do this *before* cleaning Git history — the old key is already compromised.
+
+2. **Clean the history.** Use `git filter-repo` or BFG as shown above.
+
+3. **Force-push the cleaned history:**
+   ```bash
+   git push --force --all
+   git push --force --tags
+   ```
+
+4. **Notify your team.** Anyone who has cloned the repo needs to re-clone or run `git fetch --all && git reset --hard origin/main`.
+
+5. **Verify the old key is dead.** Try using it. It should fail. If it still works, your rotation did not succeed.
+
+6. **Check for damage.** Review API usage logs for the compromised key. Look for unexpected charges or data access.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `git log -S` finds nothing but you know a secret was committed | The secret might be in a different branch | Add `--all` flag: `git log --all -p -S "secret"` |
+| `git filter-repo` refuses to run | It requires a fresh clone (no remote configured) | Clone the repo to a new directory, run filter-repo there, then push back |
+| Secret is gone from history but still on GitHub | GitHub caches old commits | Contact GitHub support to purge the cache, or delete and recreate the repo |
+| BFG misses some occurrences | It does not process the latest commit (HEAD) | Clean the latest commit manually first, then run BFG |
+| Teammate still has the old history | They cloned before you force-pushed | They need to run `git fetch --all && git reset --hard origin/main` |
+| API key still works after rotation | You rotated the wrong key, or the service has a propagation delay | Double-check the key ID in your service dashboard; wait a few minutes and test again |
+
+> [!WARN]
+> **GitHub, GitLab, and Bitbucket all cache commits.** Removing a secret from your local history does not remove it from the remote's cache. For public repos, assume the secret was seen by bots within seconds of the push. Always rotate first, clean second.
+
+## Key takeaways
+
+- Deleting a file and committing does **not** remove it from Git history. The secret is still there.
+- `git log --all -p -S "pattern"` is the fastest way to find secrets buried in history.
+- `git filter-repo` is the modern tool for rewriting history to remove files or content.
+- The first step in any secret leak is **rotation** — not cleanup. Assume the key is already compromised.
+- Force-push after history rewriting, and make sure every teammate re-syncs.
+
+<VerificationBlock
+  deliverable="A practice repo where you committed a secret, found it with `git log -S`, and removed it with `git filter-repo`."
+  verifyCheck="Run `git log --all -p -S 'sk-proj-'` in the practice repo — it must return no results. Run `git log --oneline` — the cleanup commit should be visible."
+/>

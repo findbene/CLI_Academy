@@ -1,0 +1,183 @@
+---
+title: "Use Claude Desktop for local projects"
+lessonNumber: "7.2.1"
+chapterNumber: "7.2"
+pathNumber: "7"
+tutorPreload: "Explain what Claude Desktop can and cannot do compared to Claude Code in the terminal."
+verifyType: "terminal_output"
+---
+
+# Use Claude Desktop for local projects
+
+## Objective
+
+By the end of this lesson you will have Claude Desktop installed, opened a local project folder inside it, and used its drag-and-drop feature to share files with Claude. You will also understand exactly what Claude Desktop can and cannot do compared to the Claude Code CLI.
+
+## Walkthrough
+
+### Step 1 — Install Claude Desktop
+
+Download the app from the official source.
+
+**macOS:**
+
+1. Go to [claude.ai/download](https://claude.ai/download) in your browser.
+2. Download the `.dmg` file for macOS.
+3. Open the `.dmg` and drag **Claude** into your Applications folder.
+4. Launch Claude from Applications. Sign in with your Anthropic account.
+
+**Windows:**
+
+1. Go to [claude.ai/download](https://claude.ai/download) in your browser.
+2. Download the `.exe` installer for Windows.
+3. Run the installer and follow the prompts.
+4. Launch Claude from the Start menu. Sign in with your Anthropic account.
+
+**Linux:**
+
+Claude Desktop is available as a `.deb` package for Debian/Ubuntu-based distributions:
+
+```bash
+# Download the latest .deb from claude.ai/download
+sudo dpkg -i claude-desktop_*.deb
+```
+
+Launch it from your application menu or run `claude-desktop` in a terminal.
+
+> **Note:** You need an active Anthropic account (free or paid) to use Claude Desktop. The app uses the same account as claude.ai.
+
+### Step 2 — Open a local project folder
+
+Claude Desktop can work with files you share with it. There are two ways to bring files in:
+
+**Method A — Drag and drop:**
+
+1. Open your system file manager (Finder on macOS, File Explorer on Windows).
+2. Navigate to a project folder.
+3. Select one or more files (e.g., `README.md`, `package.json`, `src/index.ts`).
+4. Drag them into the Claude Desktop chat window.
+5. Claude reads the file contents and you can ask questions about them.
+
+**Method B — Use the attachment button:**
+
+1. In the Claude Desktop chat, click the **paperclip icon** (📎) or the **+** button.
+2. Select **Add files** from the menu.
+3. Browse to your project folder and select the files you want to share.
+
+Either method copies the file contents into the conversation. Claude can now analyze, explain, or suggest changes to those files.
+
+### Step 3 — Ask Claude Desktop to analyze your project files
+
+Once you have dragged in a few files, try these prompts:
+
+```
+What does this project do, based on the files I shared?
+```
+
+```
+Are there any potential bugs in this code?
+```
+
+```
+Summarize the dependencies listed in package.json.
+```
+
+Claude Desktop reads the content you provided and responds. It cannot browse your file system on its own — it only knows about the files you explicitly share.
+
+### Step 4 — Try creating a new file with Claude Desktop
+
+Ask Claude to generate something:
+
+```
+Write a .gitignore file for a Node.js project.
+```
+
+Claude produces the content in the chat. To save it:
+
+1. Select the generated text in the chat.
+2. Copy it (Ctrl+C / Cmd+C).
+3. Open your editor or terminal and paste it into a new file.
+
+**macOS / Linux:**
+
+```bash
+# Paste the clipboard content into a file
+pbpaste > .gitignore   # macOS
+xclip -selection clipboard -o > .gitignore   # Linux with xclip
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Clipboard | Out-File -Encoding utf8 .gitignore
+```
+
+This copy-paste step is a key difference from Claude Code in the terminal, which writes files directly.
+
+### Step 5 — Understand what Claude Desktop can and cannot do
+
+Here is the honest comparison:
+
+| Capability | Claude Code (CLI) | Claude Desktop |
+|---|---|---|
+| Read files in your project | Yes — directly from the file system | Only files you drag in or attach |
+| Write/edit files | Yes — edits files on disk | No — generates text you must copy-paste |
+| Run terminal commands | Yes — executes shell commands | No |
+| Access Git history | Yes — runs `git log`, `git diff`, etc. | No |
+| Multi-file refactoring | Yes — can modify many files in one pass | No — one conversation, manual saves |
+| Conversation memory | Resets each session (unless using CLAUDE.md) | Remembers within the project/conversation |
+| Visual UI | Text-only terminal | Graphical window with rich formatting |
+| File preview (images, PDFs) | Limited | Yes — renders images and formatted content |
+| Speed of iteration | Fastest for code changes | Best for reading, planning, and discussion |
+
+**When to use Claude Desktop:**
+
+- You want to discuss architecture or plan before coding.
+- You need to share an image, screenshot, or PDF for analysis.
+- You prefer a graphical conversation with formatted code blocks.
+- You are on a machine where you cannot install the Claude Code CLI.
+
+**When to use Claude Code CLI:**
+
+- You want Claude to read, edit, and run code directly.
+- You are in the middle of a development session and need fast iteration.
+- You need Git integration or shell access.
+
+### Step 6 — Try image and PDF sharing
+
+Claude Desktop handles visual files that the CLI cannot. Try this:
+
+1. Take a screenshot of an error message or a UI design.
+2. Drag the image into the Claude Desktop chat.
+3. Ask: `What error is shown in this screenshot?` or `How could this UI be improved?`
+
+Claude analyzes the image and responds. This is something the CLI version cannot do natively — it works only with text files.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude Desktop does not launch | Installation was incomplete or OS requirements not met | Re-download from claude.ai/download; check system requirements (macOS 12+, Windows 10+) |
+| "Sign in" loop — keeps asking for credentials | Browser cookie issue or network firewall | Clear browser cookies for claude.ai, check that your network allows HTTPS to anthropic.com |
+| Drag and drop does nothing | You dragged a folder instead of files | Open the folder and drag individual files; Claude Desktop accepts files, not folders |
+| File content appears truncated | The file is very large and exceeds the context window | Split large files into smaller chunks or share only the relevant sections |
+| Claude says "I can't access your file system" | You asked it to read a file by path without sharing it | Drag the file in or use the attachment button; Claude Desktop cannot browse your disk |
+| Generated code has wrong line endings | Claude may produce Unix line endings on Windows | Open the file in VS Code and change line endings (bottom-right status bar) to CRLF if needed |
+
+<VerificationBlock>
+Confirm Claude Desktop is installed and working:
+
+1. Open Claude Desktop and start a new conversation.
+2. Drag any text file from your computer into the chat window.
+3. Ask: `What is in this file?`
+
+Claude should summarize the file contents accurately.
+
+Then in your terminal, confirm Claude Code still works alongside it:
+
+```bash
+claude --version
+```
+
+You should see the Claude Code version number. Both tools work independently — installing one does not affect the other.
+</VerificationBlock>

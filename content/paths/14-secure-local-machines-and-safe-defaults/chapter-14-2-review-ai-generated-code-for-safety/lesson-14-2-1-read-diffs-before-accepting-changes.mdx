@@ -1,0 +1,223 @@
+---
+title: "Read diffs before accepting changes"
+lessonNumber: "14.2.1"
+chapterNumber: "14.2"
+pathNumber: "14"
+tutorPreload: "Show me a diff and help me spot the security problem hidden in it."
+verifyType: "terminal_output"
+---
+
+# Read diffs before accepting changes
+
+## Objective
+
+When Claude Code suggests a change to your project, it shows you a diff — a line-by-line comparison of what will change. Most beginners accept every diff without reading it. That is how `eval()` calls, hardcoded URLs, removed input validation, and accidentally deleted security checks end up in production code.
+
+In this lesson you will:
+
+1. Learn to read `git diff` output fluently.
+2. Practice spotting subtle security problems in real-looking diffs.
+3. Build a personal diff-review checklist you will use every time before accepting AI-generated changes.
+
+Reading diffs is your last line of defense before code enters your project.
+
+## Walkthrough
+
+### Step 1 — Set up a practice project
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/diff-review-lab && cd ~/cli-academy/projects/diff-review-lab
+git init
+```
+
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\diff-review-lab" -Force
+Set-Location "$HOME\cli-academy\projects\diff-review-lab"
+git init
+```
+
+### Step 2 — Create a baseline file with security protections
+
+Create a small web server file that has proper input validation:
+
+**macOS / Linux:**
+```bash
+cat > server.js << 'EOF'
+const express = require('express');
+const app = express();
+
+app.get('/api/user', (req, res) => {
+  const userId = parseInt(req.query.id, 10);
+  if (isNaN(userId) || userId < 1) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+  // Look up user by validated integer ID
+  res.json({ id: userId, name: 'Example User' });
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+EOF
+git add server.js && git commit -m "initial: server with input validation"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+const express = require('express');
+const app = express();
+
+app.get('/api/user', (req, res) => {
+  const userId = parseInt(req.query.id, 10);
+  if (isNaN(userId) || userId < 1) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+  // Look up user by validated integer ID
+  res.json({ id: userId, name: 'Example User' });
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+"@ | Set-Content server.js
+git add server.js; git commit -m "initial: server with input validation"
+```
+
+### Step 3 — Simulate a dangerous AI-suggested change
+
+Now simulate what an AI might suggest — a change that looks helpful but introduces three security problems:
+
+**macOS / Linux:**
+```bash
+cat > server.js << 'EOF'
+const express = require('express');
+const app = express();
+
+app.get('/api/user', (req, res) => {
+  const userId = req.query.id;
+  // Fetch user data with flexible query
+  const query = `SELECT * FROM users WHERE id = ${userId}`;
+  res.json({ id: userId, name: 'Example User', query });
+});
+
+app.get('/api/config', (req, res) => {
+  const settings = eval(req.query.data);
+  res.json(settings);
+});
+
+app.listen(3000, () => console.log('Server running on http://api.example.com:3000'));
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+const express = require('express');
+const app = express();
+
+app.get('/api/user', (req, res) => {
+  const userId = req.query.id;
+  // Fetch user data with flexible query
+  const query = ``SELECT * FROM users WHERE id = `${userId}```;
+  res.json({ id: userId, name: 'Example User', query });
+});
+
+app.get('/api/config', (req, res) => {
+  const settings = eval(req.query.data);
+  res.json(settings);
+});
+
+app.listen(3000, () => console.log('Server running on http://api.example.com:3000'));
+"@ | Set-Content server.js
+```
+
+### Step 4 — Read the diff
+
+Now read the diff exactly as you would when reviewing an AI suggestion:
+
+```bash
+git diff server.js
+```
+
+You will see output like this:
+
+```diff
+-  const userId = parseInt(req.query.id, 10);
+-  if (isNaN(userId) || userId < 1) {
+-    return res.status(400).json({ error: 'Invalid user ID' });
+-  }
+-  // Look up user by validated integer ID
+-  res.json({ id: userId, name: 'Example User' });
++  const userId = req.query.id;
++  // Fetch user data with flexible query
++  const query = `SELECT * FROM users WHERE id = ${userId}`;
++  res.json({ id: userId, name: 'Example User', query });
+```
+
+**How to read this:**
+- Lines starting with `-` (red) are being **removed**.
+- Lines starting with `+` (green) are being **added**.
+- Lines with no prefix are unchanged context.
+
+### Step 5 — Spot the three security problems
+
+Go through the diff line by line. Here is what to look for:
+
+**Problem 1 — Input validation removed:**
+The original code had `parseInt()` and a validity check. The new code uses `req.query.id` directly — a raw, unvalidated string from the user. This is the most common AI mistake: removing safety code to "simplify" things.
+
+**Problem 2 — SQL injection introduced:**
+The line `` `SELECT * FROM users WHERE id = ${userId}` `` builds a SQL query by concatenating user input. An attacker could send `?id=1; DROP TABLE users--` and destroy your database. The fix is parameterized queries.
+
+**Problem 3 — `eval()` on user input:**
+The new `/api/config` endpoint runs `eval(req.query.data)`. This lets anyone execute arbitrary JavaScript on your server. `eval()` on user-controlled input is the single most dangerous line of code possible in Node.js.
+
+**Bonus — Hardcoded URL:**
+`http://api.example.com:3000` should not be hardcoded. Use an environment variable instead.
+
+### Step 6 — Practice the diff-review checklist
+
+Before accepting any AI-generated change, check every diff for these patterns:
+
+1. **Was validation removed?** Look for deleted `if` blocks, `parseInt()`, `isNaN()`, regex checks, or type guards.
+2. **Is user input used in a dangerous context?** Watch for string concatenation in SQL, shell commands, HTML output, or file paths.
+3. **Does the diff add `eval()`, `Function()`, or `exec()`?** These execute arbitrary code. Almost never needed.
+4. **Are there hardcoded URLs, IPs, or credentials?** These should be environment variables.
+5. **Are there new dependencies or imports you don't recognize?** Verify they exist and are legit.
+
+### Step 7 — Reset and practice reviewing a clean fix
+
+Discard the dangerous change:
+```bash
+git checkout -- server.js
+```
+
+Verify you are back to the safe version:
+```bash
+git diff server.js
+```
+This should show no output — meaning your working copy matches the last commit.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `git diff` shows nothing | Changes were already staged with `git add` | Use `git diff --staged` to see staged changes |
+| Diff is too long to read in terminal | Large file with many changes | Use `git diff --stat` for a summary first, then review file by file |
+| You accepted a bad change already | Committed without reviewing | Run `git diff HEAD~1` to review the last commit, then `git revert HEAD` to undo it |
+| AI change looks safe but removes an edge case | AI simplified code and dropped a null check or error boundary | Compare removed lines (starting with `-`) against your original intent — any removed `if` or `try/catch` is a red flag |
+| You are not sure if a function is dangerous | Unfamiliar function name in the diff | Search for the function name plus "security" before accepting — e.g., "eval javascript security" |
+
+> [!WARN]
+> **Never accept a diff you have not read.** AI tools are optimized to produce code that *looks* correct. They regularly remove input validation, add `eval()`, hardcode secrets, and introduce SQL injection — all while appearing to improve your code. The diff is your last chance to catch these before they ship.
+
+## Key takeaways
+
+- Lines with `-` are being removed — check if any safety code is being deleted.
+- Lines with `+` are being added — check for `eval()`, string concatenation in queries, hardcoded secrets, and unvalidated input.
+- Use `git diff` before accepting, `git diff --staged` before committing, and `git diff HEAD~1` after committing.
+- Build the habit: read every diff, every time. No exceptions.
+
+<VerificationBlock
+  deliverable="A diff-review-lab project where you created a baseline, simulated a dangerous change, and identified three security problems in the diff."
+  verifyCheck="Run `git log --oneline` — the initial safe commit should be visible. Run `git diff server.js` — there should be no uncommitted changes (you reset to the safe version)."
+/>

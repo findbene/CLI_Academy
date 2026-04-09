@@ -1,0 +1,181 @@
+---
+title: "Mini-project: codebase tour and improvement"
+lessonNumber: "4.3.2"
+chapterNumber: "4.3"
+pathNumber: "4"
+tutorPreload: "Guide me through a full codebase tour: clone, map, trace, improve, verify, and commit."
+verifyType: "terminal_output"
+---
+
+# Mini-project: codebase tour and improvement
+
+## Objective
+
+Complete a full codebase tour on a project you have never worked with before. You will clone it, map its structure with Claude, trace a feature, make one real improvement, verify it works, and commit everything. This combines every skill from Path 04 into a single end-to-end workflow.
+
+## Walkthrough
+
+Pick a NEW open-source project for this mini-project — do not reuse the one from earlier lessons. Good choices include:
+
+- **Node.js:** `https://github.com/expressjs/morgan` (HTTP request logger, small and focused)
+- **Python:** `https://github.com/psf/requests` (HTTP library, well-organized)
+- **Any language you know:** pick something under 5,000 lines of source code with a clear purpose
+
+### Step 1 — Clone and enter the project
+
+**macOS / Linux**
+
+```bash
+cd ~/projects
+git clone https://github.com/expressjs/morgan.git
+cd morgan
+```
+
+**Windows PowerShell**
+
+```powershell
+cd ~\projects
+git clone https://github.com/expressjs/morgan.git
+cd morgan
+```
+
+> **Reminder — do not install dependencies from untrusted repos blindly.** Read the `"scripts"` section in `package.json` (or the `Makefile` / `setup.py` for Python) before running any install commands.
+
+### Step 2 — Map the structure with Claude
+
+Start Claude Code in the project directory and ask for a full orientation:
+
+```
+I just cloned this project and have never seen it before. Give me a full orientation:
+1. What does this project do?
+2. What is the folder structure and what does each directory contain?
+3. Where is the main entry point?
+4. What are the key config files?
+5. What is the tech stack and key dependencies?
+```
+
+Read Claude's answer carefully. This is your map of the codebase. Note the entry point and the main source directory.
+
+### Step 3 — Trace one feature
+
+Pick a core feature and ask Claude to trace it end-to-end:
+
+```
+Trace how the "combined" log format works from the moment a request comes in to the moment the log line is written. Name every file and function involved.
+```
+
+Verify at least one hop in the trace yourself:
+
+**macOS / Linux**
+
+```bash
+grep -n "combined" index.js
+```
+
+**Windows PowerShell**
+
+```powershell
+Select-String -Path index.js -Pattern "combined"
+```
+
+Confirm the file and line match Claude's trace.
+
+### Step 4 — Identify an improvement
+
+Ask Claude for a safe, small improvement:
+
+```
+What is one small, safe improvement I could make to this project? I want something real — a missing JSDoc comment, a clearer error message, a typo in documentation, or a small code cleanup. Do NOT suggest anything that changes the public API.
+```
+
+Claude might suggest:
+- Adding a JSDoc comment to an undocumented function
+- Improving a confusing error message
+- Fixing a typo in the README
+- Adding a missing edge-case test
+
+Pick whichever suggestion feels right.
+
+### Step 5 — Make the improvement
+
+Ask Claude to implement it:
+
+```
+Go ahead and make that improvement. Show me exactly what you changed and why.
+```
+
+Review the change. Confirm it is small, correct, and does not affect the public API.
+
+### Step 6 — Verify the improvement
+
+Install dependencies (if you trust the project) and run the test suite:
+
+```bash
+npm install
+npm test
+```
+
+If the project does not have tests, or your change was documentation-only, verify the diff manually:
+
+**macOS / Linux and Windows PowerShell**
+
+```bash
+git diff
+```
+
+Review every line. The change should be exactly what you expected — nothing more, nothing less.
+
+### Step 7 — Commit the improvement
+
+```bash
+git add -A
+git commit -m "docs: add JSDoc comment to compile function"
+```
+
+Use the appropriate conventional commit type:
+- `docs:` for documentation changes
+- `fix:` for bug fixes
+- `refactor:` for code cleanups that do not change behavior
+- `test:` for adding or fixing tests
+
+### Step 8 — Write a session summary
+
+Ask Claude to summarize the tour:
+
+```
+Write a short session summary of what we did today: which project we explored, what we learned about its structure, the feature we traced, and the improvement we made. Format it as markdown.
+```
+
+Save the summary:
+
+**macOS / Linux**
+
+```bash
+nano session-summary.md
+# Paste Claude's output, save with Ctrl+O, exit with Ctrl+X
+```
+
+**Windows PowerShell**
+
+```powershell
+notepad session-summary.md
+# Paste Claude's output and save
+```
+
+This summary is proof you completed the tour and a useful reference for the future.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `npm test` fails before you even change anything | The project has pre-existing test failures or needs a specific Node version | Check the project README for setup instructions; try `nvm use` if a `.nvmrc` exists |
+| Claude suggests a change that modifies the public API | The improvement was too ambitious for a practice exercise | Ask: "That changes the public API. Give me a safer, internal-only improvement instead" |
+| `git diff` shows untracked files you did not create | `npm install` created `node_modules/` or build artifacts | Check that `node_modules/` is in `.gitignore`; only stage your actual improvement files |
+| You accidentally cloned a huge repo | The project has more source code than expected | Check line count: `find . -name "*.js" -not -path "*/node_modules/*" \| xargs wc -l` (macOS/Linux) or `(Get-ChildItem -Recurse -Filter *.js -Exclude node_modules | Get-Content \| Measure-Object -Line).Lines` (Windows). Pick something under 5,000 lines |
+| Claude's improvement does not apply because the code has changed | The source file differs from what Claude expects | Ask Claude: "Re-read index.js and adapt your suggestion to what the file actually says right now" |
+| You cannot push the commit | You do not have write access to the upstream repo | This is expected — you are working on a local clone for practice. The commit exists in your local git history, which is the goal |
+
+<VerificationBlock
+  deliverable="A completed codebase tour: structure map, feature trace, one verified improvement committed, and a session summary."
+  verifyCheck="git log shows a clean commit with a conventional message, tests pass or diff is reviewed, and session-summary.md exists."
+/>

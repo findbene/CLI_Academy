@@ -10,64 +10,96 @@ verifyType: "terminal_output"
 # Run a pilot and collect feedback
 
 ## Objective
-
-Well done on running your pilot! Now it's time to gather all that valuable feedback and turn it into actionable improvements. In this lesson, we'll create a structured review note in your terminal. This note will help you organize feedback into categories like "what went well," "what could be improved," and "bugs encountered," making it easy to see what needs attention next. By the end, you'll have a clear document to guide your next steps.
+Run a real pilot of your assistant with a small team, collect structured feedback, and convert that feedback into concrete CLAUDE.md improvements.
 
 ## Walkthrough
+### Step 1: Define a 1-week pilot scope
+Pick 2-5 users and one clear job-to-be-done (for example: produce weekly brief each Friday).
 
-First, let's create a file for your pilot review notes using the `touch` command. This command is super safe! It just creates an empty file or updates its timestamp if it already exists. It won't modify any existing content.
+Create pilot files:
 
-1.  **Create your review file:**
-    ```bash
-    touch pilot_review_notes.md
-    ```
+```bash
+cat > pilot-plan.md <<'EOF'
+# Pilot Plan
+- Pilot window: 1 week
+- Users: 2-5
+- Primary task: one repeated workflow
+- Success metric: % of runs judged useful by humans
+EOF
+touch pilot-feedback.csv
+```
 
-2.  **Open the file in a text editor:** We'll use `nano`, a friendly text editor right in your terminal. It's safe because it only changes the file you tell it to open, and it gives you clear prompts to save or discard changes before exiting.
-    ```bash
-    nano pilot_review_notes.md
-    ```
+```powershell
+@"
+# Pilot Plan
+- Pilot window: 1 week
+- Users: 2-5
+- Primary task: one repeated workflow
+- Success metric: % of runs judged useful by humans
+"@ | Set-Content pilot-plan.md
+New-Item pilot-feedback.csv -ItemType File -Force | Out-Null
+```
 
-3.  **Add the following structure to your file.** Remember to replace the bracketed `[ ]` information with details from your pilot. As you fill out the "What Could Be Improved?" and "Bugs / Issues Encountered" sections, think about how much impact each item had on your pilot users.
-    ```markdown
-    # Pilot Review Notes - [Your Project/Feature Name]
+### Step 2: Create a feedback form with severity and effort
 
-    Date: YYYY-MM-DD
-    Pilot Participants: [List names or groups, e.g., Alice, Bob, Marketing Team]
+```bash
+cat > pilot-feedback.csv <<'EOF'
+timestamp,user,run_id,worked_as_expected,usefulness_1_to_5,issue_summary,severity(low|med|high),effort(s|m|l),suggested_change
+EOF
+```
 
-    ---
+```powershell
+"timestamp,user,run_id,worked_as_expected,usefulness_1_to_5,issue_summary,severity(low|med|high),effort(s|m|l),suggested_change" | Set-Content pilot-feedback.csv
+```
 
-    ### 1. What Went Well? (Successes & Positives)
-    *   [Example: The core functionality was easy to understand.]
-    *   [Example: Users found the data visualization helpful.]
+### Step 3: Run pilot executions and collect responses
+Each user runs the assistant once per day and submits one feedback row.
 
-    ### 2. What Could Be Improved? (Areas for Enhancement & Challenges)
-    *   [Example: The navigation menu was confusing, causing users to get lost.]
-    *   [Example: Certain error messages were too technical and unhelpful.]
+Prompt for the assistant run:
 
-    ### 3. New Ideas / Feature Requests
-    *   [Example: A "remember me" option for login would be great.]
-    *   [Example: Can we add a quick export button to CSV?]
+```text
+Read CLAUDE.md and execute only the bounded workflow. Log actions, then stop and ask the human if output is acceptable.
+```
 
-    ### 4. Bugs / Issues Encountered
-    *   [Example: The app crashed when trying to upload files over 5MB.]
-    *   [Example: Data in the summary report was incorrect for specific date ranges.]
+### Step 4: Summarize findings into a prioritized backlog
 
-    ---
+```bash
+touch pilot-review.md
+```
 
-    ### Next Steps / Proposed Changes:
-    *   [Prioritize key improvements here. E.g., Redesign the navigation menu.]
-    *   [E.g., Rewrite error messages to be user-friendly.]
-    *   [E.g., Implement a size check before file uploads.]
-    ```
+```powershell
+New-Item pilot-review.md -ItemType File -Force | Out-Null
+```
 
-4.  **Save and exit `nano`:**
-    *   Press `Ctrl + O` (to Write Out, or save).
-    *   Press `Enter` to confirm the filename.
-    *   Press `Ctrl + X` (to eXit).
+In `pilot-review.md`, include:
+- Top 3 high-severity issues
+- Top 3 low-effort wins
+- Changes accepted into next CLAUDE.md version
 
-You now have a structured pilot review note ready to guide your project's next phase!
+### Step 5: Iterate the contract and rerun
+Update CLAUDE.md with the approved fixes, then run one verification cycle.
+
+```bash
+git diff CLAUDE.md
+```
+
+```powershell
+git diff CLAUDE.md
+```
+
+Pilot is complete when improvements are evidenced, not just discussed.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| Feedback is vague and unusable | Free-form notes without schema | Use required fields with severity/effort columns |
+| Team says output is "fine" but adoption drops | No usefulness metric tracking | Require usefulness score per run |
+| Same issue repeats all week | Contract never updated | Apply mid-pilot CLAUDE.md patch for high-severity issues |
+| Pilot appears successful but costs spike | No run/cost tracking | Add run_id and per-run timing/cost notes |
+| Users bypass safety steps | Approval gate not enforced | Require explicit human acceptance before closure |
 
 <VerificationBlock 
-  deliverable="A pilot review note with feedback categories and next changes."
-  verifyCheck="Pilot feedback results in a prioritized backlog."
+    deliverable="A completed pilot package: pilot-plan.md, populated pilot-feedback.csv, and pilot-review.md with prioritized changes."
+    verifyCheck="You can show feedback-driven updates were applied to CLAUDE.md and validated in at least one rerun."
 />

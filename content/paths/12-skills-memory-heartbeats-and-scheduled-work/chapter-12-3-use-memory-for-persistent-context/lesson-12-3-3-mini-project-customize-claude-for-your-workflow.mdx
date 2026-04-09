@@ -1,0 +1,279 @@
+---
+title: "Mini project: customize Claude for your workflow"
+lessonNumber: "12.3.3"
+chapterNumber: "12.3"
+pathNumber: "12"
+tutorPreload: "Walk me through setting up CLAUDE.md, a custom skill, and memory for a real project."
+verifyType: "terminal_output"
+---
+
+# Mini project: customize Claude for your workflow
+
+## Objective
+
+By the end of this mini project you will have a personal project set up with all three customization layers working together: a project `CLAUDE.md`, a custom skill, and organized memory files. You will start a fresh Claude Code session and verify that Claude reads all three layers by running a single end-to-end test.
+
+## Walkthrough
+
+### Step 1 — Create a new project
+
+Pick a real project idea — a personal website, a utility script collection, or a side project. If you do not have one in mind, create a practice project.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/my-side-project
+cd ~/my-side-project
+git init
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\my-side-project"
+Set-Location "$HOME\my-side-project"
+git init
+```
+
+### Step 2 — Write a project CLAUDE.md
+
+Create a `CLAUDE.md` that describes your project. Tailor the rules to your actual needs.
+
+**macOS / Linux**
+
+```bash
+cat > CLAUDE.md << 'EOF'
+# CLAUDE.md
+
+## Mission
+A personal side project for building [describe your project here].
+Optimize for working code over perfect code. Ship small increments.
+
+## Read order
+1. CLAUDE.md
+2. README.md
+3. Any file directly relevant to the current task
+
+## Hard rules
+1. Do not create files outside this project directory.
+2. Do not install dependencies without listing them first and asking for approval.
+3. Run the linter before declaring any task complete.
+4. Write commit messages in conventional commit format.
+
+## Context loading
+- Read the minimum files needed for the task.
+- If unsure which files to read, ask rather than scanning everything.
+- Never read node_modules/, .git/, or build output directories.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+# CLAUDE.md
+
+## Mission
+A personal side project for building [describe your project here].
+Optimize for working code over perfect code. Ship small increments.
+
+## Read order
+1. CLAUDE.md
+2. README.md
+3. Any file directly relevant to the current task
+
+## Hard rules
+1. Do not create files outside this project directory.
+2. Do not install dependencies without listing them first and asking for approval.
+3. Run the linter before declaring any task complete.
+4. Write commit messages in conventional commit format.
+
+## Context loading
+- Read the minimum files needed for the task.
+- If unsure which files to read, ask rather than scanning everything.
+- Never read node_modules/, .git/, or build output directories.
+"@ | Set-Content -Path "CLAUDE.md" -Encoding UTF8
+```
+
+### Step 3 — Add a .claude/rules file for project-specific conventions
+
+**macOS / Linux**
+
+```bash
+mkdir -p .claude/rules
+cat > .claude/rules/code-style.md << 'EOF'
+# Code style rules
+- Use 2-space indentation for TypeScript and JSON files.
+- Use double quotes for strings, not single quotes.
+- Export functions as named exports, not default exports.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path ".claude\rules"
+@"
+# Code style rules
+- Use 2-space indentation for TypeScript and JSON files.
+- Use double quotes for strings, not single quotes.
+- Export functions as named exports, not default exports.
+"@ | Set-Content -Path ".claude\rules\code-style.md" -Encoding UTF8
+```
+
+### Step 4 — Confirm your custom skill is installed
+
+You should already have the `commit-message` skill from lesson 12.2.2. Verify it exists:
+
+**macOS / Linux**
+
+```bash
+cat ~/.claude/skills/commit-message/SKILL.md | head -5
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content "$HOME\.claude\skills\commit-message\SKILL.md" | Select-Object -First 5
+```
+
+If it does not exist, go back to lesson 12.2.2 and create it.
+
+### Step 5 — Add repo-level memory for this specific project
+
+**macOS / Linux**
+
+```bash
+mkdir -p .claude/memory
+cat > .claude/memory/project-context.md << 'EOF'
+# Project Context
+
+- This project uses Node.js 20 and TypeScript 5.
+- The database is SQLite for local development.
+- Tests use Vitest, not Jest.
+- The CI pipeline runs on GitHub Actions.
+- The deploy target is Vercel.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path ".claude\memory"
+@"
+# Project Context
+
+- This project uses Node.js 20 and TypeScript 5.
+- The database is SQLite for local development.
+- Tests use Vitest, not Jest.
+- The CI pipeline runs on GitHub Actions.
+- The deploy target is Vercel.
+"@ | Set-Content -Path ".claude\memory\project-context.md" -Encoding UTF8
+```
+
+### Step 6 — Verify user-level memory files exist
+
+These should be in place from lesson 12.3.2. Confirm:
+
+**macOS / Linux**
+
+```bash
+ls ~/.claude/memory/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem "$HOME\.claude\memory"
+```
+
+You should see `preferences.md`, `patterns.md`, and `debugging.md`.
+
+### Step 7 — Run the end-to-end verification test
+
+Start a fresh Claude Code session in your project:
+
+```
+claude
+```
+
+Run this sequence of tests. Each one checks a different layer.
+
+**Test 1 — Project CLAUDE.md** Ask:
+
+```
+What are my project's hard rules?
+```
+
+Claude should list the four rules from your `CLAUDE.md` (no files outside the project, no silent installs, run linter, conventional commits).
+
+**Test 2 — Project rules file** Ask:
+
+```
+What indentation should I use for TypeScript files?
+```
+
+Claude should say 2-space indentation, from `.claude/rules/code-style.md`.
+
+**Test 3 — User memory** Ask:
+
+```
+What language should I use: JavaScript or TypeScript?
+```
+
+Claude should say TypeScript, from your `~/.claude/memory/preferences.md`.
+
+**Test 4 — Repo memory** Ask:
+
+```
+What test framework does this project use?
+```
+
+Claude should say Vitest, from `.claude/memory/project-context.md`.
+
+**Test 5 — Custom skill** Create a test file and stage it:
+
+**macOS / Linux**
+
+```bash
+echo "console.log('hello');" > index.ts
+git add index.ts
+```
+
+**Windows PowerShell**
+
+```powershell
+"console.log('hello');" | Set-Content -Path "index.ts" -Encoding UTF8
+git add index.ts
+```
+
+Then ask Claude:
+
+```
+Write a commit message for my staged changes.
+```
+
+Claude should use your `commit-message` skill and produce something like:
+
+```
+feat: add initial entry point
+```
+
+If all five tests pass, your full customization system is working.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude does not know the project rules | `CLAUDE.md` is not at the repo root, or `git init` was not run | Verify with `ls CLAUDE.md` and `git status` from the project root |
+| Claude uses Jest instead of Vitest | Repo memory file is not loading | Check that `.claude/memory/project-context.md` exists inside the project directory, not in your home directory |
+| Claude ignores coding style rules | Rules file is not in `.claude/rules/` at the project root | Verify the path: `ls .claude/rules/` (macOS/Linux) or `Get-ChildItem .claude\rules` (PowerShell) |
+| User preferences are not applied | `~/.claude/memory/` files are missing or empty | Re-create them following lesson 12.3.2 |
+| Commit message skill does not trigger | Skill directory is misnamed or `SKILL.md` has a typo | Check: `ls ~/.claude/skills/commit-message/SKILL.md` (macOS/Linux) or `Test-Path "$HOME\.claude\skills\commit-message\SKILL.md"` (PowerShell) |
+| Claude seems to load everything but gives contradictory answers | Conflicting entries across layers (e.g., user memory says "tabs" but project rules say "2 spaces") | Project-level instructions win over user memory. Remove or update the conflicting entry in user memory |
+| Changes to any customization file are not picked up | Claude Code was already running when you edited the file | Restart Claude Code. Customization files are read at session start |
+
+<VerificationBlock
+  deliverable="A project with CLAUDE.md, .claude/rules/, .claude/memory/, user memory files, and a custom skill — all three layers verified in a single Claude Code session."
+  verifyCheck="Claude Code correctly answers questions about project rules, code style, test framework, language preference, and generates a conventional commit message — proving all five customization sources are active."
+/>

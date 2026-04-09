@@ -1,0 +1,191 @@
+---
+title: "Schedule recurring tasks with cron or Task Scheduler"
+lessonNumber: "16.3.2"
+chapterNumber: "16.3"
+pathNumber: "16"
+tutorPreload: "Check whether my scheduled task is actually registered and will fire at the right time."
+verifyType: "terminal_output"
+---
+
+# Schedule recurring tasks with cron or Task Scheduler
+
+## Objective
+
+By the end of this lesson you will have a script scheduled to run automatically once a day — using `cron` on macOS / Linux or Task Scheduler on Windows. You will know how to list, edit, and remove scheduled tasks, and you will verify that your task actually fired.
+
+## Walkthrough
+
+Scheduling is what turns a useful script into real automation. Instead of remembering to run your cleanup script every morning, the operating system does it for you.
+
+### Step 1 — Create a script worth scheduling
+
+We need a simple script that does something observable — it writes the current date and a message to a log file.
+
+**macOS / Linux (`daily-log.sh`):**
+
+```bash
+mkdir -p ~/cli-academy-16/scheduled && cd ~/cli-academy-16/scheduled
+
+cat > daily-log.sh << 'SCRIPTEOF'
+#!/usr/bin/env bash
+LOG_FILE="$HOME/cli-academy-16/scheduled/daily.log"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Daily task ran successfully." >> "$LOG_FILE"
+SCRIPTEOF
+chmod +x daily-log.sh
+```
+
+**Windows (PowerShell — `daily-log.ps1`):**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy-16\scheduled" | Out-Null
+Set-Location "$HOME\cli-academy-16\scheduled"
+
+@'
+$logFile = "$HOME\cli-academy-16\scheduled\daily.log"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+Add-Content -Path $logFile -Value "[$timestamp] Daily task ran successfully."
+'@ | Set-Content daily-log.ps1
+```
+
+Run the script once manually to confirm it works:
+
+**macOS / Linux:**
+
+```bash
+bash ~/cli-academy-16/scheduled/daily-log.sh
+cat ~/cli-academy-16/scheduled/daily.log
+```
+
+**Windows (PowerShell):**
+
+```powershell
+& "$HOME\cli-academy-16\scheduled\daily-log.ps1"
+Get-Content "$HOME\cli-academy-16\scheduled\daily.log"
+```
+
+You should see one line with the current timestamp.
+
+### Step 2 — Schedule the script (macOS / Linux — cron)
+
+**Open your crontab:**
+
+```bash
+crontab -e
+```
+
+This opens your personal cron schedule in your default editor. Add the following line at the bottom:
+
+```
+0 8 * * * /bin/bash $HOME/cli-academy-16/scheduled/daily-log.sh
+```
+
+Breaking down the cron expression:
+
+```
+┌───────────── minute (0)
+│ ┌─────────── hour (8)
+│ │ ┌───────── day of month (every)
+│ │ │ ┌─────── month (every)
+│ │ │ │ ┌───── day of week (every)
+│ │ │ │ │
+0 8 * * *
+```
+
+This means: "At 08:00 every day, run daily-log.sh."
+
+Save and exit. Verify it was saved:
+
+```bash
+crontab -l
+```
+
+You should see your new line in the output.
+
+**Quick test:** To see the task run without waiting until 8 AM, temporarily change the schedule to one minute from now. Check the current minute with `date +%H:%M`, set the cron to that minute + 1, wait, then check the log.
+
+### Step 3 — Schedule the script (Windows — Task Scheduler)
+
+**Using PowerShell (recommended — no GUI clicking needed):**
+
+```powershell
+$action = New-ScheduledTaskAction `
+    -Execute "powershell.exe" `
+    -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$HOME\cli-academy-16\scheduled\daily-log.ps1`""
+
+$trigger = New-ScheduledTaskTrigger -Daily -At 8:00AM
+
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask `
+    -TaskName "CLI Academy Daily Log" `
+    -Action $action `
+    -Trigger $trigger `
+    -Settings $settings `
+    -Description "Writes a timestamp to daily.log every morning at 8 AM"
+```
+
+**Verify it was registered:**
+
+```powershell
+Get-ScheduledTask -TaskName "CLI Academy Daily Log" | Format-List TaskName, State, Description
+```
+
+**Run it immediately to test:**
+
+```powershell
+Start-ScheduledTask -TaskName "CLI Academy Daily Log"
+Start-Sleep -Seconds 2
+Get-Content "$HOME\cli-academy-16\scheduled\daily.log"
+```
+
+You should see a new line in the log file.
+
+### Step 4 — List and remove scheduled tasks
+
+**macOS / Linux (cron):**
+
+```bash
+# List all your scheduled cron jobs
+crontab -l
+
+# Remove a specific line: edit and delete it
+crontab -e
+# (delete the line, save, exit)
+
+# Nuclear option: remove ALL your cron jobs (use with caution)
+# crontab -r
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# List all scheduled tasks you created
+Get-ScheduledTask | Where-Object { $_.TaskName -like "CLI Academy*" } | Format-Table TaskName, State
+
+# Remove a specific task
+Unregister-ScheduledTask -TaskName "CLI Academy Daily Log" -Confirm:$false
+```
+
+### Step 5 — Understand common scheduling pitfalls
+
+| Pitfall | Why it matters |
+|---|---|
+| Script works interactively but fails in cron | Cron runs with a minimal PATH — use absolute paths for every binary (`/usr/bin/bash`, `/usr/local/bin/node`) |
+| Task Scheduler says "Running" but log is empty | The PowerShell execution policy blocks the script — always include `-ExecutionPolicy Bypass` in the action |
+| Script runs at the wrong time | Cron uses the system timezone; Windows Task Scheduler uses the user's timezone — verify with `date` or `Get-Date` |
+| Script runs but writes to the wrong location | Relative paths resolve differently when run by the scheduler — always use absolute paths (`$HOME/...`) |
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `crontab -e` opens an unfamiliar editor | Default editor is `vi` and you are not comfortable with it | Set your editor first: `export EDITOR=nano` then run `crontab -e` again |
+| Cron job never fires | The cron daemon is not running (rare on most systems) | Check with `systemctl status cron` (Linux) or `sudo launchctl list | grep cron` (macOS) |
+| `Register-ScheduledTask: Access is denied` | Creating tasks that run with elevated privileges requires admin rights | Run PowerShell as Administrator, or set the task to run as the current user only |
+| Log file is empty after the scheduled time | Script path contains spaces that are not quoted | Wrap paths in quotes inside the cron entry or the Task Scheduler action argument |
+| Task runs but you cannot see the output | Cron swallows stdout/stderr by default | Redirect output in the cron line: `... >> /path/to/log.txt 2>&1` |
+| You accidentally deleted all cron jobs with `crontab -r` | `crontab -r` removes everything without confirmation | There is no undo — always `crontab -l > crontab-backup.txt` before editing |
+
+<VerificationBlock>
+Run your daily-log script manually and confirm a timestamped line appears in `daily.log`. Then verify the task is registered: on macOS/Linux run `crontab -l` and confirm your entry is listed; on Windows run `Get-ScheduledTask -TaskName "CLI Academy Daily Log"` and confirm the task state is `Ready`. Trigger the task once more and confirm a second line appears in the log.
+</VerificationBlock>

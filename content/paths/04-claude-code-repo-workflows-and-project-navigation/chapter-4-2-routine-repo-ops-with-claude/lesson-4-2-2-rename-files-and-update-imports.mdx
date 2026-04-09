@@ -1,0 +1,134 @@
+---
+title: "Rename files and update imports"
+lessonNumber: "4.2.2"
+chapterNumber: "4.2"
+pathNumber: "4"
+tutorPreload: "Help me rename this file and update every import that references it."
+verifyType: "terminal_output"
+---
+
+# Rename files and update imports
+
+## Objective
+
+Use Claude Code to rename a source file in a real project, update every import or require statement that references the old name, and verify with a search that zero stale references remain. By the end you will have a cleanly renamed file with no broken imports and passing tests.
+
+## Walkthrough
+
+Continue in your cloned project from earlier lessons.
+
+### Step 1 — Pick a file to rename
+
+Ask Claude which file would be safe to practice on:
+
+```
+Which source file in this project would be safe to rename for practice? I want one that is imported by other files but is NOT the main entry point. Tell me how many files reference it.
+```
+
+Claude suggests a utility or helper file and tells you its import count. For json-server it might pick something like `src/server/utils.js` or a similar module.
+
+### Step 2 — Record the current reference count
+
+Before renaming, count every file that references the old name:
+
+**macOS / Linux**
+
+```bash
+grep -rn "require.*utils\|from.*utils" src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "require.*utils|from.*utils"
+```
+
+Count the results. Write this number down — this is your "before" count.
+
+### Step 3 — Ask Claude to rename and update
+
+Give Claude an explicit instruction:
+
+```
+Rename src/server/utils.js to src/server/helpers.js and update every import or require statement across the entire project that references the old path. Show me every file you change.
+```
+
+Claude will:
+1. Rename the file on disk
+2. Update every `require('./utils')` or `import ... from './utils'` to `'./helpers'`
+3. List every file it modified
+
+Review the list. Make sure it only changed the files you expected.
+
+### Step 4 — Verify zero stale references remain
+
+This is the critical check. Search for the OLD name:
+
+**macOS / Linux**
+
+```bash
+grep -rn "require.*utils\|from.*utils" src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "require.*utils|from.*utils"
+```
+
+The result must be empty — zero matches for the old filename. If any results appear, those are missed references. Tell Claude: "You missed these files: [list]. Update them too."
+
+### Step 5 — Verify the new name is referenced correctly
+
+Search for the NEW name:
+
+**macOS / Linux**
+
+```bash
+grep -rn "require.*helpers\|from.*helpers" src/
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "require.*helpers|from.*helpers"
+```
+
+The match count should equal your "before" count from Step 2.
+
+### Step 6 — Run the tests
+
+```bash
+npm test
+```
+
+If tests pass, the rename is clean. If they fail with "Cannot find module," ask Claude:
+
+```
+Tests failed after renaming utils.js to helpers.js. The error says "Cannot find module './utils'". What reference did we miss?
+```
+
+### Step 7 — Commit the rename
+
+```bash
+git add -A
+git commit -m "refactor: rename utils.js to helpers.js and update all imports"
+```
+
+> **Why `git add -A`?** A file rename involves both deleting the old file and creating the new one. Using `-A` stages both the deletion and creation. Git detects this as a rename in the commit history.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `grep` still finds the old name after the rename | Claude missed a dynamic `require()` call, a string in a test fixture, or a comment | Fix remaining references manually or ask Claude: "Search for the literal string 'utils' in all files, not just import statements" |
+| Tests fail with "Cannot find module" | An import path has a typo or a wrong relative path depth | Check the exact error path and compare it to where the new file actually lives |
+| Git shows the change as delete + unrelated add instead of a rename | Git only detects renames when content similarity is high enough | This is cosmetic — the code is correct. Run `git diff --find-renames` to see it displayed as a rename |
+| Windows path separators cause an import mismatch | Windows uses `\` but Node.js and Python imports require `/` | Always use forward slashes in import paths, even on Windows |
+| Claude renames a file you did not intend | Your instruction was ambiguous | Be specific: give the exact current full path and the exact new full path |
+| Python imports break differently than expected | Python uses dot-separated module paths, not file paths | Ask Claude: "Update the Python import statements using dot notation, not file paths" |
+
+<VerificationBlock
+  deliverable="A renamed file with all imports updated and zero stale references."
+  verifyCheck="grep for the old filename returns zero results, grep for the new filename matches the original count, and tests pass."
+/>

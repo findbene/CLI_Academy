@@ -1,0 +1,134 @@
+---
+title: "Use SSH config for named connections"
+lessonNumber: "15.1.3"
+chapterNumber: "15.1"
+pathNumber: "15"
+tutorPreload: "Show me how to set up SSH config aliases and a ProxyJump through a bastion host."
+verifyType: "terminal_output"
+---
+
+# Use SSH config for named connections
+
+## Objective
+
+By the end of this lesson you will be able to create an SSH config file that lets you connect to servers by short nicknames instead of typing full addresses. You will also know how to use `ProxyJump` to reach servers behind a bastion host.
+
+## Walkthrough
+
+Typing `ssh -i ~/.ssh/id_ed25519 -p 2222 deploy@staging-backend-03.us-east.internal.example.com` every time is error-prone. The SSH config file lets you define aliases so you can just type `ssh staging`.
+
+### Step 1 — Create or open the SSH config file
+
+**macOS / Linux:**
+
+```bash
+mkdir -p ~/.ssh
+touch ~/.ssh/config
+chmod 600 ~/.ssh/config
+```
+
+**Windows (PowerShell):**
+
+```powershell
+if (-not (Test-Path $env:USERPROFILE\.ssh)) { New-Item -ItemType Directory $env:USERPROFILE\.ssh }
+if (-not (Test-Path $env:USERPROFILE\.ssh\config)) { New-Item -ItemType File $env:USERPROFILE\.ssh\config }
+```
+
+Open the file in your preferred editor.
+
+### Step 2 — Add a basic host alias
+
+Add this block to `~/.ssh/config`:
+
+```
+Host staging
+    HostName staging-backend-03.us-east.internal.example.com
+    User deploy
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519
+```
+
+Now connect with:
+
+```bash
+ssh staging
+```
+
+SSH reads the config, fills in the hostname, user, port, and key automatically.
+
+### Step 3 — Add a wildcard default
+
+Put this at the bottom of the config file so it applies to every connection:
+
+```
+Host *
+    AddKeysToAgent yes
+    IdentitiesOnly yes
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+```
+
+| Directive | What it does |
+|---|---|
+| `AddKeysToAgent yes` | Automatically adds keys to the SSH agent after first use |
+| `IdentitiesOnly yes` | Prevents SSH from trying every key in `~/.ssh` — uses only the specified `IdentityFile` |
+| `ServerAliveInterval 60` | Sends a keepalive packet every 60 seconds to prevent idle disconnects |
+| `ServerAliveCountMax 3` | Closes the connection after 3 missed keepalives (3 minutes of silence) |
+
+### Step 4 — ProxyJump through a bastion host
+
+Many production environments hide servers behind a bastion (jump box). You SSH into the bastion first, then from there into the target.
+
+```
+Host bastion
+    HostName bastion.example.com
+    User ops
+    IdentityFile ~/.ssh/id_ed25519
+
+Host internal-db
+    HostName 10.0.4.12
+    User dbadmin
+    IdentityFile ~/.ssh/id_ed25519
+    ProxyJump bastion
+```
+
+Now a single command tunnels through automatically:
+
+```bash
+ssh internal-db
+```
+
+SSH connects to `bastion.example.com` first, then hops to `10.0.4.12` — you never touch the bastion shell.
+
+### Step 5 — Copy files using your aliases
+
+Your SSH config aliases work with `scp` and `rsync` too:
+
+**macOS / Linux:**
+
+```bash
+scp ./report.csv staging:/home/deploy/reports/
+rsync -avz ./project/ staging:/home/deploy/project/
+```
+
+**Windows (PowerShell):**
+
+```powershell
+scp .\report.csv staging:/home/deploy/reports/
+# rsync is not built into Windows — use WSL or install via scoop/chocolatey
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `Bad configuration option` error | Typo in a directive name, or unsupported option on older OpenSSH | Check spelling; run `ssh -V` and look up supported options for your version |
+| `ssh: Could not resolve hostname staging` | Config file not saved to the right path, or bad indentation | Verify the file is at `~/.ssh/config` (or `%USERPROFILE%\.ssh\config` on Windows) |
+| ProxyJump fails with `Permission denied` | Your key is not authorized on the bastion host | Copy your public key to the bastion separately: `ssh-copy-id ops@bastion.example.com` |
+| `Too many authentication failures` | SSH is trying every key in `~/.ssh` before reaching the right one | Add `IdentitiesOnly yes` in the `Host *` block |
+| Config works on Mac but not Windows | Windows OpenSSH does not support `UseKeychain` | Remove `UseKeychain yes` — it is macOS-only |
+| Keepalive not preventing disconnects | Corporate proxy or firewall strips keepalive packets | Lower `ServerAliveInterval` to `15` |
+
+<VerificationBlock>
+Add a host alias to `~/.ssh/config`, then run `ssh -G alias-name` (which prints the resolved configuration without connecting). Confirm that `hostname`, `user`, and `port` match what you defined. Then connect with `ssh alias-name` and verify you reach the remote shell.
+</VerificationBlock>

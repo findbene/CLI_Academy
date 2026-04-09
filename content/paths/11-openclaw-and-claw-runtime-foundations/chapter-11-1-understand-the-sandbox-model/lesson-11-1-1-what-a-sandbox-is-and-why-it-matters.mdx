@@ -1,0 +1,128 @@
+---
+title: "What a sandbox is and why it matters"
+lessonNumber: "11.1.1"
+chapterNumber: "11.1"
+pathNumber: "11"
+tutorPreload: "Explain process isolation and why running untrusted code directly on my machine is dangerous."
+verifyType: "terminal_output"
+---
+
+# What a sandbox is and why it matters
+
+## Objective
+
+By the end of this lesson you will understand what a sandbox is in practical terms — process isolation, restricted file access, and network limits — and you will prove the concept by running a command inside a Docker container that cannot touch your real files.
+
+## Walkthrough
+
+### Step 1 — See what an unsandboxed process can do
+
+Every program you run on your machine has access to your files, your network, and your environment variables unless something stops it. Let's prove that with a one-liner.
+
+**macOS / Linux**
+
+```bash
+python3 -c "import os; print(os.listdir(os.path.expanduser('~'))[:5])"
+```
+
+**Windows PowerShell**
+
+```powershell
+python -c "import os; print(os.listdir(os.path.expanduser('~'))[:5])"
+```
+
+You will see five items from your home directory. That Python process had full read access to your personal files. Any script you download and run can do the same thing — or worse.
+
+> **Real danger:** A malicious script running unsandboxed can read your SSH keys, browser cookies, or cloud credentials from your home directory. Sandboxing prevents this.
+
+### Step 2 — Understand the three walls of a sandbox
+
+A sandbox restricts a process in three main ways:
+
+| Wall | What it blocks | Example |
+|---|---|---|
+| **File system isolation** | The process sees a fake or limited file tree, not your real one | Docker containers have their own `/` separate from your host |
+| **Network isolation** | The process cannot make outbound connections or listen on ports | `--network none` in Docker cuts all internet access |
+| **Process isolation** | The process cannot see or signal other running programs | A container's PID 1 is the only process visible inside it |
+
+These three walls together mean that code inside a sandbox can crash, delete everything it can see, or try to phone home — and none of it affects your real machine.
+
+### Step 3 — Run a command inside a Docker sandbox
+
+Now run the same Python one-liner, but inside a Docker container. The container cannot see your home directory.
+
+**macOS / Linux**
+
+```bash
+docker run --rm python:3.12-slim python -c "import os; print(os.listdir('/root'))"
+```
+
+**Windows PowerShell**
+
+```powershell
+docker run --rm python:3.12-slim python -c "import os; print(os.listdir('/root'))"
+```
+
+The output will be an empty list or a list of default container files — your personal documents, keys, and credentials are invisible.
+
+### Step 4 — Prove the container cannot reach the internet
+
+Add `--network none` to cut all network access from the container.
+
+**macOS / Linux**
+
+```bash
+docker run --rm --network none python:3.12-slim python -c "
+import urllib.request
+try:
+    urllib.request.urlopen('https://example.com', timeout=3)
+    print('CONNECTED — sandbox is broken')
+except Exception as e:
+    print(f'BLOCKED — {e}')
+"
+```
+
+**Windows PowerShell**
+
+```powershell
+docker run --rm --network none python:3.12-slim python -c "import urllib.request`ntry:`n    urllib.request.urlopen('https://example.com', timeout=3)`n    print('CONNECTED - sandbox is broken')`nexcept Exception as e:`n    print(f'BLOCKED - {e}')"
+```
+
+You should see `BLOCKED` followed by a connection error. The sandbox wall is working.
+
+### Step 5 — Prove the container's file system is disposable
+
+Write a file inside the container, then verify it disappears when the container exits.
+
+**macOS / Linux**
+
+```bash
+docker run --rm python:3.12-slim sh -c "echo 'secret data' > /tmp/test.txt && cat /tmp/test.txt"
+# The container is gone. Check that nothing was written to your machine:
+ls /tmp/test.txt 2>/dev/null || echo "File does not exist on host — sandbox worked"
+```
+
+**Windows PowerShell**
+
+```powershell
+docker run --rm python:3.12-slim sh -c "echo 'secret data' > /tmp/test.txt && cat /tmp/test.txt"
+# The container is gone. Check that nothing was written to your machine:
+if (Test-Path "$env:TEMP\test.txt") { Write-Host "LEAK — file exists on host" } else { Write-Host "File does not exist on host — sandbox worked" }
+```
+
+The `--rm` flag deletes the container and its entire file system as soon as the process exits. Nothing persists.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `docker: command not found` | Docker is not installed or not in your PATH | Install Docker Desktop from docker.com and restart your terminal |
+| `permission denied` on Linux | Your user is not in the `docker` group | Run `sudo usermod -aG docker $USER` then log out and back in |
+| `Unable to find image` and then a long download | First time pulling `python:3.12-slim` | This is normal — the image downloads once and is cached for future runs |
+| Container sees your home files | You accidentally mounted a volume with `-v` | Never use `-v` or `--mount` when sandboxing untrusted code |
+| `CONNECTED` instead of `BLOCKED` in Step 4 | You forgot `--network none` | Add the flag and rerun; without it the container has full internet access |
+
+<VerificationBlock
+  deliverable="Terminal output showing the container returned an empty /root listing and BLOCKED when network was disabled."
+  verifyCheck="The Docker container could not list host files and could not reach the internet, confirming both file and network isolation."
+/>

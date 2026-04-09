@@ -1,0 +1,187 @@
+---
+title: "Use Claude Code inside VS Code terminal"
+lessonNumber: "7.1.2"
+chapterNumber: "7.1"
+pathNumber: "7"
+tutorPreload: "Explain the difference between running Claude Code in a standalone terminal versus the VS Code integrated terminal."
+verifyType: "terminal_output"
+---
+
+# Use Claude Code inside VS Code terminal
+
+## Objective
+
+By the end of this lesson you will launch Claude Code from inside the VS Code integrated terminal, prove it can read and edit files in the open workspace, and understand the practical differences between using Claude Code here versus in a standalone terminal window.
+
+## Walkthrough
+
+### Step 1 — Open the VS Code integrated terminal
+
+Launch VS Code and open a project folder. Then open the terminal:
+
+**Keyboard shortcut (all platforms):**
+
+```
+Ctrl + `   (backtick — the key above Tab)
+```
+
+Or use the menu: **Terminal → New Terminal**.
+
+The terminal panel opens at the bottom of VS Code. Its working directory is automatically set to the root of the open workspace. You do not need to `cd` anywhere — you are already in the right place.
+
+Confirm the path:
+
+**macOS / Linux:**
+
+```bash
+pwd
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Location
+```
+
+The output should match the folder shown in the VS Code Explorer sidebar.
+
+### Step 2 — Start Claude Code inside the integrated terminal
+
+Run Claude Code exactly as you would in any terminal:
+
+```bash
+claude
+```
+
+Or if you set up the alias from Lesson 7.1.1:
+
+```bash
+cc
+```
+
+Claude Code starts and its interactive prompt appears right inside VS Code. You can type natural-language requests just like in a standalone terminal.
+
+> **Key insight:** Claude Code running here can see every file that VS Code has open. It reads from and writes to the same workspace. This means Claude Code edits and VS Code's editor stay in sync — when Claude writes a file, VS Code immediately shows the change.
+
+### Step 3 — Ask Claude Code to read a file in the workspace
+
+Try a simple request to prove it has access:
+
+```
+> Read package.json and tell me the project name and version.
+```
+
+Claude Code will open `package.json` from the workspace root, parse it, and respond. No file paths needed — it defaults to the workspace directory.
+
+If your project does not have a `package.json`, pick any file visible in the sidebar:
+
+```
+> Read README.md and summarize it in one sentence.
+```
+
+### Step 4 — Ask Claude Code to edit a file and watch VS Code update
+
+Create a tiny test file so this step is risk-free:
+
+**macOS / Linux:**
+
+```bash
+echo "Hello from the test file" > claude-test.txt
+```
+
+**Windows PowerShell:**
+
+```powershell
+"Hello from the test file" | Out-File -Encoding utf8 claude-test.txt
+```
+
+Now ask Claude Code to modify it:
+
+```
+> In claude-test.txt, add a second line that says "Edited by Claude Code inside VS Code."
+```
+
+After Claude Code confirms the edit:
+
+1. Click on `claude-test.txt` in the VS Code Explorer sidebar.
+2. You should see both lines in the editor — the original and the new one Claude added.
+
+This instant sync is the main advantage of running Claude Code inside VS Code: you see edits the moment they happen, without switching windows.
+
+### Step 5 — Use VS Code features alongside Claude Code
+
+While Claude Code is running in the terminal panel, you still have full access to VS Code features:
+
+- **Split the terminal:** Click the split icon in the terminal toolbar (or press `Ctrl+Shift+5`) to open a second terminal side by side. Run normal shell commands in one pane while Claude Code runs in the other.
+- **Jump to problems:** If Claude Code changes code that introduces an error, VS Code's Problems panel (`Ctrl+Shift+M`) flags it immediately.
+- **Source control:** The Source Control panel (Ctrl+Shift+G) shows changed files in real time. You can stage and commit Claude Code's edits without leaving VS Code.
+- **Peek definitions:** Click on a function name in the editor while Claude Code is explaining it — use `F12` to jump to the definition.
+
+### Step 6 — Compare: standalone terminal vs VS Code terminal
+
+Here is a practical comparison:
+
+| Feature | Standalone terminal | VS Code integrated terminal |
+|---|---|---|
+| Claude Code access to files | Same directory and below | Same directory and below |
+| See file edits live | Must open files manually | Editor updates instantly |
+| Run other shell commands | Open a new tab | Split the terminal panel |
+| Git status at a glance | Use `git status` | Source Control sidebar |
+| Code error detection | None | Problems panel highlights errors |
+| Window switching | Alt-Tab between windows | Everything in one window |
+| Terminal size | Full screen available | Shares screen with editor |
+
+The standalone terminal wins when you need maximum terminal space (long logs, large diffs). The VS Code terminal wins when you are actively editing code alongside Claude Code.
+
+### Step 7 — Clean up
+
+Remove the test file so it does not clutter your project:
+
+**macOS / Linux:**
+
+```bash
+rm claude-test.txt
+```
+
+**Windows PowerShell:**
+
+```powershell
+Remove-Item claude-test.txt
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `claude: command not found` in VS Code terminal | Claude Code is not on PATH, or VS Code loaded an older PATH | Close and reopen VS Code so it picks up PATH changes; or open a new terminal with `Terminal → New Terminal` |
+| Claude Code edits are not visible in the editor | The file tab was already open with unsaved changes | Close the tab without saving and reopen the file |
+| Terminal shows the wrong directory | You opened VS Code without a folder | Use **File → Open Folder** to open your project, then open a new terminal |
+| Split terminal is too small to read | Default split gives 50/50 space | Drag the divider or use `Ctrl+`` to maximize the terminal panel |
+| PowerShell execution policy blocks profile | Policy is set to Restricted | Run `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` once |
+| `cc` alias not recognized | Profile was not loaded in this VS Code terminal instance | Run `. $PROFILE` (PowerShell) or `source ~/.bashrc` (Bash) |
+
+<VerificationBlock>
+Inside the VS Code integrated terminal, run:
+
+```bash
+claude --version
+```
+
+You should see the Claude Code version number.
+
+Then check that the test file was cleaned up:
+
+**macOS / Linux:**
+
+```bash
+ls claude-test.txt 2>/dev/null || echo "File removed — clean workspace"
+```
+
+**Windows PowerShell:**
+
+```powershell
+if (Test-Path claude-test.txt) { "File still exists" } else { "File removed — clean workspace" }
+```
+
+You should see "File removed — clean workspace." You have confirmed Claude Code works inside VS Code and can read, edit, and clean up files in your workspace.
+</VerificationBlock>

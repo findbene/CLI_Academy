@@ -10,36 +10,176 @@ verifyType: "terminal_output"
 # Make a safe text edit
 
 ## Objective
-Learn the iron-clad rule of safe editing: **always make a backup**, and then safely modify a text file.
+
+Edit a text file safely using the backup-edit-verify pattern. You will make a backup copy, edit the file with two different methods (command-line append and a real editor), and confirm the change with `diff`.
 
 ## Walkthrough
 
-Eventually, you have to edit a configuration file or a script. When that time comes, there is a golden rule that separates professionals from beginners: professionals always duplicate the file *before* editing it.
+### Step 1 — Start with a file worth editing
 
-**Step 1: The Backup Copy (`cp`)**
-We use the `cp` command (**Copy**) to make a duplicate. 
-The syntax is `cp <existing_file> <new_file>`.
+Make sure you are in `tiny-agent-project/` and have `INSTRUCTIONS.md` from the previous lessons.
 
-Let's say you have a file named `config.txt`. Before opening it, you make a backup copy:
-`cp config.txt config.txt.backup`
-If your edit completely breaks the file later, you can effortlessly restore the old one and breathe a sigh of relief!
+**macOS / Linux**
 
-**Step 2: Safe Text Editing**
-Since you made your backup, you can now safely add text to your file! 
-A safe way to *append* text to a file in the terminal without opening an editor is using `echo` with two arrows `>>`. 
+```bash
+cd ~/tiny-agent-project
+cat INSTRUCTIONS.md
+```
 
-Watch out! Single arrow `>` will completely overwrite your file. Double arrow `>>` will gently add text to the bottom. Let's add a line safely:
-`echo "Server=Online" >> config.txt`
+**Windows PowerShell**
 
-Now, if you want a complete text editor, you can always open your file in VS Code or Notepad. But doing small tweaks directly in the terminal makes you incredibly fast.
+```powershell
+cd ~/tiny-agent-project
+Get-Content INSTRUCTIONS.md
+```
 
-**Your Task:**
-Create a file named `settings.ini`. 
-1. Make a backup copy called `settings.ini.backup` using `cp`.
-2. Use `echo "Mode=Developer" >> settings.ini` to append the setting.
-Display the directory using `ls` to show both files, and display the contents of `settings.ini` using `cat`. Send the terminal output so your tutor can verify the backup pattern!
+You should see the heading text from Lesson 2.2.1.
 
-<VerificationBlock 
-  deliverable="A corrected markdown or config file with backup copy."
-  verifyCheck="Checker confirms the exact lines changed and backup file exists."
+### Step 2 — Make a backup copy before any edit
+
+This is the professional habit: copy first, edit second.
+
+**macOS / Linux**
+
+```bash
+cp INSTRUCTIONS.md INSTRUCTIONS.md.bak
+ls *.md*
+```
+
+**Windows PowerShell**
+
+```powershell
+Copy-Item INSTRUCTIONS.md INSTRUCTIONS.md.bak
+Get-ChildItem -Filter "INSTRUCTIONS*"
+```
+
+You now have the original and a `.bak` safety net side by side.
+
+### Step 3 — Append a line from the command line
+
+Add a new line to the file without opening an editor.
+
+**macOS / Linux**
+
+```bash
+echo "" >> INSTRUCTIONS.md
+echo "## Status" >> INSTRUCTIONS.md
+echo "Project is active." >> INSTRUCTIONS.md
+```
+
+The double arrow `>>` **appends** to the end. A single arrow `>` would erase everything and replace it — never use `>` on a file you want to keep.
+
+**Windows PowerShell**
+
+```powershell
+Add-Content INSTRUCTIONS.md ""
+Add-Content INSTRUCTIONS.md "## Status"
+Add-Content INSTRUCTIONS.md "Project is active."
+```
+
+`Add-Content` always appends. The destructive equivalent is `Set-Content`, which overwrites.
+
+### Step 4 — Verify the change with `diff`
+
+Compare the edited file to the backup.
+
+**macOS / Linux**
+
+```bash
+diff INSTRUCTIONS.md.bak INSTRUCTIONS.md
+```
+
+Lines starting with `>` are new additions. You should see the three lines you just added.
+
+**Windows PowerShell**
+
+```powershell
+Compare-Object (Get-Content INSTRUCTIONS.md.bak) (Get-Content INSTRUCTIONS.md)
+```
+
+Lines marked `=>` exist only in the edited file. This confirms exactly what changed.
+
+### Step 5 — Open the file in a real editor from the terminal
+
+For bigger edits, use an actual text editor. VS Code is the most beginner-friendly option.
+
+**macOS / Linux**
+
+```bash
+code INSTRUCTIONS.md
+```
+
+**Windows PowerShell**
+
+```powershell
+code INSTRUCTIONS.md
+```
+
+This opens the file in VS Code. Make any change you like — for example, add a line that says `Last updated: today`. Save the file (Ctrl+S or Cmd+S).
+
+If VS Code is not installed, you can use:
+- **nano** (macOS/Linux): `nano INSTRUCTIONS.md` — edit, then press Ctrl+O to save and Ctrl+X to exit.
+- **Notepad** (Windows): `notepad INSTRUCTIONS.md` — edit, then File → Save and close.
+
+### Step 6 — Verify the editor change
+
+Run the diff again to see both the append and the editor change.
+
+**macOS / Linux**
+
+```bash
+diff INSTRUCTIONS.md.bak INSTRUCTIONS.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Compare-Object (Get-Content INSTRUCTIONS.md.bak) (Get-Content INSTRUCTIONS.md)
+```
+
+Every changed line is visible. If you ever need to undo everything, restore from the backup:
+
+**macOS / Linux**
+
+```bash
+cp INSTRUCTIONS.md.bak INSTRUCTIONS.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Copy-Item INSTRUCTIONS.md.bak INSTRUCTIONS.md -Force
+```
+
+### Step 7 — Clean up (optional)
+
+If you are happy with the edits and no longer need the backup:
+
+**macOS / Linux**
+
+```bash
+rm INSTRUCTIONS.md.bak
+```
+
+**Windows PowerShell**
+
+```powershell
+Remove-Item INSTRUCTIONS.md.bak
+```
+
+Only delete the backup once you are sure the edited version is correct.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| Used `>` instead of `>>` and the file is now one line | Single arrow overwrites the entire file | Restore from backup: `cp INSTRUCTIONS.md.bak INSTRUCTIONS.md` (macOS/Linux) or `Copy-Item INSTRUCTIONS.md.bak INSTRUCTIONS.md -Force` (Windows) |
+| `diff` shows no output | The files are identical — your edit did not save | Re-run the append command or re-save in the editor, then diff again |
+| `code` command not found | VS Code is not in your system PATH | Open VS Code manually, then install the shell command: open the Command Palette (Ctrl+Shift+P) and run "Shell Command: Install 'code' command in PATH" |
+| `nano` is not available on Windows | nano is a Unix editor not included in Windows | Use `notepad INSTRUCTIONS.md` or `code INSTRUCTIONS.md` instead |
+| PowerShell `Compare-Object` shows `SideIndicator` columns that are confusing | This is normal output — `<=` means left-only (backup), `=>` means right-only (edited) | Focus on the `InputObject` column for the actual text differences |
+
+<VerificationBlock
+  deliverable="Terminal output showing the backup copy, the appended lines, and a diff comparing the backup to the edited file."
+  verifyCheck="Output includes a cp/Copy-Item backup command, appended content visible in the file, and a diff/Compare-Object showing the added lines."
 />

@@ -11,46 +11,197 @@ verifyType: "terminal_output"
 
 ## Objective
 
-You will learn to make a single, specific change to a file using the command line. Our focus will be on understanding *exactly* what your command does and how to begin thinking about reversing any change you make. This approach builds confidence and control when working in the terminal.
+A **bounded write** has three properties: it does exactly one thing, it targets a specific resource (not a category of resources), and there is a clear way to undo it. In this lesson you will create a real GitHub issue using the API — a live write action against GitHub's servers — and then document and execute the rollback (closing the issue).
+
+This is the first time in Path 17 that you will make a change that persists outside your local machine. That makes verifying and reversing it essential skills.
 
 ## Walkthrough
 
-1.  **Create a practice file:**
-    ```bash
-    echo "Hello World" > safe_edit.txt
-    ```
-    We're creating a simple, temporary file named `safe_edit.txt`. This is your safe sandbox where you can experiment without worrying about affecting important system files.
+### Step 1 — Choose your target repository
 
-2.  **Review the file's content:**
-    ```bash
-    cat safe_edit.txt
-    ```
-    Take a quick look to confirm its current content before we make any modifications.
+Use a repo you own or a personal test repo. Do **not** use a team or org repo for this exercise — creating test issues on shared repositories creates noise for your teammates.
 
-3.  **Perform a bounded edit:**
-    ```bash
-    sed -i 's/World/CLI Academy/' safe_edit.txt
-    ```
-    This command makes a precise, "bounded" change to your file.
-    *   `sed`: Stands for "stream editor." It's a powerful tool for text transformations.
-    *   `-i`: This flag tells `sed` to edit the file *in place*, meaning it modifies the original `safe_edit.txt` directly. For beginners, it's crucial to understand that `-i` is powerful; that's why we're using it on a temporary file. Always know what files you're targeting!
-    *   `'s/World/CLI Academy/'`: This is the core instruction.
-        *   `s`: Means "substitute".
-        *   `/World/`: This is the pattern `sed` will search for (the text "World").
-        *   `/CLI Academy/`: This is what `sed` will replace "World" with.
-        *   The final `/` closes the substitution command.
-    This command is designed to only change the *first occurrence* of "World" to "CLI Academy" in `safe_edit.txt` and nothing else. This is what we mean by a "bounded" write.
+Set your repo as a shell variable to avoid retyping it:
 
-4.  **Verify the change:**
-    ```bash
-    cat safe_edit.txt
-    ```
-    Confirm that "World" has been replaced by "CLI Academy".
+**macOS / Linux:**
+```bash
+# Replace with your actual GitHub username and a repo you own
+export GH_OWNER="your-github-username"
+export GH_REPO="your-test-repo"
 
-5.  **Reflect on reversibility:**
-    You've successfully made a controlled change! Now, take a moment to consider this: If `safe_edit.txt` were a critical configuration file, and you needed to undo this specific change, how might you go about it? Think about what you could do *before* running the `sed` command to make reversal easy. This habit of pre-thinking reversibility is a cornerstone of safe command-line operations.
+# Verify the repo exists and you have write access
+gh api /repos/$GH_OWNER/$GH_REPO --jq '{name: .name, permissions: .permissions}'
+```
+
+**Windows PowerShell:**
+```powershell
+# Replace with your actual GitHub username and a repo you own
+$env:GH_OWNER = "your-github-username"
+$env:GH_REPO  = "your-test-repo"
+
+# Verify the repo exists and you have write access
+gh api /repos/$env:GH_OWNER/$env:GH_REPO | ConvertFrom-Json |
+    Select-Object name, @{Name="push";Expression={$_.permissions.push}}
+```
+
+Look for `"push": true` in the output. If you see `"push": false` you do not have write access and the next step will fail with a 403.
+
+### Step 2 — Create one bounded issue (the write action)
+
+**macOS / Linux:**
+```bash
+# Create a single, clearly labelled test issue
+RESPONSE=$(gh api /repos/$GH_OWNER/$GH_REPO/issues \
+    -X POST \
+    --field title="[cli-academy-test] Lesson 17.2.3 bounded write" \
+    --field body="This issue was created by lesson 17.2.3 of CLI Academy to test a bounded POST write action. Safe to close immediately.")
+
+# Extract the issue number for cleanup
+ISSUE_NUMBER=$(echo "$RESPONSE" | jq -r '.number')
+echo "Issue #$ISSUE_NUMBER created at: $(echo "$RESPONSE" | jq -r '.html_url')"
+```
+
+**Windows PowerShell:**
+```powershell
+# Create a single, clearly labelled test issue
+$responseJson = gh api /repos/$env:GH_OWNER/$env:GH_REPO/issues `
+    -X POST `
+    --field title="[cli-academy-test] Lesson 17.2.3 bounded write" `
+    --field body="This issue was created by lesson 17.2.3 of CLI Academy to test a bounded POST write action. Safe to close immediately."
+
+$response = $responseJson | ConvertFrom-Json
+$issueNumber = $response.number
+Write-Host "Issue #$issueNumber created at: $($response.html_url)"
+```
+
+Open the URL printed in your terminal and verify the issue appears on GitHub. That is a live external write — you created something on GitHub's servers using the API.
+
+### Step 3 — Verify the issue was created (read-back check)
+
+Always read back after a write to confirm what you intended to create actually exists:
+
+**macOS / Linux:**
+```bash
+# Read back the specific issue you just created
+gh api /repos/$GH_OWNER/$GH_REPO/issues/$ISSUE_NUMBER \
+    --jq '{number: .number, title: .title, state: .state, created_at: .created_at}'
+```
+
+**Windows PowerShell:**
+```powershell
+# Read back the specific issue you just created
+gh api /repos/$env:GH_OWNER/$env:GH_REPO/issues/$issueNumber |
+    ConvertFrom-Json |
+    Select-Object number, title, state, created_at |
+    Format-List
+```
+
+Expected: `state: "open"`, title matches what you set. If the state is wrong or the title changed, stop and investigate before proceeding.
+
+### Step 4 — Execute the rollback (close the issue)
+
+Closing the issue is the rollback for this write action. For a real workflow, "rollback" means you know the exact API call that reverses the action before you commit to the write.
+
+**macOS / Linux:**
+```bash
+# Close (rollback) the test issue
+gh api /repos/$GH_OWNER/$GH_REPO/issues/$ISSUE_NUMBER \
+    -X PATCH \
+    --field state="closed"
+
+# Confirm it is closed
+gh api /repos/$GH_OWNER/$GH_REPO/issues/$ISSUE_NUMBER --jq '.state'
+# Expected: "closed"
+```
+
+**Windows PowerShell:**
+```powershell
+# Close (rollback) the test issue
+gh api /repos/$env:GH_OWNER/$env:GH_REPO/issues/$issueNumber `
+    -X PATCH `
+    --field state="closed"
+
+# Confirm it is closed
+gh api /repos/$env:GH_OWNER/$env:GH_REPO/issues/$issueNumber |
+    ConvertFrom-Json | Select-Object state
+# Expected: state = closed
+```
+
+### Step 5 — Document the write action and its rollback
+
+**macOS / Linux:**
+```bash
+cd ~/projects/integration-safety
+
+cat > bounded-write-record.md << EOF
+# Bounded Write Record
+
+## Write action
+- Date: $(date +%Y-%m-%d)
+- Service: GitHub Issues API
+- HTTP method: POST
+- Endpoint: /repos/$GH_OWNER/$GH_REPO/issues
+- Scope required: repo
+- Issue number created: #$ISSUE_NUMBER
+
+## Rollback action
+- HTTP method: PATCH
+- Endpoint: /repos/$GH_OWNER/$GH_REPO/issues/$ISSUE_NUMBER
+- Field changed: state → closed
+- Rollback verified: yes — confirmed state = "closed" via read-back
+
+## Scope impact
+- This write used the full `repo` scope.
+- An alternative fine-grained PAT with `issues:write` on this repo only would further restrict blast radius.
+EOF
+
+cat bounded-write-record.md
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\projects\integration-safety"
+
+$record = @"
+# Bounded Write Record
+
+## Write action
+- Date: $(Get-Date -Format 'yyyy-MM-dd')
+- Service: GitHub Issues API
+- HTTP method: POST
+- Endpoint: /repos/$env:GH_OWNER/$env:GH_REPO/issues
+- Scope required: repo
+- Issue number created: #$issueNumber
+
+## Rollback action
+- HTTP method: PATCH
+- Endpoint: /repos/$env:GH_OWNER/$env:GH_REPO/issues/$issueNumber
+- Field changed: state → closed
+- Rollback verified: yes — confirmed state = 'closed' via read-back
+
+## Scope impact
+- This write used the full ``repo`` scope.
+- An alternative fine-grained PAT with ``issues:write`` on this repo only would further restrict blast radius.
+"@
+
+$record | Out-File -FilePath "bounded-write-record.md" -Encoding utf8
+Get-Content bounded-write-record.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `403 Forbidden` on the POST call | Token does not have write access to the repo | Verify `"push": true` in Step 1; if false, choose a repo you own |
+| `422 Unprocessable Entity` | Missing required field in the POST body | Both `title` and `body` fields must be provided |
+| Issue created but with wrong title | Shell variable expansion in the field value | Quote the `--field` value carefully; avoid `$` inside double-quoted strings in bash |
+| Read-back after POST returns 404 | Wrong issue number captured | Print the full response JSON first: `echo "$RESPONSE"` and extract `.number` manually |
+| PATCH close returns `200` but state still `open` | GitHub caches issue state briefly | Wait 2–3 seconds and re-run the read-back |
+| Test issue left open in a team repo | Wrong repo was targeted | Close it manually, then apologize to teammates |
+
+> **Safety warning — write actions have real consequences:** A POST to `/repos/ORG/REPO/issues` on a team repo sends email notifications to every watcher. A PATCH to close an issue belonging to someone else may break their workflow. Always verify `GH_OWNER` and `GH_REPO` point to a repo you own before running any write command.
 
 <VerificationBlock 
-  deliverable="A single bounded write/edit with rollback note."
-  verifyCheck="Write action succeeds on test data and rollback is documented."
+    deliverable="A bounded-write-record.md confirming: issue created via POST, issue number captured, read-back verified state=open, rollback executed via PATCH, read-back confirmed state=closed."
+    verifyCheck="gh api /repos/OWNER/REPO/issues/NUMBER returns state=closed after the rollback PATCH call."
 />

@@ -11,62 +11,103 @@ verifyType: "terminal_output"
 
 ## Objective
 
-Our goal in this lesson is to make a super small, safe, and entirely local change to a file in your project, then "save" that change with Git. Think of it like taking a snapshot of your work. This helps you get comfortable with the basic flow of editing and saving changes using Git, without any risk of affecting others.
+Ask Claude Code to make one small, concrete change to your practice project, review the diff it shows you, and then accept or reject it. This is the core editing loop: you stay in control and Claude Code does the typing.
 
 ## Walkthrough
 
-Let's make a tiny edit and commit it locally. Remember, all these steps are happening only on your computer, so there's no way to accidentally break anything for anyone else!
+### Step 1 — Start a session in your practice repo
 
-1.  **Check your project's status (safely!):**
-    ```bash
-    git status
-    ```
-    This command is your best friend! It just *shows* you information; it never changes anything. You should see `nothing to commit, working tree clean`, which means everything is currently saved.
+**macOS / Linux**
+```bash
+cd ~/projects/cli-practice
+claude
+```
 
-2.  **Find a file to gently improve:**
-    We're looking for a file that's easy to edit and won't break anything. A `README.md` file (which often introduces the project) is perfect, or perhaps a configuration file (`.json`, `.yml`, etc.) or even a simple text file. Look for something obvious in your project's root directory.
+**Windows PowerShell**
+```powershell
+Set-Location "$HOME\projects\cli-practice"
+claude
+```
 
-3.  **Open the file:**
-    Use your preferred text editor to open one of these files. If you're comfortable, you can often do this directly from the terminal if your editor is set up (e.g., `code README.md` for VS Code, or `nano README.md` for a simple terminal editor).
+### Step 2 — Request a small, specific edit
 
-4.  **Make a super tiny, safe edit:**
-    *   **Fix a typo:** The easiest and safest!
-    *   **Add a period:** At the end of a sentence.
-    *   **Add a sentence:** "This project is awesome." or "Hello, CLI Academy!"
-    *   **Add an extra space:** Between two words.
-    *   **Change a single word:** E.g., "The CLI is neat." to "The CLI is cool."
-    The key is: *tiny* and *harmless*.
+At the Claude Code prompt, type:
 
-5.  **Save your changes** in your text editor.
+```
+Add a one-paragraph "Usage" section to README.md that tells someone how to run this project with npm start.
+```
 
-6.  **See your change with Git:**
-    ```bash
-    git status
-    ```
-    Now, Git should tell you that you have "Changes not staged for commit" and list the file you just edited. This means Git *noticed* your change.
+Claude Code reads your current `README.md`, writes a new version, and shows you a **diff** — lines prefixed with `+` are additions and lines prefixed with `-` are removals.
 
-7.  **Stage your change:**
-    ```bash
-    git add <your-filename-here>
-    ```
-    (Replace `<your-filename-here>` with the actual name, like `README.md`).
-    The `git add` command tells Git, "Hey, I want to include *these specific changes* in my next snapshot." It doesn't commit anything yet, it just prepares the change. It's like putting an item in your shopping cart before checking out. You can always un-add it later if you change your mind, so it's very safe.
+The diff will look something like:
 
-8.  **Confirm staging:**
-    ```bash
-    git status
-    ```
-    You should now see your file listed under "Changes to be committed." Great!
+```diff
+ # cli-practice
 
-9.  **Commit your change (locally!):**
-    ```bash
-    git commit -m "My first tiny improvement"
-    ```
-    The `git commit` command takes everything you've "staged" and creates a permanent snapshot (a "commit") of it in your project's history *on your local machine*. The `-m` flag lets you quickly write a short, descriptive message about what you did. This commit is *only* on your computer and isn't shared with anyone else until you explicitly `git push` (which we won't do today!). So, it's totally safe to experiment here.
+ A small starter project for learning Claude Code.
++
++## Usage
++
++Make sure you have Node.js 18+ installed, then run:
++
++```
++npm start
++```
+```
 
-Congratulations! You've just made your first local edit and committed it.
+### Step 3 — Review the diff carefully
 
-<VerificationBlock 
-  deliverable="A small README, config, or UI text improvement committed locally."
-  verifyCheck="Diff contains only the intended change."
+Before accepting, check three things:
+
+1. **Scope** — Did it only change `README.md`? Nothing else should appear in the diff.
+2. **Accuracy** — Does the new text match what the project actually does?
+3. **Tone** — Is the wording clear and helpful for someone new?
+
+If something looks wrong you can type:
+
+```
+Undo that change.
+```
+
+Claude Code reverts the file to its previous state. No harm done.
+
+### Step 4 — Accept the change
+
+If the diff looks good, Claude Code has already written it to disk. Confirm by reading the file outside the session:
+
+**macOS / Linux**
+```bash
+cat README.md
+```
+
+**Windows PowerShell**
+```powershell
+Get-Content README.md
+```
+
+You should see the new Usage section in the file.
+
+### Step 5 — Commit the edit with Git
+
+Leave the Claude Code session with `/exit`, then commit your change:
+
+```bash
+git add README.md
+git commit -m "docs: add usage section to README"
+```
+
+You just completed the ask → review → accept → commit loop for the first time.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Claude Code changed more files than expected | The prompt was too broad (e.g., "improve the project") | Ask Claude Code to undo, then re-prompt with a specific file and change |
+| The diff has factually wrong instructions | Claude Code guessed at a run command | Correct it: "The start command is `npm start`, not `node app.js`. Please fix the README." |
+| You accepted a change you did not want | The file was written to disk before you caught the problem | Run `git checkout -- README.md` to restore the last committed version |
+| `git commit` says "nothing to commit" | You forgot to `git add` the file | Run `git add README.md` first |
+
+<VerificationBlock
+  deliverable="README.md has a new Usage section added by Claude Code, committed to Git."
+  verifyCheck="Learner shows the git log entry and the updated README content."
 />

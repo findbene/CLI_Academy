@@ -1,0 +1,375 @@
+---
+title: "Practice the review-test-commit cycle"
+lessonNumber: "14.3.2"
+chapterNumber: "14.3"
+pathNumber: "14"
+tutorPreload: "Walk me through the review-test-commit cycle for my latest change."
+verifyType: "terminal_output"
+---
+
+# Practice the review-test-commit cycle
+
+## Objective
+
+Most security mistakes happen when developers commit without thinking. They write code, `git add .`, `git commit`, and push — skipping the steps that catch problems.
+
+The **review → test → commit** cycle is a three-step habit:
+
+1. **Review** — Read the diff. Check for removed validation, `eval()`, hardcoded secrets, and injection patterns.
+2. **Test** — Run your test suite. Verify the code actually works as intended.
+3. **Commit** — Only after review and tests pass, create a clean, atomic commit.
+
+In this lesson you will practice the full cycle on a real code change, building muscle memory that will protect every project you work on.
+
+## Walkthrough
+
+### Step 1 — Set up a project with tests
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/rtc-lab && cd ~/cli-academy/projects/rtc-lab
+git init
+```
+
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\rtc-lab" -Force
+Set-Location "$HOME\cli-academy\projects\rtc-lab"
+git init
+```
+
+Create a small Python module with a function and a test:
+
+**macOS / Linux:**
+```bash
+cat > calculator.py << 'EOF'
+def add(a, b):
+    """Add two numbers. Both must be numeric."""
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Both arguments must be numbers")
+    return a + b
+
+def divide(a, b):
+    """Divide a by b. b must not be zero."""
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b
+EOF
+
+cat > test_calculator.py << 'EOF'
+from calculator import add, divide
+import pytest
+
+def test_add_integers():
+    assert add(2, 3) == 5
+
+def test_add_rejects_strings():
+    with pytest.raises(TypeError):
+        add("2", 3)
+
+def test_divide_normal():
+    assert divide(10, 2) == 5.0
+
+def test_divide_by_zero():
+    with pytest.raises(ValueError):
+        divide(10, 0)
+EOF
+
+git add calculator.py test_calculator.py
+git commit -m "initial: calculator with input validation and tests"
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+def add(a, b):
+    """Add two numbers. Both must be numeric."""
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Both arguments must be numbers")
+    return a + b
+
+def divide(a, b):
+    """Divide a by b. b must not be zero."""
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b
+"@ | Set-Content calculator.py
+
+@"
+from calculator import add, divide
+import pytest
+
+def test_add_integers():
+    assert add(2, 3) == 5
+
+def test_add_rejects_strings():
+    with pytest.raises(TypeError):
+        add("2", 3)
+
+def test_divide_normal():
+    assert divide(10, 2) == 5.0
+
+def test_divide_by_zero():
+    with pytest.raises(ValueError):
+        divide(10, 0)
+"@ | Set-Content test_calculator.py
+
+git add calculator.py test_calculator.py
+git commit -m "initial: calculator with input validation and tests"
+```
+
+### Step 2 — Make a change (simulate an AI suggestion)
+
+Imagine you asked Claude Code to add a `multiply` function and it gave you a modified `calculator.py`. Apply this change:
+
+**macOS / Linux:**
+```bash
+cat > calculator.py << 'EOF'
+def add(a, b):
+    """Add two numbers."""
+    return a + b
+
+def divide(a, b):
+    """Divide a by b. b must not be zero."""
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b
+
+def multiply(a, b):
+    """Multiply two numbers."""
+    return a * b
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+def add(a, b):
+    """Add two numbers."""
+    return a + b
+
+def divide(a, b):
+    """Divide a by b. b must not be zero."""
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b
+
+def multiply(a, b):
+    """Multiply two numbers."""
+    return a * b
+"@ | Set-Content calculator.py
+```
+
+### Step 3 — REVIEW: Read the diff
+
+This is the first step in the cycle. **Do not skip it.**
+
+```bash
+git diff calculator.py
+```
+
+Read the output carefully. You should spot:
+
+```diff
+ def add(a, b):
+-    """Add two numbers. Both must be numeric."""
+-    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+-        raise TypeError("Both arguments must be numbers")
++    """Add two numbers."""
+     return a + b
+```
+
+**Problem found:** The AI removed the type-checking validation from `add()`. The new `multiply` function also has no validation. The diff added what you asked for — but it silently removed safety code.
+
+Write down what you found. In a real workflow, this is where you would tell Claude Code to keep the validation.
+
+### Step 4 — TEST: Run the test suite
+
+Even before fixing the problem, run the tests to see if your existing safety net catches the regression:
+
+**macOS / Linux:**
+```bash
+python -m pytest test_calculator.py -v
+```
+
+**Windows (PowerShell):**
+```powershell
+python -m pytest test_calculator.py -v
+```
+
+You should see:
+
+```
+test_calculator.py::test_add_integers PASSED
+test_calculator.py::test_add_rejects_strings FAILED
+test_calculator.py::test_divide_normal PASSED
+test_calculator.py::test_divide_by_zero PASSED
+```
+
+`test_add_rejects_strings` **fails** because the validation was removed. The test expected a `TypeError`, but now `add("2", 3)` returns `"23"` (string concatenation) instead of raising an error.
+
+This is exactly why you test before committing.
+
+### Step 5 — Fix the change, then re-review and re-test
+
+Restore the validation and add it to the new function too:
+
+**macOS / Linux:**
+```bash
+cat > calculator.py << 'EOF'
+def add(a, b):
+    """Add two numbers. Both must be numeric."""
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Both arguments must be numbers")
+    return a + b
+
+def divide(a, b):
+    """Divide a by b. b must not be zero."""
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b
+
+def multiply(a, b):
+    """Multiply two numbers. Both must be numeric."""
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Both arguments must be numbers")
+    return a * b
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+@"
+def add(a, b):
+    """Add two numbers. Both must be numeric."""
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Both arguments must be numbers")
+    return a + b
+
+def divide(a, b):
+    """Divide a by b. b must not be zero."""
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b
+
+def multiply(a, b):
+    """Multiply two numbers. Both must be numeric."""
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Both arguments must be numbers")
+    return a * b
+"@ | Set-Content calculator.py
+```
+
+Add a test for the new function:
+
+**macOS / Linux:**
+```bash
+cat >> test_calculator.py << 'EOF'
+
+from calculator import multiply
+
+def test_multiply_normal():
+    assert multiply(3, 4) == 12
+
+def test_multiply_rejects_strings():
+    with pytest.raises(TypeError):
+        multiply("3", 4)
+EOF
+```
+
+**Windows (PowerShell):**
+```powershell
+Add-Content test_calculator.py @"
+
+from calculator import multiply
+
+def test_multiply_normal():
+    assert multiply(3, 4) == 12
+
+def test_multiply_rejects_strings():
+    with pytest.raises(TypeError):
+        multiply("3", 4)
+"@
+```
+
+**Re-review:**
+```bash
+git diff
+```
+
+Confirm the validation is intact for `add()` and present for `multiply()`.
+
+**Re-test:**
+```bash
+python -m pytest test_calculator.py -v
+```
+
+All six tests should pass.
+
+### Step 6 — Check for secrets before committing
+
+Scan your staged changes for anything that looks like a secret:
+
+```bash
+git add -p
+```
+
+The `-p` (patch) flag shows you each change interactively and asks you to confirm. This is one more chance to review.
+
+Then scan:
+
+**macOS / Linux:**
+```bash
+git diff --staged | grep -iE '(key|password|secret|token|sk-|ghp_|AKIA)\s*='
+```
+
+**Windows (PowerShell):**
+```powershell
+git diff --staged | Select-String -Pattern '(key|password|secret|token|sk-|ghp_|AKIA)\s*='
+```
+
+This should return nothing — your code has no secrets.
+
+### Step 7 — COMMIT: Create a clean, atomic commit
+
+Only now — after reviewing, testing, and scanning — commit:
+
+```bash
+git commit -m "feat: add multiply function with input validation"
+```
+
+Verify:
+```bash
+git log --oneline
+git show --stat HEAD
+```
+
+The commit should contain exactly `calculator.py` and `test_calculator.py`.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| You forgot to run tests and committed a broken change | Old habit — went straight from code to commit | Put a sticky note on your monitor: "diff → test → commit" until the habit sticks |
+| Tests pass but a security problem exists | No test covers the security case | Write tests for edge cases: empty input, special characters, very large numbers, wrong types |
+| `git add .` stages files you did not intend to commit | Unrelated files in the working directory | Use `git add -p` or `git add <specific-file>` instead of `git add .` |
+| The diff is too long to review effectively | AI made too many changes at once | Ask Claude Code to make smaller, focused changes. Review one function at a time |
+| Tests pass locally but fail in CI | Different Python version or missing dependency | Pin versions in `requirements.txt` and test with the same Python version CI uses |
+| You notice a problem after committing | Missed it in review | Run `git revert HEAD` to undo the commit, fix the problem, and commit again |
+
+> [!WARN]
+> **`git add .` is the enemy of careful commits.** It stages every changed file — including files you did not mean to include. Use `git add -p` (interactive patch mode) or name specific files. This forces you to see every change before it is staged.
+
+## Key takeaways
+
+- The review → test → commit cycle is three steps. Never skip one.
+- `git diff` is step one. Read every removed line — AI loves to "simplify" by deleting safety checks.
+- `python -m pytest` (or your language's test runner) is step two. If a test fails, do not commit.
+- `git diff --staged` plus a secrets scan is the final check before committing.
+- Use `git add -p` instead of `git add .` to force yourself to review every change before staging.
+- This cycle takes 60 seconds and prevents hours of debugging. Build the habit.
+
+<VerificationBlock
+  deliverable="An rtc-lab project where you practiced the full review-test-commit cycle: caught a removed validation in a diff, saw a test fail, fixed the issue, and committed only after all tests passed."
+  verifyCheck="Run `python -m pytest test_calculator.py -v` — all six tests should pass. Run `git log --oneline` — two commits should be visible (initial and the multiply feature)."
+/>

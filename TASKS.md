@@ -1,31 +1,25 @@
 # TASKS.md
 
-## P0 (Current Epic: The ZTM Paradigm Shift)
+## P0 (Current Epic: Curriculum QA + Learner Flow)
 
-- [x] Pivot architecture towards Zero To Mastery gamification and monetizable tracks.
-- [x] Refactor missing backend logic (Redis rate limits, dynamic tutor supervisor, gamification hooks).
-- [x] Scaffold Phase 1 curriculum MDX and hybrid asset clusters (`nano_claw_organizer.mdx`, `nemoclaw_simulation.mdx`).
-- [ ] Build the 3rd Free Entry Lesson (`ZeroClaw Hello World` or `First Claude Code Task`).
-- [ ] Connect Authentication profiles (Supabase) to persist gamification streaks natively instead of mocks.
-- [ ] Scaffold the "Alumni Command Center" (UI Dashboard).
-- [ ] Build Out the "Agent Lounge" UI components for viral infotainment conversion.
+- [x] Normalize the live curriculum back to canonical `content/paths/` slugs for Paths 01-19 and archive stale duplicate trees under `content/paths_old/`.
+- [x] Modernize the live lesson loader and content validator around chapterized `lesson-*.mdx` files and the current frontmatter contract.
+- [x] Replace legacy capstone and productivity lesson packs in Paths 18 and 19 with real bounded workflow and portfolio artifacts.
+- [x] Replace the older chapter trees across Paths 04-09 with deeper practical lessons for repo navigation, debugging, Git/GitHub, surface switching, Cowork, and research workflows.
+- [x] Add learner-flow support in the web app for onboarding start routes, dashboard resume targets, section progress tracking, and server-backed lesson verification.
+- [ ] Run editorial QA across the rewritten live paths, prioritizing Paths 11, 12, 14, 15, 16, 18, and 19.
+- [ ] Run authenticated browser QA for onboarding completion, dashboard continue-learning, mobile app navigation, lesson progress, and verification UX.
 
-## P1 (System Standardization)
+## P1 (Product Hardening)
 
-- [x] create migration branch for repo normalization
-- [x] move `app/` to `apps/web/`
-- [x] move `backend/` to `apps/api/`
-- [x] rename `infrastructure/` to `infra/`
-- [x] move `scripts/` to `tooling/scripts/`
-- [x] consolidate hidden agent folders into `.claude/`
-- [ ] verify CI/CD, deployment, and env references after the `apps/` migration
-- [ ] add package boundaries under `packages/`
-- [ ] move reusable lesson/tutor logic out of app-specific code when justified
-- [ ] create `docs/architecture/` migration notes
-- [ ] clean obsolete `paths_old/` handling strategy
+- [ ] Revisit gamification persistence and concurrency semantics.
+- [ ] Verify CI/CD, deployment, and env references after the recent app and curriculum changes.
+- [ ] Add stronger regression coverage around learner-flow surfaces and verification behavior.
+- [ ] Continue Pro-tier scoping for `mcp-mastery` and `workflow-automation`.
 
-## P2 (Observability & Validation)
+## P2 (Structure + Operations)
 
-- [ ] add lint/validation rules for repo structure
-- [ ] add content manifest validation
-- [ ] add docs freshness checks for root operating files
+- [ ] Finalize the long-term handling strategy for `content/paths_old/` and historical lesson artifacts.
+- [ ] Add docs freshness checks for root operating files.
+- [ ] Add package boundaries under `packages/` when duplication justifies extraction.
+- [ ] Create durable architecture notes for the curriculum and learner-flow migration decisions.

@@ -1,0 +1,104 @@
+---
+title: "Understand SSH and connect to a server"
+lessonNumber: "15.1.1"
+chapterNumber: "15.1"
+pathNumber: "15"
+tutorPreload: "Explain what happens during an SSH connection and how to verify the host fingerprint."
+verifyType: "terminal_output"
+---
+
+# Understand SSH and connect to a server
+
+## Objective
+
+By the end of this lesson you will be able to open a secure shell (SSH) connection to a remote server, understand the host-key verification prompt, run a command on the remote machine, and exit cleanly. You will know what to do when a connection drops or times out.
+
+## Walkthrough
+
+SSH (Secure Shell) is the standard way to control a remote computer from your terminal. Every cloud server, every VPS, and most CI/CD runners are managed through SSH. Understanding the connection flow — especially the host-key prompt — is critical before you automate anything.
+
+### Step 1 — Verify that SSH is available locally
+
+**macOS / Linux:**
+
+```bash
+ssh -V
+# Expected: OpenSSH_9.x or similar
+```
+
+**Windows (PowerShell):**
+
+```powershell
+ssh -V
+# Expected: OpenSSH_for_Windows_9.x or similar
+# If missing, enable it: Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+```
+
+Both platforms ship OpenSSH today. If the command fails on Windows, the optional feature needs to be enabled once.
+
+### Step 2 — Connect to a remote server
+
+Replace `your-user` and `your-server.example.com` with real credentials from your VPS provider or lab environment.
+
+**macOS / Linux / Windows (PowerShell):**
+
+```bash
+ssh your-user@your-server.example.com
+```
+
+The first time you connect, SSH shows a fingerprint prompt:
+
+```
+The authenticity of host 'your-server.example.com (203.0.113.42)' can't be established.
+ED25519 key fingerprint is SHA256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+**What to do:** Compare this fingerprint to the one shown in your hosting provider's dashboard. If it matches, type `yes`. If you cannot verify it, type `no` and investigate — someone could be intercepting the connection.
+
+After accepting, SSH saves the fingerprint in `~/.ssh/known_hosts` so it will not ask again for this server.
+
+### Step 3 — Run a command on the remote machine
+
+Once connected your prompt changes (often to `user@hostname:~$`). Run a quick check:
+
+```bash
+hostname
+whoami
+pwd
+```
+
+These confirm you are actually on the remote machine, not your local terminal.
+
+### Step 4 — Exit the session cleanly
+
+```bash
+exit
+```
+
+Your prompt returns to your local machine. If the session is frozen (network dropped), press `Enter` then type `~.` (tilde-dot) — this is the SSH escape sequence that kills a stuck connection.
+
+### Step 5 — Run a one-off command without opening a shell
+
+You can execute a single command remotely and return to your local terminal immediately:
+
+```bash
+ssh your-user@your-server.example.com "uptime"
+```
+
+This is useful for quick checks and automation scripts.
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `ssh: connect to host ... port 22: Connection refused` | SSH service not running on the server, or wrong port | Confirm with your provider that SSH is enabled; check if port is non-standard (e.g., 2222) and use `ssh -p 2222 user@host` |
+| `Connection timed out` | Firewall blocking port 22, or wrong IP address | Double-check the IP; confirm the server's firewall allows inbound SSH |
+| `WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!` | Server was rebuilt or someone is intercepting traffic | If you rebuilt the server, remove the old key with `ssh-keygen -R hostname`; if not, stop and investigate |
+| `Permission denied (publickey)` | Server only accepts key-based login and you have no key set up | See lesson 15.1.2 to set up SSH keys |
+| Session freezes, no response | Network interruption | Press Enter, then type `~.` to force-disconnect; reconnect afterward |
+| `ssh` not found on Windows | OpenSSH client feature not installed | Run `Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0` in an elevated PowerShell |
+
+<VerificationBlock>
+Run `ssh -V` locally and confirm the version prints without error. Then connect to a remote server with `ssh user@host`, run `hostname` to confirm you are on the remote machine, and type `exit` to disconnect cleanly. You should see your local prompt return.
+</VerificationBlock>

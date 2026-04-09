@@ -1,0 +1,268 @@
+---
+title: "Merge branches and resolve conflicts"
+lessonNumber: "6.2.2"
+chapterNumber: "6.2"
+pathNumber: "6"
+tutorPreload: "Explain this merge conflict and show me the minimal safe resolution."
+verifyType: "terminal_output"
+---
+
+# Merge branches and resolve conflicts
+
+## Objective
+
+By the end of this lesson you will merge a feature branch into `main`, deliberately create a merge conflict by editing the same line in two branches, read the conflict markers Git places in the file, resolve the conflict manually, and complete the merge. You will also learn how to ask Claude Code for help resolving conflicts.
+
+## Walkthrough
+
+### Step 1 — Set up a repository with a clean main branch
+
+**macOS / Linux:**
+
+```bash
+mkdir merge-lab && cd merge-lab
+git init
+echo "welcome = Hello World" > config.txt
+git add config.txt
+git commit -m "Add config with welcome message"
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir merge-lab; cd merge-lab
+git init
+"welcome = Hello World" | Out-File -Encoding utf8 config.txt
+git add config.txt
+git commit -m "Add config with welcome message"
+```
+
+### Step 2 — Do a clean merge first (no conflict)
+
+Create a feature branch, add a new file, and merge it back.
+
+```bash
+git switch -c feature-footer
+```
+
+**macOS / Linux:**
+
+```bash
+echo "Footer text goes here." > footer.txt
+git add footer.txt
+git commit -m "Add footer file"
+```
+
+**Windows PowerShell:**
+
+```powershell
+"Footer text goes here." | Out-File -Encoding utf8 footer.txt
+git add footer.txt
+git commit -m "Add footer file"
+```
+
+Now merge into main:
+
+```bash
+git switch main
+git merge feature-footer
+```
+
+Git performs a **fast-forward merge** because main had no new commits. No conflict. Check the log:
+
+```bash
+git log --oneline --all --graph
+```
+
+Both `main` and `feature-footer` point to the same commit.
+
+### Step 3 — Create a deliberate conflict
+
+Now you will edit the **same line** in two different branches — the classic cause of a merge conflict.
+
+First, create a branch and change the welcome message:
+
+```bash
+git switch -c feature-spanish
+```
+
+**macOS / Linux:**
+
+```bash
+echo "welcome = Hola Mundo" > config.txt
+git add config.txt
+git commit -m "Change welcome to Spanish"
+```
+
+**Windows PowerShell:**
+
+```powershell
+"welcome = Hola Mundo" | Out-File -Encoding utf8 config.txt
+git add config.txt
+git commit -m "Change welcome to Spanish"
+```
+
+Now switch back to `main` and make a different change to the same line:
+
+```bash
+git switch main
+```
+
+**macOS / Linux:**
+
+```bash
+echo "welcome = Bonjour le Monde" > config.txt
+git add config.txt
+git commit -m "Change welcome to French"
+```
+
+**Windows PowerShell:**
+
+```powershell
+"welcome = Bonjour le Monde" | Out-File -Encoding utf8 config.txt
+git add config.txt
+git commit -m "Change welcome to French"
+```
+
+### Step 4 — Attempt the merge and see the conflict
+
+```bash
+git merge feature-spanish
+```
+
+Git output:
+
+```
+Auto-merging config.txt
+CONFLICT (content): Merge conflict in config.txt
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+Check status:
+
+```bash
+git status
+```
+
+`config.txt` appears under **Unmerged paths**. Git is waiting for you to resolve the conflict.
+
+### Step 5 — Read the conflict markers
+
+Open the file:
+
+**macOS / Linux:**
+
+```bash
+cat config.txt
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content config.txt
+```
+
+You will see:
+
+```
+<<<<<<< HEAD
+welcome = Bonjour le Monde
+=======
+welcome = Hola Mundo
+>>>>>>> feature-spanish
+```
+
+Here is what each section means:
+
+- `<<<<<<< HEAD` — the version on your current branch (`main`)
+- `=======` — the divider between the two versions
+- `>>>>>>> feature-spanish` — the version from the branch you are merging
+
+### Step 6 — Resolve the conflict manually
+
+Edit `config.txt` to keep the version you want. Remove all three marker lines and leave one clean line.
+
+For example, to keep both languages:
+
+**macOS / Linux:**
+
+```bash
+cat > config.txt << 'EOF'
+welcome = Bonjour le Monde / Hola Mundo
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+"welcome = Bonjour le Monde / Hola Mundo" | Out-File -Encoding utf8 config.txt
+```
+
+There must be no `<<<<<<<`, `=======`, or `>>>>>>>` lines remaining.
+
+### Step 7 — Complete the merge
+
+```bash
+git add config.txt
+git commit -m "Merge feature-spanish: combine French and Spanish greetings"
+```
+
+Check the graph:
+
+```bash
+git log --oneline --all --graph
+```
+
+You will see both branches converging into a single merge commit on `main`.
+
+### Step 8 — Ask Claude Code for help (when conflicts are complex)
+
+If you hit a conflict you do not understand, you can ask Claude Code:
+
+```
+Show me the conflict in config.txt and explain what each side changed.
+```
+
+Or:
+
+```
+Resolve the merge conflict in config.txt by keeping the French version.
+```
+
+Claude Code can read the conflict markers and produce the resolved file. You still review and commit the result.
+
+> **Safety note:** Always read the resolved file before committing. Automated resolution can miss context that only you know about.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `Already up to date` when merging | The branch has no new commits relative to main | Check you committed on the correct branch with `git log --oneline --all` |
+| Conflict markers still in file after editing | You left a `<<<<<<<` or `>>>>>>>` line | Open the file and delete all marker lines |
+| `error: you need to resolve your current index first` | Previous merge conflict was never completed | Run `git merge --abort` to cancel, then start over |
+| `git merge --abort` not working | You already committed the merge | Use `git revert HEAD` to undo the merge commit |
+| Merge commit opens a text editor | Git wants a merge message | Save and close the editor, or use `git commit -m "message"` |
+| File encoding issues on Windows | PowerShell added BOM to the file | Use `Out-File -Encoding utf8` consistently |
+
+<VerificationBlock>
+Run these commands and confirm:
+
+```bash
+git log --oneline --all --graph
+```
+
+You should see a merge commit that combines the `main` and `feature-spanish` branches. The graph should show two lines converging.
+
+```bash
+cat config.txt      # macOS/Linux
+Get-Content config.txt   # Windows PowerShell
+```
+
+The file should contain a single clean line with no conflict markers.
+
+```bash
+git status
+```
+
+Output should say `nothing to commit, working tree clean`.
+</VerificationBlock>

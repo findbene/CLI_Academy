@@ -8,6 +8,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { getPublishedCatalogPaths, type CatalogPath } from "@/lib/catalog";
+import { getLessonsForPath } from "@/lib/mdx";
+import { getRecommendedPathSlugs } from "@/lib/learning";
 import { getServerViewer } from "@/lib/viewer";
 import { FreeTierShowcase } from "@/components/marketing/FreeTierShowcase";
 import { AlumniHub } from "@/components/dashboard/AlumniHub";
@@ -18,45 +20,10 @@ function getRecommendedPaths(input: {
   hostOs?: string;
   tier?: "free" | "pro";
 }) {
-  const recommended: CatalogPath[] = [];
-  const seen = new Set<string>();
-
-  function add(slug: string) {
-    const path = input.catalogPaths.find((candidate) => candidate.slug === slug);
-    if (!path || seen.has(slug)) {
-      return;
-    }
-
-    if (path.tier === "pro" && input.tier !== "pro") {
-      return;
-    }
-
-    seen.add(slug);
-    recommended.push(path);
-  }
-
-  add("claude-code-beginners");
-
-  if (input.hostOs === "windows") {
-    add("claude-code-windows");
-  }
-
-  if (input.hostOs === "macos") {
-    add("claude-code-macos");
-  }
-
-  if (input.goal === "troubleshooting") {
-    add("claude-code-config-troubleshoot");
-  }
-
-  if (input.goal === "cowork") {
-    add("claude-cowork");
-  }
-
-  add("claude-code-config-troubleshoot");
-  add("claude-cowork");
-
-  return recommended.slice(0, 4);
+  return getRecommendedPathSlugs(input)
+    .map((slug) => input.catalogPaths.find((candidate) => candidate.slug === slug))
+    .filter((path): path is CatalogPath => Boolean(path))
+    .slice(0, 4);
 }
 
 export default async function DashboardPage() {
@@ -137,7 +104,7 @@ export default async function DashboardPage() {
     tier: viewer.profile.tier,
   });
 
-  const [{ count: completedLessonsCount }, { data: enrollments }, { data: usage }, { data: progress }, { data: alumni }, { data: achievements }] = await Promise.all([
+  const [{ count: completedLessonsCount }, { data: enrollments }, { data: usage }, { data: streakProgress }, { data: alumni }, { data: achievements }, { data: lessonProgressRows }] = await Promise.all([
     viewer.supabaseContext.supabase
       .from("lesson_progress")
       .select("id", { count: "exact", head: true })
@@ -166,7 +133,11 @@ export default async function DashboardPage() {
     viewer.supabaseContext.supabase
       .from("achievements")
       .select("id")
-      .eq("user_id", viewer.user.id)
+      .eq("user_id", viewer.user.id),
+    viewer.supabaseContext.supabase
+      .from("lesson_progress")
+      .select("lesson_id")
+      .eq("user_id", viewer.user.id),
   ]);
 
   const pathIds = [...new Set((enrollments ?? []).map((enrollment) => enrollment.path_id))];
@@ -177,7 +148,28 @@ export default async function DashboardPage() {
         .in("id", pathIds)
     : { data: [] as Array<{ id: string; slug: string; title: string }> };
 
+  const completedLessonIds = [...new Set((lessonProgressRows ?? []).map((entry) => entry.lesson_id))];
+  const { data: completedLessons } = completedLessonIds.length
+    ? await viewer.supabaseContext.supabase
+        .from("lessons")
+        .select("id, slug, path_id")
+        .in("id", completedLessonIds)
+    : { data: [] as Array<{ id: string; slug: string; path_id: string }> };
+
   const enrolledPathMap = new Map((enrolledPathRows ?? []).map((path) => [path.id, path]));
+  const completedLessonSlugsByPath = new Map<string, Set<string>>();
+
+  for (const lesson of completedLessons ?? []) {
+    const path = enrolledPathMap.get(lesson.path_id) ?? (enrolledPathRows ?? []).find((row) => row.id === lesson.path_id);
+    if (!path) {
+      continue;
+    }
+
+    const current = completedLessonSlugsByPath.get(path.slug) ?? new Set<string>();
+    current.add(lesson.slug);
+    completedLessonSlugsByPath.set(path.slug, current);
+  }
+
   const enrolledCards = (enrollments ?? [])
     .map((enrollment) => {
       const path = enrolledPathMap.get(enrollment.path_id);
@@ -193,6 +185,50 @@ export default async function DashboardPage() {
     })
     .filter(Boolean)
     .slice(0, 4) as Array<{ enrolledAt: string; slug: string; title: string }>;
+
+  const continueLearningCandidates = [
+    ...enrolledCards.map((path) => path.slug),
+    ...recommended.map((path) => path.slug),
+  ].filter((slug, index, array) => array.indexOf(slug) === index);
+
+  let continueLearning:
+    | {
+        completedCount: number;
+        href: string;
+        lessonTitle: string;
+        pathTitle: string;
+        progressPercent: number;
+        totalCount: number;
+      }
+    | null = null;
+
+  for (const slug of continueLearningCandidates) {
+    const catalogPath = catalogPaths.find((path) => path.slug === slug);
+    if (!catalogPath) {
+      continue;
+    }
+
+    const lessons = await getLessonsForPath(slug);
+    if (!lessons.length) {
+      continue;
+    }
+
+    const completedSlugs = completedLessonSlugsByPath.get(slug) ?? new Set<string>();
+    const nextLesson = lessons.find((lesson) => !completedSlugs.has(lesson.slug));
+    if (!nextLesson) {
+      continue;
+    }
+
+    continueLearning = {
+      completedCount: completedSlugs.size,
+      href: `/learn/${slug}/${nextLesson.slug}`,
+      lessonTitle: nextLesson.title,
+      pathTitle: catalogPath.title,
+      progressPercent: Math.round((completedSlugs.size / lessons.length) * 100),
+      totalCount: lessons.length,
+    };
+    break;
+  }
 
   const tutorUsedCount = usage?.message_count ?? 0;
   const tutorLimit = viewer.profile.tier === "pro" ? 100 : 10;
@@ -213,7 +249,7 @@ export default async function DashboardPage() {
           <FreeTierShowcase userName={viewer.user.email ?? "Learner"} />
         ) : (
           <AlumniHub 
-            streak={progress?.current_streak || 0} 
+            streak={streakProgress?.current_streak || 0} 
             clearanceLevel={alumni?.clearance_level || "Initiate"} 
             badgesCompleted={achievements?.length || 0} 
           />
@@ -287,34 +323,72 @@ export default async function DashboardPage() {
             </div>
           </article>
 
-          <article className="panel p-5">
-            <h2 className="text-2xl font-semibold">Recent enrollments</h2>
-            <div className="mt-4 grid gap-3">
-              {enrolledCards.length ? (
-                enrolledCards.map((path) => (
+          <div className="grid gap-4">
+            <article className="panel p-5">
+              <h2 className="text-2xl font-semibold">Continue learning</h2>
+              <div className="mt-4">
+                {continueLearning ? (
                   <Link
-                    key={`${path.slug}-${path.enrolledAt}`}
-                    href={`/learn/${path.slug}`}
-                    className="group rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 transition hover:border-[var(--color-accent-primary)] hover:shadow-md"
+                    href={continueLearning.href}
+                    className="group block rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 transition hover:border-[var(--color-accent-primary)] hover:shadow-md"
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-base font-medium group-hover:text-[var(--color-accent-primary)] transition-colors">{path.title}</div>
-                        <div className="mt-1 text-sm text-[var(--color-fg-muted)]">
-                          Enrolled {new Date(path.enrolledAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <BookOpen className="size-4 shrink-0 text-[var(--color-fg-muted)] group-hover:text-[var(--color-accent-primary)] transition-colors" />
+                    <div className="text-xs uppercase tracking-[0.14em] text-[var(--color-accent-primary)]">
+                      {continueLearning.pathTitle}
+                    </div>
+                    <h3 className="mt-2 text-lg font-semibold group-hover:text-[var(--color-accent-primary)] transition-colors">
+                      {continueLearning.lessonTitle}
+                    </h3>
+                    <p className="mt-2 text-sm text-[var(--color-fg-muted)]">
+                      {continueLearning.completedCount} of {continueLearning.totalCount} lessons completed
+                    </p>
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--color-border-subtle)]">
+                      <div
+                        className="h-full rounded-full bg-[var(--color-accent-primary)] transition-all duration-500"
+                        style={{ width: `${continueLearning.progressPercent}%` }}
+                      />
+                    </div>
+                    <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--color-accent-primary)]">
+                      Resume lesson
+                      <Compass className="size-4" />
                     </div>
                   </Link>
-                ))
-              ) : (
-                <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
-                  No enrollments yet. Start with Claude Code for Beginners or your OS-specific setup path.
-                </div>
-              )}
-            </div>
-          </article>
+                ) : (
+                  <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
+                    No in-progress lesson yet. Start with the first foundations lesson and the dashboard will keep your place here.
+                  </div>
+                )}
+              </div>
+            </article>
+
+            <article className="panel p-5">
+              <h2 className="text-2xl font-semibold">Recent enrollments</h2>
+              <div className="mt-4 grid gap-3">
+                {enrolledCards.length ? (
+                  enrolledCards.map((path) => (
+                    <Link
+                      key={`${path.slug}-${path.enrolledAt}`}
+                      href={`/learn/${path.slug}`}
+                      className="group rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 transition hover:border-[var(--color-accent-primary)] hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-base font-medium group-hover:text-[var(--color-accent-primary)] transition-colors">{path.title}</div>
+                          <div className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                            Enrolled {new Date(path.enrolledAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <BookOpen className="size-4 shrink-0 text-[var(--color-fg-muted)] group-hover:text-[var(--color-accent-primary)] transition-colors" />
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
+                    No enrollments yet. Start with Start Here or Claude Code to create your first tracked learning path.
+                  </div>
+                )}
+              </div>
+            </article>
+          </div>
         </section>
 
 

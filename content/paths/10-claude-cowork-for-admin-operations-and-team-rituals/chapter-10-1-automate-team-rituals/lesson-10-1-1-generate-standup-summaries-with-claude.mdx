@@ -1,0 +1,146 @@
+---
+title: "Generate standup summaries with Claude"
+lessonNumber: "10.1.1"
+chapterNumber: "10.1"
+pathNumber: "10"
+tutorPreload: "Help me turn yesterday's git log into a clean standup summary."
+verifyType: "terminal_output"
+---
+
+# Generate standup summaries with Claude
+
+## Objective
+
+By the end of this lesson you will generate a formatted daily standup summary from real git history using Claude. Instead of trying to remember what you worked on, you will pull yesterday's commits, feed them to Claude, and get back a concise What I did / What I'm doing next / Blockers update ready to paste into Slack, Teams, or an email.
+
+## Walkthrough
+
+### Step 1 — Create a project folder for standup outputs
+
+We need a place to store generated summaries so they accumulate as a lightweight work log.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/standup-summaries
+cd ~/standup-summaries
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\standup-summaries"
+Set-Location "$HOME\standup-summaries"
+```
+
+### Step 2 — Pull yesterday's commits from a real repository
+
+Navigate to any project you have been committing to. If you do not have one handy, use the CLI Academy repo itself.
+
+**macOS / Linux**
+
+```bash
+cd ~/my-project
+git log --since="yesterday" --author="$(git config user.name)" --oneline
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\my-project"
+git log --since="yesterday" --author="$(git config user.name)" --oneline
+```
+
+You should see a list of short commit messages. If the list is empty, widen the window:
+
+**macOS / Linux**
+
+```bash
+git log --since="3 days ago" --author="$(git config user.name)" --oneline
+```
+
+**Windows PowerShell**
+
+```powershell
+git log --since="3 days ago" --author="$(git config user.name)" --oneline
+```
+
+> **Safety note:** `git log` is read-only. It never modifies your repository.
+
+### Step 3 — Save the log to a file
+
+**macOS / Linux**
+
+```bash
+git log --since="yesterday" --author="$(git config user.name)" --oneline > ~/standup-summaries/raw-log.txt
+cat ~/standup-summaries/raw-log.txt
+```
+
+**Windows PowerShell**
+
+```powershell
+git log --since="yesterday" --author="$(git config user.name)" --oneline | Out-File "$HOME\standup-summaries\raw-log.txt"
+Get-Content "$HOME\standup-summaries\raw-log.txt"
+```
+
+Confirm the file is not empty. If it is, widen the date range as in Step 2.
+
+### Step 4 — Feed the log to Claude and request a standup summary
+
+Open Claude Code in your `standup-summaries` directory and give it a clear prompt:
+
+```
+Read raw-log.txt. Produce a standup summary in this exact format:
+
+**What I did yesterday**
+- (bullet list of completed work, grouped by theme)
+
+**What I'm working on today**
+- (infer from in-progress patterns or say "Continuing [last theme]")
+
+**Blockers**
+- None (or list anything that looks stalled)
+
+Keep each bullet under 15 words. No filler.
+```
+
+Claude will read the file and produce a formatted summary.
+
+### Step 5 — Save the formatted summary with today's date
+
+**macOS / Linux**
+
+```bash
+# After Claude generates the summary, ask it to save:
+# "Save that summary to standup-$(date +%Y-%m-%d).md"
+cat ~/standup-summaries/standup-$(date +%Y-%m-%d).md
+```
+
+**Windows PowerShell**
+
+```powershell
+# After Claude generates the summary, ask it to save:
+# "Save that summary to standup-$((Get-Date).ToString('yyyy-MM-dd')).md"
+Get-Content "$HOME\standup-summaries\standup-$((Get-Date).ToString('yyyy-MM-dd')).md"
+```
+
+### Step 6 — Verify the summary is accurate
+
+Read the generated summary and cross-check every bullet against the original `raw-log.txt`. Claude sometimes groups unrelated commits or invents work you did not do. Delete or correct any bullet that does not match a real commit.
+
+> **Real danger:** If you paste an AI-generated standup into a team channel without checking it, you may report work you never did. Always verify before sharing.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `git log` returns nothing | No commits in the date range for your author name | Widen the range with `--since="7 days ago"` or check `git config user.name` matches your commits |
+| Summary mentions files you never touched | Claude hallucinated details from commit messages | Compare each bullet to `raw-log.txt` line by line and delete invented items |
+| Date command fails on Windows | `date +%Y-%m-%d` is a Unix command | Use PowerShell `(Get-Date).ToString('yyyy-MM-dd')` instead |
+| Summary is vague ("worked on stuff") | Commit messages were vague ("fix", "update") | Rerun with `git log --since="yesterday" --stat` to give Claude file-level detail |
+| Claude invents a "Blockers" section with fake issues | No blocker signal in the log | Tell Claude "Write 'None' for Blockers unless I explicitly mention a blocker" |
+
+<VerificationBlock
+  deliverable="A dated standup summary markdown file whose every bullet traces back to a real git commit."
+  verifyCheck="Each bullet in the summary matches a commit visible in raw-log.txt, and the file is saved with today's date."
+/>

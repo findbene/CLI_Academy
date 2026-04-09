@@ -11,45 +11,103 @@ verifyType: "terminal_output"
 
 ## Objective
 
-Your objective in this lesson is to successfully run or preview your project locally after making a change, verifying that your updates are working as expected. You'll learn how to safely execute your project's code and inspect its output to confirm success.
+Run your practice project from the terminal, read the output, and then use Claude Code to explain anything unexpected. By the end you will know how to execute code, spot errors, and get instant help understanding what went wrong.
 
 ## Walkthrough
 
-It's time to see your changes in action! We'll run your project locally and then carefully observe its output to make sure everything is perfect.
+### Step 1 — Run the project
 
-1.  **Navigate to your Project Directory:**
-    If you're not already there, use the `cd` command to change into your project's main directory. This ensures you're running commands from the correct location.
-    ```bash
-    cd your-project-name
-    ```
-    *Why this is safe:* `cd` only changes your current location in the file system; it doesn't modify any files or affect your system.
+Make sure you are in the `cli-practice` folder and run the start script:
 
-2.  **Run or Preview Your Project:**
-    Most projects have a specific command to run them. This might be a simple script execution or starting a local development server. Choose the command that best fits your project type. Here are some common examples:
+**macOS / Linux**
+```bash
+cd ~/projects/cli-practice
+npm start
+```
 
-    *   **For a Python script:**
-        ```bash
-        python your_script.py
-        ```
-    *   **For a Node.js project (often a web server or application):**
-        ```bash
-        npm start
-        ```
-    *   **For a simple shell script:**
-        ```bash
-        bash your_script.sh
-        ```
-    *   **For other project types:** Look for a `run` or `start` command in your project's documentation, or try `make run` if a `Makefile` is present.
+**Windows PowerShell**
+```powershell
+Set-Location "$HOME\projects\cli-practice"
+npm start
+```
 
-    *Why this is safe:* These commands are designed for local development. They typically execute your code or start a server that's only accessible on your computer (e.g., `localhost`). They don't typically modify core system files or make your project accessible to the outside world unless explicitly configured to do so.
+Because `package.json` maps `start` to `node index.js`, you should see:
 
-3.  **Inspect the Output:**
-    *   **In the Terminal:** Carefully read the output in your terminal. Look for any success messages indicating your change worked, or specific values you expected to see printed. Pay close attention to any warnings or error messages – these will be crucial if something didn't go as planned.
-    *   **In a Web Browser (if applicable):** If your project starts a local web server (often on `http://localhost:3000` or `http://localhost:5000`), open your web browser and navigate to that address. Verify that your changes are visible on the webpage.
+```
+Hello, Learner! Welcome to CLI Academy.
+```
 
-If you encounter any unexpected output or errors, don't worry! That's a normal part of development, and we'll help you figure it out.
+If you see that line, your code is working. Skip to Step 3.
 
-<VerificationBlock 
-  deliverable="A successful local run or preview after Claude’s change."
-  verifyCheck="App, script, or preview runs with expected outcome."
+### Step 2 — If something went wrong, ask Claude Code
+
+If the output contains an error (for example a `SyntaxError` or `ReferenceError`), do not try to guess the fix. Open Claude Code and paste the error:
+
+```bash
+claude
+```
+
+At the prompt, type:
+
+```
+I ran npm start and got this error:
+
+<paste the full error message here>
+
+What is wrong and how do I fix it?
+```
+
+Claude Code reads your `index.js`, compares it against the error, and explains the cause in plain language. It may offer to fix the file for you — review the diff before accepting, just like in Lesson 3.2.2.
+
+After fixing, exit Claude Code with `/exit` and re-run `npm start` to confirm the error is gone.
+
+### Step 3 — Intentionally break the project, then fix it
+
+This step teaches you what errors look like so you are not caught off guard later.
+
+Open `index.js` in any editor and change `console.log` to `console.logg` (extra `g`). Save the file and run:
+
+```bash
+npm start
+```
+
+You will see an error like:
+
+```
+TypeError: console.logg is not a function
+```
+
+Now launch Claude Code:
+
+```bash
+claude
+```
+
+Type:
+
+```
+I changed console.log to console.logg by accident. Fix it.
+```
+
+Claude Code shows a one-line diff restoring `console.log`. Accept the fix and run `npm start` again to see the greeting.
+
+### Step 4 — Commit the working state
+
+```bash
+git add -A
+git commit -m "fix: restore console.log after intentional break exercise"
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `npm start` says `Missing script: "start"` | `package.json` does not have a `start` entry, or you are in the wrong folder | Run `cat package.json` (macOS/Linux) or `Get-Content package.json` (PowerShell) to check. Re-create the file from Lesson 3.1.2 if needed |
+| `node: command not found` | Node.js is not installed or not on PATH | Install Node.js LTS and restart your terminal |
+| `npm start` prints nothing and exits | `index.js` is empty or missing | Verify the file exists with `ls` / `Get-ChildItem` and re-create it from Lesson 3.1.2 |
+| Claude Code fixes the file but the error persists | You are running `npm start` from a different folder than where the file was fixed | Make sure your terminal is in `cli-practice` before running |
+
+<VerificationBlock
+  deliverable="npm start prints the greeting message with no errors."
+  verifyCheck="Learner runs npm start and shares the terminal output showing the greeting."
 />

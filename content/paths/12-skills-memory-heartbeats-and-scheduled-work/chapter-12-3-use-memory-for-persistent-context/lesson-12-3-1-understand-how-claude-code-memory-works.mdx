@@ -1,0 +1,145 @@
+---
+title: "Understand how Claude Code memory works"
+lessonNumber: "12.3.1"
+chapterNumber: "12.3"
+pathNumber: "12"
+tutorPreload: "Explain the difference between user memory, session memory, and repo memory in Claude Code."
+verifyType: "terminal_output"
+---
+
+# Understand how Claude Code memory works
+
+## Objective
+
+By the end of this lesson you will understand the three scopes of Claude Code memory — user memory, session memory, and repo memory — and know what gets saved automatically versus what you save manually. You will inspect each memory location on disk and confirm which scope persists across sessions.
+
+## Walkthrough
+
+### Step 1 — Understand the three memory scopes
+
+Claude Code has three places it stores information to carry context forward:
+
+| Scope | Location | Persists across sessions? | Persists across projects? |
+|---|---|---|---|
+| **User memory** | `~/.claude/memory/` | Yes | Yes — applies to all projects |
+| **Session memory** | Managed by Claude Code runtime | No — cleared when the session ends | No |
+| **Repo memory** | `<project>/.claude/memory/` | Yes | No — scoped to one project |
+
+**User memory** is for preferences and insights that apply everywhere: your coding style, patterns you like, tools you prefer. Claude loads the first 200 lines of user memory automatically at session start.
+
+**Session memory** is temporary scratch space for the current conversation. Use it for task-specific notes like tracking which files you have already reviewed. It disappears when the session ends.
+
+**Repo memory** is for project-specific facts that should survive across sessions: build commands, environment setup notes, architecture decisions. It lives inside the project repository.
+
+### Step 2 — Find your user memory directory
+
+**macOS / Linux**
+
+```bash
+ls -la ~/.claude/memory/ 2>/dev/null || echo "No user memory directory yet."
+```
+
+**Windows PowerShell**
+
+```powershell
+if (Test-Path "$HOME\.claude\memory") {
+    Get-ChildItem "$HOME\.claude\memory"
+} else {
+    Write-Host "No user memory directory yet."
+}
+```
+
+If the directory does not exist, Claude Code has not written any user memory yet. That is normal for a fresh installation.
+
+### Step 3 — Find your repo memory directory
+
+Navigate to any project that has been used with Claude Code:
+
+**macOS / Linux**
+
+```bash
+cd ~/claude-md-lab
+ls -la .claude/memory/ 2>/dev/null || echo "No repo memory directory yet."
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\claude-md-lab"
+if (Test-Path ".claude\memory") {
+    Get-ChildItem ".claude\memory"
+} else {
+    Write-Host "No repo memory directory yet."
+}
+```
+
+### Step 4 — Ask Claude Code to save a user memory
+
+Start Claude Code in any project:
+
+```
+claude
+```
+
+Tell Claude to remember something:
+
+```
+Remember that I prefer tabs over spaces for indentation.
+```
+
+Claude will save this to user memory. After it confirms, exit the session and check the file:
+
+**macOS / Linux**
+
+```bash
+cat ~/.claude/memory/*.md 2>/dev/null
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem "$HOME\.claude\memory\*.md" | ForEach-Object { Get-Content $_.FullName }
+```
+
+You should see your preference written as a note in a Markdown file.
+
+### Step 5 — Confirm user memory persists into a new session
+
+Start a brand new Claude Code session:
+
+```
+claude
+```
+
+Ask:
+
+```
+What are my indentation preferences?
+```
+
+Claude should recall that you prefer tabs over spaces, even though this is a fresh session. This proves user memory persists across sessions.
+
+### Step 6 — Understand what is saved automatically versus manually
+
+| How it is saved | What triggers it | Example |
+|---|---|---|
+| **Automatically** | Claude Code decides something is worth remembering based on your interaction | You correct Claude repeatedly about naming style — Claude saves a note about your preference |
+| **Manually (you ask)** | You explicitly say "Remember this" or "Save this to memory" | "Remember that this project uses PostgreSQL, not MySQL" |
+| **Manually (you write)** | You create or edit a `.md` file directly in the memory directory | Adding a `debugging.md` file to `~/.claude/memory/` with your debugging checklist |
+
+> **Safety note:** Memory files are plain Markdown on your local disk. Claude Code does not send your memory files to any server. They stay on your machine and are read locally at session start.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude does not remember anything from the last session | Memory was stored as session memory (temporary) instead of user memory | Explicitly say "Save this to user memory" or "Remember this across sessions" |
+| Memory directory is empty even after asking Claude to remember | Claude Code stored it in a different file path than expected | Search for it: `find ~/.claude -name "*.md"` (macOS/Linux) or `Get-ChildItem -Recurse "$HOME\.claude" -Filter "*.md"` (PowerShell) |
+| Claude remembers something wrong | An outdated or incorrect memory entry exists | Read the memory files, find the wrong entry, and either delete it or ask Claude: "Forget that I prefer tabs — I actually prefer spaces now" |
+| Repo memory shows up in the wrong project | You copied `.claude/` from one project to another | Remove the `.claude/memory/` directory from the wrong project |
+| Claude loads too much memory and gets confused | Memory files are too long or unfocused | Keep memory files short and organized by topic. See the next lesson for how to structure them |
+
+<VerificationBlock
+  deliverable="An understanding of the three memory scopes with at least one user memory entry that Claude recalls in a new session."
+  verifyCheck="Claude Code answers 'What are my indentation preferences?' correctly in a brand new session."
+/>

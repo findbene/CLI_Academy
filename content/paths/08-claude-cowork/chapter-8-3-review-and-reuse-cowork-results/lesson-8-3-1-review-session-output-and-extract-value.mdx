@@ -1,0 +1,144 @@
+---
+title: "Review session output and extract value"
+lessonNumber: "8.3.1"
+chapterNumber: "8.3"
+pathNumber: "8"
+tutorPreload: "Help me review this Cowork output and decide what to keep, what to fix, and what to throw away."
+verifyType: "terminal_output"
+---
+
+# Review session output and extract value
+
+## Objective
+
+By the end of this lesson you will have a repeatable process for reviewing everything a Cowork session produced, separating the useful output from the noise, checking it for accuracy, and saving the deliverables to proper files in your project.
+
+## Walkthrough
+
+### Step 1 — Gather everything the session produced
+
+A Cowork session generates a lot of text: drafts, revisions, explanations, false starts, and the final deliverables. Your first job after the session ends is to separate what matters from what does not.
+
+If you worked in **Claude Code**, Claude may have already saved files to your project directory. Check:
+
+**macOS / Linux:**
+
+```bash
+ls -la
+git status
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-ChildItem
+git status
+```
+
+If you worked in **claude.ai**, the output lives in the conversation. Scroll through it and identify the final version of each deliverable (not the intermediate drafts).
+
+### Step 2 — Run the accuracy check
+
+AI output is fluent. That does not mean it is correct. Before saving anything, review every deliverable against this checklist:
+
+| Check | Question to ask | Action if it fails |
+|---|---|---|
+| **Factual accuracy** | Are commands, paths, flag names, and version numbers correct? | Test every command in your terminal. Fix or remove anything that does not work. |
+| **Completeness** | Does the output cover everything from the success criteria in your brief? | Go back to `cowork-session-brief.md` and compare section by section. |
+| **Boundary compliance** | Did Claude include anything you told it to exclude? | Delete any sections that violate your boundaries. |
+| **Tone and audience** | Does the language match who will read this? | Rewrite sentences that are too casual, too formal, or use unexplained jargon. |
+| **Platform coverage** | If you required Windows + macOS/Linux commands, are both present? | Add the missing platform variant for every command block. |
+
+### Step 3 — Test every command
+
+If the deliverable contains shell commands, run each one in a real terminal. Do not trust that Claude got the syntax right just because it looks plausible.
+
+**macOS / Linux:**
+
+```bash
+# Example: verify that a command from the README actually works
+lintr --version
+```
+
+**Windows PowerShell:**
+
+```powershell
+# Same check on Windows
+lintr --version
+```
+
+If a command fails, fix it in the deliverable before saving. Mark commands you cannot test (e.g., deployment steps) with a note: `<!-- UNTESTED: requires production credentials -->`.
+
+### Step 4 — Save the deliverables to your project
+
+Once a deliverable passes the accuracy check, save it to the right location.
+
+**macOS / Linux:**
+
+```bash
+# If Claude already wrote the file, review and keep it:
+cat README.md
+
+# If the output is still in the conversation, copy it and save:
+# (paste from clipboard)
+pbpaste > README.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+# If Claude already wrote the file, review and keep it:
+Get-Content README.md
+
+# If the output is still in the conversation, copy it and save:
+Get-Clipboard | Set-Content -Path README.md -Encoding utf8
+```
+
+### Step 5 — Discard the rest
+
+Not everything Claude produced is worth keeping. Intermediate drafts, explanations of its own process, and abandoned approaches are noise. Do not save them to your project.
+
+If you want a record of the session for learning purposes, save the full conversation separately:
+
+**macOS / Linux:**
+
+```bash
+mkdir -p session-logs
+# Copy the full conversation text and save it
+pbpaste > session-logs/2026-04-09-readme-session.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+New-Item -ItemType Directory -Force -Path session-logs | Out-Null
+Get-Clipboard | Set-Content -Path session-logs/2026-04-09-readme-session.md -Encoding utf8
+```
+
+Keep session logs out of version control unless they are explicitly part of your project documentation.
+
+### Step 6 — Commit the deliverables
+
+If your project uses Git, add only the final deliverables — not the session logs:
+
+**macOS / Linux and Windows PowerShell (Git commands are the same):**
+
+```bash
+git add README.md CONTRIBUTING.md
+git commit -m "docs: add README and contributing guide from cowork session"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| A command in the README fails when you actually run it | Claude generated plausible-looking syntax that does not work on your OS or version | Test every command before committing. Fix syntax in the file. |
+| You accidentally saved an intermediate draft instead of the final version | The conversation had multiple revisions and you copied the wrong one | Scroll to the end of the session and find the last revision. Compare it to your brief's success criteria. |
+| The deliverable references files or paths that do not exist | Claude assumed a project structure that differs from yours | Update paths to match your actual directory layout |
+| Git commit includes session log files you did not mean to track | You ran `git add .` instead of adding specific files | Run `git reset HEAD session-logs/` to unstage, then add a `.gitignore` entry for `session-logs/` |
+| Saved file has garbled characters or wrong line endings | Encoding mismatch when pasting from clipboard on Windows | Re-save with explicit UTF-8 encoding: `Set-Content -Encoding utf8` |
+
+<VerificationBlock
+  deliverable="At least one reviewed, accuracy-checked deliverable file (e.g., README.md) saved to the project directory, with a brief note listing what you changed from Claude's raw output."
+  verifyCheck="The saved file passes the five-point accuracy checklist (factual, complete, boundary-compliant, correct tone, both platforms) and at least one correction was made from the raw output."
+/>

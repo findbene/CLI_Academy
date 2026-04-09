@@ -11,54 +11,144 @@ verifyType: "terminal_output"
 
 ## Objective
 
-In the world of Command Line Interfaces, especially when working with cloud services or API tokens, you'll often encounter the concept of "scopes" or "permissions." These define what actions a tool or token is allowed to perform. Granting too many permissions is a common security risk, like giving a house key to someone who only needs to pick up a package from your porch.
+Granting an integration the `repo` scope when it only needs to read issues is like giving someone your car keys when they asked to borrow a pen. The **principle of least privilege** means every token or OAuth grant covers only what the workflow actually needs — nothing more.
 
-Your objective in this lesson is to learn the crucial practice of choosing *minimum viable scopes*. This means only granting the exact permissions needed for a specific task, and no more. It's a critical safety measure to protect your data and prevent unintended actions. By the end, you'll create a simple "scope decision sheet" to help you identify and shrink potential scopes for your workflows.
+In this lesson you will inspect the scopes on a real GitHub token using the `gh` CLI, identify over-permissioned scopes on your current auth, and create a `scope-decisions.md` file that maps each required action to its true minimum scope.
 
 ## Walkthrough
 
-Let's create your scope decision sheet. This isn't about running a command, but about thoughtful planning – a skill just as vital for secure CLI use.
+### Step 1 — Check what scopes your current GitHub token carries
 
-1.  **Identify a Workflow:** Think of a specific task you perform with a CLI tool that might involve permissions (e.g., deploying a web app, interacting with a specific cloud service, automating a GitHub task).
-    *   *Example:* "My CLI tool needs to push code to a GitHub repository and create a new pull request."
+`gh auth status` prints the OAuth scopes that your active GitHub token was granted. Run it now:
 
-2.  **Break Down the Workflow into Actions:** List every distinct action your CLI tool or script performs within that workflow.
-    *   *Example Actions:* Read repository information, write/push commits, create new branches, create a pull request.
+**macOS / Linux:**
+```bash
+gh auth status
+```
 
-3.  **Research Minimum Scopes for Each Action:** For each action, consult the documentation of the service you're using (e.g., GitHub's API docs, AWS IAM documentation, etc.) to find the *absolute minimum* scope or permission required.
-    *   *Safety Note:* Always err on the side of less access. If a scope covers "read, write, delete," and you only need "read," actively search for a more granular "read-only" scope.
+**Windows PowerShell:**
+```powershell
+gh auth status
+```
 
-4.  **Consolidate Your Minimum Scopes:** Combine the individual minimum scopes into a single list. This is your "scope decision sheet." Fill it out, reflecting on your findings.
+Expected output (example):
+```
+github.com
+    ✓ Logged in to github.com as yourname (keyring)
+    ✓ Git operations for github.com configured to use https protocol.
+    ✓ Token: gho_••••••••••••
+    ✓ Token scopes: 'gist', 'read:org', 'repo', 'workflow'
+```
 
-    ```
-    # Scope Decision Sheet: [Your Workflow Name]
+Write down the `Token scopes` line — you will compare it against the minimum required in the next step.
 
-    ## Workflow Description:
-    [Briefly describe the workflow you're analyzing]
+If `gh` is not installed:
+- **macOS:** `brew install gh`
+- **Windows:** `winget install GitHub.cli` (then restart your terminal)
 
-    ## Required Actions & Minimum Scopes:
+### Step 2 — Map required actions to minimum scopes
 
-    1.  Action: [Description of action]
-        Minimum Scope: [Identified minimum scope]
-        (Source: [Link to documentation, if helpful])
+| Action needed | Minimum scope | Over-broad alternative to avoid |
+|---|---|---|
+| Read public repo data | *(no scope — public API)* | `repo` |
+| Read issues on a private repo | `repo` | `admin:repo` |
+| Read org membership | `read:org` | `admin:org` |
+| Read Actions workflow runs | `actions:read` | `workflow` |
+| Read gists | `gist` | — |
+| Push commits to a private repo | `repo` | — |
+| Create a pull request | `repo` | — |
 
-    2.  Action: [Description of action]
-        Minimum Scope: [Identified minimum scope]
-        (Source: [Link to documentation, if helpful])
+> **GitHub scope caveat:** GitHub's scope system is coarser than most providers. There is no `repo:read` — the full `repo` scope is the smallest available for private repository access. This makes scope hygiene especially important: holding `repo` means you also have write access. Document this limitation explicitly in your decision record.
 
-    ... (continue for all actions) ...
+### Step 3 — Create your scope decision record
 
-    ## Final Consolidated Minimum Scopes:
-    [List of unique, combined minimum scopes]
+**macOS / Linux:**
+```bash
+cd ~/projects/integration-safety
 
-    ## Reflection:
-    [Add any notes about potential risks or further scope shrinking opportunities]
-    ```
-    *   *Context for AI Tutor:* This sheet demonstrates your ability to "Shrink these scopes to the minimum needed for my workflow."
+cat > scope-decisions.md << 'EOF'
+# Scope Decision Record
 
-Don't worry if this feels complex at first! This careful planning is a hallmark of secure and responsible CLI usage.
+## Workflow: Read issues from a private GitHub repo
+
+| Action                  | Minimum scope          | Justification                                         |
+|-------------------------|------------------------|-------------------------------------------------------|
+| Authenticate with API   | (built into gh CLI)    | gh manages token storage securely                     |
+| List repo issues        | `repo`                 | Smallest scope GitHub offers for private repo access  |
+| Read org membership     | `read:org`             | Required if filtering by org team                     |
+
+## Over-permissioned scopes found in current token
+
+Review `gh auth status` output and list any scopes this workflow does NOT need:
+- `workflow` — only needed for CI/CD pipeline management
+- `gist` — only needed for Gist CRUD operations
+- `delete_repo` — CRITICAL: remove unless you explicitly delete repos programmatically
+
+## Recommended action
+Rotate the token scoped to only `repo` and `read:org` for this workflow.
+Command: gh auth login --scopes repo,read:org
+EOF
+
+cat scope-decisions.md
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\projects\integration-safety"
+
+$content = @'
+# Scope Decision Record
+
+## Workflow: Read issues from a private GitHub repo
+
+| Action                  | Minimum scope          | Justification                                         |
+|-------------------------|------------------------|-------------------------------------------------------|
+| Authenticate with API   | (built into gh CLI)    | gh manages token storage securely                     |
+| List repo issues        | `repo`                 | Smallest scope GitHub offers for private repo access  |
+| Read org membership     | `read:org`             | Required if filtering by org team                     |
+
+## Over-permissioned scopes found in current token
+
+Review `gh auth status` output and list any scopes this workflow does NOT need:
+- `workflow` — only needed for CI/CD pipeline management
+- `gist` — only needed for Gist CRUD operations
+- `delete_repo` — CRITICAL: remove unless you explicitly delete repos programmatically
+
+## Recommended action
+Rotate the token scoped to only `repo` and `read:org` for this workflow.
+Command: gh auth login --scopes repo,read:org
+'@
+
+$content | Out-File -FilePath "scope-decisions.md" -Encoding utf8
+Get-Content scope-decisions.md
+```
+
+### Step 4 — Verify the scope decision record exists
+
+**macOS / Linux:**
+```bash
+ls -la scope-decisions.md
+grep "Minimum scope" scope-decisions.md
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Item scope-decisions.md
+Select-String -Path scope-decisions.md -Pattern "Minimum scope"
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `gh auth status` shows no scopes | Token created via automation without scope selection | Run `gh auth login` interactively and choose scopes manually |
+| `gh: command not found` | GitHub CLI not installed | `brew install gh` (Mac) / `winget install GitHub.cli` (Windows) |
+| Decision record shows `admin` everywhere | Reviewing defaults without challenging them | Ask per row: what is the minimum single action this step requires? |
+| `gh auth login --scopes` does not shrink existing scopes | `gh` creates a new token; old one still active | Revoke the old token at github.com/settings/tokens after fresh login |
+
+> **Safety warning — token scope drift:** Scopes accumulate quietly. A token created months ago may carry `delete_repo` or `admin:org` that nobody remembers granting. Run `gh auth status` at the start of every new project and remove any scope you cannot justify in one sentence.
 
 <VerificationBlock 
-  deliverable="A scope decision sheet."
-  verifyCheck="Chosen scopes allow the lesson task and nothing extra."
+    deliverable="A scope-decisions.md file containing your current token's scopes from gh auth status, the minimum scopes required per action, and over-permissioned scopes flagged for removal."
+    verifyCheck="gh auth status output is documented, minimum scopes are listed per action, and at least one over-permissioned scope is identified."
 />

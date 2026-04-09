@@ -10,32 +10,120 @@ verifyType: "terminal_output"
 # Where am I and what is here?
 
 ## Objective
-Learn to confidently figure out exactly where you are in the terminal and see what files are around you, without accidentally changing anything.
+
+Open your terminal and answer two questions without changing anything: **what folder am I in**, and **what is inside it**. By the end you will be able to read a path, list files with useful detail, and spot hidden items.
 
 ## Walkthrough
 
-When you open a terminal, it always drops you into a specific folder on your computer. Before you do *anything*, the safest habit you can build is figuring out exactly where you are. 
+### Step 1 — Print your current location
 
-Think of it like looking at a map in a mall and finding the "You are here" star. 
+Every terminal session starts inside a folder. Before doing anything else, find out which one.
 
-**Step 1: Ask "Where am I?"**
-Depending on your system, you can use a simple command to print your current location:
-- On Mac/Linux (or Git Bash): Type `pwd` (Print Working Directory) and press Enter.
-- On Windows (Command Prompt/PowerShell): Type `cd` and press Enter, or use `Get-Location`.
+**macOS / Linux**
 
-*Safety Tip:* Running `pwd` or `cd` by itself is 100% safe. It only reads information; it doesn't change or move anything.
+```bash
+pwd
+```
 
-**Step 2: Ask "What is here?"**
-Once you know what folder you are in, you probably want to see what is inside it. 
-- On Mac/Linux: Type `ls` (List) and press Enter.
-- On Windows: Type `dir` (Directory) and press Enter.
+You will see something like `/Users/yourname` or `/home/yourname`.
 
-*Safety Tip:* Just like looking around a room, listing files is completely safe. You're just observing.
+**Windows PowerShell**
 
-**Your First Task:**
-Open your terminal. Run the command to check your current folder, then run the command to list the files inside it. Copy the output you see, and save it to a file called `directory_map.txt` so your tutor can verify you've mastered observation!
+```powershell
+Get-Location
+```
 
-<VerificationBlock 
-  deliverable="A directory map of the workspace."
-  verifyCheck="Checker confirms correct folder path and directory map file."
+You will see something like `C:\Users\yourname`. PowerShell also accepts `pwd` as a shortcut, but `Get-Location` is the native command.
+
+Read the output carefully. This is your **home directory** — the place the system considers "yours." Every path you type later is relative to wherever you are right now.
+
+### Step 2 — List what is in this folder
+
+Now look around. You want the names of every file and folder sitting in your current location.
+
+**macOS / Linux**
+
+```bash
+ls
+```
+
+You will see names like `Desktop`, `Documents`, `Downloads`, and possibly `cli-academy` if you finished Path 01.
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Name
+```
+
+`Get-ChildItem -Name` prints clean names, one per line. PowerShell also accepts `ls` as an alias, but the native command gives you more control.
+
+### Step 3 — See more detail with flags
+
+Plain `ls` shows names only. Adding a flag reveals sizes, dates, and permissions.
+
+**macOS / Linux**
+
+```bash
+ls -la
+```
+
+`-l` switches to a long list (one item per row with size and date). `-a` includes hidden files — names that start with a dot like `.bashrc` or `.zshrc`.
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem -Force
+```
+
+`-Force` reveals hidden and system items (names starting with a dot or marked Hidden). Each row shows `Mode`, `LastWriteTime`, `Length`, and `Name`.
+
+### Step 4 — Explore a specific subfolder without moving into it
+
+You can list the contents of any folder by passing its name as an argument.
+
+**macOS / Linux**
+
+```bash
+ls -la Documents
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-ChildItem Documents -Force
+```
+
+This lets you peek inside a folder while staying exactly where you are.
+
+### Step 5 — Count what you found
+
+Check how many items are in your current directory. This is useful when you want a quick sense of clutter.
+
+**macOS / Linux**
+
+```bash
+ls | wc -l
+```
+
+`wc -l` counts lines, and since `ls` prints one item per line when piped, this gives you the count.
+
+**Windows PowerShell**
+
+```powershell
+(Get-ChildItem).Count
+```
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `pwd: command not found` | You are in an unusual shell (unlikely on macOS/Linux) | Type `bash` then Enter to start a standard shell |
+| `Get-Location` prints a UNC path like `\\server\share` | Your terminal opened inside a network drive | Type `cd ~` then Enter to move to your real home folder, then try again |
+| `ls` shows *nothing* even though you know files exist | You are in an empty directory, or hidden files are the only ones present | Re-run with `ls -a` (macOS/Linux) or `Get-ChildItem -Force` (Windows) to include hidden items |
+| Colors or icons appear garbled | Your terminal font does not support the icon theme | Ignore the garbled characters — the file names are still correct. Optionally switch to a simpler prompt theme later |
+| Output scrolls past too fast to read | The folder has hundreds of items | Pipe to a pager: `ls -la | less` (macOS/Linux) or `Get-ChildItem | Out-Host -Paging` (Windows) |
+
+<VerificationBlock
+  deliverable="Terminal output showing your current directory path and a detailed file listing of that directory."
+  verifyCheck="Output includes a valid absolute path from pwd or Get-Location and a file listing with at least three items visible."
 />

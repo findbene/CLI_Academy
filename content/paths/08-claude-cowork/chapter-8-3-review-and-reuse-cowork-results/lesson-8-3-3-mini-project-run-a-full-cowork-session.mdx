@@ -1,0 +1,361 @@
+---
+title: "Mini project: run a full Cowork session"
+lessonNumber: "8.3.3"
+chapterNumber: "8.3"
+pathNumber: "8"
+tutorPreload: "Guide me through a full end-to-end Cowork session so I can practice every step from brief to deliverable."
+verifyType: "terminal_output"
+---
+
+# Mini project: run a full Cowork session
+
+## Objective
+
+In this mini project you will run a complete Cowork session from start to finish: write a brief, start the session, iterate through multiple turns, review the output, save the deliverables, and template the pattern. The task is to produce a project README and a CONTRIBUTING guide for a real or practice project.
+
+## Walkthrough
+
+### Step 1 — Set up the project folder
+
+Create a practice project to work with. This simulates having an existing codebase that needs documentation.
+
+**macOS / Linux:**
+
+```bash
+mkdir -p cowork-mini-project/src
+mkdir -p cowork-mini-project/tests
+cd cowork-mini-project
+
+cat > package.json << 'EOF'
+{
+  "name": "taskflow",
+  "version": "0.2.0",
+  "description": "A lightweight CLI task runner for small teams",
+  "type": "module",
+  "bin": { "taskflow": "./src/cli.js" },
+  "scripts": {
+    "test": "node --test tests/",
+    "lint": "eslint src/"
+  },
+  "license": "MIT"
+}
+EOF
+
+echo "// CLI entry point" > src/cli.js
+echo "// Test placeholder" > tests/cli.test.js
+```
+
+**Windows PowerShell:**
+
+```powershell
+New-Item -ItemType Directory -Force -Path cowork-mini-project\src | Out-Null
+New-Item -ItemType Directory -Force -Path cowork-mini-project\tests | Out-Null
+Set-Location cowork-mini-project
+
+@"
+{
+  "name": "taskflow",
+  "version": "0.2.0",
+  "description": "A lightweight CLI task runner for small teams",
+  "type": "module",
+  "bin": { "taskflow": "./src/cli.js" },
+  "scripts": {
+    "test": "node --test tests/",
+    "lint": "eslint src/"
+  },
+  "license": "MIT"
+}
+"@ | Set-Content -Path package.json -Encoding utf8
+
+Set-Content -Path src\cli.js -Value "// CLI entry point" -Encoding utf8
+Set-Content -Path tests\cli.test.js -Value "// Test placeholder" -Encoding utf8
+```
+
+### Step 2 — Write the session brief
+
+Use the template from your `cowork-patterns/` folder (Lesson 8.3.2) or create a fresh one:
+
+**macOS / Linux:**
+
+```bash
+cat > cowork-session-brief.md << 'EOF'
+# Cowork Session Brief
+
+## Goal
+Produce two files: README.md and CONTRIBUTING.md for the `taskflow` project.
+
+## Context
+- `taskflow` is a Node.js CLI tool for running predefined tasks (like a
+  simpler Make or just).
+- Commands: `taskflow run <task>`, `taskflow list`, `taskflow init`.
+- Repository layout: `src/`, `tests/`, `package.json`.
+- Target audience: developers who use npm and are comfortable with a terminal.
+- License: MIT.
+
+## Success criteria
+- README includes: description, installation (npm), usage with examples,
+  configuration, and license section.
+- CONTRIBUTING includes: how to fork and clone, how to run tests, code style
+  expectations, and how to submit a PR.
+- Every shell command block includes both bash (macOS/Linux) and PowerShell
+  (Windows) variants.
+- Tone: clear, direct, no emoji, no marketing language. Write for developers.
+
+## Boundaries
+- Do not generate application source code.
+- Do not write a changelog.
+- Do not add badges or shields to the README.
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+@"
+# Cowork Session Brief
+
+## Goal
+Produce two files: README.md and CONTRIBUTING.md for the ``taskflow`` project.
+
+## Context
+- ``taskflow`` is a Node.js CLI tool for running predefined tasks (like a
+  simpler Make or just).
+- Commands: ``taskflow run <task>``, ``taskflow list``, ``taskflow init``.
+- Repository layout: ``src/``, ``tests/``, ``package.json``.
+- Target audience: developers who use npm and are comfortable with a terminal.
+- License: MIT.
+
+## Success criteria
+- README includes: description, installation (npm), usage with examples,
+  configuration, and license section.
+- CONTRIBUTING includes: how to fork and clone, how to run tests, code style
+  expectations, and how to submit a PR.
+- Every shell command block includes both bash (macOS/Linux) and PowerShell
+  (Windows) variants.
+- Tone: clear, direct, no emoji, no marketing language. Write for developers.
+
+## Boundaries
+- Do not generate application source code.
+- Do not write a changelog.
+- Do not add badges or shields to the README.
+"@ | Set-Content -Path cowork-session-brief.md -Encoding utf8
+```
+
+### Step 3 — Start the Cowork session
+
+Open Claude Code in the project directory (or create a claude.ai Project and upload the brief plus `package.json`).
+
+**macOS / Linux:**
+
+```bash
+claude
+```
+
+**Windows PowerShell:**
+
+```powershell
+claude
+```
+
+Send your opening prompt:
+
+```
+> Read cowork-session-brief.md and package.json. Confirm you understand the
+> goal, context, success criteria, and boundaries. Summarize them back to me.
+```
+
+Wait for Claude's summary. Verify it matches your brief. If anything is wrong, correct it now.
+
+### Step 4 — Iterate: outline → sections → review
+
+**Turn 1 — Request the README outline:**
+
+```
+> Give me an outline for README.md. Section headings with a one-line
+> description of each. Do not write full content yet.
+```
+
+Review the outline. Steer if needed:
+
+```
+> Add a "Troubleshooting" section after "Configuration". Remove "Acknowledgments"
+> — it is not in the brief.
+```
+
+**Turn 2 — Write the README section by section:**
+
+```
+> Write the "Installation" section. Include both bash and PowerShell commands.
+```
+
+Review. Continue for each section:
+
+```
+> Write the "Usage" section. Show three examples: `taskflow run`, `taskflow
+> list`, and `taskflow init`. Each example should have the command and expected
+> output.
+```
+
+**Turn 3 — Write CONTRIBUTING.md:**
+
+```
+> Now write CONTRIBUTING.md. Follow the success criteria from the brief. Start
+> with an outline, then write the full document.
+```
+
+Review and steer:
+
+```
+> The "Running tests" section uses `npm test` but doesn't explain what testing
+> framework is used. Add that it uses Node.js built-in test runner. Also add
+> the Windows PowerShell equivalent for every command.
+```
+
+### Step 5 — Review against the checklist
+
+Once Claude has produced final drafts of both files, run through the review checklist from Lesson 8.3.1:
+
+| Check | README.md | CONTRIBUTING.md |
+|---|---|---|
+| All commands tested | ✅ or ❌ | ✅ or ❌ |
+| Success criteria met | ✅ or ❌ | ✅ or ❌ |
+| Boundaries respected | ✅ or ❌ | ✅ or ❌ |
+| Tone matches audience | ✅ or ❌ | ✅ or ❌ |
+| Both platforms present | ✅ or ❌ | ✅ or ❌ |
+
+Fix any issues by giving Claude specific feedback or editing the files yourself.
+
+### Step 6 — Save deliverables
+
+If Claude wrote the files directly in Claude Code, verify they exist:
+
+**macOS / Linux:**
+
+```bash
+ls -la README.md CONTRIBUTING.md
+cat README.md
+cat CONTRIBUTING.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-ChildItem README.md, CONTRIBUTING.md
+Get-Content README.md
+Get-Content CONTRIBUTING.md
+```
+
+If the output is still in the conversation, copy and save each file:
+
+**macOS / Linux:**
+
+```bash
+# Paste README content
+pbpaste > README.md
+# Then paste CONTRIBUTING content
+pbpaste > CONTRIBUTING.md
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Clipboard | Set-Content -Path README.md -Encoding utf8
+# Copy CONTRIBUTING content, then:
+Get-Clipboard | Set-Content -Path CONTRIBUTING.md -Encoding utf8
+```
+
+### Step 7 — Template the pattern
+
+This session worked. Save the pattern for future use:
+
+**macOS / Linux:**
+
+```bash
+mkdir -p cowork-patterns
+
+cat > cowork-patterns/prompt-project-docs.md << 'EOF'
+# Prompt Pattern: Project Documentation (README + CONTRIBUTING)
+
+## When to use
+When a project needs a README and CONTRIBUTING guide generated from a session brief.
+
+## Session flow
+1. Share brief + package.json (or equivalent project metadata).
+2. Ask Claude to confirm understanding.
+3. Request README outline first → review → approve.
+4. Write README section by section → review each.
+5. Request CONTRIBUTING outline → review → write full.
+6. Run review checklist.
+7. Save deliverables.
+
+## Key prompts
+- "Read cowork-session-brief.md and package.json. Confirm understanding."
+- "Give me an outline. Do not write full content yet."
+- "Write the [section] section. Include both bash and PowerShell commands."
+
+## Estimated turns
+8-12 turns for both documents.
+EOF
+```
+
+**Windows PowerShell:**
+
+```powershell
+New-Item -ItemType Directory -Force -Path cowork-patterns | Out-Null
+
+@"
+# Prompt Pattern: Project Documentation (README + CONTRIBUTING)
+
+## When to use
+When a project needs a README and CONTRIBUTING guide generated from a session brief.
+
+## Session flow
+1. Share brief + package.json (or equivalent project metadata).
+2. Ask Claude to confirm understanding.
+3. Request README outline first -> review -> approve.
+4. Write README section by section -> review each.
+5. Request CONTRIBUTING outline -> review -> write full.
+6. Run review checklist.
+7. Save deliverables.
+
+## Key prompts
+- "Read cowork-session-brief.md and package.json. Confirm understanding."
+- "Give me an outline. Do not write full content yet."
+- "Write the [section] section. Include both bash and PowerShell commands."
+
+## Estimated turns
+8-12 turns for both documents.
+"@ | Set-Content -Path cowork-patterns\prompt-project-docs.md -Encoding utf8
+```
+
+### Step 8 — Commit everything
+
+**macOS / Linux and Windows PowerShell:**
+
+```bash
+git init
+git add README.md CONTRIBUTING.md cowork-session-brief.md package.json src/ tests/
+git commit -m "docs: add README and CONTRIBUTING from cowork session"
+```
+
+Optionally add your patterns folder if you want it in version control:
+
+```bash
+git add cowork-patterns/
+git commit -m "chore: add cowork session patterns for reuse"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude writes both files in one giant message and you lose the ability to steer | You asked for both files at once instead of sequentially | Always request one deliverable at a time. Outline first, then content, then the next file. |
+| README and CONTRIBUTING contradict each other (e.g., different test commands) | Claude forgot the README content when writing CONTRIBUTING | Point out the contradiction: "The README says `npm test` but CONTRIBUTING says `node tests/`. These should match. Use `npm test` in both." |
+| The session takes 20+ turns and context starts degrading | Too much back-and-forth on minor wording | Approve structure early, polish wording after the session by editing the files directly |
+| You cannot find the final version in a long conversation | Multiple revisions with no clear "this is the final" marker | Before ending the session, ask Claude: "Save the final version of README.md and CONTRIBUTING.md to my project directory." |
+| Git commit includes files you did not intend to track | You used `git add .` which staged everything | Use explicit file names with `git add`. Add `session-logs/` to `.gitignore`. |
+
+<VerificationBlock
+  deliverable="A project folder containing: (1) `cowork-session-brief.md`, (2) `README.md`, (3) `CONTRIBUTING.md`, and (4) a `cowork-patterns/` folder with at least one prompt pattern file."
+  verifyCheck="README and CONTRIBUTING both pass the review checklist, contain dual-platform commands, and the cowork-patterns folder contains at least one generalized prompt pattern."
+/>

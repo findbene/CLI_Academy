@@ -1,0 +1,208 @@
+---
+title: "Extract structured data from messy text"
+lessonNumber: "9.3.1"
+chapterNumber: "9.3"
+pathNumber: "9"
+tutorPreload: "Help me extract structured data from messy meeting notes — names, dates, and action items — and output clean Markdown and JSON."
+verifyType: "terminal_output"
+---
+
+# Extract structured data from messy text
+
+## Objective
+
+By the end of this lesson you will take messy, unstructured text (meeting notes), ask Claude Code to extract names, dates, and action items, output the results as structured Markdown and JSON, and verify the extraction by comparing it against the original text.
+
+## Walkthrough
+
+### Step 1 — Create a file with realistic messy text
+
+Real meeting notes are messy — inconsistent formatting, abbreviations, and scattered information. Create a sample that reflects this.
+
+**macOS / Linux:**
+
+```bash
+mkdir extract-lab && cd extract-lab
+git init
+
+cat > meeting-notes.txt << 'EOF'
+Team sync — Oct 14 2025 (Monday)
+present: Sarah, Marcus, J. Chen, priya (remote)
+
+sarah: homepage redesign mockups done, shared in figma yesterday.
+review needed by weds (oct 16).
+marcus said backend API for user profiles will be ready by end of week
+(oct 18 fri). needs sarah's final design specs first tho.
+
+priya -- brought up that the QA env is broken since last deploy.
+filed a ticket JIRA-4521. she'll fix by tmrw afternoon (oct 15).
+
+J. Chen: documentation backlog growing. proposes we dedicate friday
+afternoons to docs. nobody objected. starts this friday oct 18.
+
+action items:
+- sarah send figma link to marcus by EOD today
+- marcus: api done by oct 18, blocked on design specs
+- priya fix QA env (JIRA-4521) by oct 15
+- chen: start friday doc sessions oct 18
+- revisit QA process at next sync (oct 21)
+
+next meeting oct 21 same time
+
+ran 35 mins over btw. need to keep it shorter
+EOF
+
+git add meeting-notes.txt
+git commit -m "Add raw meeting notes"
+```
+
+**Windows PowerShell:**
+
+```powershell
+mkdir extract-lab; cd extract-lab
+git init
+
+@"
+Team sync — Oct 14 2025 (Monday)
+present: Sarah, Marcus, J. Chen, priya (remote)
+
+sarah: homepage redesign mockups done, shared in figma yesterday.
+review needed by weds (oct 16).
+marcus said backend API for user profiles will be ready by end of week
+(oct 18 fri). needs sarah's final design specs first tho.
+
+priya -- brought up that the QA env is broken since last deploy.
+filed a ticket JIRA-4521. she'll fix by tmrw afternoon (oct 15).
+
+J. Chen: documentation backlog growing. proposes we dedicate friday
+afternoons to docs. nobody objected. starts this friday oct 18.
+
+action items:
+- sarah send figma link to marcus by EOD today
+- marcus: api done by oct 18, blocked on design specs
+- priya fix QA env (JIRA-4521) by oct 15
+- chen: start friday doc sessions oct 18
+- revisit QA process at next sync (oct 21)
+
+next meeting oct 21 same time
+
+ran 35 mins over btw. need to keep it shorter
+"@ | Out-File -Encoding utf8 meeting-notes.txt
+
+git add meeting-notes.txt
+git commit -m "Add raw meeting notes"
+```
+
+### Step 2 — Ask Claude to extract structured data
+
+Open Claude Code in the `extract-lab` directory:
+
+```
+Read meeting-notes.txt and extract two outputs:
+
+1. A file called extracted.md with these sections:
+   ## Attendees (full name, attendance mode)
+   ## Dates mentioned (date, context)
+   ## Action items (owner, task, deadline, blockers)
+   ## Decisions made
+   ## Next meeting
+
+2. A file called extracted.json with the same data in JSON format using
+   this structure:
+   {
+     "meeting_date": "...",
+     "attendees": [{"name": "...", "mode": "in-person|remote"}],
+     "action_items": [{"owner": "...", "task": "...", "deadline": "...", "blockers": "..."}],
+     "decisions": ["..."],
+     "next_meeting": "..."
+   }
+
+Normalize all dates to YYYY-MM-DD format. Expand abbreviations
+(e.g., "weds" → Wednesday, "tmrw" → tomorrow). Use full names where
+the notes use nicknames or initials.
+```
+
+### Step 3 — Verify the Markdown extraction
+
+```bash
+cat extracted.md
+```
+
+Check each section against the original notes:
+
+1. **Attendees:** The notes say "J. Chen" — did Claude expand this to a full name it guessed, or keep "J. Chen"? It should keep what is in the text, not invent a first name.
+2. **Dates:** The notes mention Oct 14, 15, 16, 18, and 21. Count them in the extraction. If Claude missed one or added one that is not in the text, that is an error.
+3. **Action items:** Count them. The notes list 5 action items. The extraction should have exactly 5.
+4. **Blockers:** Marcus's API task is blocked on Sarah's design specs. If Claude missed this dependency, ask for a correction.
+
+### Step 4 — Verify the JSON extraction
+
+**macOS / Linux:**
+
+```bash
+cat extracted.json
+python3 -c "import json; d=json.load(open('extracted.json')); print(json.dumps(d, indent=2))"
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content extracted.json
+python -c "import json; d=json.load(open('extracted.json')); print(json.dumps(d, indent=2))"
+```
+
+The Python command validates that the JSON is syntactically correct. If it throws a `json.JSONDecodeError`, Claude produced malformed JSON. Share the error with Claude:
+
+```
+extracted.json has a JSON syntax error. Here is the error:
+[paste the error]
+Fix the JSON and save it again.
+```
+
+Also check that dates are in `YYYY-MM-DD` format as requested. If any date is still in the original format (e.g., "oct 15"), ask Claude to normalize it.
+
+### Step 5 — Cross-check for hallucinated data
+
+This is the most important verification step. Go through `extracted.json` field by field and confirm every value appears in the original `meeting-notes.txt`.
+
+**macOS / Linux:**
+
+```bash
+# Search for any name Claude added that is not in the original
+grep -i "sarah\|marcus\|chen\|priya" meeting-notes.txt
+```
+
+**Windows PowerShell:**
+
+```powershell
+Select-String -Pattern "sarah|marcus|chen|priya" -Path meeting-notes.txt
+```
+
+If Claude added a name, date, or action item that does not appear in the source text, that is a hallucination. Remove it:
+
+```
+The extracted data includes [invented item] but that does not appear
+in meeting-notes.txt. Remove it.
+```
+
+### Step 6 — Commit the verified extractions
+
+```bash
+git add extracted.md extracted.json
+git commit -m "Add structured extractions from meeting notes"
+```
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| JSON fails to parse | Claude produced invalid JSON (trailing commas, unquoted keys, etc.) | Run the Python validation command and share the exact error with Claude |
+| Claude invented a full name for "J. Chen" | LLMs fill in gaps with plausible data | Tell Claude to use only names exactly as they appear in the source, or mark expanded names with "[assumed]" |
+| An action item is missing from the extraction | Claude missed an item buried in prose (not in the bullet list) | Point Claude to the specific line in the source text and ask it to add the missing item |
+| Dates are not normalized to YYYY-MM-DD | Claude skipped the normalization instruction | Re-prompt: "Normalize all dates to YYYY-MM-DD. Oct 15 2025 → 2025-10-15" |
+| Extra action items appear that are not in the source | Claude inferred tasks from discussion context | Ask Claude to only extract items explicitly stated as tasks or action items, not implied ones |
+
+<VerificationBlock
+  deliverable="An extracted.md and extracted.json where every data point traces back to a specific line in meeting-notes.txt."
+  verifyCheck="The JSON parses without errors, contains exactly 5 action items, and no field contains data not present in the source text."
+/>

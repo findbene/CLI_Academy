@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import { cn } from "@/lib/utils";
 
 const vsSource = `
   attribute vec4 aVertexPosition;
@@ -147,7 +148,11 @@ function initShaderProgram(gl: WebGLRenderingContext, vertexSource: string, frag
   return shaderProgram;
 }
 
-const ShaderBackground = () => {
+interface ShaderBackgroundProps {
+  className?: string;
+}
+
+const ShaderBackground = ({ className }: ShaderBackgroundProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -185,11 +190,17 @@ const ShaderBackground = () => {
     };
 
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const bounds = canvas.getBoundingClientRect();
+      const width = Math.max(1, Math.floor(bounds.width * window.devicePixelRatio));
+      const height = Math.max(1, Math.floor(bounds.height * window.devicePixelRatio));
+
+      canvas.width = width;
+      canvas.height = height;
       gl.viewport(0, 0, canvas.width, canvas.height);
     };
 
+    const resizeObserver = new ResizeObserver(resizeCanvas);
+    resizeObserver.observe(canvas);
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
@@ -230,13 +241,19 @@ const ShaderBackground = () => {
     render();
 
     return () => {
+      resizeObserver.disconnect();
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationFrameId);
+      gl.deleteBuffer(positionBuffer);
+      gl.deleteProgram(shaderProgram);
     };
   }, []);
 
   return (
-    <canvas ref={canvasRef} className="absolute inset-0 w-full h-full -z-10 object-cover pointer-events-none" />
+    <canvas
+      ref={canvasRef}
+      className={cn("absolute inset-0 h-full w-full object-cover pointer-events-none", className)}
+    />
   );
 };
 

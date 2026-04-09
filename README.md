@@ -60,8 +60,11 @@ The current structure fixes that by:
 - The active frontend lives in `apps/web/`.
 - The active backend lives in `apps/api/`.
 - Curriculum and downloadable assets live in `content/`.
+- The live curriculum is normalized back to the canonical `content/paths/` slugs for Paths 01-19, with stale duplicate trees archived under `content/paths_old/`.
+- The curriculum rewrite now extends well beyond normalization: live Paths 04-19 are being replaced with deeper practical chapter trees, and older chapter directories are being retired from the learner-facing surface.
+- Learner-flow support in `apps/web/` now includes onboarding start-route recommendations, dashboard resume targets, section-progress tracking, and a server-backed lesson verification route.
 - Shared extraction work is expected to move gradually into `packages/` when duplication justifies it.
-- The current workstream is post-migration verification: making sure deployment paths, scripts, tests, and docs all point at the normalized layout.
+- The current workstream is curriculum QA and learner-flow hardening: keeping live lesson content, path metadata, and app UX aligned.
 
 ## Root operating docs
 
@@ -87,10 +90,10 @@ The current structure fixes that by:
 
 ## Near-term priorities
 
-1. Verify CI/CD, deployment config, and env references after the `apps/` migration.
-2. Add package boundaries under `packages/` where shared code earns extraction.
-3. Document migration notes under `docs/architecture/`.
-4. Decide the long-term handling strategy for legacy `paths_old/` content.
+1. Run editorial QA on the rewritten and migrated live paths, especially Paths 04-19 and most urgently Paths 11, 12, 14, 15, 16, 18, and 19.
+2. Do authenticated browser QA across onboarding completion, dashboard resume behavior, mobile navigation, lesson progress, and verification UX.
+3. Revisit backend persistence and gamification concurrency semantics.
+4. Decide the long-term handling strategy for legacy `paths_old/` content and historical lesson artifacts.
 
 ## Project-level operating files
 

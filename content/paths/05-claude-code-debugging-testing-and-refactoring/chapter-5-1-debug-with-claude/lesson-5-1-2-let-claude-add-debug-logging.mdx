@@ -1,0 +1,177 @@
+---
+title: "Let Claude add debug logging"
+lessonNumber: "5.1.2"
+chapterNumber: "5.1"
+pathNumber: "5"
+tutorPreload: "Add logging to this script so I can see exactly where the problem is."
+verifyType: "terminal_output"
+---
+
+# Let Claude add debug logging
+
+## Objective
+
+Ask Claude Code to insert temporary `console.log` or `print()` statements at key points in a script so you can trace what the code is actually doing at runtime. Run the script, read the trace, spot where the values go wrong, and then ask Claude to remove the debug lines once you understand the bug. This teaches you the most common real-world debugging technique — observation before guessing.
+
+## Walkthrough
+
+### Step 1 — Create a script with a subtle data bug
+
+This script is supposed to calculate the average score and assign a letter grade, but it has a subtle bug — the average calculation is wrong because it divides by the wrong number.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/projects/debug-practice && cd ~/projects/debug-practice
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force ~\projects\debug-practice | Set-Location
+```
+
+**JavaScript version — `grader.js`**
+
+```js
+// grader.js — subtle math bug
+function calculateAverage(scores) {
+  let total = 0;
+  for (const s of scores) {
+    total += s;
+  }
+  return total / 4; // BUG: hardcoded 4 instead of scores.length
+}
+
+function letterGrade(avg) {
+  if (avg >= 90) return "A";
+  if (avg >= 80) return "B";
+  if (avg >= 70) return "C";
+  return "F";
+}
+
+const scores = [88, 92, 79];
+const avg = calculateAverage(scores);
+console.log(`Average: ${avg}, Grade: ${letterGrade(avg)}`);
+```
+
+**Python version — `grader.py`**
+
+```python
+# grader.py — subtle math bug
+def calculate_average(scores):
+    total = 0
+    for s in scores:
+        total += s
+    return total / 4  # BUG: hardcoded 4 instead of len(scores)
+
+def letter_grade(avg):
+    if avg >= 90:
+        return "A"
+    if avg >= 80:
+        return "B"
+    if avg >= 70:
+        return "C"
+    return "F"
+
+scores = [88, 92, 79]
+avg = calculate_average(scores)
+print(f"Average: {avg}, Grade: {letter_grade(avg)}")
+```
+
+### Step 2 — Run it and notice the output is wrong (but no crash)
+
+**macOS / Linux**
+
+```bash
+node grader.js
+```
+
+**Windows PowerShell**
+
+```powershell
+node grader.js
+```
+
+Output: `Average: 64.75, Grade: F`
+
+The script runs without any error, but 88, 92, and 79 should average about 86.3, which is a B — not an F. This is the hardest kind of bug: wrong answers with no crash. You need to trace the data.
+
+### Step 3 — Ask Claude Code to add debug logging
+
+Open Claude Code in the project directory and prompt:
+
+```
+The grader script is outputting the wrong average. Add console.log statements at each step so I can see the total, the divisor, and the result.
+```
+
+Claude inserts logging lines throughout the script. For the JavaScript version it might add:
+
+```js
+console.log("Scores:", scores);
+console.log("Total:", total);
+console.log("Dividing by:", 4);
+console.log("Average:", avg);
+```
+
+Accept the changes and run the script again.
+
+### Step 4 — Read the trace and spot the problem
+
+The output now shows something like:
+
+```
+Scores: [ 88, 92, 79 ]
+Total: 259
+Dividing by: 4
+Average: 64.75, Grade: F
+```
+
+You can see it immediately: the total is 259 and there are 3 scores, but the code divides by 4. The hardcoded `4` is the bug. You would have struggled to spot this just by reading the code, but the trace makes it obvious.
+
+### Step 5 — Ask Claude to fix the bug
+
+```
+The divisor is hardcoded as 4 but there are only 3 scores. Fix it to use the actual array length.
+```
+
+Claude changes `return total / 4` to `return total / scores.length` (JavaScript) or `return total / len(scores)` (Python). Accept the fix and run again:
+
+```
+Average: 86.33333333333333, Grade: B
+```
+
+Correct.
+
+### Step 6 — Ask Claude to remove the debug logging
+
+```
+The bug is fixed. Remove all the debug console.log lines you added.
+```
+
+Claude strips out every temporary logging statement and leaves only the original logic. Accept the changes.
+
+Run the script one last time to confirm it produces clean output:
+
+```
+Average: 86.33333333333333, Grade: B
+```
+
+No debug noise, correct answer.
+
+> **Real danger — do not commit debug logging.** Debug `console.log` and `print()` statements left in production code clutter output and can accidentally expose internal data. Always remove them before committing. Asking Claude to clean them up is a reliable way to make sure none slip through.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Claude adds logging inside a loop and you get hundreds of lines | The loop iterates over a large dataset | Ask Claude to log only the first 3 iterations or log a summary after the loop |
+| The debug output is in a different order than expected | Asynchronous code (Node.js callbacks/promises) runs out of order | Ask Claude to add `await` or use synchronous logging; or ask Claude to number each log line |
+| You accepted the cleanup but one `console.log` remains | Claude missed a line it did not add (it was already in your code) | Run a quick search: `grep -n "console.log" grader.js` on macOS/Linux or `Select-String "console.log" grader.js` on Windows |
+| Output looks correct but the test still fails | Floating point rounding — `86.333...` is not exactly `86.33` | Ask Claude about rounding: `Math.round(avg * 100) / 100` (JS) or `round(avg, 2)` (Python) |
+| Claude adds logging to the wrong function | You were not specific enough about where the bug is | Tell Claude exactly which function: "Add logging only inside calculateAverage" |
+
+<VerificationBlock
+  deliverable="A script with debug logging added by Claude, a run showing the traced values, and a final clean version with logging removed and the bug fixed."
+  verifyCheck="Run the cleaned script and confirm the average and grade are correct with no debug output."
+/>

@@ -1,0 +1,231 @@
+---
+title: "Ask Claude to write your first test"
+lessonNumber: "5.2.1"
+chapterNumber: "5.2"
+pathNumber: "5"
+tutorPreload: "Write a simple automated test for this function and show me how to run it."
+verifyType: "terminal_output"
+---
+
+# Ask Claude to write your first test
+
+## Objective
+
+Take a simple function you have already written, ask Claude Code to generate an automated test for it, and run that test from the command line. By the end of this lesson you will have one green passing test for a function you understand, using either Jest (JavaScript) or pytest (Python).
+
+## Walkthrough
+
+### Step 1 — Create a small module with a function to test
+
+We need a simple, working function so we can focus entirely on learning to test — not on fixing bugs.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/projects/testing-practice && cd ~/projects/testing-practice
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force ~\projects\testing-practice | Set-Location
+```
+
+**JavaScript version — `math-utils.js`**
+
+```js
+// math-utils.js
+function add(a, b) {
+  return a + b;
+}
+
+function multiply(a, b) {
+  return a * b;
+}
+
+module.exports = { add, multiply };
+```
+
+**Python version — `math_utils.py`**
+
+```python
+# math_utils.py
+def add(a, b):
+    return a + b
+
+def multiply(a, b):
+    return a * b
+```
+
+### Step 2 — Initialize the test runner
+
+**JavaScript — install Jest**
+
+```bash
+npm init -y
+npm install --save-dev jest
+```
+
+Open `package.json` and make sure the `"test"` script says `"jest"`:
+
+```json
+{
+  "scripts": {
+    "test": "jest"
+  }
+}
+```
+
+**Python — confirm pytest is installed**
+
+```bash
+pip install pytest
+```
+
+**Windows PowerShell (same commands work)**
+
+```powershell
+pip install pytest
+```
+
+> **Real danger — `npm install` and `pip install` execute code.** Only install packages you recognize and trust. `jest` and `pytest` are the standard test runners for their respective ecosystems and are safe.
+
+### Step 3 — Ask Claude Code to write a test
+
+Open Claude Code in the project directory and prompt:
+
+```
+Write a test file for math-utils.js that tests the add and multiply functions with a few basic cases. Use Jest.
+```
+
+Or for Python:
+
+```
+Write a test file for math_utils.py that tests the add and multiply functions with a few basic cases. Use pytest.
+```
+
+Claude creates a test file. For JavaScript it might produce `math-utils.test.js`:
+
+```js
+const { add, multiply } = require("./math-utils");
+
+test("add returns the sum of two positive numbers", () => {
+  expect(add(2, 3)).toBe(5);
+});
+
+test("add handles zero", () => {
+  expect(add(0, 7)).toBe(7);
+});
+
+test("add handles negative numbers", () => {
+  expect(add(-1, -2)).toBe(-3);
+});
+
+test("multiply returns the product of two numbers", () => {
+  expect(multiply(3, 4)).toBe(12);
+});
+
+test("multiply by zero returns zero", () => {
+  expect(multiply(5, 0)).toBe(0);
+});
+```
+
+For Python it might produce `test_math_utils.py`:
+
+```python
+from math_utils import add, multiply
+
+def test_add_positive():
+    assert add(2, 3) == 5
+
+def test_add_zero():
+    assert add(0, 7) == 7
+
+def test_add_negative():
+    assert add(-1, -2) == -3
+
+def test_multiply():
+    assert multiply(3, 4) == 12
+
+def test_multiply_by_zero():
+    assert multiply(5, 0) == 0
+```
+
+Accept the file Claude generates.
+
+### Step 4 — Run the tests
+
+**macOS / Linux (JavaScript)**
+
+```bash
+npm test
+```
+
+**macOS / Linux (Python)**
+
+```bash
+pytest -v
+```
+
+**Windows PowerShell (JavaScript)**
+
+```powershell
+npm test
+```
+
+**Windows PowerShell (Python)**
+
+```powershell
+pytest -v
+```
+
+You should see all tests passing. Jest output looks like:
+
+```
+PASS  ./math-utils.test.js
+  ✓ add returns the sum of two positive numbers (2 ms)
+  ✓ add handles zero
+  ✓ add handles negative numbers
+  ✓ multiply returns the product of two numbers (1 ms)
+  ✓ multiply by zero returns zero
+
+Tests:  5 passed, 5 total
+```
+
+pytest output looks like:
+
+```
+test_math_utils.py::test_add_positive PASSED
+test_math_utils.py::test_add_zero PASSED
+test_math_utils.py::test_add_negative PASSED
+test_math_utils.py::test_multiply PASSED
+test_math_utils.py::test_multiply_by_zero PASSED
+
+5 passed
+```
+
+### Step 5 — Understand what each test does
+
+Ask Claude Code:
+
+```
+Explain each test in plain English. What is each one checking and why?
+```
+
+Claude walks through each test case and explains the pattern: call the function with specific inputs, compare the result to the expected value. This is the foundation of all automated testing.
+
+### What can go wrong
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `npm test` says "no tests found" | Jest cannot find test files — wrong file name | Jest looks for files ending in `.test.js` or `.spec.js`. Rename if needed |
+| `pytest` says "no tests ran" | Test functions do not start with `test_` | pytest discovers functions by the `test_` prefix — rename them |
+| `Cannot find module './math-utils'` | Test file is in a different folder than the source | Move the test file to the same folder or fix the import path |
+| `npm: command not found` | Node.js is not installed | Install Node.js from nodejs.org and restart your terminal |
+| Jest fails with "SyntaxError: Unexpected token export" | You used ES module `export` instead of `module.exports` | Either switch to `module.exports` or add `"type": "module"` to `package.json` and configure Jest for ESM |
+| Python `ModuleNotFoundError` | pytest cannot find `math_utils.py` | Make sure you run `pytest` from the same directory that contains `math_utils.py` |
+
+<VerificationBlock
+  deliverable="A working test file generated by Claude Code with all tests passing on the first run."
+  verifyCheck="Run `npm test` or `pytest -v` and confirm all tests pass with zero failures."
+/>

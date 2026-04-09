@@ -10,70 +10,197 @@ verifyType: "terminal_output"
 # Design the knowledge workflow
 
 ## Objective
-
-Welcome to designing your first structured workflow! In this lesson, you'll learn how to map out a clear process, which is a foundational skill for understanding and eventually automating tasks in the CLI. Your goal is to create a "workflow brief"—a simple document outlining the steps, inputs, outputs, quality checks, and review process for a common knowledge task. This exercise helps us build a foundation for clear, traceable work, ensuring everyone understands what needs to be done and how to verify its success.
+Design a real knowledge-extraction workflow that produces a structured artifact another person can inspect and reuse. In this lesson, you will define a schema, pick a real source folder, and write the design docs for a TODO extraction workflow that turns a real codebase scan into a clean todo-report.md.
 
 ## Walkthrough
 
-It's completely normal to feel a bit unsure when structuring something new, but we'll take it one safe step at a time. You'll primarily be working with text, so there's no risk of accidental system changes.
+### Step 1: Create the capstone workspace and choose the real dataset
+Use a real codebase folder, not a toy folder you created for the lesson. A strong default is the repository you are already working in.
 
-1.  **Create your workflow brief file:**
-    First, let's create a new file where your workflow design will live.
-    ```bash
-    touch my_first_workflow.md
-    nano my_first_workflow.md
-    ```
-    *   **Safety Check:** `touch` is a very safe command; it only creates an empty file if it doesn't already exist, or updates its timestamp if it does. It never modifies existing content. `nano` is a simple text editor. Whatever you type stays within this file, and your changes are only saved when *you* explicitly choose to save.
+macOS/Linux:
+```bash
+mkdir -p capstone-2-knowledge/{logs,source-snapshots}
+cd capstone-2-knowledge
+pwd
+```
 
-2.  **Define your workflow's purpose:**
-    Inside `nano`, let's start by giving your workflow a clear name and a brief description. Think of a simple task you perform regularly, like "Writing a Meeting Summary" or "Creating a Project Status Update."
+Windows PowerShell:
+```powershell
+New-Item -ItemType Directory -Path capstone-2-knowledge, capstone-2-knowledge/logs, capstone-2-knowledge/source-snapshots -Force | Out-Null
+Set-Location capstone-2-knowledge
+Get-Location
+```
 
-    ```markdown
-    # Workflow: [Your Chosen Workflow Name, e.g., "Drafting a Project Status Update"]
+Recommended default workflow for this chapter:
+- Workflow: extract TODO, FIXME, and XXX markers from a real codebase
+- Source: one real repo folder such as apps, content, packages, tooling, or tests
+- Output: todo-report.md
+- Evidence: logs/run-001.md and logs/edge-cases.md
 
-    ## Description
-    This workflow outlines the process for [briefly describe the purpose of the workflow].
-    ```
+### Step 2: Write the design doc with schema, sources, and output format
+Make the workflow inspectable before you run it.
 
-3.  **Identify Inputs:**
-    What information, data, or resources do you *need* to start this task? List them clearly.
-    ```markdown
-    ## Inputs
-    *   [Example: Project management software updates]
-    *   [Example: Latest team meeting notes]
-    *   [Example: Previous status report]
-    ```
+macOS/Linux:
+```bash
+cat > WORKFLOW-DESIGN.md <<'EOF'
+# Capstone 2 Workflow Design
 
-4.  **Define Outputs:**
-    What is the *finished product* of this workflow? What does success look like?
-    ```markdown
-    ## Outputs
-    *   [Example: A concise project status report in Markdown format]
-    *   [Example: Report shared via email to stakeholders]
-    ```
+## Workflow
+Codebase TODO Extraction
 
-5.  **Establish a Quality Rubric:**
-    How do you know the output is *good*? What criteria must it meet? This is crucial for consistent quality and traceability.
-    ```markdown
-    ## Quality Rubric
-    *   Clarity: Report is easy to understand, no jargon.
-    *   Completeness: All key project areas (progress, blockers, next steps) are covered.
-    *   Accuracy: Information presented is factually correct.
-    *   Conciseness: Report is brief and to the point.
-    ```
+## Goal
+Summarize unresolved TODO-style markers from a real codebase into one report that is easier to review than raw grep output.
 
-6.  **Implement a Review Layer:**
-    Who reviews the output, and how is feedback incorporated? This adds an essential layer of oversight.
-    ```markdown
-    ## Review Layer
-    *   Reviewer: [Example: Project Lead, Peer]
-    *   Process: Reviewer provides feedback via comments; author updates report; final approval.
-    ```
+## Sources
+- One local repository
+- Approved folders only: apps, content, packages, tooling, tests
+- Search markers: TODO, FIXME, XXX
 
-7.  **Save and Exit:**
-    Once you've drafted your workflow brief, save your changes by pressing `Ctrl+O`, then `Enter`, and exit `nano` with `Ctrl+X`. You've successfully created a structured workflow brief!
+## Schema
+Each finding in todo-report.md must include:
+- file path
+- line number
+- marker type
+- short context snippet
+- suggested owner or next action
+- priority guess: high, medium, or low
+
+## Output format
+todo-report.md must contain:
+- report title
+- source folders scanned
+- total findings count
+- grouped findings by folder
+- top five items to review first
+
+## Review rules
+- Facts first, guesses second
+- Do not invent owners if the code gives no clue
+- If no findings exist, write a no-findings report instead of faking issues
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Capstone 2 Workflow Design
+
+## Workflow
+Codebase TODO Extraction
+
+## Goal
+Summarize unresolved TODO-style markers from a real codebase into one report that is easier to review than raw grep output.
+
+## Sources
+- One local repository
+- Approved folders only: apps, content, packages, tooling, tests
+- Search markers: TODO, FIXME, XXX
+
+## Schema
+Each finding in todo-report.md must include:
+- file path
+- line number
+- marker type
+- short context snippet
+- suggested owner or next action
+- priority guess: high, medium, or low
+
+## Output format
+todo-report.md must contain:
+- report title
+- source folders scanned
+- total findings count
+- grouped findings by folder
+- top five items to review first
+
+## Review rules
+- Facts first, guesses second
+- Do not invent owners if the code gives no clue
+- If no findings exist, write a no-findings report instead of faking issues
+"@ | Set-Content WORKFLOW-DESIGN.md
+```
+
+### Step 3: Add the agent contract and edge-case expectations
+Document how the workflow behaves when the dataset is empty or when you switch from a local scan to a remote source that may rate-limit you.
+
+macOS/Linux:
+```bash
+cat > CLAUDE.md <<'EOF'
+# Capstone 2 Agent Contract
+
+Allowed actions:
+- inspect approved folders only
+- read raw search results from source-snapshots/
+- write todo-report.md
+- write logs/run-001.md and logs/edge-cases.md
+
+Forbidden actions:
+- edit source files
+- commit, push, or delete files
+- inspect secrets or environment files
+- scan folders outside the approved source list
+
+Edge-case handling:
+- if no matches exist, write a no-findings report and say the scan was clean
+- if a remote source rate-limits you, log the limit and stop instead of retrying forever
+EOF
+```
+
+Windows PowerShell:
+```powershell
+@"
+# Capstone 2 Agent Contract
+
+Allowed actions:
+- inspect approved folders only
+- read raw search results from source-snapshots/
+- write todo-report.md
+- write logs/run-001.md and logs/edge-cases.md
+
+Forbidden actions:
+- edit source files
+- commit, push, or delete files
+- inspect secrets or environment files
+- scan folders outside the approved source list
+
+Edge-case handling:
+- if no matches exist, write a no-findings report and say the scan was clean
+- if a remote source rate-limits you, log the limit and stop instead of retrying forever
+"@ | Set-Content CLAUDE.md
+```
+
+### Step 4: Ask Claude Code to review the design before the run
+Use a review prompt that forces the agent to challenge the schema and source boundaries before you collect data.
+
+Use this prompt:
+
+```text
+Read WORKFLOW-DESIGN.md and CLAUDE.md. Check whether the schema is specific enough, whether the approved folders are narrow enough, and whether the edge-case behavior is explicit enough. Write the review to logs/design-review.md.
+```
+
+Inspect the review afterward.
+
+macOS/Linux:
+```bash
+cat logs/design-review.md
+```
+
+Windows PowerShell:
+```powershell
+Get-Content logs/design-review.md
+```
+
+### What can go wrong
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| The report will be impossible to compare across runs | The schema is missing fields like line number or marker type | Add the missing fields before the first run |
+| The agent scans too much of the machine | Source folders are not explicitly bounded | Limit the scan to named folders in WORKFLOW-DESIGN.md and CLAUDE.md |
+| The workflow would expose secrets during inspection | Secret-bearing files are not excluded | Ban .env and credential files directly in the contract |
+| The agent will retry forever on remote data | Rate-limit behavior is not defined | Add a hard stop that logs the rate limit and exits |
+| A clean repo would force fake findings | No empty-result behavior exists | Require a no-findings report when the dataset is empty |
 
 <VerificationBlock 
-  deliverable="A workflow brief with inputs, outputs, quality rubric, and review layer."
-  verifyCheck="Workflow has explicit review layer and traceability."
+  deliverable="A capstone workspace containing WORKFLOW-DESIGN.md, CLAUDE.md, and logs/design-review.md for one real knowledge workflow."
+  verifyCheck="A reviewer can see the exact source folders, report schema, output format, and explicit handling for empty datasets and rate-limited sources."
 />
