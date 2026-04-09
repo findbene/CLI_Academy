@@ -5,7 +5,7 @@ import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getPublicSupabaseConfigMessage } from "@/lib/env";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { Terminal, Eye, EyeOff, Sparkles, LayoutPanelLeft, Shield, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
 import { GenerativeArtScene } from "@/components/ui/anomalous-matter-hero";
 
@@ -48,6 +48,8 @@ async function getPostAuthDestination(nextHref?: string | null) {
 
 export function AuthCard({ mode, nextHref }: AuthCardProps) {
   const router = useRouter();
+  const emailInputId = `${mode}-email`;
+  const passwordInputId = `${mode}-password`;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -199,6 +201,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
               className="group flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-primary)] focus:ring-offset-2"
               onClick={handleGoogleAuth}
               disabled={loading || authUnavailable}
+              aria-label="Continue with Google"
             >
               <svg className="h-5 w-5 transition-transform group-hover:scale-105" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -213,6 +216,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
               className="group flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#24292F] font-medium text-white shadow-sm transition hover:bg-[#1b1f24] focus:outline-none focus:ring-2 focus:ring-[#24292F] focus:ring-offset-2"
               onClick={handleGithubAuth}
               disabled={loading || authUnavailable}
+              aria-label="Continue with GitHub"
             >
               <svg height="20" viewBox="0 0 16 16" width="20" className="fill-current text-white transition-transform group-hover:scale-105"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
               GitHub
@@ -235,8 +239,9 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
           {/* Email/Pass Form */}
           <form className="flex flex-col gap-4" onSubmit={handleEmailPasswordSubmit}>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Email address</label>
+              <label htmlFor={emailInputId} className="text-sm font-medium text-gray-700">Email</label>
               <input
+                id={emailInputId}
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -249,7 +254,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
 
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">Password</label>
+                <label htmlFor={passwordInputId} className="text-sm font-medium text-gray-700">Password</label>
                 {!isSignup && (
                   <Link href="#" className="text-xs font-semibold text-[var(--color-accent-primary)] hover:underline">
                     Forgot password?
@@ -258,6 +263,7 @@ export function AuthCard({ mode, nextHref }: AuthCardProps) {
               </div>
               <div className="relative">
                 <input
+                  id={passwordInputId}
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}

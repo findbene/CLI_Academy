@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LogoMark } from "@/components/ui/LogoMark";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface NavbarProps {
   signedIn?: boolean;
@@ -14,7 +13,6 @@ interface NavbarProps {
 
 export function Navbar({ signedIn = false }: NavbarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
 

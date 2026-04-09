@@ -10,6 +10,7 @@ export interface LoungeMeta {
   tags: string[];
   summary?: string;
   image?: string;
+  author?: string;
 }
 
 export interface LoungeRecord extends LoungeMeta {
@@ -31,14 +32,20 @@ function parseScalar(value: string) {
 
   // Handle arrays like: '["tag1", "tag2"]' or '[tag1, tag2]'
   if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-      const inner = trimmed.slice(1, -1);
-      return inner.split(",").map(s => {
-          let sRaw = s.trim();
-          if ((sRaw.startsWith('"') && sRaw.endsWith('"')) || (sRaw.startsWith("'") && sRaw.endsWith("'"))) {
-              return sRaw.slice(1, -1);
-          }
-          return sRaw;
-      }).filter(Boolean);
+    const inner = trimmed.slice(1, -1);
+    return inner
+      .split(",")
+      .map((segment) => {
+        const rawSegment = segment.trim();
+        if (
+          (rawSegment.startsWith('"') && rawSegment.endsWith('"')) ||
+          (rawSegment.startsWith("'") && rawSegment.endsWith("'"))
+        ) {
+          return rawSegment.slice(1, -1);
+        }
+        return rawSegment;
+      })
+      .filter(Boolean);
   }
 
   return trimmed;
@@ -93,6 +100,7 @@ function toLoungeRecord(filePath: string, source: string): LoungeRecord {
     tags: Array.isArray(parsed.tags) ? parsed.tags : [],
     summary: parsed.summary ? String(parsed.summary) : undefined,
     image: parsed.image ? String(parsed.image) : undefined,
+    author: parsed.author ? String(parsed.author) : "CLI Academy",
     body,
     sourcePath: filePath,
   };

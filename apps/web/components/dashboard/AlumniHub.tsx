@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Flame, Share2, Download, Award, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 
 interface AlumniHubProps {
   streak: number;
@@ -12,15 +11,10 @@ interface AlumniHubProps {
 }
 
 export function AlumniHub({ streak, clearanceLevel, badgesCompleted }: AlumniHubProps) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   const handleShare = () => {
     const text = `I just reached ${streak}-day streak and unlocked ${clearanceLevel} clearance at CLI Academy! Learning to command AI agents. #OpenClaw #AI`;
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, "_blank");
   };
-
-  if (!mounted) return null;
 
   return (
     <div className="grid gap-6 mb-8">

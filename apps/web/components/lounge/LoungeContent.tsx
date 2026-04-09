@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Image from "next/image";
 import { Fragment } from "react";
 import { getLoungeArticle } from "@/lib/lounge";
 import { CodeBlock } from "@/components/lesson/CodeBlock";
@@ -44,6 +44,52 @@ function renderInlineContent(text: string) {
 }
 
 function renderBlock(block: string, index: number) {
+  const getTagAttributes = (source: string) => {
+    const attributes: Record<string, string> = {};
+    for (const match of source.matchAll(/(\w+)="([^"]*)"/g)) {
+      attributes[match[1]] = match[2];
+    }
+    return attributes;
+  };
+
+  if (block.startsWith("<Screenshot")) {
+    const attrs = getTagAttributes(block);
+    return (
+      <figure key={index} className="my-10 overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-2xl">
+        <Image
+          src={attrs.src}
+          alt={attrs.alt || "Article illustration"}
+          width={1200}
+          height={700}
+          className="h-auto w-full object-cover"
+        />
+        {attrs.caption ? (
+          <figcaption className="border-t border-white/5 p-3 text-center text-xs font-serif italic text-slate-500">
+            {attrs.caption}
+          </figcaption>
+        ) : null}
+      </figure>
+    );
+  }
+
+  if (block.startsWith("<TerminalSimulation")) {
+    const attrs = getTagAttributes(block);
+    return (
+      <div key={index} className="my-8 overflow-hidden rounded-xl border border-emerald-500/20 bg-[#081018] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-emerald-300">Terminal</span>
+          <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+            {attrs.status || "success"}
+          </span>
+        </div>
+        <div className="space-y-3 p-4 font-mono text-sm text-slate-200">
+          <div className="text-emerald-300">$ {attrs.command}</div>
+          <div className="text-slate-300">{attrs.output}</div>
+        </div>
+      </div>
+    );
+  }
+
   // Catch custom Lounge CTAs
   const ctaMatch = block.match(/<div className="tavern-cta">([\s\S]*?)<\/div>/);
   if (ctaMatch) {
@@ -79,7 +125,13 @@ function renderBlock(block: string, index: number) {
     const [, alt, src] = imageMatch;
     return (
       <figure key={index} className="my-10 relative overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-2xl">
-        <img src={src} alt={alt || "Article illustration"} className="w-full h-auto object-cover" loading="lazy" />
+        <Image
+          src={src}
+          alt={alt || "Article illustration"}
+          width={1200}
+          height={700}
+          className="h-auto w-full object-cover"
+        />
         {alt && (
           <figcaption className="p-3 text-center text-xs text-slate-500 font-serif italic border-t border-white/5">
             {alt}

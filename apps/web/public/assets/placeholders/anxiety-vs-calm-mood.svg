@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">Anxiety versus calm comparison</title>
+  <desc id="desc">Split-screen illustration comparing chaotic and calm terminal workflows.</desc>
+  <rect width="600" height="700" fill="#2b0b14"/>
+  <rect x="600" width="600" height="700" fill="#062b21"/>
+  <text x="120" y="120" font-family="IBM Plex Mono, monospace" font-size="34" fill="#fecaca">ERROR / PANIC</text>
+  <text x="710" y="120" font-family="IBM Plex Mono, monospace" font-size="34" fill="#bbf7d0">RESTORE / RELAX</text>
+  <rect x="90" y="180" width="420" height="260" rx="28" fill="#111827" stroke="#ef4444" stroke-opacity="0.5"/>
+  <rect x="690" y="180" width="420" height="260" rx="28" fill="#111827" stroke="#22c55e" stroke-opacity="0.5"/>
+  <text x="130" y="250" font-family="IBM Plex Mono, monospace" font-size="26" fill="#fca5a5">$ agent refactor everything</text>
+  <text x="130" y="300" font-family="IBM Plex Mono, monospace" font-size="24" fill="#fca5a5">modified: 15 files</text>
+  <text x="130" y="350" font-family="IBM Plex Mono, monospace" font-size="24" fill="#fca5a5">tests failing...</text>
+  <text x="730" y="250" font-family="IBM Plex Mono, monospace" font-size="26" fill="#86efac">$ git restore messy_data.txt</text>
+  <text x="730" y="300" font-family="IBM Plex Mono, monospace" font-size="24" fill="#86efac">restored to baseline</text>
+  <text x="730" y="350" font-family="IBM Plex Mono, monospace" font-size="24" fill="#86efac">prompt adjusted</text>
+</svg>

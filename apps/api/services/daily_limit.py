@@ -59,7 +59,7 @@ async def enforce_daily_tutor_limit(
                   the request rather than blocking users due to infra issues.
     """
     supabase_url = os.getenv("SUPABASE_URL")
-    service_key = os.getenv("SUPABASE_SERVICE_KEY")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
 
     if not supabase_url or not service_key:
         logger.debug(

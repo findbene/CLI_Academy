@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">Stop undo recover diagram</title>
+  <desc id="desc">Three-step workflow diagram for safe agent recovery.</desc>
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <rect x="90" y="190" width="280" height="220" rx="32" fill="#7f1d1d" opacity="0.88"/>
+  <rect x="460" y="190" width="280" height="220" rx="32" fill="#92400e" opacity="0.9"/>
+  <rect x="830" y="190" width="280" height="220" rx="32" fill="#065f46" opacity="0.92"/>
+  <text x="180" y="290" font-family="IBM Plex Mono, monospace" font-size="40" fill="#fff">STOP</text>
+  <text x="542" y="290" font-family="IBM Plex Mono, monospace" font-size="40" fill="#fff">UNDO</text>
+  <text x="885" y="290" font-family="IBM Plex Mono, monospace" font-size="40" fill="#fff">RECOVER</text>
+  <text x="138" y="344" font-family="Georgia, serif" font-size="30" fill="#fee2e2">Limit scope</text>
+  <text x="530" y="344" font-family="Georgia, serif" font-size="30" fill="#fef3c7">Restore fast</text>
+  <text x="882" y="344" font-family="Georgia, serif" font-size="30" fill="#d1fae5">Retry calmly</text>
+  <path d="M370 300H460" stroke="#cbd5e1" stroke-width="10" stroke-linecap="round"/>
+  <path d="M740 300H830" stroke="#cbd5e1" stroke-width="10" stroke-linecap="round"/>
+</svg>

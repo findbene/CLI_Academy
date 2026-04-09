@@ -128,9 +128,15 @@ export function OnboardingWizard() {
         router.push("/dashboard");
         router.refresh();
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Onboarding saving error:", error);
-      setMessage(error?.message || error?.error_description || "Could not save onboarding yet.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" && error !== null && "error_description" in error
+            ? String(error.error_description)
+            : "Could not save onboarding yet.";
+      setMessage(errorMessage);
     } finally {
       setSaving(false);
     }

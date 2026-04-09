@@ -20,9 +20,7 @@ import { ALL_RESOURCES, RESOURCE_CATEGORIES } from "@/lib/data/resources";
 import ShaderBackground from "@/components/ui/shader-background";
 import {
   BookOpen,
-  Download,
   MessageCircle,
-  ShieldCheck,
   GraduationCap,
   Zap,
   ArrowRight,

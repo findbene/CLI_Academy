@@ -123,7 +123,7 @@ export function FreeTierShowcase({ userName }: FreeTierShowcaseProps) {
               </div>
               <h4 className="mb-2 text-lg font-bold text-gray-800">Industry Case Studies</h4>
               <p className="mb-6 text-sm leading-relaxed text-gray-500">
-                 Unlock tear-downs of how top companies deploy agents, including deep-dives into NVIDIA’s rumored 'NemoClaw' and production-grade architectures.
+                  Unlock tear-downs of how top companies deploy agents, including deep-dives into NVIDIA&apos;s rumored &apos;NemoClaw&apos; and production-grade architectures.
               </p>
               <div className="text-xs font-semibold text-gray-400 flex items-center gap-1">
                  UNABLE TO ACCESS <ChevronRight className="h-3 w-3" />
@@ -143,7 +143,7 @@ export function FreeTierShowcase({ userName }: FreeTierShowcaseProps) {
               </div>
               <h4 className="mb-2 text-lg font-bold text-gray-800">The Certification Paths</h4>
               <p className="mb-6 text-sm leading-relaxed text-gray-500">
-                 Gamified, rigorous progression lines that award you verifiable industry badges (e.g., 'Certified Agentic Ops Specialist') upon passing our capstone labs.
+                  Gamified, rigorous progression lines that award you verifiable industry badges (e.g., &apos;Certified Agentic Ops Specialist&apos;) upon passing our capstone labs.
               </p>
               <div className="text-xs font-semibold text-gray-400 flex items-center gap-1">
                  UNABLE TO ACCESS <ChevronRight className="h-3 w-3" />

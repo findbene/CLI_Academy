@@ -20,14 +20,14 @@ export function HeroPick() {
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-[#00D4FF]/20 text-[#00D4FF] rounded-full text-xs font-semibold mb-6 w-max border border-[#00D4FF]/30 shadow-[0_0_15px_rgba(0,212,255,0.2)]">
             <Sparkles className="w-3 h-3" />
-            <span>Today's Chill Pick</span>
+            <span>Today&apos;s Chill Pick</span>
           </div>
           
           <h2 className="text-3xl md:text-5xl font-display font-semibold mb-4 leading-tight group-hover:text-white text-[#F0F4F8] transition-colors">
             The Psychology of Context Windows
           </h2>
           <p className="text-gray-400 font-light text-lg mb-8 leading-relaxed max-w-sm">
-            Why managing token limits feels stressful, and how treating your agent's memory like a human's short-term memory changes everything.
+            Why managing token limits feels stressful, and how treating your agent&apos;s memory like a human&apos;s short-term memory changes everything.
           </p>
           
           <div className="flex items-center space-x-2 text-[#00D4FF] group-hover:translate-x-2 transition-transform duration-300">
@@ -42,7 +42,7 @@ export function HeroPick() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F1117] to-transparent z-10 h-1/4 bottom-0 md:hidden block" />
           <div 
             className="w-full h-full bg-cover bg-center transform group-hover:scale-105 transition-transform duration-700 ease-out" 
-            style={{ backgroundImage: 'url("/assets/placeholders/lounge_hero.jpg")' }} 
+            style={{ backgroundImage: 'url("/assets/placeholders/lounge-hero.svg")' }} 
           />
         </div>
       </div>

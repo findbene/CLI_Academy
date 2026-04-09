@@ -2,15 +2,15 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ui/ThemeProvider";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+function subscribe() {
+  return () => {};
+}
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(subscribe, () => true, () => false);
 
   if (!mounted) {
     return <button type="button" className="flex size-9 items-center justify-center rounded-xl text-transparent" disabled />;

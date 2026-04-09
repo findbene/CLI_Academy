@@ -7,10 +7,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from routers import health, tutor, gamification
-
 # Load environment variables from .env before anything else reads them.
 load_dotenv()
+
+from routers import gamification, health, tutor
 
 # ---------------------------------------------------------------------------
 # Structured Observability / Logging

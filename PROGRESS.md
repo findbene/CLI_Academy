@@ -26,6 +26,12 @@ Zero-To-Mastery (ZTM) Infrastructure & Pedagogy Implementation.
   - Cleared corrupted Next.js build cache (`.next/`) to resolve `[slug]` router collisions in the `app/(marketing)/` layout.
   - Successfully validated End-to-End frontend/backend synchronization and Agent Lounge dynamic MDX rendering via comprehensive Browser Subagent testing.
   - Restored the high-conversion "One-Liner" marketing punchline to the `HomePage` hero section UI.
+- **Audit Remediation Pass (2026-04-09):**
+  - Restored the Lounge as a public surface by moving the published-content implementation onto `/lounge` and deleting the stale tracked backup route artifact.
+  - Replaced broken Lounge placeholder references with real local SVG assets and added rendering support for custom `Screenshot` and `TerminalSimulation` content blocks.
+  - Tightened backend startup/config handling by loading `.env` before router import, requiring admin Supabase credentials for gamification paths, and upgrading readiness checks to return `503` when critical dependencies are missing.
+  - Hardened auth accessibility and smoke coverage by wiring explicit input labels, adding accessible provider button names, and updating Playwright to assert against actual runtime behavior instead of test-runner env guesses.
+  - Verified the remediation with clean frontend `lint`, clean production `build`, green Playwright smoke suite (`16/16`), and backend `compileall` success.
 
 ## In progress
 
@@ -33,6 +39,6 @@ Zero-To-Mastery (ZTM) Infrastructure & Pedagogy Implementation.
 
 ## Next
 
-1. Kickoff the ideation/research sequence for further Lounge Content generation.
+1. Kick off the next batch of Lounge/editorial content now that the public route and renderer are stable.
 2. Draft the Capstone MDX payloads for the `mcp-mastery` paths.
-3. Harden the gamification service against aggressive rate limits and malformed database edge cases.
+3. Harden the gamification service further around concurrency and malformed database edge cases.
