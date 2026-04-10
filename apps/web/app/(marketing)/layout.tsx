@@ -45,8 +45,7 @@ export default async function MarketingLayout({ children }: { children: ReactNod
             <h4 className="text-sm font-semibold text-[var(--color-fg-default)]">Resources</h4>
             <ul className="mt-3 space-y-2 text-sm text-[var(--color-fg-muted)]">
               <li><Link href="/paths" className="hover:text-[var(--color-accent-primary)] transition-colors">Live Paths</Link></li>
-              <li><Link href="/asset-vault" className="hover:text-[var(--color-accent-primary)] transition-colors">Asset Vault</Link></li>
-              <li><Link href="/resources" className="hover:text-[var(--color-accent-primary)] transition-colors">Ecosystem Directory</Link></li>
+              <li><Link href="/downloads" className="hover:text-[var(--color-accent-primary)] transition-colors">Downloads</Link></li>
               <li><Link href="/troubleshooting" className="hover:text-[var(--color-accent-primary)] transition-colors">Troubleshooting</Link></li>
               <li><Link href="/trust" className="hover:text-[var(--color-accent-primary)] transition-colors">Trust &amp; Safety</Link></li>
               <li><Link href="/support" className="hover:text-[var(--color-accent-primary)] transition-colors">Support</Link></li>

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Ecosystem Resources",
+  title: "Resource Hub",
   description:
-    "Browse the wider Claude-builder ecosystem directory: skills, MCPs, agents, plugins, and CLI tools that complement the academy.",
+    "Download skills, MCPs, agents, plugins, and CLI tools built for Claude Code. Free and Pro packs for every experience level.",
 };
 
 import {
@@ -40,25 +40,15 @@ export default function ResourceHubPage() {
     <div className="page-shell">
       {/* Hero */}
       <section className="mb-16 text-center">
-        <div className="eyebrow mb-4">Ecosystem directory</div>
+        <div className="eyebrow mb-4">Resource Hub</div>
         <h1 className="text-4xl font-bold tracking-tight text-[var(--color-fg-default)] sm:text-5xl">
-          Skills, MCPs, agents, plugins, and tools
-          <span className="bg-gradient-to-r from-[var(--teal-500)] to-[var(--blue-500)] bg-clip-text text-transparent"> around the academy</span>
+          Your AI Development
+          <span className="bg-gradient-to-r from-[var(--teal-500)] to-[var(--blue-500)] bg-clip-text text-transparent"> Toolkit</span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-[var(--color-fg-muted)]">
-          This is the broader ecosystem directory, not the primary learner route. Start with `/learn` for the
-          academy journey, use `/asset-vault` for builder packs and field manuals, and come here when you want the
-          surrounding tools and integrations.
+          Hundreds of downloadable skills, MCP configs, pre-built agents, editor plugins, and CLI guides.
+          Everything you need to build with AI — organized, searchable, and always up to date.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link href="/learn" className="button-primary">
-            Start with Learn
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link href="/asset-vault" className="button-secondary">
-            Open Asset Vault
-          </Link>
-        </div>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] px-5 py-2 text-sm font-medium text-[var(--color-fg-default)]">
             <Download className="h-4 w-4 text-[var(--color-accent-primary)]" />
@@ -205,12 +195,12 @@ export default function ResourceHubPage() {
             Not sure where to start?
           </h2>
           <p className="mt-2 text-[var(--color-fg-muted)]">
-            Start with the academy flow, then come back here for the surrounding tool ecosystem.
+            Jump into a learning path, then come back for the tools.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/learn" className="button-secondary">
+            <Link href="/paths" className="button-secondary">
               <BookOpen className="h-4 w-4" />
-              Open Learn
+              Browse Learning Paths
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
