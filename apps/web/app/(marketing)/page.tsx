@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Download, ShieldCheck, TerminalSquare, Wrench } from "lucide-react";
-import { AcademyBadgesPanel } from "@/components/academy/AcademyBadgesPanel";
 import { AcademySurfaceCard } from "@/components/academy/AcademySurfaceCard";
-import { CommunityShowcasePanel } from "@/components/academy/CommunityShowcasePanel";
 import { FastPathWeekCard } from "@/components/academy/FastPathWeekCard";
 import { SpineProjectDashboard } from "@/components/academy/SpineProjectDashboard";
 import { getPublishedCatalogPaths, getPathCta } from "@/lib/catalog";
 import { getServerViewer } from "@/lib/viewer";
 import {
-  ACADEMY_BADGES,
   ACADEMY_MOAT,
   ACADEMY_POSITIONING,
   ACADEMY_SURFACES,
-  COMMUNITY_SHOWCASE_HIGHLIGHTS,
   FAST_PATH_WEEKS,
 } from "@/lib/academy";
 
@@ -149,14 +145,6 @@ export default async function HomePage() {
             <AcademySurfaceCard key={surface.title} surface={surface} />
           ))}
         </div>
-      </section>
-
-      <section className="page-shell pb-16">
-        <AcademyBadgesPanel badges={ACADEMY_BADGES} />
-      </section>
-
-      <section className="page-shell pb-16">
-        <CommunityShowcasePanel highlights={COMMUNITY_SHOWCASE_HIGHLIGHTS} />
       </section>
 
       <section className="page-shell pb-16">

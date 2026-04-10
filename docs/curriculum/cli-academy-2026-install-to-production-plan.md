@@ -556,7 +556,3 @@ This planning pass is already being implemented in the live product:
 - new spine-project progress component added to dashboard and path pages
 - Asset Vault taxonomy expanded and legacy asset-path mismatches corrected
 - new starter playbooks and field manuals added for Week 1 and builder extension work
-- 2026 freshness micro-modules are now explicitly part of Course 4 and Course 19
-- chapter delivery standards now require short demo video, annotated visuals, one simple diagram, and a Mini Notes printable
-- Course 21 now exists as the post-capstone mastery layer for cost engineering, scaling, and multi-provider resilience
-- badges and optional showcase hooks are framed as light motivation tied to real artifacts, not as a noisy community-first product layer

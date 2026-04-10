@@ -47,9 +47,3 @@
 **Decision:** Keep the existing lesson runtime, MDX content contract, progress plumbing, and tutor integration intact, then layer the new academy shell on top through shared product metadata for fast-path weeks, spine milestones, setup tracks, and asset-vault taxonomy.
 
 **Why:** The repo already has a capable guided-learning engine and live curriculum corpus. The larger problem was positioning and organization, not lesson rendering. Reframing around Setup Academy, the 8-week fast path, and the Personal AI Workforce spine delivers the new product promise with less migration risk than rebuilding core delivery infrastructure.
-
-## ADR-009 — The 2026 polish pass should deepen the academy shell, not replace it
-
-**Decision:** Implement the approved 2026 upgrades as metadata, UI-shell, and asset-vault improvements layered onto the current academy foundation: short freshness micro-modules, explicit chapter media standards, a post-capstone mastery course, and light badge/showcase motivation.
-
-**Why:** These upgrades improve clarity, relevance, and learner motivation without disturbing the guided-learning engine or forcing a second infrastructure rewrite.

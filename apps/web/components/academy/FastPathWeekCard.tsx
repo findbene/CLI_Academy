@@ -23,17 +23,6 @@ export function FastPathWeekCard({ week }: FastPathWeekCardProps) {
         <div>
           <span className="font-semibold text-[var(--color-fg-default)]">Unlock:</span> {week.unlock}
         </div>
-        <div>
-          <span className="font-semibold text-[var(--color-fg-default)]">Week win:</span> {week.celebration}
-        </div>
-      </div>
-      <div className="mt-4">
-        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-fg-muted)]">Modes available</div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {week.modeSupport.map((mode) => (
-            <span key={mode} className="badge">{mode}</span>
-          ))}
-        </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {week.mappedPathSlugs.length ? (

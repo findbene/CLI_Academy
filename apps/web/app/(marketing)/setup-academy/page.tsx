@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { AcademyStandardsPanel } from "@/components/academy/AcademyStandardsPanel";
 import { FlagshipCourseCard } from "@/components/academy/FlagshipCourseCard";
 import { AssetVaultCard } from "@/components/assets/AssetVaultCard";
 import { getAllLocalAssets } from "@/lib/assets";
-import { CHAPTER_MEDIA_REQUIREMENTS, FAST_PATH_WEEKS, SETUP_ACADEMY_FLAGSHIP_COURSES } from "@/lib/academy";
+import { FAST_PATH_WEEKS, SETUP_ACADEMY_FLAGSHIP_COURSES } from "@/lib/academy";
 
 export default function SetupAcademyPage() {
   const setupAssets = getAllLocalAssets().filter((asset) =>
@@ -11,8 +10,6 @@ export default function SetupAcademyPage() {
       "week-1-local-starter-assistant-checklist",
       "setup-academy-install-troubleshooting-playbook",
       "runtime-lab-decision-matrix",
-      "2026-runtime-and-deployment-update-brief",
-      "chapter-mini-notes-series",
     ].includes(asset.slug),
   );
   const weekOne = FAST_PATH_WEEKS[0];
@@ -58,11 +55,6 @@ export default function SetupAcademyPage() {
             The setup surface now carries the comparison layer too: local-only, Docker sandbox, remote host,
             OpenClaw, and variant/runtime decisions are framed around beginner fit, support maturity, and rollback clarity.
           </p>
-          <div className="mt-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-accent-subtle)] p-4 text-sm text-[var(--color-fg-muted)]">
-            <span className="font-semibold text-[var(--color-fg-default)]">2026 update built in:</span> Course 4 and
-            Course 19 now include a short freshness module covering Claude 4.6, Agent SDK enhancements, NemoClaw
-            security posture, and MCP v2 patterns without bloating the beginner path.
-          </div>
           <ul className="mt-4 space-y-2 text-sm text-[var(--color-fg-muted)]">
             <li>• Best-for guidance instead of hype</li>
             <li>• Honest maturity and support tiers</li>
@@ -95,14 +87,6 @@ export default function SetupAcademyPage() {
           ))}
         </div>
       </section>
-
-      <div className="mt-8">
-        <AcademyStandardsPanel
-          standards={CHAPTER_MEDIA_REQUIREMENTS}
-          eyebrow="Chapter polish"
-          title="Every setup chapter is now explicitly multi-modal"
-        />
-      </div>
     </main>
   );
 }

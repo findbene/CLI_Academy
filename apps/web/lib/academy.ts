@@ -19,43 +19,21 @@ export interface FastPathWeek {
   focus: string;
   artifact: string;
   unlock: string;
-  celebration: string;
   hours: string;
   mappedPathSlugs: string[];
   liveHref: string;
   downloads: string[];
-  modeSupport: string[];
 }
 
 export interface FlagshipCourseSeed {
   title: string;
   difficulty: string;
   duration: string;
-  layer?: string;
   project: string;
   summary: string;
   chapters: string[];
   downloads: string[];
-  modeSupport?: string[];
-  mediaKit?: string[];
-  badge?: string;
-  specialModule?: string;
   href: string;
-}
-
-export interface AcademyStandard {
-  title: string;
-  summary: string;
-}
-
-export interface AcademyBadge {
-  title: string;
-  description: string;
-}
-
-export interface CommunityShowcaseHighlight {
-  title: string;
-  summary: string;
 }
 
 export const ACADEMY_POSITIONING =
@@ -167,7 +145,6 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Workspace safety, terminal confidence, Claude Code install, and first useful local assistant.",
     artifact: "Personal AI Starter Assistant",
     unlock: "You can install, verify, and safely complete your first Claude-assisted task.",
-    celebration: "You finish Week 1 with a working local assistant and a printed setup field manual you can reuse.",
     hours: "10 hours",
     mappedPathSlugs: ["01-start-here", "02-terminal-and-file-system-foundations-for-normal-people", "03-claude-code"],
     liveHref: "/learn/01-start-here",
@@ -176,7 +153,6 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
       "setup-academy-install-troubleshooting-playbook",
       "personal-ai-workforce-spine-map",
     ],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
   {
     week: 2,
@@ -184,12 +160,10 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Session loop, repo navigation, first app improvement, and prompt basics that reduce drift.",
     artifact: "Tiny useful builder app",
     unlock: "You can ask for understanding first, scope changes, and rewrite weak prompts into useful ones.",
-    celebration: "You leave with a useful builder app plus your first reusable prompt kit.",
     hours: "10 hours",
     mappedPathSlugs: ["03-claude-code", "04-claude-code-repo-workflows-and-project-navigation", "05-claude-code-debugging-testing-and-refactoring"],
     liveHref: "/learn/03-claude-code",
     downloads: ["prompt-context-studio-starter-pack"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
   {
     week: 3,
@@ -197,12 +171,10 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Outcome-focused briefs, document workflows, and repeatable knowledge-work automation.",
     artifact: "Folder-to-briefing workflow",
     unlock: "You can decide when a task needs Cowork, run it with oversight, and package the result.",
-    celebration: "You turn messy source material into a polished output that still feels reviewable and human-led.",
     hours: "10 hours",
     mappedPathSlugs: ["08-claude-cowork", "09-claude-cowork-for-documents-research-and-data-extraction"],
     liveHref: "/learn/08-claude-cowork",
     downloads: ["prompt-context-studio-starter-pack"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
   {
     week: 4,
@@ -210,12 +182,10 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Sandbox-first runtime setup, one safe channel, and message-driven bounded execution.",
     artifact: "Message-to-action assistant",
     unlock: "You can bring up a runtime, connect a surface, and keep it within explicit boundaries.",
-    celebration: "You complete a mini-capstone with a real runtime and clear safety boundaries.",
     hours: "10 hours",
     mappedPathSlugs: ["11-openclaw-and-claw-runtime-foundations", "17-secure-integrations"],
     liveHref: "/learn/11-openclaw-and-claw-runtime-foundations",
     downloads: ["runtime-lab-decision-matrix"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
   {
     week: 5,
@@ -223,12 +193,10 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Builder extensibility, reusable instructions, and safe augmentation of the assistant.",
     artifact: "Builder extension pack",
     unlock: "You can create reusable skill packs, hooks, and context scaffolds without creating chaos.",
-    celebration: "You ship a builder extension layer that makes the assistant feel reusable instead of improvised.",
     hours: "10 hours",
     mappedPathSlugs: ["12-skills-memory-heartbeats-and-scheduled-work"],
     liveHref: "/learn/12-skills-memory-heartbeats-and-scheduled-work",
     downloads: ["builder-extension-pack-blueprint"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
   {
     week: 6,
@@ -236,12 +204,10 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Grounding the workforce on trusted documents, structured retrieval, and review loops.",
     artifact: "Grounded knowledge assistant",
     unlock: "You can move from generic prompting to evidence-backed answers with citations and retrieval quality checks.",
-    celebration: "You stop guessing and start shipping grounded outputs with source-aware evidence.",
     hours: "10 hours",
     mappedPathSlugs: [],
     liveHref: "/prompt-context-studio#rag-track",
     downloads: ["prompt-context-studio-starter-pack"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
   {
     week: 7,
@@ -249,12 +215,10 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Planner-worker-reviewer systems, workflow graphs, evaluation harnesses, and approval loops.",
     artifact: "Operations agent team",
     unlock: "You can orchestrate multi-step work without losing accountability, observability, or human review.",
-    celebration: "You coordinate multiple bounded agents with review loops that still make sense to a beginner.",
     hours: "10 hours",
     mappedPathSlugs: ["13-multi-agent-patterns-for-real-life", "17-secure-integrations", "18-real-world-agent-builds-for-everyday-productivity"],
     liveHref: "/learn/13-multi-agent-patterns-for-real-life",
     downloads: ["builder-extension-pack-blueprint"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
   {
     week: 8,
@@ -262,12 +226,10 @@ export const FAST_PATH_WEEKS: FastPathWeek[] = [
     focus: "Deployment paths, reliability patterns, safety reviews, and portfolio packaging.",
     artifact: "Autonomous AI Workforce capstone",
     unlock: "You can package the system as real proof of work instead of a disconnected collection of experiments.",
-    celebration: "You finish with a portfolio-grade capstone, evidence pack, and a clear next mastery track.",
     hours: "10 hours",
     mappedPathSlugs: ["15-secure-remote-setups", "18-real-world-agent-builds-for-everyday-productivity", "19-capstones-portfolio-proof-and-job-ready-evidence"],
     liveHref: "/learn/19-capstones-portfolio-proof-and-job-ready-evidence",
     downloads: ["personal-ai-workforce-spine-map"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
   },
 ];
 
@@ -276,7 +238,6 @@ export const SETUP_ACADEMY_FLAGSHIP_COURSES: FlagshipCourseSeed[] = [
     title: "Claude Code Setup Academy",
     difficulty: "Absolute beginner",
     duration: "6-8 hours",
-    layer: "Core",
     project: "First working Claude Code builder session",
     summary: "Install by OS, authenticate cleanly, review safe approvals, troubleshoot configs, and complete your first real repo task.",
     chapters: [
@@ -287,16 +248,12 @@ export const SETUP_ACADEMY_FLAGSHIP_COURSES: FlagshipCourseSeed[] = [
       "First end-to-end build and evaluation",
     ],
     downloads: ["week-1-local-starter-assistant-checklist", "setup-academy-install-troubleshooting-playbook"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["1-3 minute demo video", "Annotated setup screenshots", "Approval-flow diagram", "Mini Notes PDF"],
-    badge: "Setup Master",
     href: "/learn/03-claude-code",
   },
   {
     title: "Claude Cowork Setup Academy",
     difficulty: "Beginner",
     duration: "4-6 hours",
-    layer: "Core",
     project: "Research folder to briefing pack",
     summary: "Give Cowork a messy folder, define the outcome, review the work, and ship a useful deliverable without losing oversight.",
     chapters: [
@@ -307,16 +264,12 @@ export const SETUP_ACADEMY_FLAGSHIP_COURSES: FlagshipCourseSeed[] = [
       "End-to-end briefing build and QA",
     ],
     downloads: ["prompt-context-studio-starter-pack"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["Outcome-preview video", "Annotated file-access screenshots", "Review-loop diagram", "Mini Notes PDF"],
-    badge: "Prompt Architect",
     href: "/learn/08-claude-cowork",
   },
   {
     title: "OpenClaw Runtime Setup",
     difficulty: "Intermediate beginner",
     duration: "8-10 hours",
-    layer: "Core",
     project: "Personal assistant in a sandbox",
     summary: "Bring up a bounded runtime locally, connect one channel, and prove that the runtime can do one useful task safely.",
     chapters: [
@@ -327,16 +280,12 @@ export const SETUP_ACADEMY_FLAGSHIP_COURSES: FlagshipCourseSeed[] = [
       "Safe end-to-end assistant build",
     ],
     downloads: ["runtime-lab-decision-matrix", "setup-academy-install-troubleshooting-playbook"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["Sandbox demo video", "Annotated Docker or local screenshots", "Runtime boundary diagram", "Mini Notes PDF"],
-    badge: "Runtime Ranger",
     href: "/learn/11-openclaw-and-claw-runtime-foundations",
   },
   {
     title: "Claw-verse Runtime Decisions",
     difficulty: "Beginner to intermediate",
     duration: "3-4 hours",
-    layer: "Boost",
     project: "One task, multiple runtimes",
     summary: "Compare OpenClaw, NemoClaw-style secure runtimes, lightweight variants, and honest support tiers before you pick a production path.",
     chapters: [
@@ -347,16 +296,12 @@ export const SETUP_ACADEMY_FLAGSHIP_COURSES: FlagshipCourseSeed[] = [
       "2026 update micro-module",
     ],
     downloads: ["runtime-lab-decision-matrix"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["10-minute 2026 update video", "Comparison matrix graphic", "Config-pattern infographic", "Mini Notes PDF"],
-    specialModule: "2026 Update: Claude 4.6, Agent SDK enhancements, NemoClaw security layer, and MCP v2 patterns.",
     href: "/setup-academy#runtime-lab",
   },
   {
     title: "Hermes Persistence And Memory",
     difficulty: "Intermediate",
     duration: "4-5 hours",
-    layer: "Boost",
     project: "Persistent study and ops assistant",
     summary: "Configure memory, test session continuity, and keep persistent behavior useful instead of noisy.",
     chapters: [
@@ -367,8 +312,6 @@ export const SETUP_ACADEMY_FLAGSHIP_COURSES: FlagshipCourseSeed[] = [
       "Cross-session validation",
     ],
     downloads: ["builder-extension-pack-blueprint", "personal-ai-workforce-spine-map"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["Continuity demo video", "Memory lifecycle diagram", "Annotated settings screenshots", "Mini Notes PDF"],
     href: "/prompt-context-studio#memory-track",
   },
 ];
@@ -378,7 +321,6 @@ export const PROMPT_STUDIO_TRACKS: FlagshipCourseSeed[] = [
     title: "Prompting Fundamentals",
     difficulty: "Absolute beginner",
     duration: "3-4 hours",
-    layer: "Core",
     project: "Prompt makeover pack",
     summary: "Learn prompt anatomy, clarity, constraints, and examples by rewriting weak prompts into usable task briefs.",
     chapters: [
@@ -389,16 +331,12 @@ export const PROMPT_STUDIO_TRACKS: FlagshipCourseSeed[] = [
       "Prompt makeover lab",
     ],
     downloads: ["prompt-context-studio-starter-pack"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["Prompt rewrite demo video", "Before-after prompt screenshots", "Prompt anatomy infographic", "Mini Notes PDF"],
-    badge: "Prompt Architect",
     href: "/prompt-context-studio#fundamentals",
   },
   {
     title: "Prompt and Context Engineering",
     difficulty: "Beginner to intermediate",
     duration: "5-6 hours",
-    layer: "Boost",
     project: "Context optimization lab",
     summary: "Move from prompts alone to well-bounded context packets, token budgets, variables, and structured instructions.",
     chapters: [
@@ -409,15 +347,12 @@ export const PROMPT_STUDIO_TRACKS: FlagshipCourseSeed[] = [
       "Context optimization lab",
     ],
     downloads: ["prompt-context-studio-starter-pack", "personal-ai-workforce-spine-map"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["Context-packet demo video", "Token budget graphic", "Workflow context diagram", "Mini Notes PDF"],
     href: "/prompt-context-studio#context-track",
   },
   {
     title: "Harness Engineering and Prompt Doctor",
     difficulty: "Intermediate",
     duration: "4-5 hours",
-    layer: "Mastery",
     project: "Prompt harness and eval kit",
     summary: "Create test cases, run evaluations, diagnose failures, and use Prompt Doctor to turn rough instructions into reliable production patterns.",
     chapters: [
@@ -428,84 +363,6 @@ export const PROMPT_STUDIO_TRACKS: FlagshipCourseSeed[] = [
       "Eval kit packaging",
     ],
     downloads: ["prompt-context-studio-starter-pack"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["Prompt Doctor demo video", "Harness scorecard diagram", "Failure taxonomy graphic", "Mini Notes PDF"],
     href: "/prompt-context-studio#prompt-doctor",
-  },
-];
-
-export const CHAPTER_MEDIA_REQUIREMENTS: AcademyStandard[] = [
-  {
-    title: "Short demo in every chapter",
-    summary: "Each chapter starts with a 1-3 minute preview video so beginners see the finished outcome before touching the terminal.",
-  },
-  {
-    title: "Annotated steps, not text walls",
-    summary: "Guided builds require screenshots, GIFs, or step visuals for every critical setup, config, or troubleshooting action.",
-  },
-  {
-    title: "One simple diagram per chapter",
-    summary: "Every chapter carries a lightweight graphic such as an approval flow, runtime map, context budget, or comparison matrix.",
-  },
-  {
-    title: "Mini Notes printable for every chapter",
-    summary: "Each chapter ships with a one-page printable covering commands, mistakes, and a quick completion checklist.",
-  },
-];
-
-export const ACADEMY_BADGES: AcademyBadge[] = [
-  {
-    title: "Setup Master",
-    description: "Awarded when the learner completes the install, auth, and first-win setup sequence with verification.",
-  },
-  {
-    title: "Prompt Architect",
-    description: "Awarded for turning rough prompting into reusable prompt, context, and evaluation assets.",
-  },
-  {
-    title: "Runtime Ranger",
-    description: "Awarded for choosing, configuring, and safely operating the right runtime for a bounded use case.",
-  },
-  {
-    title: "Agentic Workforce Architect",
-    description: "Awarded when the full capstone is packaged with safety, observability, and portfolio-ready proof.",
-  },
-];
-
-export const COMMUNITY_SHOWCASE_HIGHLIGHTS: CommunityShowcaseHighlight[] = [
-  {
-    title: "Optional capstone showcase",
-    summary: "Learners can submit their Week 8 workforce build with README, diagrams, and demo script for public inspiration.",
-  },
-  {
-    title: "Evidence-first gallery",
-    summary: "Showcase cards emphasize artifact quality, safety notes, and deployment evidence instead of vanity screenshots alone.",
-  },
-  {
-    title: "Beginner-to-builder motivation loop",
-    summary: "The gallery helps new learners see what a realistic finished project looks like before they commit to the fast path.",
-  },
-];
-
-export const MASTERY_TRACKS: FlagshipCourseSeed[] = [
-  {
-    title: "Cost Engineering, Scaling, and Multi-Provider Agents",
-    difficulty: "Advanced",
-    duration: "12-15 hours",
-    layer: "Mastery",
-    project: "Production cost and resilience layer",
-    summary: "Take the final capstone beyond 'it works' by adding token budgets, fallback providers, observability alerts, and scaling guardrails.",
-    chapters: [
-      "Token budgeting and latency tradeoffs",
-      "Multi-model orchestration and fallback design",
-      "Scaling patterns and graceful degradation",
-      "Evaluation harnesses, SLOs, and cost dashboards",
-    ],
-    downloads: ["cost-engineering-multi-provider-playbook", "capstone-showcase-submission-kit"],
-    modeSupport: ["Guided", "Hint-Based", "Independent"],
-    mediaKit: ["Scaling-pattern walkthrough video", "Provider-fallback diagram", "Cost dashboard mockup", "Mini Notes PDF"],
-    badge: "Agentic Workforce Architect",
-    specialModule: "Designed as the post-capstone mastery layer for running agent systems reliably and affordably in the real world.",
-    href: "/prompt-context-studio#mastery-track",
   },
 ];
