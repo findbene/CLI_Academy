@@ -43,7 +43,7 @@ export default async function LoungeArticlePage({ params }: { params: Promise<{ 
         className="pointer-events-none absolute inset-x-0 top-0 h-[28rem]"
         style={{
           background:
-            "radial-gradient(circle at top left, rgba(22, 176, 168, 0.15), transparent 30%), radial-gradient(circle at 84% 16%, rgba(201, 134, 18, 0.12), transparent 18%)",
+            "radial-gradient(circle at top left, rgba(14, 165, 165, 0.12), transparent 30%), radial-gradient(circle at 84% 16%, rgba(250, 204, 21, 0.08), transparent 18%)",
         }}
       />
 

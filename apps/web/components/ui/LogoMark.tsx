@@ -41,8 +41,8 @@ export function LogoMark({ size = 36 }: { size?: number }) {
           y2="36"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#1dd4c6" />
-          <stop offset="100%" stopColor="#0e8c85" />
+          <stop offset="0%" stopColor="#14B8B8" />
+          <stop offset="100%" stopColor="#0C7A7A" />
         </linearGradient>
       </defs>
     </svg>

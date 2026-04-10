@@ -15,12 +15,12 @@ export function HeroPick() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(circle at top right, rgba(22, 176, 168, 0.16), transparent 26%), radial-gradient(circle at bottom left, rgba(201, 134, 18, 0.12), transparent 24%)",
+            "radial-gradient(circle at top right, rgba(14, 165, 165, 0.14), transparent 26%), radial-gradient(circle at bottom left, rgba(250, 204, 21, 0.08), transparent 24%)",
         }}
       />
       <div className="relative z-10 flex h-full flex-col md:min-h-[25rem] md:flex-row">
         <div className="flex w-full flex-col justify-center p-8 md:w-[54%] md:p-12">
-          <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-[rgba(201,134,18,0.22)] bg-[rgba(201,134,18,0.12)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-accent-warning)]">
+          <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-[rgba(250,204,21,0.20)] bg-[rgba(250,204,21,0.10)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-accent-warning)]">
             <Sparkles className="h-3.5 w-3.5" />
             Today&apos;s featured pick
           </div>
@@ -53,7 +53,7 @@ export function HeroPick() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, var(--color-bg-page) 0%, rgba(22, 176, 168, 0.08) 100%)",
+              background: "linear-gradient(135deg, var(--color-bg-page) 0%, rgba(14, 165, 165, 0.06) 100%)",
             }}
           />
           <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-32 bg-gradient-to-r from-[var(--color-bg-panel)] via-[var(--color-bg-page)] to-transparent md:block" />

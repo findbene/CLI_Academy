@@ -34,10 +34,10 @@ export function LoungePageHero() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at top left, rgba(22, 176, 168, 0.18), transparent 34%), radial-gradient(circle at 88% 14%, rgba(201, 134, 18, 0.14), transparent 24%), linear-gradient(135deg, transparent 0%, rgba(37, 99, 235, 0.05) 100%)",
+              "radial-gradient(circle at top left, rgba(14, 165, 165, 0.15), transparent 34%), radial-gradient(circle at 88% 14%, rgba(250, 204, 21, 0.10), transparent 24%), linear-gradient(135deg, transparent 0%, rgba(37, 99, 235, 0.04) 100%)",
           }}
         />
-        <div className="pointer-events-none absolute -right-20 top-12 h-72 w-72 rounded-full border border-[rgba(22,176,168,0.2)]" />
+        <div className="pointer-events-none absolute -right-20 top-12 h-72 w-72 rounded-full border border-[rgba(14,165,165,0.18)]" />
         <div className="pointer-events-none absolute right-12 top-28 h-56 w-56 rounded-full border border-[rgba(37,99,235,0.14)]" />
         <div className="pointer-events-none absolute -left-14 bottom-[-7rem] h-60 w-60 rounded-full bg-[rgba(22,176,168,0.12)] blur-3xl" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[var(--color-bg-panel)] to-transparent" />

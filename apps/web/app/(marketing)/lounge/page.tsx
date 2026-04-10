@@ -44,7 +44,7 @@ export default async function LoungePage() {
         className="pointer-events-none absolute inset-x-0 top-0 h-[34rem]"
         style={{
           background:
-            "radial-gradient(circle at top left, rgba(22, 176, 168, 0.18), transparent 32%), radial-gradient(circle at 84% 18%, rgba(201, 134, 18, 0.14), transparent 18%)",
+            "radial-gradient(circle at top left, rgba(14, 165, 165, 0.15), transparent 32%), radial-gradient(circle at 84% 18%, rgba(250, 204, 21, 0.10), transparent 18%)",
         }}
       />
       <div
