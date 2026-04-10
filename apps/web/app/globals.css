@@ -878,7 +878,7 @@ h4 {
   padding: 0.875rem 2rem;
   border-radius: var(--radius-pill);
   background: var(--aurora-light);
-  color: #ffffff;
+  color: var(--color-fg-on-accent);
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-body-md);
   transition: all 200ms ease;
