@@ -45,9 +45,6 @@ export default function SetupAcademyPage() {
             <Link href={weekOne.liveHref} className="button-primary">
               Start Week 1
             </Link>
-            <Link href="/runtime-lab" className="button-secondary">
-              Open Runtime Lab
-            </Link>
             <Link href="/asset-vault" className="button-secondary">
               Get the field manuals
             </Link>

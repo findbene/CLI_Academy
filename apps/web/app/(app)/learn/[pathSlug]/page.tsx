@@ -1,5 +1,4 @@
 import { AssetCard } from "@/components/assets/AssetCard";
-import { AcademyStandardsPanel } from "@/components/academy/AcademyStandardsPanel";
 import { SpineProjectProgress } from "@/components/academy/SpineProjectProgress";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -10,7 +9,6 @@ import { getPathBlueprint } from "@/lib/data/academy";
 import { getLessonsForPath } from "@/lib/mdx";
 import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
 import { getServerViewer } from "@/lib/viewer";
-import { CHAPTER_MEDIA_REQUIREMENTS } from "@/lib/academy";
 
 interface LearnPathPageProps {
   params: Promise<{ pathSlug: string }>;
@@ -147,32 +145,6 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
     }
   }
 
-  const studioHref =
-    blueprint?.studioFocus === "Setup Academy"
-      ? "/setup-academy"
-      : blueprint?.studioFocus === "Runtime Lab"
-        ? "/runtime-lab"
-        : blueprint?.studioFocus === "Workflow Studio"
-          ? "/workflow-studio"
-          : blueprint?.studioFocus === "Prompt & Context Studio"
-            ? "/prompt-context-studio"
-            : blueprint?.studioFocus === "Asset Vault"
-              ? "/asset-vault"
-              : blueprint?.studioFocus === "Progress & Portfolio"
-                ? "/prompt-doctor"
-                : "/learn";
-
-  const milestoneBadge =
-    blueprint?.studioFocus === "Setup Academy"
-      ? "Setup Master"
-      : blueprint?.studioFocus === "Prompt & Context Studio"
-        ? "Prompt Architect"
-        : blueprint?.studioFocus === "Runtime Lab"
-          ? "Runtime Ranger"
-          : blueprint?.studioFocus === "Progress & Portfolio"
-            ? "Agentic Workforce Architect"
-            : "Fast Path Milestone";
-
   return (
     <main className="page-shell">
       <section className="panel p-6">
@@ -193,54 +165,11 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
               Spine project contribution
             </div>
             <div className="mt-2 text-sm text-[var(--color-fg-default)]">{blueprint.spineOutcome}</div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="badge" data-tone="warning">{milestoneBadge}</span>
-              <span className="badge">{blueprint.studioFocus}</span>
-            </div>
           </div>
         ) : null}
       </section>
 
       {blueprint?.fastPathWeek ? <SpineProjectProgress activeWeek={blueprint.fastPathWeek} /> : null}
-
-      {blueprint ? (
-        <section className="mt-8 grid gap-4 lg:grid-cols-[1fr_0.95fr]">
-          <article className="panel p-5">
-            <div className="eyebrow">Path framing</div>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">This path is part of a bigger academy system</h2>
-            <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
-              You are not just opening a standalone path. This lesson set contributes to the Personal AI Workforce
-              spine project and is supported by one main studio surface plus a matching asset bundle.
-            </p>
-            <div className="mt-4 grid gap-2 text-sm">
-              <div><span className="font-semibold text-[var(--color-fg-default)]">Studio focus:</span> {blueprint.studioFocus}</div>
-              <div><span className="font-semibold text-[var(--color-fg-default)]">Best learning mode arc:</span> Guided to Hint-Based to Independent</div>
-              <div><span className="font-semibold text-[var(--color-fg-default)]">Lesson support:</span> demo preview, worked steps, troubleshooting, and downloadable packs</div>
-            </div>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link href={studioHref} className="button-secondary">
-                Open {blueprint.studioFocus}
-              </Link>
-              <Link href="/asset-vault" className="button-ghost">
-                Open Asset Vault
-              </Link>
-            </div>
-          </article>
-
-          <article className="panel p-5">
-            <div className="eyebrow">Chapter standard</div>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">Every chapter is expected to stay multi-modal</h2>
-            <div className="mt-4 space-y-3">
-              {CHAPTER_MEDIA_REQUIREMENTS.map((standard) => (
-                <div key={standard.title} className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] p-3">
-                  <div className="text-sm font-semibold">{standard.title}</div>
-                  <div className="mt-1 text-sm leading-6 text-[var(--color-fg-muted)]">{standard.summary}</div>
-                </div>
-              ))}
-            </div>
-          </article>
-        </section>
-      ) : null}
 
       {recommendedAssets.length ? (
         <section className="mt-8 grid gap-4">
@@ -255,14 +184,6 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
           </div>
         </section>
       ) : null}
-
-      <div className="mt-8">
-        <AcademyStandardsPanel
-          standards={CHAPTER_MEDIA_REQUIREMENTS}
-          eyebrow="Delivery promise"
-          title="Learners should know what support to expect in every chapter"
-        />
-      </div>
 
       <section className="mt-8 grid gap-4">
         {lessons.map((lesson) => (

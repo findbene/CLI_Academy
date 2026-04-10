@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Download, Settings, Compass, Menu, BookOpen, LibraryBig, Wrench, X, Network, FlaskConical } from "lucide-react";
+import { LayoutDashboard, Download, Settings, Compass, Menu, BookOpen, LibraryBig, Wrench, X } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { SearchTrigger } from "@/components/ui/search-dialog";
 import { LogoMark } from "@/components/ui/LogoMark";
@@ -13,8 +13,6 @@ const navItems = [
   { href: "/learn", label: "Learn", icon: BookOpen },
   { href: "/setup-academy", label: "Setup Academy", icon: Wrench },
   { href: "/prompt-context-studio", label: "Prompt Studio", icon: Compass },
-  { href: "/runtime-lab", label: "Runtime Lab", icon: Network },
-  { href: "/labs", label: "Live Labs", icon: FlaskConical },
   { href: "/asset-vault", label: "Asset Vault", icon: LibraryBig },
   { href: "/downloads", label: "Downloads", icon: Download },
   { href: "/settings", label: "Settings", icon: Settings },
