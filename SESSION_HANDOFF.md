@@ -15,6 +15,8 @@
 
 ## Completed This Session
 
+- Continued the post-reframe cleanup after the first academy-shell commit landed on `main`: clarified route roles so `/learn` is now the main academy discovery front door, `/paths` is the detailed live execution catalog, `/asset-vault` and signed-in `/downloads` are the builder-asset surfaces, and `/resources` is explicitly the broader ecosystem directory. Updated the relevant page copy and cross-links across the marketing shell and signed-in downloads experience, then revalidated with clean frontend `npm run lint`, clean `npm run typecheck`, and another clean production `npm run build` in `apps/web`.
+- Reran the authenticated Playwright tutor and learner-flow pack outside the sandbox. The suite still fails before any product assertions because `apps/web/e2e/auth.ts` falls back to an interactive login whenever storage-state auth is not injected and the current environment does not provide usable `E2E_USER_EMAIL` / `E2E_USER_PASSWORD`; treat that as the same auth-state/environment blocker, not as a new regression from the academy-shell changes.
 - Reframed the public academy shell around the install-to-production positioning instead of a broad “agentic era” pitch. Added shared academy metadata in `apps/web/lib/academy.ts` and `apps/web/lib/data/academy.ts` for the 8-week fast path, spine-project stages, setup tracks, and studio surfaces; introduced public academy routes at `/learn`, `/setup-academy`, `/prompt-context-studio`, and `/asset-vault`; refreshed homepage/catalog/navigation/footer copy to surface Setup Academy, Asset Vault, and the Personal AI Workforce; extended dashboard and path overview surfaces with spine-project progress context; expanded the asset taxonomy and corrected legacy asset-to-path linkage; added new Week 1 / Setup Academy builder assets under `content/assets/`; and documented the broader architecture and curriculum plan in `docs/curriculum/cli-academy-2026-install-to-production-plan.md`.
 - Revalidated the academy-shell pass with clean frontend `npm run lint`, clean `npm run typecheck`, `npx next typegen`, and a clean production `npm run build` in `apps/web`.
 - During the final release-prep dev-server check, found one real runtime regression that had been hidden by the earlier auth-blocked test focus: loading `/learn/01-start-here/lesson-1-2-1-make-a-personal-safety-checklist` threw `useTutorRuntime must be used inside TutorRuntimeProvider` from `apps/web/components/lesson/LessonStepCard.tsx` during initial server rendering. The root provider in `apps/web/app/layout.tsx` was already correct; the problem was the render boundary, not a missing provider.
@@ -93,7 +95,7 @@
 
 ## Next Action
 
-Refresh the saved learner Playwright auth state or provide fresh `E2E_USER_EMAIL` / `E2E_USER_PASSWORD`, rerun the authenticated tutor and learner-flow pack for release signoff, then continue the academy-shell follow-through by unifying the new public studio routes with the signed-in downloads/resources experience and by deciding whether the old `paths` catalog should become a deeper view under the new `/learn` front door.
+Refresh the saved learner Playwright auth state or provide fresh `E2E_USER_EMAIL` / `E2E_USER_PASSWORD`, rerun the authenticated tutor and learner-flow pack for release signoff, then continue the academy-shell follow-through by deciding whether `/paths` should remain a separate detailed catalog long-term or be absorbed more fully into `/learn`.
 
 ## Blockers
 

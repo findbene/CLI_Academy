@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Download, FileText, Package } from "lucide-react";
 import { DownloadsFilter } from "@/components/assets/DownloadsFilter";
 import {
@@ -64,6 +65,14 @@ export default async function DownloadsPage() {
             <p className="mt-3 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">
               Keep the most useful setup playbooks, field manuals, prompt packs, templates, and troubleshooting references open while you work.
             </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/asset-vault" className="button-secondary">
+                Public vault overview
+              </Link>
+              <Link href="/resources" className="button-ghost">
+                Ecosystem directory
+              </Link>
+            </div>
           </div>
         </div>
         <div className="mt-5 flex flex-wrap gap-4">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AssetVaultCard } from "@/components/assets/AssetVaultCard";
 import { getAllLocalAssets } from "@/lib/assets";
 
@@ -15,6 +16,14 @@ export default function AssetVaultPage() {
           CLI Academy stays useful even when the learner is offline. The Asset Vault is the operational layer:
           printables, reusable packs, and practical builder scaffolds tied back to the academy flow.
         </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/downloads" className="button-primary">
+            Open signed-in vault
+          </Link>
+          <Link href="/resources" className="button-secondary">
+            Browse ecosystem directory
+          </Link>
+        </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <span className="badge" data-tone="accent">{freeCount} free assets</span>

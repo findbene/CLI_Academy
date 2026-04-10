@@ -17,11 +17,20 @@ export default async function PathsCatalogPage() {
   return (
     <main className="page-shell">
       <div className="max-w-3xl">
-        <div className="eyebrow">Learn</div>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight">Structured learning paths for install, build, and ship moments that matter</h1>
+        <div className="eyebrow">Live execution catalog</div>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight">Detailed path-by-path entry into the live learner runtime</h1>
         <p className="mt-4 text-lg leading-8 text-[var(--color-fg-muted)]">
-          Browse the live catalog, follow the 8-week fast path, or go deeper by workflow, runtime, and delivery shape.
+          Start at `/learn` if you want the full 8-week fast-path story. Use this page when you want the
+          detailed catalog view of the live paths that already power the learner experience today.
         </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/learn" className="button-primary">
+            Open the 8-week fast path
+          </Link>
+          <Link href="/setup-academy" className="button-secondary">
+            Go to Setup Academy
+          </Link>
+        </div>
       </div>
 
       <section className="mt-10 grid gap-4">
