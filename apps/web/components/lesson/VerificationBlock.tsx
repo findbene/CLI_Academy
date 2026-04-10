@@ -61,7 +61,7 @@ export function VerificationBlock({ deliverable, verifyCheck }: VerificationBloc
             onChange={(e) => setOutput(e.target.value)}
             disabled={status === "verifying" || status === "success"}
             placeholder="Paste your terminal output or code here to verify..."
-            className="w-full bg-transparent text-[#d4d4d4] font-mono text-base leading-7 p-4 min-h-[120px] focus:outline-none resize-y"
+            className="w-full bg-transparent text-[#d4d4d4] font-mono text-sm p-4 min-h-[120px] focus:outline-none resize-y"
           />
         </div>
 

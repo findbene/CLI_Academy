@@ -5,7 +5,6 @@ chapterNumber: "6.3"
 pathNumber: "6"
 tutorPreload: "Coach me through the full branch-to-merge workflow for this feature."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: Ship a feature branch to GitHub
@@ -17,8 +16,6 @@ In this mini project you will complete the full feature branch workflow from sta
 ## Walkthrough
 
 ### Step 1 — Start from a clean main branch
-
-<StepMeta purpose="Begin the shipping workflow from a known-good main branch so the feature branch starts on the right base." action="Enter the repo, switch to main, pull the latest remote state, and confirm the working tree is clean." expectedResult="Local main matches origin/main and Git reports no pending changes before you branch." whyItMatters="Starting from a clean up-to-date main branch avoids carrying unrelated drift into the feature branch and later PR." nextStep="Create a descriptively named feature branch for the new contact page work." askTutor="I'm on Step 1 of Mini project: Ship a feature branch to GitHub. Help me verify that main is truly clean and current before I branch off." />
 
 If you completed the previous lessons, reuse your `pr-lab` repository. Otherwise, create a new repo and push it to GitHub now.
 
@@ -33,8 +30,6 @@ Confirm you see `nothing to commit, working tree clean` and `Your branch is up t
 
 ### Step 2 — Create a feature branch
 
-<StepMeta purpose="Create an isolated workspace for the feature so the eventual PR has a clear, focused scope." action="Use git switch -c feature-contact-page and confirm the branch name reflects the exact change you plan to make." expectedResult="You are now on a new branch dedicated to the contact page feature." whyItMatters="Clear branch names and isolated history make review and cleanup much easier once the work reaches GitHub." nextStep="Implement the contact page feature and update the homepage link on this branch only." askTutor="I'm on Step 2 of Mini project: Ship a feature branch to GitHub. Help me judge whether this branch name is descriptive enough for a real team workflow." />
-
 Pick a descriptive branch name that reflects the work:
 
 ```bash
@@ -44,8 +39,6 @@ git switch -c feature-contact-page
 Good branch names follow patterns like `feature-contact-page`, `fix-header-typo`, or `docs-update-readme`. Avoid spaces or special characters.
 
 ### Step 3 — Implement the feature
-
-<StepMeta purpose="Create a real but small feature that is substantial enough to review and merge." action="Add contact.html and update index.html so the homepage links to the new contact page." expectedResult="The branch now contains one new file and one modified existing file that together form the feature." whyItMatters="A realistic feature teaches the full workflow better than a toy one-line change because the PR will include both new and modified files." nextStep="Review the exact working-tree changes, stage them, and commit them with a clear message." askTutor="I'm on Step 3 of Mini project: Ship a feature branch to GitHub. Help me confirm that this contact page change is small enough for one PR but still realistic." />
 
 Create a contact page for the project.
 
@@ -115,8 +108,6 @@ EOF
 
 ### Step 4 — Stage, review, and commit
 
-<StepMeta purpose="Package the feature into one clean local snapshot before publishing it to GitHub." action="Inspect git status and git diff, stage the files, review git diff --staged, and commit with a descriptive message." expectedResult="You have one focused feature commit containing both the new contact page and the homepage link update." whyItMatters="Careful staging and review keep PRs readable and reduce the chance of pushing stray edits or forgotten files." nextStep="Push the feature branch to GitHub so the PR can be opened against main." askTutor="I'm on Step 4 of Mini project: Ship a feature branch to GitHub. Help me review this staged diff and confirm the commit includes exactly the files the PR should contain." />
-
 Check what changed:
 
 ```bash
@@ -150,15 +141,11 @@ git commit -m "Add contact page and link from homepage"
 
 ### Step 5 — Push the branch to GitHub
 
-<StepMeta purpose="Publish the feature branch so GitHub can compare it with main and host the review discussion." action="Push feature-contact-page with the upstream flag so later pushes stay simple." expectedResult="The remote now has origin/feature-contact-page and Git remembers the upstream relationship for the branch." whyItMatters="Pushing is the handoff from local development to collaborative review, and the upstream config makes the branch easier to manage afterward." nextStep="Open a pull request with a title and body that explain the change clearly." askTutor="I'm on Step 5 of Mini project: Ship a feature branch to GitHub. Help me interpret this push result and verify the branch is ready for a PR." />
-
 ```bash
 git push -u origin feature-contact-page
 ```
 
 ### Step 6 — Open a pull request
-
-<StepMeta purpose="Turn the pushed branch into a formal review request with context for reviewers." action="Create the PR with gh or the web UI, using a concise title and a body that explains what changed." expectedResult="An open PR exists on GitHub comparing feature-contact-page into main with the correct summary text." whyItMatters="The PR is the central coordination object for review, feedback, merge checks, and later historical understanding of the change." nextStep="Inspect the PR diff and leave an approval review just as a teammate would in a real workflow." askTutor="I'm on Step 6 of Mini project: Ship a feature branch to GitHub. Help me write a PR body that explains the feature clearly without being wordy." />
 
 **With the GitHub CLI:**
 
@@ -182,8 +169,6 @@ gh pr create `
 
 ### Step 7 — Review the pull request
 
-<StepMeta purpose="Practice the review stage so the mini-project includes the full collaborative workflow, not just creation and merge." action="Use gh pr view and gh pr diff to inspect the PR, then leave an approval review from the CLI." expectedResult="The PR shows a review action that confirms the diff was checked and deemed ready to merge." whyItMatters="Review is the gate between coding and merging, and even in solo practice it is worth rehearsing the habit of reading the diff one more time." nextStep="Merge the approved PR and clean up the remote branch." askTutor="I'm on Step 7 of Mini project: Ship a feature branch to GitHub. Help me review this PR like a teammate would and point out anything I should double-check before merging." />
-
 View the PR:
 
 ```bash
@@ -206,8 +191,6 @@ gh pr review --approve --body "Contact page looks good. Links work correctly."
 
 ### Step 8 — Merge and clean up
 
-<StepMeta purpose="Complete the feature lifecycle by landing the branch in main and removing stale branch clutter." action="Merge the PR with gh pr merge --merge --delete-branch, then update local main and delete the local feature branch." expectedResult="The feature is merged into main and both the remote and local feature branches are removed." whyItMatters="Shipping work cleanly includes cleanup; otherwise repositories fill up with dead branches and ambiguous final state." nextStep="Run final history and branch checks to prove the repo is in the expected post-merge state." askTutor="I'm on Step 8 of Mini project: Ship a feature branch to GitHub. Help me confirm what will happen to the local and remote branches when I run the merge and cleanup commands." />
-
 Merge the PR and delete the remote branch:
 
 ```bash
@@ -228,8 +211,6 @@ git branch -d feature-contact-page
 ```
 
 ### Step 9 — Final verification
-
-<StepMeta purpose="Prove that the entire branch-to-merge workflow completed successfully and left the repo tidy." action="Inspect git log --oneline --graph, git branch, gh pr state, and the GitHub repo page to verify the merge and cleanup results." expectedResult="Main contains the merged feature, the feature branch is gone, and the PR is marked merged on GitHub." whyItMatters="Final verification turns a sequence of commands into a trustworthy workflow you can reuse on real repositories with confidence." nextStep="After this mini-project, Path 06 is complete and you can move on to how Claude behaves across terminal, IDE, desktop, and browser surfaces." askTutor="I'm on Step 9 of Mini project: Ship a feature branch to GitHub. Help me verify that every part of the workflow finished cleanly and that there is no leftover branch or open PR state." />
 
 Check the complete state:
 

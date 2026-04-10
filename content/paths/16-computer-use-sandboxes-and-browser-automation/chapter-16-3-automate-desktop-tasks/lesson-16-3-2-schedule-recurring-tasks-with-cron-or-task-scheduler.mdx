@@ -5,7 +5,6 @@ chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Check whether my scheduled task is actually registered and will fire at the right time."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Schedule recurring tasks with cron or Task Scheduler
@@ -19,8 +18,6 @@ By the end of this lesson you will have a script scheduled to run automatically 
 Scheduling is what turns a useful script into real automation. Instead of remembering to run your cleanup script every morning, the operating system does it for you.
 
 ### Step 1 — Create a script worth scheduling
-
-<StepMeta purpose="Start with a tiny observable script so the scheduler can be tested without hidden business logic getting in the way." action="Create the daily log script for your platform, run it manually once, and confirm it appends a timestamped line to `daily.log`." expectedResult="You have a script that clearly proves whether it ran because each execution adds a visible log entry." whyItMatters="Scheduling is easiest to learn when the target script has a simple, inspectable side effect instead of complex behavior." nextStep="Register the script with cron or Task Scheduler so it can run automatically at a fixed time every day." askTutor="Review this starter script and tell me whether it gives me a strong enough proof that the scheduler actually fired later." />
 
 We need a simple script that does something observable — it writes the current date and a message to a log file.
 
@@ -70,8 +67,6 @@ You should see one line with the current timestamp.
 
 ### Step 2 — Schedule the script (macOS / Linux — cron)
 
-<StepMeta purpose="Teach the core cron workflow for turning a local shell script into a recurring background job." action="Open `crontab -e`, add the daily entry, save it, and confirm it appears in `crontab -l`." expectedResult="Your personal cron schedule now contains a daily job that points at the log-writing script with an absolute shell path." whyItMatters="Automation becomes real only once the operating system owns the trigger instead of relying on your memory or manual execution." nextStep="If you are on Windows, register the equivalent Task Scheduler job next so you understand both platform paths." askTutor="Help me verify this cron entry and tell me what parts of it are most likely to break if I use relative paths or the wrong shell path." />
-
 **Open your crontab:**
 
 ```bash
@@ -110,8 +105,6 @@ You should see your new line in the output.
 
 ### Step 3 — Schedule the script (Windows — Task Scheduler)
 
-<StepMeta purpose="Show the Windows-native scheduling path without falling back to manual GUI clicking." action="Register the scheduled task with PowerShell, then verify it exists and trigger it once manually to inspect the log." expectedResult="Task Scheduler contains a named daily task that can be listed and run on demand." whyItMatters="Cross-platform automation only becomes reusable when you know the first-class scheduler on both Unix-like systems and Windows." nextStep="Learn how to list, edit, and remove scheduled tasks so you can manage the lifecycle instead of only creating jobs." askTutor="Review this Task Scheduler registration with me and tell me whether the action, trigger, and execution-policy settings are correct for a PowerShell script." />
-
 **Using PowerShell (recommended — no GUI clicking needed):**
 
 ```powershell
@@ -149,8 +142,6 @@ You should see a new line in the log file.
 
 ### Step 4 — List and remove scheduled tasks
 
-<StepMeta purpose="Teach the maintenance side of scheduling so you can inspect and clean up automation jobs safely over time." action="Use `crontab -l` or `Get-ScheduledTask` to list jobs, then review how to remove the specific daily task without damaging unrelated automation." expectedResult="You know how to inspect current registrations and remove a single scheduled job deliberately when it is no longer needed." whyItMatters="Schedulers become messy quickly if you can create jobs but not audit or clean them up with equal confidence." nextStep="Review the common scheduling pitfalls next so you know why a job can look registered but still fail to run correctly." askTutor="Help me inspect my current scheduled tasks and tell me whether the daily job is registered the way I intended and easy to remove later." />
-
 **macOS / Linux (cron):**
 
 ```bash
@@ -176,8 +167,6 @@ Unregister-ScheduledTask -TaskName "CLI Academy Daily Log" -Confirm:$false
 ```
 
 ### Step 5 — Understand common scheduling pitfalls
-
-<StepMeta purpose="Prepare you for the most common 'it worked manually but not on the scheduler' failure modes." action="Read the pitfalls table closely and map each issue back to environment differences like PATH, quoting, timezones, and output handling." expectedResult="You can explain why scheduled execution often behaves differently from an interactive shell even when the script itself is correct." whyItMatters="Most scheduler bugs are environment bugs, and knowing that early saves a lot of blind debugging later." nextStep="Use the monitoring and daily-workflow lessons next to combine script execution, scheduling, and result checking into a fuller automation pipeline." askTutor="Take a scheduled-task failure I am seeing and help me reason whether it is caused by PATH, quoting, timezone, permissions, or logging." />
 
 | Pitfall | Why it matters |
 |---|---|

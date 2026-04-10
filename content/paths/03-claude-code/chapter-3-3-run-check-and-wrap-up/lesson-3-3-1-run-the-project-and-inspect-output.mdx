@@ -5,7 +5,6 @@ chapterNumber: "3.3"
 pathNumber: "3"
 tutorPreload: "Here is the error. Tell me the most likely beginner-safe fix path, ranked from least risky to most risky."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Run the project and inspect output
@@ -17,8 +16,6 @@ Run your practice project from the terminal, read the output, and then use Claud
 ## Walkthrough
 
 ### Step 1 — Run the project
-
-<StepMeta purpose="Test the project in its normal execution path before inventing any troubleshooting work." action="Move into cli-practice and run npm start." expectedResult="The project prints the greeting message, or it fails with a clear error you can inspect." whyItMatters="Running the project is the only reliable way to know whether the current code actually works instead of merely looking plausible." nextStep="If you see an error instead of the greeting, open Claude Code and ask it to diagnose the failure using the real output." askTutor="I'm on Step 1 of Run the project and inspect output. Help me interpret the npm start output I got and tell me whether the project is healthy or already showing a real problem." />
 
 Make sure you are in the `cli-practice` folder and run the start script:
 
@@ -44,8 +41,6 @@ If you see that line, your code is working. Skip to Step 3.
 
 ### Step 2 — If something went wrong, ask Claude Code
 
-<StepMeta purpose="Use the actual runtime error as evidence instead of guessing at the fix." action="Launch Claude Code, paste the full error message, and ask what is wrong and how to fix it." expectedResult="Claude Code explains the likely cause in plain language and may propose a targeted fix." whyItMatters="Error-driven troubleshooting keeps the assistant grounded in what actually happened instead of generic advice." nextStep="After you understand the troubleshooting flow, intentionally break the project once so you can practice recognizing and fixing a predictable error." askTutor="I'm on Step 2 of Run the project and inspect output. Help me turn this exact runtime error into the safest fix path and explain why that fix is the right first move." />
-
 If the output contains an error (for example a `SyntaxError` or `ReferenceError`), do not try to guess the fix. Open Claude Code and paste the error:
 
 ```bash
@@ -67,8 +62,6 @@ Claude Code reads your `index.js`, compares it against the error, and explains t
 After fixing, exit Claude Code with `/exit` and re-run `npm start` to confirm the error is gone.
 
 ### Step 3 — Intentionally break the project, then fix it
-
-<StepMeta purpose="Build confidence by seeing a common runtime mistake and then recovering from it deliberately." action="Change console.log to console.logg, run npm start to trigger the error, then ask Claude Code to restore the correct line." expectedResult="You see the TypeError, Claude Code shows a one-line fix, and the project works again after the repair." whyItMatters="Practicing on a controlled mistake makes real future errors less intimidating and reinforces the debug-review-fix loop." nextStep="Once the project runs cleanly again, save the repaired working state with a Git commit." askTutor="I'm on Step 3 of Run the project and inspect output. Help me connect this deliberate console.logg mistake to the error message and confirm that Claude Code's one-line fix really restores the original behavior." />
 
 This step teaches you what errors look like so you are not caught off guard later.
 
@@ -99,8 +92,6 @@ I changed console.log to console.logg by accident. Fix it.
 Claude Code shows a one-line diff restoring `console.log`. Accept the fix and run `npm start` again to see the greeting.
 
 ### Step 4 — Commit the working state
-
-<StepMeta purpose="Lock in the repaired state after the intentional error exercise." action="Stage the changed files and create the fix commit with the provided message." expectedResult="Git records a commit that returns the project to a working state." whyItMatters="Committing after recovery reinforces that debugging work should end with a clean, known-good checkpoint." nextStep="After this step, you are ready to summarize changes in plain English for a teammate or future self." askTutor="I'm on Step 4 of Run the project and inspect output. Help me confirm that I am committing the restored working state and not accidentally preserving the broken version." />
 
 ```bash
 git add -A

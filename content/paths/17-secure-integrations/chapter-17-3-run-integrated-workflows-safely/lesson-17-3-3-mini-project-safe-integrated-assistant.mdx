@@ -5,7 +5,6 @@ chapterNumber: "17.3"
 pathNumber: "17"
 tutorPreload: "Give me the go-live checklist for this integrated assistant."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: safe integrated assistant
@@ -19,8 +18,6 @@ The integration target is GitHub — the same service you have been working with
 ## Walkthrough
 
 ### Step 1 — Set up the project folder
-
-<StepMeta purpose="Create one bounded workspace where every secure-integration artifact for the mini-project can live together." action="Make the `safe-integrated-assistant` folder, create the named markdown files, and verify the starter structure exists before filling anything in." expectedResult="You have a dedicated project directory containing the seven expected artifact files." whyItMatters="A consistent project layout makes the rest of the mini-project easier to review, validate, and hand off without losing pieces." nextStep="Fill in the integration audit next so the folder starts with a clear map of what the assistant will touch." askTutor="Review this project setup and tell me whether the folder structure is sufficient for a safe integration mini-project or whether any key artifact is missing." />
 
 **macOS / Linux:**
 ```bash
@@ -49,8 +46,6 @@ Get-ChildItem
 ```
 
 ### Step 2 — Complete the integration surface audit
-
-<StepMeta purpose="Anchor the mini-project in a documented map of GitHub data, access type, and credential design before any workflow automation expands." action="Write `integration-audit.md` for the GitHub workflow, recording data touched, access type, credential type, and danger level." expectedResult="The mini-project folder now contains a concrete integration surface audit specific to the assistant's GitHub use case." whyItMatters="The audit is the foundation for every later scope, risk, and rotation decision in the project." nextStep="Write the scope decisions next so the assistant's required permissions are documented explicitly." askTutor="Check this mini-project integration audit and tell me whether the GitHub access described here is justified or still broader than necessary." />
 
 Open `integration-audit.md` and fill in the table for GitHub. At minimum, document:
 - The data touched (repos, issues, pull requests)
@@ -101,8 +96,6 @@ Get-Content integration-audit.md
 ```
 
 ### Step 3 — Document scope decisions
-
-<StepMeta purpose="Carry the least-privilege discipline from the earlier lessons into the integrated assistant package." action="Run `gh auth status`, then write `scope-decisions.md` with required scopes, over-permissioned findings, and a production recommendation." expectedResult="The mini-project includes a scope decision document tied to the actual active GitHub auth state." whyItMatters="A secure assistant is not just about what it does, but about how narrowly its credentials are constrained while doing it." nextStep="Validate read-only access next so the workflow proves it can observe data safely before making any write at all." askTutor="Review my scope decision document for this mini-project and tell me whether the production recommendation is narrow enough for a real deployment." />
 
 **macOS / Linux:**
 ```bash
@@ -157,8 +150,6 @@ Get-Content scope-decisions.md
 
 ### Step 4 — Validate read-only access
 
-<StepMeta purpose="Prove the integrated assistant can read the target GitHub data safely before any persistent change enters the flow." action="Set the target repository variables, run the issues GET request, and write `read-only-results.md` with the endpoint and timestamp." expectedResult="You have both successful read-only API output and a project file documenting that read-only validation passed." whyItMatters="The safe order is still read first, then bounded write, even inside a larger end-to-end integration project." nextStep="Perform one reversible write next so the assistant package includes proof that it can change state and roll it back deliberately." askTutor="Help me evaluate whether this read-only validation is strong enough for the mini-project or whether another safe check should happen before any write." />
-
 Set your target repo and confirm read access works:
 
 **macOS / Linux:**
@@ -194,8 +185,6 @@ Get-Content read-only-results.md
 ```
 
 ### Step 5 — Execute one bounded write and roll it back
-
-<StepMeta purpose="Show that the mini-project can perform exactly one external mutation and reverse it cleanly as part of the documented workflow." action="Create the labeled test issue, read it back, close it, and write `bounded-write-record.md` with the issue number and rollback proof." expectedResult="The project now contains evidence of a successful POST write followed by a verified PATCH rollback to closed state." whyItMatters="A real secure integration must prove both controlled write capability and disciplined cleanup of external state." nextStep="Complete the risk audit and rotation playbook next so the project covers operational safety, not just successful API usage." askTutor="Review this mini-project bounded write and tell me whether the rollback proof is strong enough to count as a safe reversible mutation." />
 
 **macOS / Linux:**
 ```bash
@@ -262,8 +251,6 @@ Get-Content bounded-write-record.md
 ```
 
 ### Step 6 — Complete the risk audit and rotation playbook
-
-<StepMeta purpose="Add the operational safety layer that keeps the integrated assistant manageable after the happy-path API calls are done." action="Create `risk-audit.md` and `revoke-rotate-playbook.md`, listing key risks, mitigations, trigger conditions, and the command sequence for rapid credential response." expectedResult="The mini-project now includes both a standing risk review and an incident-response playbook." whyItMatters="Secure integrations fail in production when they have no living risk model and no fast response path for leaked or overpowered tokens." nextStep="Finish by writing the README and verifying that every required file exists with content." askTutor="Check these mini-project safety documents and tell me whether they are practical enough to use during a real incident or pre-production review." />
 
 **macOS / Linux:**
 ```bash
@@ -343,8 +330,6 @@ cat revoke-rotate-playbook.md
 ```
 
 ### Step 7 — Write the README and verify all files exist
-
-<StepMeta purpose="Package the mini-project into a reviewable deliverable that clearly explains the role of each artifact." action="Write `README.md`, run the file-content verification loop, and confirm each required markdown file has non-zero content." expectedResult="You have a complete secure-integration mini-project folder with a summary README and populated supporting artifacts." whyItMatters="A final packaging and verification step turns scattered exercise output into a coherent proof-of-competence artifact." nextStep="Carry this project structure forward when you connect real third-party systems so security review, bounded writes, and token rotation stay built into the workflow." askTutor="Review the final mini-project package and tell me whether it reads like a complete secure integration deliverable or if any artifact still feels too thin." />
 
 **macOS / Linux:**
 ```bash

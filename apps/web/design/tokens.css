@@ -1,33 +1,33 @@
 :root {
   color-scheme: light;
 
-  --font-display: var(--font-sans);
-  --font-sans: "Inter", "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --font-display: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+  --font-sans: "Instrument Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 
-  --font-size-display-xl: 3.5rem;
-  --font-size-display-lg: 2.75rem;
-  --font-size-display-md: 2rem;
-  --font-size-heading-xl: 1.5rem;
-  --font-size-heading-lg: 1.25rem;
-  --font-size-heading-md: 1.125rem;
+  --font-size-display-xl: 4rem;
+  --font-size-display-lg: 3rem;
+  --font-size-display-md: 2.25rem;
+  --font-size-heading-xl: 1.875rem;
+  --font-size-heading-lg: 1.5rem;
+  --font-size-heading-md: 1.25rem;
   --font-size-body-lg: 1.125rem;
   --font-size-body-md: 1rem;
-  --font-size-body-sm: 0.9375rem;
+  --font-size-body-sm: 0.875rem;
   --font-size-caption: 0.75rem;
-  --font-size-mono-sm: 1rem;
+  --font-size-mono-sm: 0.8125rem;
 
-  --line-height-display-xl: 1.05;
-  --line-height-display-lg: 1.08;
-  --line-height-display-md: 1.12;
-  --line-height-heading-xl: 1.2;
-  --line-height-heading-lg: 1.28;
-  --line-height-heading-md: 1.35;
-  --line-height-body-lg: 1.7;
-  --line-height-body-md: 1.7;
+  --line-height-display-xl: 1.0625;
+  --line-height-display-lg: 1.0833;
+  --line-height-display-md: 1.1667;
+  --line-height-heading-xl: 1.2667;
+  --line-height-heading-lg: 1.3333;
+  --line-height-heading-md: 1.4;
+  --line-height-body-lg: 1.6667;
+  --line-height-body-md: 1.625;
   --line-height-body-sm: 1.5714;
   --line-height-caption: 1.5;
-  --line-height-mono-sm: 1.65;
+  --line-height-mono-sm: 1.5385;
 
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -60,7 +60,7 @@
   --container-lg: 48rem;
   --container-xl: 64rem;
   --container-2xl: 80rem;
-  --reading-width: 50rem;
+  --reading-width: 46rem;
   --sidebar-width: 17rem;
   --header-height: 4.5rem;
 
@@ -94,7 +94,6 @@
 
   --color-border-subtle: rgba(20, 32, 58, 0.12);
   --color-border-strong: rgba(20, 32, 58, 0.24);
-  --color-border-hover: rgba(20, 32, 58, 0.32);
   --color-border-focus: rgba(22, 176, 168, 0.5);
 
   --color-accent-primary: var(--teal-500);
@@ -148,7 +147,6 @@
 
   --color-border-subtle: rgba(234, 241, 247, 0.12);
   --color-border-strong: rgba(234, 241, 247, 0.24);
-  --color-border-hover: rgba(234, 241, 247, 0.34);
   --color-border-focus: rgba(88, 209, 198, 0.55);
 
   --color-accent-primary: #29c4ba;

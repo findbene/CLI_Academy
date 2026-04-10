@@ -5,7 +5,6 @@ chapterNumber: "6.1"
 pathNumber: "6"
 tutorPreload: "Explain what just happened in my git log and how I can undo my last change safely."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Understand Git as your undo system
@@ -17,8 +16,6 @@ By the end of this lesson you will initialize a real Git repository, make tracke
 ## Walkthrough
 
 ### Step 1 — Create a project folder and initialize Git
-
-<StepMeta purpose="Create a safe sandbox repo so you can see what Git does from the very first command." action="Make a new practice folder, enter it, and run git init to create a local repository." expectedResult="Git creates a hidden .git directory and reports that the empty repository was initialized successfully." whyItMatters="Seeing Git start from nothing makes the tool feel concrete: it is just tracking snapshots inside a normal folder on your machine." nextStep="Add a real file and inspect how git status and git diff describe untracked and staged work." askTutor="I'm on Step 1 of Understand Git as your undo system. Help me understand what git init actually created and why the .git folder matters." />
 
 Open your terminal and create a practice project.
 
@@ -45,8 +42,6 @@ Initialized empty Git repository in .../git-undo-lab/.git/
 `git init` creates a hidden `.git` folder that stores all version history. It does not touch any existing files.
 
 ### Step 2 — Create a file, check status, and see the diff
-
-<StepMeta purpose="Watch Git notice a brand-new file and show you the exact content you are about to record." action="Create README.md, run git status, stage it, and inspect the staged diff before committing." expectedResult="Git first shows the file as untracked, then as staged, and the staged diff displays the new lines in green." whyItMatters="This is the core Git review loop: status tells you what changed, and diff shows the exact content before history is written." nextStep="Commit the staged file and prove the snapshot exists by reading git log." askTutor="I'm on Step 2 of Understand Git as your undo system. Help me connect git status and git diff so I know what each command is telling me before I commit." />
 
 Create a simple README file and watch Git detect it.
 
@@ -77,8 +72,6 @@ You will see green `+` lines showing every line being added. This is your chance
 
 ### Step 3 — Make your first commit and read the log
 
-<StepMeta purpose="Turn the staged file into the first permanent snapshot in the repo history." action="Run git commit with a clear message and then read git log --oneline to see the new commit hash." expectedResult="You get one commit in history with a short hash and your message, proving Git stored the snapshot." whyItMatters="Commits are the foundation of Git's undo power because they create named checkpoints you can revisit later." nextStep="Make another change so you can see how history grows as the repo evolves." askTutor="I'm on Step 3 of Understand Git as your undo system. Help me interpret this first commit hash and explain what git log is really showing me." />
-
 ```bash
 git commit -m "Add project README"
 ```
@@ -98,8 +91,6 @@ a1b2c3d Add project README
 That short hash (`a1b2c3d`) is a unique ID for this snapshot. You can always return to it.
 
 ### Step 4 — Make a second change and see history grow
-
-<StepMeta purpose="See Git track a new edit on top of existing history instead of treating the repo as one flat state." action="Append a line to README.md, inspect the diff, then stage and commit the change and read the log again." expectedResult="The repo now shows two commits, newest first, and the working tree is clean after the second commit." whyItMatters="Watching history grow teaches that Git stores a sequence of checkpoints, which is what makes undo and comparison safe later." nextStep="Create a bad uncommitted edit and practice discarding it without touching the commit history." askTutor="I'm on Step 4 of Understand Git as your undo system. Help me read this second diff and explain how Git knows the new line belongs in a new commit." />
 
 **macOS / Linux:**
 
@@ -134,8 +125,6 @@ a1b2c3d Add project README
 
 ### Step 5 — Undo an uncommitted change with checkout
 
-<StepMeta purpose="Practice throwing away a bad working-copy edit before it ever becomes part of history." action="Add a junk line, confirm it appears in the file, then run git checkout -- README.md to restore the last committed version." expectedResult="The uncommitted bad line disappears and the file returns to the content from the most recent commit." whyItMatters="This is the simplest safe undo path in Git: discard a local mistake before it spreads into staged or committed history." nextStep="Now simulate a bad commit and use git revert to undo it without erasing the historical record." askTutor="I'm on Step 5 of Understand Git as your undo system. Help me understand exactly what git checkout -- README.md destroys and when I should stash instead." />
-
 Make a bad edit, then undo it before committing.
 
 **macOS / Linux:**
@@ -163,8 +152,6 @@ Check the file again — the bad line is gone. `git checkout -- <file>` replaces
 > **Safety note:** `git checkout -- <file>` permanently discards uncommitted changes to that file. If you need those changes, stage or stash them first.
 
 ### Step 6 — Undo a committed change with revert
-
-<StepMeta purpose="Learn the safe way to undo a mistake that is already in history." action="Commit a bad line intentionally, then run git revert HEAD --no-edit and inspect the log to see the reversing commit." expectedResult="Git creates a new revert commit that removes the bad line while preserving the full history of what happened." whyItMatters="Revert is the team-safe undo tool because it documents the mistake and the fix instead of rewriting published history." nextStep="After understanding local history and safe undo, move on to the full stage-commit-push cycle with a GitHub remote." askTutor="I'm on Step 6 of Understand Git as your undo system. Help me distinguish git revert from destructive history rewrites and explain why revert is safer for shared work." />
 
 What if you already committed something bad? Use `git revert`, which creates a new commit that reverses the previous one — keeping full history intact.
 

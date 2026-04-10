@@ -5,7 +5,6 @@ chapterNumber: "8.3"
 pathNumber: "8"
 tutorPreload: "Help me turn this successful Cowork session into a template I can reuse next time."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Save useful patterns as reusable templates
@@ -18,8 +17,6 @@ By the end of this lesson you will have a `cowork-patterns/` folder containing r
 
 ### Step 1 — Identify what is worth templating
 
-<StepMeta purpose="Filter for reusable session assets instead of saving every interesting sentence as a template." action="Review the session and pick only the structures that would help on a similar future task, such as a brief format, prompt flow, or review checklist." expectedResult="You can name which session artifacts are worth templating and which ones were too specific to reuse." whyItMatters="Reusable patterns save time only when they are general enough to apply again; otherwise the patterns folder turns into archived clutter." nextStep="Create a dedicated patterns folder so the reusable pieces have one obvious home." askTutor="I'm on Step 1 of Save useful patterns as reusable templates. Help me decide which parts of this Cowork session are actually worth saving as reusable patterns." />
-
 Not every Cowork session produces a reusable pattern. Ask yourself:
 
 - **Will I do this kind of task again?** If yes, template it.
@@ -31,8 +28,6 @@ From the previous lessons, you already have two reusable artifacts:
 2. The **accuracy checklist** (factual, complete, boundary-compliant, tone, platform coverage).
 
 ### Step 2 — Create the patterns folder
-
-<StepMeta purpose="Give reusable Cowork assets a stable location instead of scattering them across practice folders." action="Create a cowork-patterns directory in the project using the command for your operating system." expectedResult="A dedicated cowork-patterns folder exists and is ready to hold generalized templates and checklists." whyItMatters="One concern, one home: reusable Cowork assets are easier to find and maintain when they live in a single predictable directory." nextStep="Populate the folder with the first generalized template: the session brief structure." askTutor="I'm on Step 2 of Save useful patterns as reusable templates. Help me set up the cowork-patterns folder and explain what kinds of files should live there." />
 
 **macOS / Linux:**
 
@@ -47,8 +42,6 @@ New-Item -ItemType Directory -Force -Path cowork-patterns | Out-Null
 ```
 
 ### Step 3 — Save the session brief template
-
-<StepMeta purpose="Capture the strongest reusable setup artifact from the earlier lessons so future sessions start faster." action="Copy the blank Cowork brief template into cowork-patterns as brief-template.md." expectedResult="The patterns folder now contains a reusable brief-template.md file with placeholders instead of project-specific details." whyItMatters="The session brief is the highest-leverage Cowork artifact because it improves every later session before the first Claude response appears." nextStep="Save the opening prompt flow that produced a strong documentation session, not just the brief structure." askTutor="I'm on Step 3 of Save useful patterns as reusable templates. Help me confirm the brief template is generalized enough for a different project and not tied to this one example." />
 
 You already created a blank brief template in Lesson 8.1.2. Copy it into the patterns folder.
 
@@ -65,8 +58,6 @@ Copy-Item cowork-practice\cowork-brief-template.md cowork-patterns\brief-templat
 ```
 
 ### Step 4 — Save a prompt pattern
-
-<StepMeta purpose="Preserve the exact prompt sequence that created a clean outline-first Cowork workflow." action="Write the README outline prompt pattern into its own markdown file, including when to use it, the prompts themselves, and why they work." expectedResult="cowork-patterns contains a prompt pattern file that another session could reuse with minimal changes." whyItMatters="Good prompt flows are reusable process assets, and documenting the sequence prevents you from rebuilding a successful opening from memory later." nextStep="Extract the post-session review checklist so successful sessions also end with the same discipline they started with." askTutor="I'm on Step 4 of Save useful patterns as reusable templates. Help me document this prompt pattern in a way that makes it reusable instead of tied only to the lintr example." />
 
 A prompt pattern is the exact wording you used to get a good result. Save the opening prompt from Lesson 8.2.1 as a reusable pattern:
 
@@ -138,8 +129,6 @@ description of what each section will cover. Do not write the full content yet.
 
 ### Step 5 — Save the review checklist
 
-<StepMeta purpose="Make post-session quality control reusable instead of relying on memory after each Cowork run." action="Write the accuracy and save checks into review-checklist.md inside cowork-patterns." expectedResult="The patterns folder includes a review checklist that can be run after future Cowork sessions before saving or committing output." whyItMatters="Reusable review discipline is just as valuable as reusable prompt structure because it protects the quality of every deliverable that follows." nextStep="Verify the folder contents so you know the reusable assets actually exist and are readable." askTutor="I'm on Step 5 of Save useful patterns as reusable templates. Help me make sure this review checklist is generic enough to use across different Cowork tasks." />
-
 Extract the accuracy checklist from Lesson 8.3.1 into its own file:
 
 **macOS / Linux:**
@@ -192,8 +181,6 @@ Use this after every Cowork session before saving deliverables.
 
 ### Step 6 — Verify your patterns folder
 
-<StepMeta purpose="Confirm the patterns folder holds the expected reusable assets before you rely on it in future work." action="List the contents of cowork-patterns and open brief-template.md to verify the files are present and readable." expectedResult="You can see the brief template, prompt pattern, and review checklist inside cowork-patterns." whyItMatters="Verification closes the loop so the reusable system is real, not just something you intended to save." nextStep="Apply the saved pattern flow conceptually to the next Cowork task you expect to run." askTutor="I'm on Step 6 of Save useful patterns as reusable templates. Help me verify the patterns folder is complete and explain what each saved file is for." />
-
 **macOS / Linux:**
 
 ```bash
@@ -214,8 +201,6 @@ You should see three files:
 - `review-checklist.md` — the post-session accuracy checklist.
 
 ### Step 7 — Use a pattern in a future session
-
-<StepMeta purpose="Connect the saved templates back to future action so the patterns folder becomes part of your routine instead of a static archive." action="Read the three-step reuse workflow and imagine or note how you would apply it the next time you start a documentation-focused Cowork session." expectedResult="You can describe how to use the brief template, prompt pattern, and review checklist together in a future session." whyItMatters="Patterns only create leverage when they re-enter live work, so this step turns saved assets into a repeatable operating system." nextStep="Put all of these ideas together in the mini project by running a full end-to-end Cowork session." askTutor="I'm on Step 7 of Save useful patterns as reusable templates. Help me turn these saved patterns into a repeatable workflow for my next Cowork session." />
 
 Next time you need to write documentation with Claude, your workflow becomes:
 

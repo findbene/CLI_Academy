@@ -5,7 +5,6 @@ chapterNumber: "2.1"
 pathNumber: "2"
 tutorPreload: "Convert this path instruction into the exact command for {{os}} and shell {{shell}}."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Move between folders the safe way
@@ -17,8 +16,6 @@ Navigate your file system using `cd` with relative paths, absolute paths, `..`, 
 ## Walkthrough
 
 ### Step 1 — Move into a folder you can see
-
-<StepMeta purpose="Start navigation from a directory you can already see and understand." action="Print your location, list available folders, then move into a visible folder such as Documents and confirm the new path." expectedResult="Your path updates to end with the folder you chose, proving the move succeeded." whyItMatters="Safe navigation starts by choosing destinations you can verify from the current listing instead of guessing paths." nextStep="Once you can move into a folder confidently, practice stepping back out with .. so you always know how to recover." askTutor="I'm on Step 1 of Move between folders the safe way. Help me choose a safe folder from my listing and confirm that my path changed correctly after cd." />
 
 First, confirm where you are and what folders are available.
 
@@ -56,8 +53,6 @@ The second command proves you moved. Your path now ends with `Documents`.
 
 ### Step 2 — Go back one level with `..`
 
-<StepMeta purpose="Learn the simplest recovery move in the file system: going back to the parent folder." action="Run cd .. and then print your location again to prove you moved up exactly one level." expectedResult="The terminal path loses the last folder segment and returns to the parent directory." whyItMatters="Knowing how to go back one step keeps navigation mistakes small and easy to correct." nextStep="After you can move up one level, practice the universal shortcut that jumps straight home from anywhere." askTutor="I'm on Step 2 of Move between folders the safe way. Help me verify that cd .. took me up exactly one level and not somewhere unexpected." />
-
 Two dots (`..`) always means "the folder that contains this one" — your parent folder.
 
 **macOS / Linux**
@@ -78,8 +73,6 @@ You are back where you started. Think of `..` as one step up in the folder tree.
 
 ### Step 3 — Jump straight home with `~`
 
-<StepMeta purpose="Add the fastest escape hatch back to a safe known location." action="Run cd ~ and print the path it lands on." expectedResult="The terminal returns to your home directory regardless of where you were previously." whyItMatters="The tilde shortcut gives you a reliable reset point whenever you feel lost in the folder tree." nextStep="With home as a reset point, try one jump using an absolute path so you can compare the two path styles." askTutor="I'm on Step 3 of Move between folders the safe way. Help me confirm that ~ really took me back to my home directory and explain why that shortcut matters." />
-
 No matter how deep you wander, the tilde character (`~`) is a shortcut for your home directory.
 
 **macOS / Linux**
@@ -99,8 +92,6 @@ Get-Location
 This always returns you to your home folder — the same place your terminal started.
 
 ### Step 4 — Use an absolute path
-
-<StepMeta purpose="Compare relative navigation with a path that works from anywhere." action="Jump to the temporary directory with an absolute path, verify it, then jump back home." expectedResult="You land in the target temp directory and can return home without depending on your starting location." whyItMatters="Absolute paths are essential when instructions must work regardless of where you are currently standing." nextStep="After you have used an absolute path, combine multiple relative segments in one move to see how paths compose." askTutor="I'm on Step 4 of Move between folders the safe way. Help me understand why this path counts as absolute and how to tell that from the command itself." />
 
 An **absolute path** starts from the root of the file system. It works no matter where you currently are.
 
@@ -124,8 +115,6 @@ You jumped to a temporary directory and then jumped back home. Absolute paths st
 
 ### Step 5 — Chain relative moves
 
-<StepMeta purpose="Show that path segments can be combined into one controlled relative move." action="Run the chained path that moves into a folder, back out, and into it again, then verify the final location." expectedResult="Your final path ends in the expected folder even though the command included both forward and backward moves." whyItMatters="Understanding composed relative paths makes more complex navigation instructions easier to read and trust." nextStep="Use the same ideas in a short end-to-end drill that starts and ends at home." askTutor="I'm on Step 5 of Move between folders the safe way. Walk me through how each segment of this chained path is evaluated so I know why the final location is correct." />
-
 You can move multiple levels in one command by chaining folder names with `/` (or `\` on Windows).
 
 **macOS / Linux**
@@ -145,8 +134,6 @@ Get-Location
 This moved into `Documents`, back out, and into `Documents` again — all in one step. It looks silly but proves you understand how relative paths combine.
 
 ### Step 6 — Navigate a real drill
-
-<StepMeta purpose="Turn individual navigation commands into one repeatable movement routine." action="Run the full sequence home to Documents to parent to Downloads to home, verifying the final path." expectedResult="You end back at your home directory after visiting both Documents and Downloads." whyItMatters="A short drill builds confidence that you can move around intentionally and recover to a known safe place every time." nextStep="After completing this drill, you should be ready to create, move, and inspect project folders without getting lost." askTutor="I'm on Step 6 of Move between folders the safe way. Help me check this navigation drill step by step and tell me exactly where it went wrong if my final path is not home." />
 
 Put it all together. Starting from your home directory, complete this sequence and verify each step:
 

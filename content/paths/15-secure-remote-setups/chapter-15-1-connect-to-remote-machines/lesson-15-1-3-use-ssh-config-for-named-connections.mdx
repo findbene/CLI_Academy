@@ -5,7 +5,6 @@ chapterNumber: "15.1"
 pathNumber: "15"
 tutorPreload: "Show me how to set up SSH config aliases and a ProxyJump through a bastion host."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Use SSH config for named connections
@@ -19,8 +18,6 @@ By the end of this lesson you will be able to create an SSH config file that let
 Typing `ssh -i ~/.ssh/id_ed25519 -p 2222 deploy@staging-backend-03.us-east.internal.example.com` every time is error-prone. The SSH config file lets you define aliases so you can just type `ssh staging`.
 
 ### Step 1 — Create or open the SSH config file
-
-<StepMeta purpose="Prepare the single config file that will hold reusable aliases and defaults for all future SSH connections." action="Create `~/.ssh/config` if needed, ensure the `.ssh` directory exists, and set the config file permissions appropriately for your platform." expectedResult="You have a valid SSH config file ready to accept host aliases and global defaults." whyItMatters="A correct config file location and permission setup is what turns repeated long SSH commands into short, predictable aliases." nextStep="Add a basic host alias so you can connect by nickname instead of typing the full host, user, port, and key each time." askTutor="Check whether my SSH config file is in the right place and has the right permissions before I start adding host blocks." />
 
 **macOS / Linux:**
 
@@ -40,8 +37,6 @@ if (-not (Test-Path $env:USERPROFILE\.ssh\config)) { New-Item -ItemType File $en
 Open the file in your preferred editor.
 
 ### Step 2 — Add a basic host alias
-
-<StepMeta purpose="Replace long repetitive SSH commands with a short connection nickname that captures the real connection details." action="Add the `Host staging` block, save the config, and test it with `ssh staging`." expectedResult="SSH resolves the alias to the correct hostname, user, port, and identity file automatically." whyItMatters="Aliases reduce mistakes, speed up repeated connections, and make later automation or file-copy commands much easier to read and reuse." nextStep="Add global defaults next so every SSH connection inherits safe, practical behavior like keepalives and single-key use." askTutor="Review this host alias and tell me whether the hostname, user, port, and identity settings are enough for a reliable named connection." />
 
 Add this block to `~/.ssh/config`:
 
@@ -63,8 +58,6 @@ SSH reads the config, fills in the hostname, user, port, and key automatically.
 
 ### Step 3 — Add a wildcard default
 
-<StepMeta purpose="Define global SSH behavior once so every host benefits from the same connection hygiene without repetitive flags." action="Add the `Host *` block with agent integration, single-identity use, and keepalive settings, then read back what each directive does." expectedResult="All future SSH connections inherit the defaults unless a host block overrides them explicitly." whyItMatters="Global defaults are a low-effort way to prevent common authentication and idle-timeout issues across every remote setup you use." nextStep="Use `ProxyJump` next so you can reach internal systems through a bastion host with one command." askTutor="Explain these `Host *` defaults in plain language and tell me which ones are most useful for a beginner who keeps getting disconnected." />
-
 Put this at the bottom of the config file so it applies to every connection:
 
 ```
@@ -83,8 +76,6 @@ Host *
 | `ServerAliveCountMax 3` | Closes the connection after 3 missed keepalives (3 minutes of silence) |
 
 ### Step 4 — ProxyJump through a bastion host
-
-<StepMeta purpose="Learn the standard production pattern for reaching internal machines that are not directly exposed to the internet." action="Add the `bastion` and `internal-db` host blocks with `ProxyJump`, then connect using `ssh internal-db`." expectedResult="SSH automatically hops through the bastion host and reaches the internal machine without a separate manual login step." whyItMatters="Many real remote environments hide sensitive systems behind a jump box, so understanding `ProxyJump` is essential for moving beyond simple single-host labs." nextStep="Reuse your aliases for file transfer so SSH config improves `scp` and `rsync` workflows too, not just interactive shells." askTutor="Review this `ProxyJump` config and tell me how the connection flows through the bastion host when I run a single `ssh internal-db` command." />
 
 Many production environments hide servers behind a bastion (jump box). You SSH into the bastion first, then from there into the target.
 
@@ -110,8 +101,6 @@ ssh internal-db
 SSH connects to `bastion.example.com` first, then hops to `10.0.4.12` — you never touch the bastion shell.
 
 ### Step 5 — Copy files using your aliases
-
-<StepMeta purpose="Prove that the SSH config aliases are useful across the wider remote workflow, not only for interactive login." action="Use your alias in `scp` or `rsync` commands and verify the file transfer works without retyping the full connection details." expectedResult="You can transfer files to the remote host using the alias exactly the same way you connect with `ssh`." whyItMatters="The real productivity gain from SSH config comes when the same short names work everywhere in your remote tooling stack." nextStep="Carry these aliases into cloud-shell and remote-Claude lessons so the remote workflow stays readable as it grows more complex." askTutor="Help me convert a full `scp` or `rsync` command into one that uses my new SSH alias correctly." />
 
 Your SSH config aliases work with `scp` and `rsync` too:
 

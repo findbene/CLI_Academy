@@ -5,7 +5,6 @@ chapterNumber: "2.3"
 pathNumber: "2"
 tutorPreload: "I need to change one line safely. Show me the smallest safe edit and how to verify it."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Make a safe text edit
@@ -17,8 +16,6 @@ Edit a text file safely using the backup-edit-verify pattern. You will make a ba
 ## Walkthrough
 
 ### Step 1 — Start with a file worth editing
-
-<StepMeta purpose="Begin with a known file in a known project so you can focus on the edit workflow, not on file hunting." action="Move into tiny-agent-project and print INSTRUCTIONS.md before changing anything." expectedResult="You can read the current file contents and confirm the file exists in the expected location." whyItMatters="Safe editing starts with understanding the exact starting state you are about to modify." nextStep="Once you know the file looks right, create a backup before making even a small change." askTutor="I'm on Step 1 of Make a safe text edit. Help me confirm that this is the right file to edit and explain what I should notice before changing it." />
 
 Make sure you are in `tiny-agent-project/` and have `INSTRUCTIONS.md` from the previous lessons.
 
@@ -40,8 +37,6 @@ You should see the heading text from Lesson 2.2.1.
 
 ### Step 2 — Make a backup copy before any edit
 
-<StepMeta purpose="Create an immediate recovery point before touching the file." action="Copy INSTRUCTIONS.md to INSTRUCTIONS.md.bak and list the matching markdown files." expectedResult="Both the original file and the .bak backup are visible side by side." whyItMatters="Backups make small edits reversible, which removes pressure and encourages careful experimentation." nextStep="With the backup in place, append a few lines from the command line so you can compare before and after later." askTutor="I'm on Step 2 of Make a safe text edit. Help me verify that I created a real backup copy and not just another reference to the same file." />
-
 This is the professional habit: copy first, edit second.
 
 **macOS / Linux**
@@ -61,8 +56,6 @@ Get-ChildItem -Filter "INSTRUCTIONS*"
 You now have the original and a `.bak` safety net side by side.
 
 ### Step 3 — Append a line from the command line
-
-<StepMeta purpose="Practice the safest simple edit: adding text without reopening or rewriting the whole file." action="Append a blank line, a Status heading, and one status sentence to INSTRUCTIONS.md." expectedResult="The file gains three new lines at the end while the earlier content remains intact." whyItMatters="Learning the difference between append and overwrite is one of the most important safety boundaries in shell-based editing." nextStep="After appending, compare the edited file against the backup so you can see only the lines you added." askTutor="I'm on Step 3 of Make a safe text edit. Help me check that I appended to the file rather than overwrote it, and explain why >> or Add-Content is the safe choice here." />
 
 Add a new line to the file without opening an editor.
 
@@ -88,8 +81,6 @@ Add-Content INSTRUCTIONS.md "Project is active."
 
 ### Step 4 — Verify the change with `diff`
 
-<StepMeta purpose="Use a file comparison tool to inspect exactly what changed instead of trusting memory." action="Run diff or Compare-Object between the backup and the edited file." expectedResult="The output highlights only the newly added lines in the edited file." whyItMatters="Diff tools are the safest way to review changes because they expose scope and content precisely." nextStep="Once the append-only change is confirmed, open the file in a real editor for a slightly bigger manual edit." askTutor="I'm on Step 4 of Make a safe text edit. Help me read this diff output and tell me whether it shows only the intended lines being added." />
-
 Compare the edited file to the backup.
 
 **macOS / Linux**
@@ -109,8 +100,6 @@ Compare-Object (Get-Content INSTRUCTIONS.md.bak) (Get-Content INSTRUCTIONS.md)
 Lines marked `=>` exist only in the edited file. This confirms exactly what changed.
 
 ### Step 5 — Open the file in a real editor from the terminal
-
-<StepMeta purpose="Switch from command-line appends to a real editor while staying rooted in terminal workflow." action="Open INSTRUCTIONS.md in VS Code or another editor from the terminal, add one small line such as a last-updated note, and save it." expectedResult="The editor opens the target file, the new line is saved, and the file still lives in the same project folder." whyItMatters="Most real changes mix terminal-driven workflow with editor-driven typing, so you need both modes to feel normal and safe." nextStep="After saving the editor change, run the diff again so you can see both the append and the manual edit." askTutor="I'm on Step 5 of Make a safe text edit. Help me choose the safest editor option for my machine and tell me how to verify the save actually happened before I close it." />
 
 For bigger edits, use an actual text editor. VS Code is the most beginner-friendly option.
 
@@ -133,8 +122,6 @@ If VS Code is not installed, you can use:
 - **Notepad** (Windows): `notepad INSTRUCTIONS.md` — edit, then File → Save and close.
 
 ### Step 6 — Verify the editor change
-
-<StepMeta purpose="Confirm the editor save changed exactly what you intended and nothing more." action="Run diff or Compare-Object again after the editor save and review the full set of changes against the backup." expectedResult="The comparison now shows both the earlier appended lines and the new editor-made line." whyItMatters="Repeated verification is how you catch accidental edits early before they spread into later commits." nextStep="If the diff looks correct, optionally remove the backup once you are sure you no longer need the safety copy." askTutor="I'm on Step 6 of Make a safe text edit. Help me compare this second diff to the first one and tell me whether any unexpected lines changed during the editor step." />
 
 Run the diff again to see both the append and the editor change.
 
@@ -165,8 +152,6 @@ Copy-Item INSTRUCTIONS.md.bak INSTRUCTIONS.md -Force
 ```
 
 ### Step 7 — Clean up (optional)
-
-<StepMeta purpose="Finish the exercise by deciding whether the backup is still useful or safe to remove." action="Delete INSTRUCTIONS.md.bak only if you are satisfied with the edited file and no longer need the recovery copy." expectedResult="The backup file is removed, leaving the edited main file as the final version." whyItMatters="Cleanup is only safe after verification, and this reinforces the order: backup, edit, verify, then optionally remove the backup." nextStep="After this step, you have completed the full backup-edit-verify loop and are ready to build a larger reference file in the mini project." askTutor="I'm on Step 7 of Make a safe text edit. Help me decide whether it is safe to delete the backup yet or whether I should keep it a little longer." />
 
 If you are happy with the edits and no longer need the backup:
 

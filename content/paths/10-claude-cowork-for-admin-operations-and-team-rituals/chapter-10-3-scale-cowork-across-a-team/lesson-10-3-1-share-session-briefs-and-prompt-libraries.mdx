@@ -5,7 +5,6 @@ chapterNumber: "10.3"
 pathNumber: "10"
 tutorPreload: "Set up a shared prompts folder so every teammate gets consistent Claude results."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Share session briefs and prompt libraries
@@ -17,8 +16,6 @@ By the end of this lesson you will create a git-tracked `prompts/` directory con
 ## Walkthrough
 
 ### Step 1 — Create the prompts directory in your project
-
-<StepMeta purpose="Create a shared repo location where reusable prompts and session briefs can live." action="Make the prompts directory in the project, move into it, and treat it as the canonical home for team-shared Claude prompts." expectedResult="You have a git-trackable prompts folder ready for templates, concrete prompts, and documentation." whyItMatters="Shared prompt libraries only become reusable when they live in a stable, discoverable location inside the repo rather than in personal notes or chat history." nextStep="Write a general session brief template so future prompt files start from a consistent structure." askTutor="I'm on Step 1 of Share session briefs and prompt libraries. Help me set up this prompts directory so it can become the canonical team library instead of a personal scratch folder." />
 
 **macOS / Linux**
 
@@ -35,8 +32,6 @@ Set-Location "$HOME\my-project\prompts"
 ```
 
 ### Step 2 — Write a session brief template
-
-<StepMeta purpose="Define the standard structure every shared Cowork prompt should follow." action="Create the session-brief-template.md file with sections for context, instructions, and output location." expectedResult="You have a reusable template teammates can copy whenever they need a new session brief." whyItMatters="Prompt quality improves when teams start from a known structure instead of rewriting the same scaffolding from scratch every time." nextStep="Use that template to create concrete prompt files for real team workflows like standups and code review." askTutor="I'm on Step 2 of Share session briefs and prompt libraries. Help me make this session brief template structured enough that teammates can reuse it without confusion." />
 
 A session brief tells Claude what role to play, what files to read, and what output format to follow. Create a reusable template:
 
@@ -85,8 +80,6 @@ Save the result to: [output file path]
 ```
 
 ### Step 3 — Create concrete prompt files from the template
-
-<StepMeta purpose="Turn the generic template into prompts the team can use immediately on common workflows." action="Create real prompt files such as standup-summary.md and code-review-checklist.md based on the template." expectedResult="You have at least two concrete prompts that encode repeatable team tasks with explicit instructions and output expectations." whyItMatters="A prompt library becomes valuable when it contains tested, task-specific prompts that solve real recurring problems instead of just abstract templates." nextStep="Document the library with a README so teammates know what exists and how to contribute new prompts." askTutor="I'm on Step 3 of Share session briefs and prompt libraries. Help me decide whether these prompt files are concrete enough to be genuinely useful for teammates." />
 
 Build a few real prompts your team will actually use:
 
@@ -180,8 +173,6 @@ Print to screen (do not save to file).
 
 ### Step 4 — Add a README to the prompts directory
 
-<StepMeta purpose="Make the prompt library discoverable and maintainable for people who did not create it." action="Write a README that explains usage, lists available prompts, and describes how to add or improve entries." expectedResult="The prompts directory includes a README that tells teammates how to use the library and extend it safely." whyItMatters="Without local documentation, prompt libraries become opaque collections of files that teammates ignore or misuse." nextStep="Commit the library into the project so it becomes a shared artifact rather than a local experiment." askTutor="I'm on Step 4 of Share session briefs and prompt libraries. Help me make this README clear enough that a teammate can find and use the right prompt without asking me first." />
-
 **macOS / Linux**
 
 ```bash
@@ -240,8 +231,6 @@ Reusable session briefs and prompt templates for Claude.
 
 ### Step 5 — Commit the prompt library
 
-<StepMeta purpose="Publish the prompt library to the repo so the team can review and reuse it." action="Stage the prompts directory from the project root and commit the template, concrete prompts, and README together." expectedResult="You create a commit containing the first shared version of the prompt library." whyItMatters="Once the library is committed, it becomes part of the team's working system and can improve through normal review and iteration." nextStep="Validate the library with another teammate to see whether the prompts work without ad hoc edits." askTutor="I'm on Step 5 of Share session briefs and prompt libraries. Help me do a final review so this prompt library is worth committing as a team artifact." />
-
 **macOS / Linux**
 
 ```bash
@@ -259,8 +248,6 @@ git commit -m "docs: add shared prompt library with session brief template"
 ```
 
 ### Step 6 — Verify a teammate can use a prompt
-
-<StepMeta purpose="Test whether the library is actually reusable by someone other than the person who wrote it." action="Have a teammate try one prompt from the library without modifications and note any confusion or missing assumptions." expectedResult="You learn whether the prompt file naming, instructions, and output format are clear enough for another person to use directly." whyItMatters="Prompt libraries fail when they only work for their author, so this external usability check is the fastest way to improve reuse." nextStep="Use the same team-scale mindset in the playbook lesson, where you codify when and how the team should use Cowork at all." askTutor="I'm on Step 6 of Share session briefs and prompt libraries. Help me evaluate whether a teammate can use this prompt library without hidden assumptions or local setup knowledge." />
 
 The best test: have someone else on your team open `prompts/standup-summary.md`, paste it into Claude Code, and check that the output matches the expected format. If they need to modify the prompt to get it working, update the shared version.
 

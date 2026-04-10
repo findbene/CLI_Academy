@@ -5,7 +5,6 @@ chapterNumber: "12.3"
 pathNumber: "12"
 tutorPreload: "Walk me through setting up CLAUDE.md, a custom skill, and memory for a real project."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: customize Claude for your workflow
@@ -17,8 +16,6 @@ By the end of this mini project you will have a personal project set up with all
 ## Walkthrough
 
 ### Step 1 — Create a new project
-
-<StepMeta purpose="Start from a clean repository so you can assemble all customization layers in one controlled place." action="Create the project directory, move into it, and run git init so the repo has a clear root for local instructions and memory." expectedResult="You have a fresh project repository ready for project-level CLAUDE.md, rules, and repo memory files." whyItMatters="The end-to-end test only proves anything if all three customization layers are anchored to a real project root." nextStep="Write a project CLAUDE.md that defines the mission, boundaries, and working rules for this repo." askTutor="Help me choose a realistic practice project and confirm that I initialized the repo in the correct directory." />
 
 Pick a real project idea — a personal website, a utility script collection, or a side project. If you do not have one in mind, create a practice project.
 
@@ -39,8 +36,6 @@ git init
 ```
 
 ### Step 2 — Write a project CLAUDE.md
-
-<StepMeta purpose="Define the repo's core behavior so Claude has project-specific mission, rules, and loading boundaries from the start." action="Create CLAUDE.md at the repo root and fill it with the mission, read order, hard rules, and context loading guidance shown in the lesson." expectedResult="The project now has a root CLAUDE.md that tells Claude how to work safely and efficiently inside this repo." whyItMatters="Project instructions are the backbone of local customization because they shape how Claude approaches every task in this repository." nextStep="Add a narrower rules file for code-style conventions that should override broader defaults when needed." askTutor="Review my project CLAUDE.md and tell me whether the rules are specific enough to influence real behavior during coding tasks." />
 
 Create a `CLAUDE.md` that describes your project. Tailor the rules to your actual needs.
 
@@ -102,8 +97,6 @@ Optimize for working code over perfect code. Ship small increments.
 
 ### Step 3 — Add a .claude/rules file for project-specific conventions
 
-<StepMeta purpose="Split detailed code-style conventions into a more specific instruction layer." action="Create .claude/rules/code-style.md and add the indentation, quoting, and export rules for this project." expectedResult="A project rules file exists that Claude can use for narrow code-style questions without cluttering the main CLAUDE.md." whyItMatters="Using .claude/rules keeps the instruction stack maintainable and demonstrates how the most specific layer can answer targeted questions later." nextStep="Verify that your custom commit-message skill is installed so the skill layer is ready for the end-to-end test." askTutor="Check whether these code-style entries belong in the rules file or whether any of them would be better placed in the main project CLAUDE.md." />
-
 **macOS / Linux**
 
 ```bash
@@ -130,8 +123,6 @@ New-Item -ItemType Directory -Force -Path ".claude\rules"
 
 ### Step 4 — Confirm your custom skill is installed
 
-<StepMeta purpose="Make sure the reusable skill layer is available before you try the final integrated workflow." action="Inspect the commit-message skill file in ~/.claude/skills and confirm the folder and SKILL.md exist." expectedResult="You verify that the commit-message skill is present and ready to trigger during the end-to-end test." whyItMatters="If the skill layer is missing, the final verification will fail for the wrong reason and hide whether the local project setup works." nextStep="Add repo memory so Claude also knows project-specific facts that should persist across future sessions." askTutor="Help me verify that my commit-message skill is installed correctly and remind me what parts of the file make it trigger." />
-
 You should already have the `commit-message` skill from lesson 12.2.2. Verify it exists:
 
 **macOS / Linux**
@@ -149,8 +140,6 @@ Get-Content "$HOME\.claude\skills\commit-message\SKILL.md" | Select-Object -Firs
 If it does not exist, go back to lesson 12.2.2 and create it.
 
 ### Step 5 — Add repo-level memory for this specific project
-
-<StepMeta purpose="Teach Claude durable facts about this repo without polluting your cross-project user memory." action="Create .claude/memory/project-context.md and record the stack, test framework, CI system, and deploy target for this project." expectedResult="The repo has a project-context memory file that Claude can use to answer project-specific questions in future sessions." whyItMatters="Repo memory is the right home for durable project facts because it persists across sessions but stays local to this one repository." nextStep="Confirm that your broader user-memory files still exist so the end-to-end test can exercise both personal and project-specific memory." askTutor="Review my repo memory entries and tell me whether any of them belong in user memory or CLAUDE.md instead of project-context.md." />
 
 **macOS / Linux**
 
@@ -184,8 +173,6 @@ New-Item -ItemType Directory -Force -Path ".claude\memory"
 
 ### Step 6 — Verify user-level memory files exist
 
-<StepMeta purpose="Ensure the user-memory layer is available so the final test covers both global preferences and repo-specific context." action="List ~/.claude/memory and confirm that preferences.md, patterns.md, and debugging.md are present from the previous lesson." expectedResult="You can see the user-memory files that should influence Claude across all projects." whyItMatters="The final workflow only proves full customization if global memory, repo memory, skills, and project instructions are all active together." nextStep="Start a fresh Claude Code session and run the five-part verification sequence." askTutor="Help me check whether my user-memory files are complete enough to show up clearly in the final integrated test." />
-
 These should be in place from lesson 12.3.2. Confirm:
 
 **macOS / Linux**
@@ -203,8 +190,6 @@ Get-ChildItem "$HOME\.claude\memory"
 You should see `preferences.md`, `patterns.md`, and `debugging.md`.
 
 ### Step 7 — Run the end-to-end verification test
-
-<StepMeta purpose="Validate in one session that project instructions, rules files, repo memory, user memory, and skills all work together." action="Restart Claude Code in the project and run the five tests in order, checking project rules, code style, language preference, test framework, and staged-diff commit message behavior." expectedResult="Claude answers each question from the correct customization source and generates a conventional commit message for the staged file." whyItMatters="An end-to-end test is the fastest way to prove that your customization stack is complete and that each layer is being read from the right place." nextStep="Tighten any weak layer by editing the specific file that produced a wrong or missing answer, then rerun the same tests." askTutor="Walk through my five test results with me and identify which customization layer succeeded or failed on each one." />
 
 Start a fresh Claude Code session in your project:
 

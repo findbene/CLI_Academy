@@ -5,7 +5,6 @@ chapterNumber: "1.1"
 pathNumber: "1"
 tutorPreload: "Show me where to create my workspace safely on {{os}} and explain each folder in plain English."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Create the CLI Academy workspace
@@ -18,15 +17,11 @@ You will use terminal commands to create a dedicated `cli-academy/` workspace fo
 
 ### Step 1 — Open your terminal
 
-<StepMeta purpose="Start the lesson in the correct shell for your operating system." action="Open Terminal on macOS or Linux, or PowerShell on Windows." expectedResult="You have a terminal window open and ready to accept commands." whyItMatters="Using the right shell keeps the commands in the lesson aligned with what you see on screen." nextStep="Once the terminal is open, move to your home directory before creating anything." askTutor="I'm on Step 1 of Create the CLI Academy workspace. Help me open the right terminal on my machine and confirm I'm using the correct shell for this lesson." />
-
 **macOS / Linux:** Open **Terminal** (search "Terminal" in Spotlight or your app launcher).
 
 **Windows:** Press `Win + X` and choose **Windows PowerShell** (or **Terminal**). All Windows commands in this course use PowerShell, not Command Prompt.
 
 ### Step 2 — Navigate to your home directory
-
-<StepMeta purpose="Anchor yourself in a safe, known location before creating new folders." action="Run the home-directory command for your OS, then print your current location." expectedResult="The terminal shows a path that points to your user home folder." whyItMatters="Starting in the wrong place is how beginners accidentally create project folders in confusing or protected locations." nextStep="Once your home path looks correct, create the workspace folders in one shot." askTutor="I'm on Step 2 of Create the CLI Academy workspace. Help me verify that the path printed in my terminal is my home directory and safe for this lesson." />
 
 Start from a known, safe location so the workspace lands in the right place.
 
@@ -45,8 +40,6 @@ Get-Location
 You should see your home path printed — for example `/Users/yourname` or `C:\Users\yourname`.
 
 ### Step 3 — Create the workspace and subfolders
-
-<StepMeta purpose="Create the permanent folder structure you will reuse across the rest of CLI Academy." action="Run the single command that creates cli-academy plus notes, projects, and screenshots." expectedResult="The command finishes without errors and the folders now exist on disk." whyItMatters="A clean, predictable folder layout makes later lessons easier to follow and easier to troubleshoot." nextStep="After creating the folders, list the tree so you can confirm each subfolder exists." askTutor="I'm on Step 3 of Create the CLI Academy workspace. Explain exactly what this folder-creation command does and tell me if it's safe to run in my current location." />
 
 One command creates everything at once.
 
@@ -67,8 +60,6 @@ What each subfolder is for:
 - **screenshots/** — saved error messages and terminal output for troubleshooting
 
 ### Step 4 — Verify the folder tree
-
-<StepMeta purpose="Confirm the workspace was created correctly before you build on it." action="List the contents of cli-academy and compare the output with the expected folder names." expectedResult="You see notes, projects, and screenshots in the output." whyItMatters="Verification now prevents you from discovering a missing folder halfway through a later lesson." nextStep="Once the tree looks right, move into cli-academy so future commands start from the right place." askTutor="I'm on Step 4 of Create the CLI Academy workspace. Help me compare my folder-list output with the expected result and tell me what to fix if something is missing." />
 
 **macOS / Linux:**
 ```bash
@@ -93,8 +84,6 @@ screenshots
 ```
 
 ### Step 5 — Move into your workspace
-
-<StepMeta purpose="Finish the lesson from inside the workspace you just created." action="Change into cli-academy and print the current path." expectedResult="The printed path ends with cli-academy." whyItMatters="Most later lessons assume you can quickly move into this workspace without guessing where it lives." nextStep="With the workspace confirmed, you are ready to start capturing notes and building small projects inside it." askTutor="I'm on Step 5 of Create the CLI Academy workspace. Help me verify that I really moved into cli-academy and explain what to do if my path still looks wrong." />
 
 Most CLI Academy work starts from this folder, so step inside it now.
 

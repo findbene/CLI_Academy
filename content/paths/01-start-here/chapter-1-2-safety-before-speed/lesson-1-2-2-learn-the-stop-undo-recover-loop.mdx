@@ -5,20 +5,17 @@ chapterNumber: "1.2"
 pathNumber: "1"
 tutorPreload: "What is the safest undo path for this mistake on {{os}}? Give me the least risky option first."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Learn the stop, undo, recover loop
 
 ## Objective
 
-You will practice three emergency skills on your own machine: stopping a runaway command with `Ctrl+C`, undoing a file change with `git restore`, and recovering a moved file with `mv`. After this lesson, you will have muscle memory for the three most common "oh no" moments in terminal work.
+You will practice three emergency skills on your own machine: stopping a runaway command with `Ctrl+C`, undoing a file change with `git checkout`, and recovering a moved file with `mv`. After this lesson, you will have muscle memory for the three most common "oh no" moments in terminal work.
 
 ## Walkthrough
 
 ### Step 1 — Go to your projects folder
-
-<StepMeta purpose="Start the practice from a safe workspace folder where temporary files are easy to inspect." action="Change into ~/cli-academy/projects before running any drills." expectedResult="Your prompt now shows you are inside the projects folder." whyItMatters="Practicing recovery inside your workspace keeps the exercise low-risk and easy to clean up." nextStep="Once you are in projects, start the stop drill with a harmless long-running command." askTutor="I'm on Step 1 of Learn the stop, undo, recover loop. Help me confirm I'm in the right projects folder before I start the practice commands." />
 
 **macOS / Linux:**
 ```bash
@@ -31,8 +28,6 @@ Set-Location ~/cli-academy/projects
 ```
 
 ### Step 2 — Practice STOP: Kill a running command
-
-<StepMeta purpose="Build reflexes for the fastest safe way to stop a runaway terminal command." action="Run ping, watch it continue, then stop it with Ctrl+C." expectedResult="The endless output stops and your normal prompt returns." whyItMatters="Knowing how to stop a command quickly prevents panic and limits damage when something runs longer than expected." nextStep="After you have the stop reflex, practice restoring a broken file with Git." askTutor="I'm on Step 2 of Learn the stop, undo, recover loop. Explain what Ctrl+C actually does here and tell me what I should expect to see when the command stops cleanly." />
 
 We will start a harmless long-running command, then kill it.
 
@@ -55,8 +50,6 @@ The command stops immediately. The terminal prints a summary and gives you your 
 > **Important:** `Ctrl+C` does not delete anything. It simply tells the running program to quit. It is always safe to press.
 
 ### Step 3 — Practice UNDO: Revert a file with Git
-
-<StepMeta purpose="Learn how to get back to the last known good version of a tracked file." action="Create a test file, commit it, break it on purpose, then restore it with Git." expectedResult="The file returns to its original safe contents after the restore command." whyItMatters="Undoing a bad file change is one of the most common recovery tasks in real AI-assisted repo work." nextStep="Once file restore makes sense, practice recovering a file that was moved to the wrong folder." askTutor="I'm on Step 3 of Learn the stop, undo, recover loop. Help me understand the difference between the broken file state and the restored file state, and tell me the safest restore command to use now." />
 
 First, create a test file and commit it so Git has a "known good" copy.
 
@@ -91,7 +84,7 @@ Get-Content test-undo.txt
 You will see the broken text. Now restore the last committed version:
 
 ```bash
-git restore test-undo.txt
+git checkout -- test-undo.txt
 ```
 
 (This command is the same on macOS, Linux, and Windows PowerShell.)
@@ -111,8 +104,6 @@ Get-Content test-undo.txt
 It should say `This file is safe.` again. The damage is completely reversed.
 
 ### Step 4 — Practice RECOVER: Rescue a moved file
-
-<StepMeta purpose="Show yourself that a moved file is usually recoverable, not lost forever." action="Move the test file out of the folder, confirm it disappeared here, then move it back." expectedResult="The file leaves the projects folder temporarily, then returns with its original contents intact." whyItMatters="Beginners often confuse moved files with deleted files, and that confusion creates unnecessary panic." nextStep="After the move-and-return drill, write down the stop, undo, and recover rules in your own quick-reference playbook." askTutor="I'm on Step 4 of Learn the stop, undo, recover loop. Help me trace where my file went after I moved it and tell me how to bring it back safely." />
 
 Accidentally moving or renaming a file is common. Let's practice finding it again.
 
@@ -158,8 +149,6 @@ Your file is home again.
 
 ### Step 5 — Create your undo-recover playbook
 
-<StepMeta purpose="Turn the recovery drills into a short reference you can use when you are stressed." action="Create undo-recover.md with the stop, undo, recover, and nuclear-option notes." expectedResult="A playbook file exists in notes with the key commands and when to use them." whyItMatters="You will not remember every recovery command under pressure, so a short playbook keeps safe defaults close at hand." nextStep="Keep the playbook in notes and revisit it whenever a future lesson introduces a new recovery pattern." askTutor="I'm on Step 5 of Learn the stop, undo, recover loop. Help me review my playbook wording and make sure each command description matches what the command actually does." />
-
 Save what you learned as a quick-reference card.
 
 **macOS / Linux:**
@@ -170,7 +159,7 @@ cat <<'EOF' > ../notes/undo-recover.md
 ## STOP — Ctrl+C
 Kill any running terminal command instantly. Safe to press anytime.
 
-## UNDO — git restore filename
+## UNDO — git checkout -- filename
 Restores a file to its last committed state. Only works on files tracked by Git.
 
 ## RECOVER — mv / Move-Item
@@ -189,7 +178,7 @@ EOF
 ## STOP — Ctrl+C
 Kill any running terminal command instantly. Safe to press anytime.
 
-## UNDO — git restore filename
+## UNDO — git checkout -- filename
 Restores a file to its last committed state. Only works on files tracked by Git.
 
 ## RECOVER — mv / Move-Item
@@ -208,7 +197,7 @@ Reverts ALL uncommitted changes in the current folder. Use when everything is br
 | `error: pathspec 'test-undo.txt' did not match any file(s)` | The file was never committed with `git add` and `git commit` | Go back to Step 3 and run the `git add` / `git commit` commands first |
 | `fatal: not a git repository` | You are in a folder that was not initialized with `git init` | Run `cd ~/cli-academy` then `git init`, then return to `projects/` and retry |
 | `mv: cannot stat 'test-undo.txt': No such file or directory` | You already moved the file in a previous attempt | Check `../notes/` for the file — it may already be there as `lost-file.txt` |
-| `git restore` says the path is unknown | The file was never committed, so Git has no version to restore | Go back and run `git add` plus `git commit` for the file before testing restore |
+| `git checkout` is deprecated warning | Newer Git versions prefer `git restore` | Both work. You can use `git restore test-undo.txt` instead |
 
 <VerificationBlock
   deliverable="A test-undo.txt file restored to its original content in cli-academy/projects/ plus an undo-recover.md playbook in cli-academy/notes/."

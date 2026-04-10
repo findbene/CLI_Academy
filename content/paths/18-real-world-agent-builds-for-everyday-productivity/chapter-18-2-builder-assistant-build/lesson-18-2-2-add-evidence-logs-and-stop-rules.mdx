@@ -5,7 +5,6 @@ chapterNumber: "18.2"
 pathNumber: "18"
 tutorPreload: "Review this builder assistant and tell me what evidence is missing."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Add evidence, logs, and stop rules
@@ -15,8 +14,6 @@ Add a mandatory `agent-log.md` evidence trail and strict stop rules (max iterati
 
 ## Walkthrough
 ### Step 1: Create evidence and rule files
-
-<StepMeta purpose="Add the two files that will hold hard execution limits and durable evidence for every helper run." action="Create `agent-log.md` and `stop-rules.md` so the safety pack exists before you change any contract text." expectedResult="The workspace now contains separate files for evidence logging and stop-rule enforcement." whyItMatters="Operational safeguards are easier to review and reuse when they live in dedicated artifacts instead of hidden lines inside a larger contract." nextStep="Populate the stop-rules file next with explicit, non-negotiable limits for iterations, file counts, paths, and repeated errors." askTutor="Review this safety-pack setup and tell me whether splitting evidence and rules into separate files is enough or whether another control artifact is missing." />
 
 ```bash
 touch agent-log.md stop-rules.md
@@ -28,8 +25,6 @@ New-Item stop-rules.md -ItemType File -Force | Out-Null
 ```
 
 ### Step 2: Define non-negotiable stop rules
-
-<StepMeta purpose="Turn vague safety intentions into explicit machine-checkable limits that the assistant must respect every run." action="Write the five stop rules into `stop-rules.md`, covering max iterations, max files, allowed paths, repeated command errors, and missing approval." expectedResult="You have a concrete stop-rule set that can be referenced before each assistant action." whyItMatters="Assistants overreach when limits are implied rather than enumerated, especially during long or ambiguous runs." nextStep="Define the evidence-log schema next so every action can be recorded against those same rules." askTutor="Audit these stop rules and tell me whether any obvious runaway or overreach case is still unaccounted for." />
 
 ```bash
 cat > stop-rules.md <<'EOF'
@@ -56,8 +51,6 @@ EOF
 ```
 
 ### Step 3: Define evidence log schema
-
-<StepMeta purpose="Create a consistent logging format that ties each assistant run to concrete actions, files, and stop-rule outcomes." action="Add the markdown table header to `agent-log.md` so every future run has a fixed schema for timestamp, run ID, task, action, files, result, and triggers." expectedResult="`agent-log.md` is ready to record comparable evidence across multiple assistant executions." whyItMatters="Structured logs are what turn assistant behavior into something you can inspect, troubleshoot, and improve rather than just remember vaguely." nextStep="Update `CLAUDE.md` next so logging and stop-rule checks become mandatory parts of execution." askTutor="Review this evidence-log schema and tell me whether it captures enough information to explain what the assistant did and why it stopped." />
 Add this format to `agent-log.md`:
 
 ```md
@@ -68,8 +61,6 @@ Add this format to `agent-log.md`:
 ```
 
 ### Step 4: Update CLAUDE.md to enforce logging and stop rules
-
-<StepMeta purpose="Bind the safety pack into the main assistant contract so the rules are actually applied at runtime." action="Add the logging-and-stop-enforcement section to `CLAUDE.md`, requiring checks before each step and immediate halt on any triggered rule." expectedResult="The assistant contract now formally requires stop-rule checks and action logging during every run." whyItMatters="Safety files are only useful when the assistant is explicitly instructed to consult and obey them." nextStep="Run one helper task next and confirm the assistant writes a real evidence entry using the schema you defined." askTutor="Check this contract update and tell me whether logging and stop-rule enforcement are phrased strongly enough to be operational rather than optional." />
 Add this section:
 
 ```md
@@ -80,8 +71,6 @@ Add this section:
 ```
 
 ### Step 5: Run one helper task and log it
-
-<StepMeta purpose="Validate that the helper now leaves behind real evidence and respects the declared execution limits." action="Use the provided prompt to run one in-scope helper task, then inspect `agent-log.md` to confirm actions were logged in the defined table format." expectedResult="You can point to at least one real run entry showing the task, actions taken, files touched, and any stop-rule outcome." whyItMatters="The shift from undocumented runs to evidence-backed runs is what makes assistants reviewable, debuggable, and safer to share." nextStep="Use the next chapter to build team-safe assistants and then pilot them with real humans using the same bounded design principles." askTutor="Help me review this first logged run and tell me whether the evidence is complete enough to reconstruct what the assistant actually did." />
 Prompt Claude Code:
 
 ```text

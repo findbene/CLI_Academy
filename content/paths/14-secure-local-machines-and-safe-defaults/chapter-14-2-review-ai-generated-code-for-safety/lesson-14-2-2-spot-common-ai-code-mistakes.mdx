@@ -5,7 +5,6 @@ chapterNumber: "14.2"
 pathNumber: "14"
 tutorPreload: "Review this AI-generated code for security issues and tell me what to fix."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Spot common AI code mistakes
@@ -19,8 +18,6 @@ In this lesson you will study the five most common AI code mistakes with real ex
 ## Walkthrough
 
 ### Step 1 — Set up a practice directory
-
-<StepMeta purpose="Create a small lab where each common AI mistake gets its own focused example file." action="Make the `ai-mistakes-lab` directory, enter it, and initialize Git before adding the first example." expectedResult="You have a clean practice repository ready for multiple short commits, each illustrating one repeated AI failure mode." whyItMatters="Breaking the mistakes into separate files makes the review pattern easier to learn and easier to reuse later in real projects." nextStep="Start with hallucinated imports, because fake or mismatched dependencies are one of the easiest AI failures to miss in a quick skim." askTutor="Confirm that this repo structure is good for collecting one-file examples of repeated AI mistakes and tell me how to keep the examples easy to review." />
 
 **macOS / Linux:**
 ```bash
@@ -36,8 +33,6 @@ git init
 ```
 
 ### Step 2 — Mistake 1: Hallucinated imports
-
-<StepMeta purpose="Learn to catch code that looks complete but references packages or modules that do not really exist." action="Create the hallucinated import example, commit it, and verify the suspicious package with `pip show` or the registry." expectedResult="You can show that the code appears plausible while the imported dependency fails verification or is absent from the environment." whyItMatters="Hallucinated imports waste review time and can lure you into installing typosquatted or fake packages if you trust them blindly." nextStep="Move to deprecated APIs so you can pair existence checks with version-compatibility checks during AI review." askTutor="Review this import example and tell me how you would distinguish a real package, a hallucinated package, and a typo-squatted package quickly." />
 
 AI models generate import statements for packages or modules that do not exist. The code looks complete, lints clean in the editor, and only fails at runtime.
 
@@ -95,8 +90,6 @@ pip show flask-security; if ($LASTEXITCODE -ne 0) { Write-Host "Package not foun
 
 ### Step 3 — Mistake 2: Deprecated APIs
 
-<StepMeta purpose="Recognize that AI suggestions may be syntactically valid yet still be behind the current platform or library guidance." action="Create the deprecated API example, commit it, and review the modern replacements and deprecation warning techniques." expectedResult="You can identify outdated APIs like `url.parse` and `new Buffer()` and name the current safer alternatives." whyItMatters="Outdated APIs can become security or maintenance liabilities even when the code still runs on your machine today." nextStep="Study dangerous dynamic execution next, because `eval()` style flexibility is one of the highest-risk AI shortcuts." askTutor="Look at this deprecated API example and tell me how I should verify a suggested API against the version of the runtime I actually use." />
-
 AI models are trained on older data. They suggest APIs that have been removed or replaced.
 
 **macOS / Linux:**
@@ -140,8 +133,6 @@ git add deprecated_api.js; git commit -m "example: deprecated APIs"
 **How to catch it:** Run `node --pending-deprecation deprecated_api.js` to see deprecation warnings. For Python, watch for `DeprecationWarning` in output. Check the official docs for the current version of any API you see.
 
 ### Step 4 — Mistake 3: eval() and dynamic code execution
-
-<StepMeta purpose="Build an immediate alarm response to AI suggestions that evaluate or execute user-controlled strings." action="Create the `eval_danger.py` example, read the unsafe and safer alternatives, and note exactly why the dangerous version is critical." expectedResult="You can explain why `eval()` on user input is remote code execution and why safe parsing or validation patterns are required instead." whyItMatters="Dynamic execution bugs are severe because a single accepted line can turn user input into arbitrary code on your machine or server." nextStep="Review hardcoded credentials next so you catch another high-severity pattern that often sneaks into example code." askTutor="Explain why `eval()` is critical here and suggest the safest replacement pattern for a calculator-style feature." />
 
 AI models reach for `eval()` when they want flexibility. It is almost never the right choice, and when it takes user input, it creates a remote code execution vulnerability.
 
@@ -198,8 +189,6 @@ git add eval_danger.py; git commit -m "example: eval danger"
 **How to catch it:** Search for `eval(`, `exec(`, `Function(`, `new Function(` in any AI output. If the argument comes from user input, it is a critical vulnerability.
 
 ### Step 5 — Mistake 4: Hardcoded credentials in examples
-
-<StepMeta purpose="Train yourself to treat every key-shaped string in AI output as suspicious, even when it is labeled as an example." action="Create the hardcoded credentials example, review the unsafe constants, and compare them to the environment-variable based replacement." expectedResult="You can spot hardcoded keys, passwords, and webhook URLs immediately and explain why they belong in environment configuration instead." whyItMatters="Hardcoded credentials turn copy-paste examples into real leak risks, especially when developers forget that example values still look like usable secrets." nextStep="Inspect SQL injection patterns next so you can recognize dangerous string construction around database queries." askTutor="Review this credentials example and tell me what patterns or prefixes should make me stop and inspect an AI snippet before I stage it." />
 
 AI frequently embeds real-looking credentials directly in code — sometimes from its training data, sometimes as "examples" that developers forget to replace.
 
@@ -263,8 +252,6 @@ git diff --staged | grep -iE '(api_key|password|secret|token)\s*='
 
 ### Step 6 — Mistake 5: SQL injection via string concatenation
 
-<StepMeta purpose="Recognize the most common database security failure pattern in AI-generated application code." action="Create the SQL example, compare the unsafe f-string query with the parameterized safe version, and note the user input boundary." expectedResult="You can identify direct user-input interpolation into SQL strings and explain how placeholders prevent injection." whyItMatters="SQL injection remains one of the highest-impact web vulnerabilities, and AI code generators still suggest it constantly when asked for quick database code." nextStep="Write your own compact review checklist so these five patterns become a reusable inspection routine." askTutor="Check whether I can correctly label the unsafe and safe query patterns here and explain how the parameterized version blocks injection." />
-
 AI models frequently build SQL queries by concatenating user input instead of using parameterized queries. This is the #1 web application vulnerability (OWASP Top 10).
 
 **macOS / Linux:**
@@ -316,8 +303,6 @@ grep -rn "f\"SELECT\|f\"INSERT\|f\"UPDATE\|f\"DELETE" *.py
 ```
 
 ### Step 7 — Build your AI code review reference
-
-<StepMeta purpose="Capture the repeated review checks in a durable file you can keep using after the lesson ends." action="Create `ai-code-review-checklist.md`, include all five mistake categories, and commit it to the practice repo." expectedResult="You have a saved checklist covering hallucinated imports, deprecated APIs, dynamic execution, hardcoded credentials, and SQL injection." whyItMatters="A written checklist converts pattern recognition into a repeatable workflow and gives future reviews a stable baseline." nextStep="Carry these review instincts into the hook and review-test-commit lessons, where you automate and reinforce the safety habits." askTutor="Review my AI code review checklist and tell me whether any important detection question is missing before I rely on it in real projects." />
 
 Create a quick-reference checklist you can use on every review:
 

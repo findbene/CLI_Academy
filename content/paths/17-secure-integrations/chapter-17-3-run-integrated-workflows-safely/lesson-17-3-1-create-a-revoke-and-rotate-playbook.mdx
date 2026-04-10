@@ -5,7 +5,6 @@ chapterNumber: "17.3"
 pathNumber: "17"
 tutorPreload: "Build me a fast revoke-and-rotate playbook for this integration."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Create a revoke-and-rotate playbook
@@ -20,8 +19,6 @@ In this lesson you will learn the real commands for revoking a GitHub token, ver
 
 ### Step 1 — Understand the three triggers for revocation
 
-<StepMeta purpose="Define the concrete situations that should trigger token revocation without debate or delay." action="Read the trigger table and internalize the difference between immediate compromise response, teammate-offboarding response, and routine rotation." expectedResult="You can name the main revoke-and-rotate triggers and explain the urgency level for each one." whyItMatters="Incident response is slowest when the team is still arguing about whether a leak or staffing change is serious enough to act on." nextStep="Check the current active sessions next so you know exactly what credential state exists before revocation begins." askTutor="Quiz me on token-revocation triggers and tell me whether I am treating any obvious compromise scenario too casually." />
-
 | Trigger | Action |
 |---|---|
 | Token appeared in git history, a log file, or a screenshot | Revoke immediately — assume it is compromised |
@@ -30,8 +27,6 @@ In this lesson you will learn the real commands for revoking a GitHub token, ver
 | CI/CD provider had a breach | Revoke all tokens that CI accessed |
 
 ### Step 2 — Check your current active GitHub sessions
-
-<StepMeta purpose="Identify the currently active token and its scope before you attempt to revoke or rotate it." action="Run `gh auth status`, and if appropriate in a private terminal, inspect `gh auth token` carefully enough to capture the identifying prefix." expectedResult="You know which GitHub auth is currently active and how to locate it in GitHub's token settings." whyItMatters="You cannot revoke confidently if you are unclear about which token or auth record is actually powering the workflow." nextStep="Execute the revoke path next, first locally and then directly on GitHub when needed, then verify the token no longer works." askTutor="Help me reason through the token-identification step and tell me when using `gh auth token` is justified versus too risky for the current environment." />
 
 Before revoking, know what you are revoking:
 
@@ -57,8 +52,6 @@ gh auth token
 Copy the token prefix (first 8 characters like `gho_XXXX`) so you can identify it on github.com/settings/tokens.
 
 ### Step 3 — Revoke the current token
-
-<StepMeta purpose="Practice the emergency shutdown path that removes local auth and invalidates the compromised credential." action="Run `gh auth logout`, revoke the token in GitHub settings if needed, and verify `gh api /user` now fails with an auth error." expectedResult="The old token is no longer usable locally, and you have evidence that revocation worked." whyItMatters="A revoke playbook is only credible if you have actually practiced the step that stops further API access." nextStep="Rotate to a fresh minimal-scope credential next so the workflow can recover without restoring the old risk profile." askTutor="Review this revocation sequence and tell me whether it truly proves the old token is dead or whether an extra verification step is still needed." />
 
 There are two revocation paths:
 
@@ -95,8 +88,6 @@ gh api /user
 
 ### Step 4 — Rotate: create a fresh token with minimum scopes
 
-<StepMeta purpose="Restore working access after revocation while keeping the replacement token as narrow as possible." action="Run `gh auth login --scopes repo,read:org` or generate a fine-grained PAT when required, then confirm the new token is active through `gh auth status`." expectedResult="A fresh token is active and its scopes match the intended minimum for the workflow." whyItMatters="Rotation without scope reduction simply restores the previous blast radius under a new token value." nextStep="Write the step-by-step playbook next so this full revoke-and-rotate flow can be executed quickly under pressure later." askTutor="Check my rotation plan and tell me whether the replacement credential is truly minimal or whether I am still carrying unnecessary access." />
-
 **macOS / Linux:**
 ```bash
 # Login fresh — this creates a new token via the OAuth device flow
@@ -120,8 +111,6 @@ If you need a raw PAT (for CI/CD secrets) instead of the OAuth flow:
 4. Copy the token and store it immediately in your CI/CD secrets vault — not in a file, not in Slack
 
 ### Step 5 — Write the playbook document
-
-<StepMeta purpose="Turn the tested revoke-and-rotate flow into a compact runbook that can be executed quickly during an incident." action="Create `revoke-rotate-playbook.md` with identification, local revoke, GitHub revoke, verification, fresh login, and dependent-system update steps." expectedResult="You have a reusable emergency playbook with clear timing targets and command sequences." whyItMatters="Runbooks reduce cognitive load during incidents and make response time less dependent on memory or the specific person on call." nextStep="Use the next lesson to audit the live integration risk profile now that the response path for token compromise is documented." askTutor="Review my playbook and tell me whether it is fast and specific enough that I could execute it in under five minutes during a real token leak." />
 
 **macOS / Linux:**
 ```bash

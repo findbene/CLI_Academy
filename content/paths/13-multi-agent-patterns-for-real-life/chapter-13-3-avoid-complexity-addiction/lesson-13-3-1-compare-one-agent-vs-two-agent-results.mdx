@@ -5,7 +5,6 @@ chapterNumber: "13.3"
 pathNumber: "13"
 tutorPreload: "Tell me whether this workflow truly needs multiple agents."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Run agents in sequence and check handoffs
@@ -19,8 +18,6 @@ By the end you will have a reusable `run-pipeline.sh` (or `.ps1`) script that co
 ## Walkthrough
 
 ### Step 1 — Set up the project
-
-<StepMeta purpose="Create the workspace where you will automate a simple two-agent run instead of invoking each agent manually." action="Make the sequential-pipeline directory and add the Researcher and Writer contracts so the script has concrete files to call." expectedResult="You have a directory containing both contracts and ready for an orchestration script." whyItMatters="A sequence runner only becomes meaningful when it is coordinating real contract files and real handoff outputs." nextStep="Write the Bash orchestration script that runs Researcher, verifies the handoff, and then runs Writer." askTutor="Help me check whether this starting directory really has everything a sequential pipeline script will need." />
 
 **macOS / Linux:**
 ```bash
@@ -102,8 +99,6 @@ Stop after writing ``article-draft.md``.
 
 ### Step 2 — Write the orchestration script (macOS / Linux)
 
-<StepMeta purpose="Encode the handoff checks directly into the workflow so failures stop early instead of cascading." action="Create run-pipeline.sh exactly as shown, paying attention to the file existence checks between the two Claude runs." expectedResult="A runnable Bash script exists that launches the Researcher, verifies research-findings.md, then launches the Writer and verifies article-draft.md." whyItMatters="Automation without verification just hides errors faster, so the handoff check is the most important part of the script." nextStep="Create the PowerShell version too if you need Windows support, then run the correct script for your environment." askTutor="Review this Bash pipeline script and tell me whether the verification logic is strong enough or if any failure path is still too loose." />
-
 ```bash
 cat > run-pipeline.sh << 'SCRIPT'
 #!/usr/bin/env bash
@@ -141,8 +136,6 @@ chmod +x run-pipeline.sh
 
 ### Step 3 — Write the orchestration script (Windows PowerShell)
 
-<StepMeta purpose="Mirror the same sequential verification behavior for Windows users instead of assuming Bash everywhere." action="Create run-pipeline.ps1 with the same run-check-run structure and output validation that the Bash script uses." expectedResult="You have a PowerShell pipeline script that stops if the findings or article file is missing or empty." whyItMatters="Cross-platform workflows are only reusable when the safety checks survive the shell translation." nextStep="Run the pipeline and watch for the verification messages between stages so you know the guardrails are working." askTutor="Compare this PowerShell version to the Bash version and tell me whether the handoff checks are equivalent in practice." />
-
 ```powershell
 @"
 `$ErrorActionPreference = "Stop"
@@ -178,8 +171,6 @@ Get-ChildItem research-findings.md, article-draft.md | Format-Table Name, Length
 
 ### Step 4 — Run the pipeline
 
-<StepMeta purpose="Test the automation end to end and confirm the script is coordinating the agents in the right order." action="Run the platform-appropriate pipeline script and watch for the OK or FAIL messages after each stage." expectedResult="The script either produces both output files cleanly or stops before the Writer when the findings handoff fails." whyItMatters="The real value of orchestration is early failure detection, not just fewer manual prompts." nextStep="Read the verification check carefully so you can explain why this script is safer than a naive two-command sequence." askTutor="Help me interpret this pipeline run and pinpoint the stage where the handoff or verification broke down." />
-
 **macOS / Linux:**
 ```bash
 ./run-pipeline.sh
@@ -193,8 +184,6 @@ Get-ChildItem research-findings.md, article-draft.md | Format-Table Name, Length
 Watch for the verification messages between steps. If the Researcher fails, the script exits before the Writer ever starts — exactly the behavior you want.
 
 ### Step 5 — Understand what the verification checks do
-
-<StepMeta purpose="Turn the script from copied code into a pattern you can reuse and modify safely." action="Study the existence and non-empty check and explain how it prevents the Writer from running on bad input." expectedResult="You can describe exactly why the pipeline stops early and what risk that eliminates." whyItMatters="Understanding the guardrail is what lets you adapt this pattern to other agent sequences without accidentally removing the safety behavior." nextStep="Use that idea in the next lesson, where you add a reviewer and a capped revision loop instead of stopping after the writer." askTutor="Explain this verification block line by line and tell me what would go wrong if I removed it from the pipeline." />
 
 The key insight is the check between agents:
 

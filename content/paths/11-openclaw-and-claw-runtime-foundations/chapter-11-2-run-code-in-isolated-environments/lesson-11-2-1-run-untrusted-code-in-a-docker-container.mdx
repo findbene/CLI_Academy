@@ -5,7 +5,6 @@ chapterNumber: "11.2"
 pathNumber: "11"
 tutorPreload: "Walk me through building a locked-down Docker container for running code I did not write."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Run untrusted code in a Docker container
@@ -17,8 +16,6 @@ By the end of this lesson you will build a minimal Docker image designed for san
 ## Walkthrough
 
 ### Step 1 — Create a sandbox project folder
-
-<StepMeta purpose="Set up a dedicated workspace so the Docker sandbox files stay isolated from your main projects." action="Create the sandbox-lab directory and move into it before writing any Docker or test files." expectedResult="You have a clean workspace ready to hold the Dockerfile and the untrusted test script." whyItMatters="Keeping sandbox experiments separate from real projects reduces accidental file mixing and makes it easier to see what the container can and cannot touch." nextStep="Write the minimal Dockerfile that defines the locked-down environment you will use for the test." askTutor="I'm on Step 1 of Run untrusted code in a Docker container. Help me set up this sandbox workspace so the experiment stays clearly separated from my real project files." />
 
 **macOS / Linux**
 
@@ -34,8 +31,6 @@ Set-Location "$HOME\sandbox-lab"
 ```
 
 ### Step 2 — Write a minimal Dockerfile
-
-<StepMeta purpose="Define a deliberately small and restricted container image for sandboxing." action="Create the Dockerfile with the slim Python base, non-root sandbox user, and narrow working directory." expectedResult="You have a minimal image definition that limits privileges and avoids unnecessary extra tools." whyItMatters="The image design is part of the sandbox boundary: fewer packages, no root runtime, and a constrained user reduce the blast radius if the code misbehaves." nextStep="Build the image so you can use it as the execution environment for the untrusted script." askTutor="I'm on Step 2 of Run untrusted code in a Docker container. Help me understand which lines in this Dockerfile actually improve the sandbox boundary and which are just convenience." />
 
 This image includes only Python and nothing else. No shell utilities, no package managers, no extras.
 
@@ -68,8 +63,6 @@ Key security choices:
 
 ### Step 3 — Build the sandbox image
 
-<StepMeta purpose="Turn the Dockerfile into a runnable sandbox image you can reuse during the rest of the lesson." action="Run docker build and wait for the image to complete successfully with the sandbox-runner tag." expectedResult="Docker finishes building the image and tags it as sandbox-runner:latest." whyItMatters="You need a reproducible container image before you can test any of the execution controls, and building it once makes repeated safe runs faster." nextStep="Create a deliberately suspicious script that tries file, write, and network actions so you can test the sandbox limits." askTutor="I'm on Step 3 of Run untrusted code in a Docker container. Help me verify this image build succeeded and explain what I should care about in the build output." />
-
 **macOS / Linux**
 
 ```bash
@@ -85,8 +78,6 @@ docker build -t sandbox-runner .
 You should see `Successfully tagged sandbox-runner:latest` at the end.
 
 ### Step 4 — Write an untrusted script to test
-
-<StepMeta purpose="Create a realistic probe that attempts the kinds of actions a suspicious script might try." action="Write evil_test.py so it attempts to inspect files, write outside its home directory, and reach the network." expectedResult="You have a test script that exercises the key sandbox boundaries you want Docker to enforce." whyItMatters="A sandbox is easier to trust when you test it against realistic misuse patterns instead of a harmless hello-world script." nextStep="Run that script with the full locked-down docker flags so you can observe which actions succeed and which are blocked." askTutor="I'm on Step 4 of Run untrusted code in a Docker container. Help me review this test script and explain why each attempted action is a useful sandbox check." />
 
 Create a script that tries to do three dangerous things: read the host file system, access the internet, and write outside its home directory.
 
@@ -162,8 +153,6 @@ print("\n=== Test complete ===")
 
 ### Step 5 — Run the untrusted script in the locked-down container
 
-<StepMeta purpose="Exercise the full Docker sandbox with file, network, and resource restrictions enabled." action="Run evil_test.py inside sandbox-runner using the locked-down docker flags and inspect the output for blocked network access and container-local writes." expectedResult="The script runs inside the container, can only affect container-local state, and fails to reach the network." whyItMatters="This is the core proof that your sandbox configuration is doing real work rather than just wrapping the script in Docker cosmetically." nextStep="Check the host afterward to confirm no file escaped from the container into your real machine." askTutor="I'm on Step 5 of Run untrusted code in a Docker container. Help me interpret this sandbox run and decide whether the combination of flags actually gives me the protections I expect." />
-
 Use every sandbox flag: read-only file system, no network, drop all Linux capabilities, restrict memory.
 
 **macOS / Linux**
@@ -211,8 +200,6 @@ Flag breakdown:
 Expected output: the script can see the container's own `/etc` (not yours), can write to the container's `/tmp` (not yours), and the network attempt is blocked.
 
 ### Step 6 — Confirm nothing leaked to your host
-
-<StepMeta purpose="Verify from the host side that the container run left no unexpected artifact behind." action="Check your host temp location for escape.txt and confirm the file does not exist after the container exits." expectedResult="The host reports that no leaked file exists, confirming the write stayed inside the container." whyItMatters="Host-side verification is the last proof that the sandbox boundary held and that the containerized script did not leave artifacts outside the controlled output path." nextStep="Use the same isolation concepts in the venv lesson, where you will see package isolation without security isolation." askTutor="I'm on Step 6 of Run untrusted code in a Docker container. Help me verify from the host side that nothing escaped from the sandbox run." />
 
 **macOS / Linux**
 

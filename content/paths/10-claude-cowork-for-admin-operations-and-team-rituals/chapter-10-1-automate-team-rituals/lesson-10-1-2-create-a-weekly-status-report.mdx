@@ -5,7 +5,6 @@ chapterNumber: "10.1"
 pathNumber: "10"
 tutorPreload: "Help me compile a week of git activity into a Progress / Plans / Problems report."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Create a weekly status report
@@ -17,8 +16,6 @@ By the end of this lesson you will produce a structured weekly status report in 
 ## Walkthrough
 
 ### Step 1 — Set up a reports directory
-
-<StepMeta purpose="Create a stable workspace where weekly report inputs and outputs can be stored together." action="Make the weekly-reports directory, move into it, and use it as the working folder for source files and dated status reports." expectedResult="You have a dedicated reporting workspace ready to hold shortlogs, diff stats, context notes, and the final report." whyItMatters="A repeatable reporting routine works better when the inputs and outputs live in one predictable place instead of scattered across ad hoc terminals and chat history." nextStep="Gather a week of commit activity from your repo so the Progress section starts from real evidence." askTutor="I'm on Step 1 of Create a weekly status report. Help me set up this reporting workspace so the weekly inputs and final reports stay organized." />
 
 **macOS / Linux**
 
@@ -35,8 +32,6 @@ Set-Location "$HOME\weekly-reports"
 ```
 
 ### Step 2 — Gather the week's commit activity
-
-<StepMeta purpose="Collect the main evidence for the Progress section from real repository history." action="Run git shortlog for the last seven days, save the results to week-shortlog.txt, and inspect the file before moving on." expectedResult="You have a readable shortlog summarizing the recent commit activity grouped by author for the reporting window." whyItMatters="The Progress section should come from observable work, and shortlog provides a compact summary that Claude can interpret without relying on memory." nextStep="Add diff statistics next so the report also has a rough sense of which parts of the codebase changed." askTutor="I'm on Step 2 of Create a weekly status report. Help me tune this git shortlog step so the report captures the right week of work." />
 
 Navigate to your project repository and generate a shortlog for the past seven days.
 
@@ -62,8 +57,6 @@ Get-Content "$HOME\weekly-reports\week-shortlog.txt"
 
 ### Step 3 — Collect file-level change stats
 
-<StepMeta purpose="Give Claude a second view of the week's work so the report can describe themes, not just commit counts." action="Generate diff stats for roughly the same reporting window and save them to week-diffstat.txt for later summarization." expectedResult="You have a file-level summary of the changes that complements the week-shortlog source." whyItMatters="Diff stats help Claude identify where the work happened, which often produces better grouped progress bullets than commit titles alone." nextStep="Write the Plans and Problems context yourself so Claude has explicit human-provided forward-looking information." askTutor="I'm on Step 3 of Create a weekly status report. Help me decide whether this diffstat window is a good match for the same week covered by the shortlog." />
-
 This gives you a sense of which parts of the codebase moved.
 
 **macOS / Linux**
@@ -83,8 +76,6 @@ Get-Content "$HOME\weekly-reports\week-diffstat.txt"
 If `HEAD~20` goes further back than one week, adjust the number. The goal is to capture roughly one week of change.
 
 ### Step 4 — Write a brief Plans and Problems note by hand
-
-<StepMeta purpose="Add the human context that git history cannot provide, especially future work and current blockers." action="Create context.txt with the real plans and problems you want in the report, replacing the sample items with your own notes." expectedResult="You have a small context file that explicitly states next steps and blockers in your own words." whyItMatters="Claude should not infer plans or problems from commit history, so this file gives the report a trustworthy source for the forward-looking sections." nextStep="Ask Claude to combine the git-derived evidence with your context.txt notes into the final weekly report." askTutor="I'm on Step 4 of Create a weekly status report. Help me write a context.txt that gives Claude enough real Plans and Problems without letting it guess the rest." />
 
 Create a small text file with what you know that git does not:
 
@@ -120,8 +111,6 @@ Replace the example lines with your real plans and blockers. This human-written 
 
 ### Step 5 — Ask Claude to compile the report
 
-<StepMeta purpose="Synthesize the week's evidence and your own context into a report that is useful to teammates or managers." action="Prompt Claude to read week-shortlog.txt, week-diffstat.txt, and context.txt, then write the report in the exact Progress / Plans / Problems structure." expectedResult="Claude produces a concise weekly report whose Progress bullets come from repo history and whose Plans and Problems come from your context file." whyItMatters="The prompt structure is what keeps the report honest by tying each section to the correct source instead of letting Claude improvise missing details." nextStep="Save the report to a dated file and review every section against its source inputs before sharing it." askTutor="I'm on Step 5 of Create a weekly status report. Help me shape this prompt so Claude uses the git files for Progress and only context.txt for Plans and Problems." />
-
 Open Claude Code in `~/weekly-reports` and prompt:
 
 ```
@@ -144,8 +133,6 @@ Use plain English. Each bullet under 20 words. Do not invent plans or problems t
 ```
 
 ### Step 6 — Save and verify the report
-
-<StepMeta purpose="Validate the final report before it leaves your workspace so it reflects real progress without invented risks or plans." action="Save the report using today's date, open it from the shell, and compare each section to week-shortlog.txt and context.txt." expectedResult="You confirm that every Progress bullet is traceable to git history and every Plan or Problem is traceable to context.txt." whyItMatters="Status reports are high-trust summaries, and this final audit prevents subtle fabrication from reaching a manager or team channel." nextStep="Carry the same verify-before-share habit into the runbook and knowledge-base lessons that document repeatable team processes." askTutor="I'm on Step 6 of Create a weekly status report. Help me check that this report only says what the source files actually support before I share it." />
 
 Ask Claude to save the output:
 

@@ -5,7 +5,6 @@ chapterNumber: "17.3"
 pathNumber: "17"
 tutorPreload: "Review this integrated workflow for the most important risks."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Audit integrated workflow risk
@@ -19,8 +18,6 @@ In this lesson you will inspect your live GitHub integration's current permissio
 ## Walkthrough
 
 ### Step 1 — Inspect current token scopes and rate limits
-
-<StepMeta purpose="Start the risk audit from live operational evidence instead of generic concerns or memory." action="Run `gh auth status` and the rate-limit query, then capture both the active scopes and the current API budget remaining." expectedResult="You have concrete data about permissions and rate-limit headroom for the current integration." whyItMatters="Risk reviews are much sharper when they begin with the real token state and actual API consumption rather than assumptions." nextStep="Measure the token's reach next by counting accessible repositories and checking org access." askTutor="Help me interpret these auth and rate-limit results and tell me what immediate operational risks they suggest for this workflow." />
 
 **macOS / Linux:**
 ```bash
@@ -54,8 +51,6 @@ If `remaining` is under 100, your workflow is making too many API calls. That is
 
 ### Step 2 — Identify what the token can actually reach
 
-<StepMeta purpose="Quantify the blast radius of the current token by measuring the resources it can see or affect." action="Count accessible repositories and inspect org access so you can compare the token's actual reach against the workflow's intended target surface." expectedResult="You know whether the token reaches only the needed repository or a much broader slice of your GitHub footprint." whyItMatters="A token's danger is defined not just by scope names but by how many real repositories and organizations those scopes currently expose." nextStep="Inspect GitHub's security log or authorized-app list next so you can look for suspicious usage or stale authorizations." askTutor="Review this token-reach data with me and tell me whether the blast radius is proportionate to the workflow or obviously too broad." />
-
 **macOS / Linux:**
 ```bash
 # Count how many repos this token has access to
@@ -79,8 +74,6 @@ gh api /user/orgs | ConvertFrom-Json | Select-Object -ExpandProperty login
 A token with access to 50 repositories when your workflow only needs access to one is a risk: any bug or compromise exposes all 50.
 
 ### Step 3 — Check GitHub's security log for this token's activity
-
-<StepMeta purpose="Add a behavioral check to the audit by looking for token activity or authorized apps that do not match your expectations." action="Review the GitHub security log manually and, where possible, inspect OAuth authorizations from the CLI for unexpected entries or actions." expectedResult="You have at least a basic audit signal for whether the token or related apps have been used in ways you do not recognize." whyItMatters="Permission risk is only half the story; unusual activity can turn a theoretical exposure into an active incident." nextStep="Rate the findings next so the audit distinguishes critical issues from minor concerns." askTutor="Help me reason through the security-log review and tell me what kinds of entries would be normal versus suspicious for this integration." />
 
 GitHub logs every action taken under your account. For a manual review:
 
@@ -109,8 +102,6 @@ try {
 
 ### Step 4 — Rate each risk finding
 
-<StepMeta purpose="Force the audit into prioritized judgment instead of leaving every concern at the same vague severity level." action="Apply the Critical, High, Medium, and Low scale to each finding based on likely impact and exposure if the issue were exploited or left unresolved." expectedResult="You can distinguish the few risks that truly block production use from the lower-severity concerns that can be tracked later." whyItMatters="Prioritization is what turns a list of problems into a useful operational plan." nextStep="Write the full audit document next with findings, mitigations, accepted risks, and pre-production actions." askTutor="Challenge my risk ratings and tell me whether I am underestimating any finding that should block production use." />
-
 Use this scale for your risk table:
 
 | Rating | Meaning |
@@ -121,8 +112,6 @@ Use this scale for your risk table:
 | 🟢 Low | Cosmetic issues or hypotheticals with no current exploitation path |
 
 ### Step 5 — Produce the workflow risk audit document
-
-<StepMeta purpose="Record the integration's risk profile in a durable document that can be reviewed and updated over time." action="Create `workflow-risk-audit.md` with at least five findings, ratings, mitigations, accepted risks, and explicit actions required before production use." expectedResult="You have a complete risk-audit artifact tied to the live token state and workflow design." whyItMatters="A written risk audit helps future changes stay honest about what has already been accepted, mitigated, or left unresolved." nextStep="Use the mini-project to assemble all of Path 17's artifacts into one coherent secure-integration package." askTutor="Review my workflow risk audit and tell me whether the mitigations are concrete enough to act on before this workflow is treated as production-ready." />
 
 **macOS / Linux:**
 ```bash

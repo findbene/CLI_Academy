@@ -5,7 +5,6 @@ chapterNumber: "19.3"
 pathNumber: "19"
 tutorPreload: "Pressure-test this integrated capstone plan for safety gaps."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Plan the integrated workflow
@@ -16,8 +15,6 @@ Plan a real workflow that combines multiple tools instead of pretending one agen
 ## Walkthrough
 
 ### Step 1: Create the capstone workspace and define the integrated outcome
-
-<StepMeta purpose="Scope the final capstone around a real multi-tool workflow with distinct roles instead of one vague all-purpose agent." action="Create the `capstone-3-integrated` workspace and confirm the recommended role split between git evidence, content files, and Claude Code summarization." expectedResult="You have a dedicated integrated-capstone workspace and a clear high-level outcome for the curriculum change brief workflow." whyItMatters="Integrated workflows are only safe when each tool has an obvious job and the capstone is explicit about where one tool stops and the next begins." nextStep="Write `INTEGRATION-PLAN.md` next so the seams, inputs, outputs, stop rules, and failure test are documented before the pilot runs." askTutor="Pressure-test this integrated workflow idea for me and tell me whether the tool roles are genuinely distinct or if one layer still has too much freedom." />
 This capstone is strongest when each tool has an obvious role.
 
 macOS/Linux:
@@ -40,8 +37,6 @@ Recommended integrated workflow for this chapter:
 - Tool 3: Claude Code turns the evidence into a readable curriculum-change brief
 
 ### Step 2: Write INTEGRATION-PLAN.md with clear seams between the tools
-
-<StepMeta purpose="Document the workflow handoffs so the integrated capstone remains inspectable and not just conceptually impressive." action="Create `INTEGRATION-PLAN.md` with goal, tool seams, inputs, outputs, stop rules, and the empty-changed-file failure test exactly as described." expectedResult="You have a written integration plan that shows where git, content inspection, and Claude Code each begin and end." whyItMatters="Tool seams are what keep integrated assistants from silently turning into broad repo summarizers that invent or overreach across input sources." nextStep="Add the integrated agent contract next so Claude Code's read and write surface matches the seams defined in the plan." askTutor="Audit this integration plan and tell me whether the seams and stop rules are explicit enough to prevent the pilot from drifting beyond approved content evidence." />
 Document where one tool stops and the next begins.
 
 macOS/Linux:
@@ -123,8 +118,6 @@ Run one dry failure mode where the changed-file list is empty and confirm the wo
 ```
 
 ### Step 3: Add the integrated agent contract
-
-<StepMeta purpose="Constrain the Claude Code portion of the integrated workflow to approved evidence files and bounded outputs only." action="Write `CLAUDE.md` so it limits reading to the evidence folder and approved lesson files, bans edits and secret inspection, and defines no-op behavior for empty file lists." expectedResult="The final capstone now has a contract that matches the integrated plan and restricts the agent to summarization work only." whyItMatters="The integrated workflow stays trustworthy only if Claude Code cannot mutate lesson files or describe changes that are not present in the git evidence." nextStep="Run the plan review next so the seams and no-op behavior are challenged before the pilot begins." askTutor="Compare the integration plan and contract for me and tell me whether Claude Code still has any unnecessary freedom that could undermine the pilot's safety." />
 The contract should state exactly what Claude Code is allowed to read and write.
 
 macOS/Linux:
@@ -172,8 +165,6 @@ No-op behavior:
 ```
 
 ### Step 4: Review the integration plan before you pilot it
-
-<StepMeta purpose="Use a design review to catch ambiguous seams or weak failure behavior before real evidence is processed." action="Run the provided review prompt, write `portfolio-evidence/plan-review.md`, and inspect whether the tool roles, stop rules, and invented-summary failure test need tightening." expectedResult="You have a reviewed integrated-capstone plan with documented feedback before the build and pilot stage." whyItMatters="A pre-pilot review is cheaper than a messy integrated run and produces stronger evidence that the safety design was deliberate, not accidental." nextStep="Use the next lesson to capture the real git evidence, run the pilot, test the no-op failure path, and record one iteration." askTutor="Help me interpret this plan review and tell me what I should tighten before the pilot if I want the strongest integrated-capstone proof." />
 Use Claude Code to challenge the seams and failure behavior now, before the build step.
 
 Use this prompt:

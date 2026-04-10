@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getPublicSupabaseConfigMessage } from "@/lib/env";
 import { buildTutorSupportContext } from "@/lib/support";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -9,7 +8,7 @@ import {
   mapLearningModeToTutorMode,
   type TutorMode,
 } from "@/lib/tutor-config";
-import { buildTutorSystemPrompt, getAnthropicClient, getTutorModel, getTutorRuntimeStatus } from "@/lib/tutor";
+import { buildTutorSystemPrompt, getAnthropicClient, getTutorModel } from "@/lib/tutor";
 
 const encoder = new TextEncoder();
 
@@ -45,44 +44,14 @@ function streamFallback(text: string, responseHeaders?: Headers) {
   return response;
 }
 
-function buildTutorConfigurationMessage(options: {
-  authConfigured: boolean;
-  runtimeReady: boolean;
-  runtimeMessage: string | null;
-}) {
-  const messages: string[] = [];
-
-  if (!options.authConfigured) {
-    messages.push(
-      getPublicSupabaseConfigMessage() ??
-        "Tutor authentication is unavailable until the frontend Supabase public keys are configured.",
-    );
-  }
-
-  if (!options.runtimeReady && options.runtimeMessage) {
-    messages.push(options.runtimeMessage);
-  }
-
-  return messages.length ? messages.join(" ") : null;
-}
-
 export async function GET() {
   const supabaseContext = await createSupabaseServerClient();
-  const runtimeStatus = getTutorRuntimeStatus();
-  const configurationMessage = buildTutorConfigurationMessage({
-    authConfigured: Boolean(supabaseContext),
-    runtimeMessage: runtimeStatus.message,
-    runtimeReady: runtimeStatus.ready,
-  });
 
   if (!supabaseContext) {
     return NextResponse.json({
-      configurationLocation: runtimeStatus.location,
-      configurationMessage,
       configured: false,
       dailyLimit: null,
       remaining: null,
-      runtimeReady: runtimeStatus.ready,
       signedIn: false,
       tier: null,
     });
@@ -94,12 +63,9 @@ export async function GET() {
 
   if (!user) {
     const response = NextResponse.json({
-      configurationLocation: runtimeStatus.location,
-      configurationMessage,
-      configured: runtimeStatus.ready,
+      configured: true,
       dailyLimit: null,
       remaining: null,
-      runtimeReady: runtimeStatus.ready,
       signedIn: false,
       tier: null,
     });
@@ -125,12 +91,9 @@ export async function GET() {
     .maybeSingle();
 
   const response = NextResponse.json({
-    configurationLocation: runtimeStatus.location,
-    configurationMessage,
-    configured: runtimeStatus.ready,
+    configured: true,
     dailyLimit,
     remaining: Math.max(0, dailyLimit - (usage?.message_count ?? 0)),
-    runtimeReady: runtimeStatus.ready,
     signedIn: true,
     tier,
   });
@@ -255,9 +218,8 @@ export async function POST(request: Request) {
   const anthropic = getAnthropicClient();
   const supportContext = buildTutorSupportContext(question, lessonTitle);
   if (!anthropic) {
-    const runtimeStatus = getTutorRuntimeStatus();
     const fallback =
-      `${runtimeStatus.message ?? "Tutor live mode is unavailable right now."} ` +
+      `Tutor live mode is almost ready, but the Anthropic API key is missing. ` +
       `${lessonTitle ? `Lesson context: ${lessonTitle}. ` : ""}` +
       `Start with the current lesson steps, verify each expected output before moving on, ` +
       `and if something fails, compare the command, shell, working directory, and file paths first.`;

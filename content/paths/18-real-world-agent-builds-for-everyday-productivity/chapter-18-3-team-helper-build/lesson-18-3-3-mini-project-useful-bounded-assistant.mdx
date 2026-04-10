@@ -5,7 +5,6 @@ chapterNumber: "18.3"
 pathNumber: "18"
 tutorPreload: "Give me the controlled-pilot checklist for this assistant."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: useful bounded assistant
@@ -20,8 +19,6 @@ Deliver a full design -> build -> pilot -> document cycle for one useful bounded
 
 ## Walkthrough
 ### Step 1: Define project scope and constraints
-
-<StepMeta purpose="Start the mini-project with a single bounded mission statement so the assistant solves one real problem well." action="Create `mini-assistant-project`, write `project-brief.md`, and fill in the user problem, single workflow, inputs, output artifact, and explicit out-of-scope items." expectedResult="You have a project brief that defines exactly one assistant mission and its boundaries." whyItMatters="Project scope is the main control that keeps useful assistants from turning into vague automation ambitions with unsafe reach." nextStep="Implement the contract, stop rules, and evidence logging next so the project has operational controls before it runs." askTutor="Review this project brief and tell me whether the mission is truly bounded to one workflow or whether I need to cut scope further before building." />
 Create a bounded mission statement.
 
 ```bash
@@ -52,8 +49,6 @@ Set-Location mini-assistant-project
 
 ### Step 2: Implement CLAUDE.md, stop rules, and evidence logging
 
-<StepMeta purpose="Lay down the core safety and observability files before the assistant is allowed to act." action="Create `CLAUDE.md`, `stop-rules.md`, and `agent-log.md`, then make sure the minimum controls listed in the lesson are reflected in those files." expectedResult="The mini-project now has a contract, explicit stop limits, and an evidence log ready for use." whyItMatters="Build quality improves when safety controls are part of the assistant from the start rather than retrofitted after a messy first run." nextStep="Run the assistant next using the bounded workflow prompt and enforce the stop rules on every step." askTutor="Audit this mini-project control pack and tell me whether the contract, stop rules, and evidence log are enough to keep a first pilot safe." />
-
 ```bash
 touch CLAUDE.md stop-rules.md agent-log.md
 ```
@@ -70,8 +65,6 @@ Minimum required controls:
 - log-every-action requirement
 
 ### Step 3: Build and run the assistant
-
-<StepMeta purpose="Execute the bounded assistant end to end and produce one concrete artifact under the declared control set." action="Use the provided Claude Code prompt, enforce `stop-rules.md` during execution, log actions to `agent-log.md`, and generate one output artifact such as a daily brief or intake triage file." expectedResult="The project produces one real assistant output plus evidence of how the run happened." whyItMatters="A mini-project only proves capability when the assistant actually runs under the same constraints you claim it follows." nextStep="Pilot the assistant next with at least one other human so you can collect feedback on usefulness and failure points." askTutor="Help me review this assistant run and tell me whether the output artifact and evidence log show that the bounded workflow really executed as intended." />
 Prompt Claude Code:
 
 ```text
@@ -84,16 +77,12 @@ Generate one concrete output artifact, for example:
 - `intake-triage-YYYY-MM-DD.md`
 
 ### Step 4: Pilot with at least one other human
-
-<StepMeta purpose="Test the assistant with a second human so usefulness and failure modes are evaluated beyond the builder's own perspective." action="Collect pilot feedback into `pilot-feedback.md`, recording what was useful, what failed, and what should change." expectedResult="The mini-project now contains lightweight human feedback from at least one pilot participant." whyItMatters="Assistants often look better to their creators than to actual users, so even a small pilot exposes trust and usability gaps fast." nextStep="Publish the case study next so the project captures problem, approach, safety controls, results, and next iteration plan in one summary artifact." askTutor="Review this pilot-feedback approach and tell me whether it is enough to generate a credible improvement list from a small human pilot." />
 Collect lightweight pilot feedback into `pilot-feedback.md`:
 - Was output useful?
 - What failed?
 - What should change?
 
 ### Step 5: Publish a short case study
-
-<StepMeta purpose="Turn the mini-project into a reusable proof artifact that documents both technical controls and practical outcomes." action="Create `case-study.md` with the problem, approach, safety controls, result, and next iteration plan, then verify all expected files exist in the folder." expectedResult="The mini-project ends with a coherent package containing contract, controls, evidence, pilot feedback, and a short case study." whyItMatters="Case studies turn assistant experiments into portable evidence of competence that you can review, share, and improve later." nextStep="Carry the same build-log-pilot-document cycle into Path 19, where the work shifts into portfolio-grade capstones and packaging." askTutor="Review this final case-study step and tell me whether the deliverable captures measurable results and safety controls clearly enough to be credible." />
 Create `case-study.md` with:
 - Problem
 - Approach

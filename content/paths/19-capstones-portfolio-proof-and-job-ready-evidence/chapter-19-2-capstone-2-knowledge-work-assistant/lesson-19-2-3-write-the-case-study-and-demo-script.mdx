@@ -5,7 +5,6 @@ chapterNumber: "19.2"
 pathNumber: "19"
 tutorPreload: "Turn this capstone into a short demo story that sounds credible."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Write the case study and demo script
@@ -16,8 +15,6 @@ Package the knowledge workflow so another person can understand the problem, see
 ## Walkthrough
 
 ### Step 1: Collect the evidence you will cite
-
-<StepMeta purpose="Bring the raw dataset, final report, and logs into view before you write a public-facing story about the capstone." action="Read the raw findings snapshot, the report, the run log, and the edge-case log so every later claim is anchored in actual artifacts." expectedResult="You know exactly which files will support the case study and demo script." whyItMatters="The fastest way to make a capstone sound generic is to write the story before revisiting the evidence it actually produced." nextStep="Write `CASE-STUDY.md` next using the real workflow, result, and artifact names from this run." askTutor="Review this evidence bundle with me and tell me whether it gives me enough concrete proof to write a credible case study without exaggeration." />
 Your case study should only claim what the artifacts prove.
 
 macOS/Linux:
@@ -37,8 +34,6 @@ Get-Content logs/edge-cases.md
 ```
 
 ### Step 2: Write CASE-STUDY.md around the real workflow
-
-<StepMeta purpose="Turn the knowledge workflow into a concise narrative that connects problem, method, result, and evidence." action="Create `CASE-STUDY.md` using the problem, approach, result, evidence, and lessons structure, keeping each claim tied to named files from the run." expectedResult="You have a case study that explains the codebase TODO extraction workflow in concrete, evidence-backed terms." whyItMatters="Case studies are strongest when they describe a repeatable workflow and its artifacts rather than abstract AI capabilities." nextStep="Write the 3-minute demo script next so the capstone can be presented orally or in a short video without improvisation." askTutor="Audit this case study and tell me whether any sentence reaches beyond what the dataset, report, and logs actually prove." />
 Use a problem -> approach -> result -> lessons structure and tie every claim to the artifacts you already have.
 
 macOS/Linux:
@@ -96,8 +91,6 @@ The workflow transformed source-snapshots/raw-findings.txt into todo-report.md, 
 ```
 
 ### Step 3: Write a 3-minute demo script with timestamps
-
-<StepMeta purpose="Package the capstone into a short presentation sequence that an interviewer or teammate could follow easily." action="Create `demo-script.md` with the timed segments for raw dataset, report, logs, and close, keeping the script short enough to deliver in about three minutes." expectedResult="You have a presentation script that mirrors the evidence flow of the capstone." whyItMatters="A demo script turns a good build into a communicable proof artifact and keeps the presentation focused on what the workflow actually did." nextStep="Read the package in presentation order next to check whether the story flows cleanly from raw evidence to result." askTutor="Review this demo script and tell me whether the timing and file order make the workflow easy to understand without extra context." />
 Keep the script short enough that you could actually deliver it in an interview or portfolio video.
 
 macOS/Linux:
@@ -145,8 +138,6 @@ I close by explaining how this workflow turns a noisy code scan into a report a 
 ```
 
 ### Step 4: Read the package in presentation order
-
-<StepMeta purpose="Simulate the audience experience so you can spot any confusing jump or weak claim before sharing the capstone." action="Read `CASE-STUDY.md`, `demo-script.md`, and `todo-report.md` in order and judge whether the workflow story remains clear and concrete." expectedResult="You have a presentation-ready package for Capstone 2." whyItMatters="Reviewing the presentation order is what turns a collection of files into a coherent portfolio story another person can actually follow." nextStep="Move into Capstone 3, where the work shifts from single-source workflows to an integrated pilot that combines git evidence, content files, and Claude Code summarization." askTutor="Help me read this package like an outsider and tell me where the flow still becomes vague or too dependent on my private understanding of the run." />
 Review it in the same order your audience will see it.
 
 macOS/Linux:

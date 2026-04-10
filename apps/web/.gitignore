@@ -12,7 +12,6 @@
 
 # testing
 /coverage
-/e2e/.auth/
 
 # next.js
 /.next/

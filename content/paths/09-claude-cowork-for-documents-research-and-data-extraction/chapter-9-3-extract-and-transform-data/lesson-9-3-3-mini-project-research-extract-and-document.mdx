@@ -5,7 +5,6 @@ chapterNumber: "9.3"
 pathNumber: "9"
 tutorPreload: "Walk me through the full pipeline — research a topic, extract key data, produce a formatted document, review for accuracy, and commit."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: research, extract, and document
@@ -19,8 +18,6 @@ By the end of this lesson you will complete a full research-to-document pipeline
 This mini-project ties together everything from Path 09. You will work through five phases: research, extraction, formatting, review, and commit. The topic is **"Static site generators for documentation sites"** — comparing three tools (MkDocs, Docusaurus, and Jekyll).
 
 ### Step 1 — Set up the project workspace
-
-<StepMeta purpose="Create a clean project structure so raw research artifacts stay separate from polished deliverables." action="Initialize the ssg-research repo, add raw and output directories, and make the starting commit for the workspace." expectedResult="You finish with a Git-tracked project scaffold that clearly separates draft materials from final outputs." whyItMatters="Keeping raw and final artifacts apart makes each phase of the pipeline easier to review and helps you see what still needs verification." nextStep="Use Claude to produce the first research notes in raw/research-notes.md with confidence markers attached to each claim." askTutor="I'm on Step 1 of Mini project: research, extract, and document. Help me verify this project structure before I start filling the raw and output folders." />
 
 **macOS / Linux:**
 
@@ -46,8 +43,6 @@ git commit -m "Initialize research project structure" --allow-empty
 ```
 
 ### Step 2 — Phase 1: Research with Claude
-
-<StepMeta purpose="Collect the raw facts and confidence levels that the rest of the project will build on." action="Prompt Claude to research MkDocs, Docusaurus, and Jekyll, save the notes in raw/research-notes.md, and review the confidence labels it assigns." expectedResult="You get a raw research file with feature notes for each tool plus confidence markers that signal which claims are less certain." whyItMatters="The raw research file becomes the source material for later extraction and summarization, so it needs both useful facts and honest uncertainty markers." nextStep="Once the notes look credible, extract the comparison into CSV and JSON formats that can power the final decision document." askTutor="I'm on Step 2 of Mini project: research, extract, and document. Help me review these research notes and decide whether Claude used the confidence markers honestly." />
 
 Open Claude Code in the `ssg-research` directory and run the research prompt:
 
@@ -101,8 +96,6 @@ git commit -m "Add raw research notes on SSGs"
 
 ### Step 3 — Phase 2: Extract structured data
 
-<StepMeta purpose="Convert the free-form research notes into structured artifacts that are easier to score, compare, and reuse." action="Ask Claude to transform raw/research-notes.md into raw/comparison-table.csv and raw/scores.json, then validate both files." expectedResult="You end with a CSV comparison table and a parseable JSON score file that summarize the research in machine-readable form." whyItMatters="Structured intermediates make the final document easier to check because you can verify the table and score data separately from the polished narrative." nextStep="Use those structured files as inputs to generate the final decision document in the output folder." askTutor="I'm on Step 3 of Mini project: research, extract, and document. Help me validate this CSV and JSON output before I build the final document from it." />
-
 Now ask Claude to extract the research into structured formats:
 
 ```
@@ -155,8 +148,6 @@ git commit -m "Add extracted comparison table and scores"
 
 ### Step 4 — Phase 3: Produce the final document
 
-<StepMeta purpose="Synthesize the raw notes and structured data into a decision document that a reader can actually use." action="Prompt Claude to combine the research notes, CSV, and scores JSON into output/ssg-decision.md with the requested sections." expectedResult="Claude produces a polished decision document with an executive summary, formatted table, analysis, scoring summary, recommendation, and caveats." whyItMatters="This step is where the project turns from collected information into a communicable deliverable, but it only works if the final document stays faithful to the earlier artifacts." nextStep="Review the final document against the raw research, CSV, and JSON so you can catch dropped caveats or rewritten facts." askTutor="I'm on Step 4 of Mini project: research, extract, and document. Help me keep the final document faithful to the raw notes and structured data instead of letting Claude rewrite facts loosely." />
-
 ```
 Read raw/research-notes.md, raw/comparison-table.csv, and raw/scores.json.
 Produce output/ssg-decision.md with this structure:
@@ -184,8 +175,6 @@ cat output/ssg-decision.md
 ```
 
 ### Step 5 — Phase 4: Review for accuracy
-
-<StepMeta purpose="Audit the finished document against its source artifacts before you treat it as a trustworthy recommendation." action="Cross-check the rendered comparison table, the scoring totals, and the caveats section against the CSV, JSON, and confidence markers in the raw notes." expectedResult="You know whether the final document preserved the source data accurately, added the scores correctly, and carried forward every important caveat." whyItMatters="Polished writing can hide dropped uncertainty or bad math, so this review step ensures the final narrative still matches the evidence it summarizes." nextStep="Once the full package is accurate, make the final commit and review the resulting project structure and history." askTutor="I'm on Step 5 of Mini project: research, extract, and document. Help me audit this final document against the raw notes, CSV, and JSON so nothing important got lost." />
 
 This is the most important step. Go through the final document and cross-check every claim back to the raw research.
 
@@ -232,8 +221,6 @@ mentions M. Add the missing caveats.
 ```
 
 ### Step 6 — Phase 5: Final commit and review the full package
-
-<StepMeta purpose="Close the project by preserving the raw inputs, extracted data, final document, and commit history as one coherent package." action="Stage the final decision document, commit it, then review the file tree and git log to confirm each pipeline phase is represented." expectedResult="You end with a complete research package whose directory structure and commit history make the workflow easy to inspect later." whyItMatters="The final value of this mini-project is not just the decision doc but the reproducible pipeline that shows how the recommendation was researched, extracted, reviewed, and finalized." nextStep="Apply this same pipeline structure to your own real document, research, and extraction work after Path 09 is complete." askTutor="I'm on Step 6 of Mini project: research, extract, and document. Help me do a final package review so the files and commit history clearly show each phase of the workflow." />
 
 ```bash
 git add output/ssg-decision.md

@@ -5,7 +5,6 @@ chapterNumber: "19.1"
 pathNumber: "19"
 tutorPreload: "Pressure-test my capstone scope and cut anything nonessential."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Plan the workflow and scope
@@ -16,8 +15,6 @@ Define a real capstone workflow you can defend in a portfolio. In this lesson, y
 ## Walkthrough
 
 ### Step 1: Pick one real workflow and create the capstone workspace
-
-<StepMeta purpose="Anchor the first capstone in one real workflow and a dedicated workspace instead of a vague portfolio idea." action="Choose one repeat local automation problem, create the `capstone-1-automation` folder tree, and confirm the workspace path before doing any design work." expectedResult="You have a fresh capstone workspace and one clearly named workflow candidate such as a daily git digest." whyItMatters="Portfolio-grade work starts with a bounded real problem, because evidence is stronger when the workflow is small enough to validate rigorously." nextStep="Write `SCOPE.md` next so the workflow, deliverables, stop rules, and acceptance test are explicit before any build prompt is attempted." askTutor="Pressure-test this capstone choice for me and tell me whether it is narrow enough to produce strong evidence without expanding into multiple workflows." />
 Use a workflow that solves a repeat problem for a real repo. Good options are a daily git digest, a pull request summary helper, or an issue triage helper. If you want the safest fully local option, use a daily git digest.
 
 macOS/Linux:
@@ -41,8 +38,6 @@ Recommended default task for the rest of this chapter:
 - Evidence: logs/scope-review.md and later logs/run-001.md
 
 ### Step 2: Write a real SCOPE.md with deliverables and stop rules
-
-<StepMeta purpose="Define the capstone's boundaries in writing before the agent starts producing anything useful and potentially risky." action="Create `SCOPE.md` with workflow, user, problem, inputs, outputs, required digest sections, stop rules, and acceptance test exactly as the lesson outlines." expectedResult="You have a concrete scope document that makes the capstone's target output and risk limits inspectable by another person." whyItMatters="Strong scope is what prevents capstones from drifting into secret access, irreversible repo changes, or endless task expansion." nextStep="Add the matching `CLAUDE.md` contract next so the agent instructions mirror the scope rather than relying on vague prompting." askTutor="Review this scope document and tell me which stop rule or deliverable definition is still too weak for a portfolio-grade automation workflow." />
 Write the scope file now, not after the build. This is the document that keeps the capstone bounded when the agent starts doing useful work.
 
 macOS/Linux:
@@ -130,8 +125,6 @@ The workflow is successful when another person can open output/daily-git-digest.
 ```
 
 ### Step 3: Add a CLAUDE.md contract that matches the scope
-
-<StepMeta purpose="Translate the scope into an executable agent contract with explicit allowed actions and forbidden repo behaviors." action="Create `CLAUDE.md` so it limits the agent to reading git evidence, optionally diff summaries, and writing only the digest and run log." expectedResult="The capstone now has a contract that aligns allowed reads and writes with the workflow defined in `SCOPE.md`." whyItMatters="The capstone is defensible only when the implementation contract matches the scoping document and bans irreversible actions outright." nextStep="Run a scope review next so Claude Code challenges the plan before any build work starts." askTutor="Compare `SCOPE.md` and `CLAUDE.md` for me and tell me whether the contract still leaves any path to secret access, extra repo writes, or scope creep." />
 Your capstone should not depend on vibe-based prompting. Give the agent a contract.
 
 macOS/Linux:
@@ -189,8 +182,6 @@ Output quality bar:
 ```
 
 ### Step 4: Run a scope review before you build anything
-
-<StepMeta purpose="Use the agent as a reviewer first so you can tighten the capstone while changes are still cheap." action="Run the provided review prompt, write the output to `logs/scope-review.md`, and inspect the review before any implementation run happens." expectedResult="You have a documented scope review that either validates the design or tells you where to cut risk and complexity." whyItMatters="A smaller, reviewed capstone with crisp evidence is stronger portfolio proof than a larger workflow built on untested assumptions." nextStep="Use the next lesson to add the reusable run prompt, capture raw git evidence, and execute the bounded workflow for real." askTutor="Help me interpret this scope review and tell me what I should cut now if I want the strongest possible capstone evidence later." />
 Open Claude Code in this folder and use a prompt that forces a review before implementation.
 
 Use this prompt:

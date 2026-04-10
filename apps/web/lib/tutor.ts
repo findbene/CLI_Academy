@@ -1,40 +1,22 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { getAnthropicServerConfig } from "@/lib/server-env";
+import { getAnthropicApiKey, getAnthropicModel } from "@/lib/env";
 import { type TutorMode } from "@/lib/tutor-config";
 
 let anthropicClient: Anthropic | null = null;
-let anthropicClientKey: string | null = null;
 
 export function getAnthropicClient() {
-  const { apiKey } = getAnthropicServerConfig();
+  const apiKey = getAnthropicApiKey();
 
   if (!apiKey) {
-    anthropicClient = null;
-    anthropicClientKey = null;
     return null;
   }
 
-  if (!anthropicClient || anthropicClientKey !== apiKey) {
-    anthropicClient = new Anthropic({ apiKey });
-    anthropicClientKey = apiKey;
-  }
-
+  anthropicClient ??= new Anthropic({ apiKey });
   return anthropicClient;
 }
 
 export function getTutorModel() {
-  return getAnthropicServerConfig().model;
-}
-
-export function getTutorRuntimeStatus() {
-  const config = getAnthropicServerConfig();
-
-  return {
-    location: config.apiKeyLocation,
-    message: config.message,
-    ready: config.ready,
-    source: config.apiKeySource,
-  };
+  return getAnthropicModel();
 }
 
 export function buildTutorSystemPrompt(input: {

@@ -5,7 +5,6 @@ chapterNumber: "5.3"
 pathNumber: "5"
 tutorPreload: "Refactor this function to be shorter and clearer without changing what it does."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Ask Claude to simplify a messy function
@@ -17,8 +16,6 @@ Start with a working but ugly function — deeply nested, repetitive, and hard t
 ## Walkthrough
 
 ### Step 1 — Create a messy but working function
-
-<StepMeta purpose="Start from code that is correct but unpleasant so the lesson is about refactoring structure, not fixing behavior." action="Create the practice folder and write the deeply nested categorize function exactly as shown." expectedResult="You have a working but ugly function on disk with repetitive branches and many nested conditionals." whyItMatters="Refactoring only makes sense when the starting behavior is already correct; otherwise you cannot tell whether you are cleaning up code or changing semantics." nextStep="Write tests that lock in every expected category and invalid case before you refactor anything." askTutor="I'm on Step 1 of Ask Claude to simplify a messy function. Help me understand why this function is a good refactoring example even though it still works correctly." />
 
 This function categorizes a user based on their age and membership status. It works correctly but is deeply nested and repetitive.
 
@@ -115,8 +112,6 @@ def categorize_user(age, is_member):
 
 ### Step 2 — Write tests that lock in the correct behavior
 
-<StepMeta purpose="Create a safety net that defines the current behavior before you change the implementation shape." action="Ask Claude to generate tests covering every valid category and the main invalid input cases." expectedResult="You end up with a comprehensive test file that documents and protects the function's intended outputs." whyItMatters="Refactoring without tests is dangerous because you can accidentally change behavior while making the code look cleaner." nextStep="Run the tests once before refactoring so you know the baseline suite is already green." askTutor="I'm on Step 2 of Ask Claude to simplify a messy function. Help me confirm that these tests really capture the behavior I need to preserve during the refactor." />
-
 Ask Claude Code to write a test file that covers every category:
 
 ```
@@ -141,8 +136,6 @@ test("undefined age", () => expect(categorizeUser(undefined, true)).toBe("invali
 ```
 
 ### Step 3 — Run tests before refactoring
-
-<StepMeta purpose="Verify that the function and test suite agree before you attempt any structural cleanup." action="Run the test command for your stack and make sure every new test passes against the messy implementation." expectedResult="All cases are green, giving you a trusted baseline for later before-and-after comparison." whyItMatters="A green baseline is what makes later failures meaningful during refactoring, because you know the tests were already valid." nextStep="Ask Claude to refactor only the implementation while preserving the behavior the tests describe." askTutor="I'm on Step 3 of Ask Claude to simplify a messy function. Help me confirm that this green run is the baseline I should compare against after refactoring." />
 
 **macOS / Linux (JavaScript)**
 
@@ -172,8 +165,6 @@ All 10 tests pass. This is your baseline. These tests will catch any accidental 
 
 ### Step 4 — Ask Claude Code to refactor
 
-<StepMeta purpose="Improve clarity and structure without changing the function's external behavior." action="Prompt Claude to flatten the logic with early returns and clearer category composition while keeping the tests authoritative." expectedResult="Claude rewrites the function into a shorter, easier-to-read form without touching the test suite." whyItMatters="This is the core refactoring skill: change the inside of the function so it is easier to maintain while leaving the outside behavior identical." nextStep="Rerun the same tests after the refactor to prove nothing about the behavior changed." askTutor="I'm on Step 4 of Ask Claude to simplify a messy function. Help me evaluate whether this refactor genuinely improves readability without sneaking in a behavior change." />
-
 ```
 The categorizeUser function in categorize.js works correctly but is deeply nested and hard to read. Refactor it to be flat and clear. Use early returns for the invalid cases and a simple lookup for the categories. Do not change the behavior — all existing tests must still pass.
 ```
@@ -198,8 +189,6 @@ Accept the change.
 
 ### Step 5 — Run tests after refactoring
 
-<StepMeta purpose="Use the existing suite to prove that the cleaner code still behaves exactly like the original version." action="Run the same test suite immediately after accepting the refactor and compare the results to the baseline." expectedResult="All tests stay green, showing that the internal cleanup preserved every required outcome." whyItMatters="Passing tests are the evidence that this was a real refactor rather than a rewrite with accidental semantic drift." nextStep="Ask Claude to compare the before and after versions so you can name the concrete quality improvements." askTutor="I'm on Step 5 of Ask Claude to simplify a messy function. Help me decide whether this passing test run is enough evidence that the refactor kept the behavior intact." />
-
 **macOS / Linux**
 
 ```bash
@@ -215,8 +204,6 @@ npm test
 All 10 tests pass. The refactored function produces identical results for every input. That is the point of refactoring: the outside behavior does not change; only the inside code gets better.
 
 ### Step 6 — Compare before and after
-
-<StepMeta purpose="Extract the lessons from the refactor so you can recognize similar cleanup opportunities later." action="Ask Claude to contrast the messy and refactored versions in terms of nesting, line count, readability, and maintainability." expectedResult="You can explain exactly what got better about the code besides 'it looks cleaner.'" whyItMatters="Refactoring skill grows when you learn to identify specific improvements such as flatter control flow, better naming, and easier change points." nextStep="Bring all of the Path 05 skills together in a mini-project that starts broken and ends debugged, tested, refactored, and committed." askTutor="I'm on Step 6 of Ask Claude to simplify a messy function. Help me articulate the concrete improvements in this refactor so I know what good cleanup looks like." />
 
 Ask Claude Code:
 

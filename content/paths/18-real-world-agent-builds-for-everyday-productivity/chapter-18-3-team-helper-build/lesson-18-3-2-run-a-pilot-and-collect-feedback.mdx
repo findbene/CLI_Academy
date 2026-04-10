@@ -5,7 +5,6 @@ chapterNumber: "18.3"
 pathNumber: "18"
 tutorPreload: "Turn this pilot into a backlog of improvements by severity and effort."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Run a pilot and collect feedback
@@ -15,8 +14,6 @@ Run a real pilot of your assistant with a small team, collect structured feedbac
 
 ## Walkthrough
 ### Step 1: Define a 1-week pilot scope
-
-<StepMeta purpose="Constrain the pilot to a short, observable test window with a small group and one specific repeated job." action="Create `pilot-plan.md`, set the one-week window, pick 2-5 users, and name a single success metric tied to usefulness." expectedResult="You have a written pilot plan that defines who is involved, what task is being tested, and how success will be judged." whyItMatters="Pilots become noise when scope, users, and success criteria are vague, because every run gets interpreted differently." nextStep="Create the structured feedback form next so pilot data can be compared across runs instead of captured as unstructured comments." askTutor="Review this pilot plan and tell me whether the scope is tight enough to produce useful feedback in one week or whether it still tries to test too much at once." />
 Pick 2-5 users and one clear job-to-be-done (for example: produce weekly brief each Friday).
 
 Create pilot files:
@@ -45,8 +42,6 @@ New-Item pilot-feedback.csv -ItemType File -Force | Out-Null
 
 ### Step 2: Create a feedback form with severity and effort
 
-<StepMeta purpose="Force pilot feedback into a schema that supports prioritization rather than free-form anecdotes." action="Create `pilot-feedback.csv` with the required columns for user, run, usefulness, severity, effort, and suggested change." expectedResult="You have a structured feedback file ready to collect comparable responses from each pilot run." whyItMatters="Severity and effort columns are what let you turn complaints into a prioritized backlog instead of a pile of disconnected opinions." nextStep="Run the pilot executions next so the form starts collecting real usage data from bounded assistant runs." askTutor="Audit this feedback schema and tell me whether it captures enough information to prioritize contract fixes after the pilot." />
-
 ```bash
 cat > pilot-feedback.csv <<'EOF'
 timestamp,user,run_id,worked_as_expected,usefulness_1_to_5,issue_summary,severity(low|med|high),effort(s|m|l),suggested_change
@@ -58,8 +53,6 @@ EOF
 ```
 
 ### Step 3: Run pilot executions and collect responses
-
-<StepMeta purpose="Generate real usage evidence from multiple humans instead of guessing what will break in shared operation." action="Have each pilot user run the bounded assistant once per day and record one structured feedback row per run." expectedResult="The pilot begins producing repeated usage evidence tied to specific users and run IDs." whyItMatters="Real adoption issues usually appear only when multiple humans use the assistant repeatedly under normal work pressure." nextStep="Summarize the collected feedback next into a prioritized review document that separates urgent issues from easy wins." askTutor="Help me think through this pilot-execution step and tell me whether the run instructions and feedback capture are clear enough for non-builders to follow." />
 Each user runs the assistant once per day and submits one feedback row.
 
 Prompt for the assistant run:
@@ -69,8 +62,6 @@ Read CLAUDE.md and execute only the bounded workflow. Log actions, then stop and
 ```
 
 ### Step 4: Summarize findings into a prioritized backlog
-
-<StepMeta purpose="Convert raw pilot feedback into an action list that can actually improve the next contract version." action="Create `pilot-review.md` and summarize the top high-severity issues, top low-effort wins, and the changes accepted into the next `CLAUDE.md` revision." expectedResult="You have a prioritized pilot review that connects feedback to specific assistant improvements." whyItMatters="A pilot is only useful when the results are synthesized into concrete decisions rather than left in raw CSV rows." nextStep="Apply the accepted contract updates next and run one verification cycle to prove the assistant improved, not just that feedback was collected." askTutor="Review this pilot summary with me and tell me whether I am prioritizing the right issues or overlooking an obvious contract fix." />
 
 ```bash
 touch pilot-review.md
@@ -86,8 +77,6 @@ In `pilot-review.md`, include:
 - Changes accepted into next CLAUDE.md version
 
 ### Step 5: Iterate the contract and rerun
-
-<StepMeta purpose="Close the pilot loop by applying improvements and validating them in at least one rerun." action="Update `CLAUDE.md` with the accepted fixes, inspect the diff, and run one verification cycle using the revised contract." expectedResult="You can show a changed contract plus evidence that at least one improvement was tested after the pilot." whyItMatters="Pilots create value only when they drive contract changes that are verified, not when feedback is collected and then ignored." nextStep="Use the final mini-project to combine bounded build, logging, pilot feedback, and case-study packaging into one end-to-end assistant deliverable." askTutor="Check this iteration step and tell me whether my rerun actually validates the pilot fixes or if I still need stronger evidence before calling the pilot complete." />
 Update CLAUDE.md with the approved fixes, then run one verification cycle.
 
 ```bash

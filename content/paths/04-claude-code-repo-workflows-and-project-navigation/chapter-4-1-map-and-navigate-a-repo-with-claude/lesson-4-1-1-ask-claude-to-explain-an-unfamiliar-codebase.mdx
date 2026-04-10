@@ -5,7 +5,6 @@ chapterNumber: "4.1"
 pathNumber: "4"
 tutorPreload: "Help me understand what this project does and how its code is organized."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Ask Claude to explain an unfamiliar codebase
@@ -17,8 +16,6 @@ Clone a real open-source repository you have never seen before and use Claude Co
 ## Walkthrough
 
 ### Step 1 — Pick and clone a real project
-
-<StepMeta purpose="Choose a small real repository and get it onto your machine so you have something concrete to explore." action="Clone a beginner-friendly open-source project and move into its directory without installing anything yet." expectedResult="You end up inside a fresh local copy of the repo and understand that you are still in a read-only exploration phase." whyItMatters="A real codebase makes the navigation workflow meaningful, and avoiding installs early keeps the exercise safe on unfamiliar code." nextStep="Once the repo is cloned locally, ask Claude Code to summarize what the project actually does." askTutor="I'm on Step 1 of Ask Claude to explain an unfamiliar codebase. Help me pick a safe small repository and explain why cloning it without installing dependencies is the right first move." />
 
 Choose a small, well-known open-source project. We will use **json-server** (a fake REST API tool built with Node.js) as our running example throughout Path 04. Python learners can substitute any small FastAPI or Flask project.
 
@@ -38,13 +35,9 @@ git clone https://github.com/typicode/json-server.git
 cd json-server
 ```
 
-<WarnBlock title="Real danger">
-Cloned repos can contain post-install scripts. Do not run `npm install` or `pip install` on an unfamiliar repo until you understand what it does. Cloning and reading source code is safe. Installing dependencies executes code on your machine, including arbitrary `postinstall` scripts listed in `package.json`.
-</WarnBlock>
+> **Real danger — cloned repos can contain post-install scripts.** Do not run `npm install` or `pip install` on an unfamiliar repo until you understand what it does. Cloning and reading source code is safe. Installing dependencies executes code on your machine, including arbitrary `postinstall` scripts listed in `package.json`.
 
 ### Step 2 — Ask Claude Code what the project does
-
-<StepMeta purpose="Get a plain-English explanation of the project before you dive into file-by-file reading." action="Start Claude Code in the repo and ask for a short beginner-friendly summary of what the project does." expectedResult="Claude returns a concise description you can compare against the README and package metadata." whyItMatters="High-level orientation helps you read the rest of the repo with context instead of guessing what each file might mean in isolation." nextStep="After you understand the big picture, ask Claude to map the top-level folders and important files." askTutor="I'm on Step 2 of Ask Claude to explain an unfamiliar codebase. Help me judge whether Claude's summary is specific enough and tell me what details to compare against the README." />
 
 Open the project folder in your terminal and start Claude Code. Then prompt:
 
@@ -56,8 +49,6 @@ Claude reads the README, the package manifest, and key source files, then return
 
 ### Step 3 — Ask Claude Code to describe the folder structure
 
-<StepMeta purpose="Turn the repo from a pile of files into a mental map you can actually navigate." action="Ask Claude to list the important directories and top-level files and explain what each one is for." expectedResult="You get a simple structure map showing where source, tests, config, and metadata live." whyItMatters="Knowing the rough layout lets you verify Claude's later claims quickly because you already know which parts of the repo hold which kinds of information." nextStep="With the structure mapped, ask Claude which file you should read first to understand how the project works." askTutor="I'm on Step 3 of Ask Claude to explain an unfamiliar codebase. Help me translate Claude's folder-structure answer into a simple map I can remember while I explore." />
-
 ```
 Show me the folder structure of this project and explain what each top-level directory and important file is for.
 ```
@@ -66,8 +57,6 @@ Claude returns a tree listing directories like `src/`, `bin/`, `test/`, and file
 
 ### Step 4 — Ask Claude Code where to start reading
 
-<StepMeta purpose="Identify the most useful first file instead of opening random files and hoping one is important." action="Ask Claude which file is the best entry point for understanding the project and why it chose that file." expectedResult="Claude names a concrete file path and gives a reason that connects it to startup or core behavior." whyItMatters="A good entry point turns repo exploration into a sequence you can follow, rather than a scavenger hunt through unrelated files." nextStep="Open the suggested file yourself and check whether it matches Claude's explanation." askTutor="I'm on Step 4 of Ask Claude to explain an unfamiliar codebase. Help me decide whether Claude picked a real entry point or just an important-looking file." />
-
 ```
 If I wanted to understand how this project works, which file should I read first and why?
 ```
@@ -75,8 +64,6 @@ If I wanted to understand how this project works, which file should I read first
 Claude points to the main entry point — for json-server that is typically `src/app.js` or the `bin/` CLI script. Write down the file path Claude names. You will verify it in the next step.
 
 ### Step 5 — Verify the answer yourself
-
-<StepMeta purpose="Confirm that Claude's explanation matches the code that is actually on disk right now." action="Open the file Claude named, skim the first lines, and compare what you see to Claude's description." expectedResult="You either confirm that Claude picked the right file or gather enough evidence to ask a corrective follow-up question." whyItMatters="Manual verification is what turns Claude from a guess generator into a trustworthy navigator inside a real repo." nextStep="Once you can verify Claude's repo summaries reliably, move on to finding entry points and config files in more detail." askTutor="I'm on Step 5 of Ask Claude to explain an unfamiliar codebase. Help me interpret the first lines of this file and tell me whether they support Claude's claim about the entry point." />
 
 Open the file Claude named and skim the first 30 lines:
 

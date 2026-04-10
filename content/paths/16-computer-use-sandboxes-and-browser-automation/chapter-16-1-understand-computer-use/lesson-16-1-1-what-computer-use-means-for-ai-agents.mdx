@@ -5,7 +5,6 @@ chapterNumber: "16.1"
 pathNumber: "16"
 tutorPreload: "Explain Anthropic's computer use capability and when an AI should interact with a screen versus call an API."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # What computer use means for AI agents
@@ -19,8 +18,6 @@ By the end of this lesson you will be able to explain what "computer use" means 
 Most of the time you interact with an AI through text — you type a prompt, the model returns text. Computer use flips the relationship. Instead of *you* operating the screen, the AI sees what is on the screen and sends mouse clicks, keyboard input, and scroll actions on your behalf. Think of it as giving the model a remote desktop session.
 
 ### Step 1 — Understand what computer use actually is
-
-<StepMeta purpose="Build the basic mental model for screen-controlling agents before you think about tooling or implementation details." action="Read the capability list carefully and restate, in your own words, what it means for an agent to see a screen and act with mouse, keyboard, and scroll events." expectedResult="You can explain computer use as an observe-and-act loop over screenshots rather than as a generic chat interaction." whyItMatters="If the interaction model is fuzzy, it becomes much harder to judge risk, speed, and reliability tradeoffs later in the path." nextStep="Look at the simplified Anthropic API shape next so the abstract loop becomes a concrete request-response pattern." askTutor="Explain computer use back to me in plain English and tell me how it differs from a normal text-only Claude interaction." />
 
 Computer use means an AI agent can:
 
@@ -45,8 +42,6 @@ This creates a loop:
 The agent repeats this loop until the task is finished or it encounters something it cannot resolve.
 
 ### Step 2 — See how Anthropic's API structures a computer use call
-
-<StepMeta purpose="Connect the conceptual loop to the actual API structure used to invoke computer-use behavior." action="Study the sample request and identify the tool declaration, the screen-dimension fields, and the way tool-use actions are returned by the model." expectedResult="You understand the high-level contract: your code sends the request, executes the returned tool action, captures a new screenshot, and continues the loop." whyItMatters="Seeing the shape of the API helps you understand why orchestration code is responsible for both the screen execution and the screenshot feedback cycle." nextStep="Review the hard limits next so you do not mistake the capability for a precision tool that can solve every GUI problem safely." askTutor="Walk me through this sample API call and explain which part is Claude's decision, which part is my code, and which part is the screen feedback loop." />
 
 Below is a simplified version of what a computer use API request looks like. You do not need to run this — it is here so you can see the shape of the interaction.
 
@@ -85,8 +80,6 @@ Key things to notice:
 
 ### Step 3 — Know the hard limits
 
-<StepMeta purpose="Set realistic expectations before you trust computer use with fragile or destructive tasks." action="Read the limit table and note how precision, speed, context, reliability, and safety each constrain what the agent can do well." expectedResult="You can name at least one major technical limit and one major safety risk that make computer use slower and more fragile than APIs or CLI tools." whyItMatters="Good tool choice depends on understanding where computer use breaks down, not just where it looks impressive in a demo." nextStep="Map the full observe-plan-act-verify loop onto a concrete example so the limits and the workflow make sense together." askTutor="Help me connect these limits to a real task and tell me which one is most likely to derail an otherwise simple GUI automation." />
-
 Computer use is powerful, but it has real constraints:
 
 | Capability | Limit |
@@ -98,8 +91,6 @@ Computer use is powerful, but it has real constraints:
 | Safety | The model can click anything it can see — including "Delete", "Purchase", or "Send" |
 
 ### Step 4 — Map the observe–plan–act–verify loop to a real scenario
-
-<StepMeta purpose="Translate the abstract loop into a real GUI task so you can see how the agent recovers from interruptions and blockers." action="Follow the stock-price example and trace each stage of observe, plan, act, and verify, including how a popup forces the loop to adapt." expectedResult="You can describe the loop step by step and explain how the agent handles an unexpected UI obstacle without losing the task entirely." whyItMatters="Real understanding comes from seeing the loop behave under imperfect UI conditions, not just from reading the four words in a diagram." nextStep="Use the next lesson to decide when this expensive, fragile loop is actually justified versus when an API or CLI tool should win instead." askTutor="Take a GUI task I give you and map it into observe-plan-act-verify so I can see whether I understand the loop correctly." />
 
 Think of a concrete example: you want the agent to check the current price of a stock on a financial website.
 

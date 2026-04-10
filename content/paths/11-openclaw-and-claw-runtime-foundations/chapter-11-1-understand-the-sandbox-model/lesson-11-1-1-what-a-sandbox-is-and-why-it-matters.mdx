@@ -5,7 +5,6 @@ chapterNumber: "11.1"
 pathNumber: "11"
 tutorPreload: "Explain process isolation and why running untrusted code directly on my machine is dangerous."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # What a sandbox is and why it matters
@@ -17,8 +16,6 @@ By the end of this lesson you will understand what a sandbox is in practical ter
 ## Walkthrough
 
 ### Step 1 — See what an unsandboxed process can do
-
-<StepMeta purpose="Establish the baseline risk by showing how much access a normal local process already has." action="Run the Python one-liner directly on your machine and observe that it can list files from your real home directory." expectedResult="You see actual items from your home directory, proving the process can read personal files when it runs unsandboxed." whyItMatters="Sandboxing only makes sense once you understand the default risk: untrusted code normally gets the same file and network reach that you do." nextStep="Use that baseline to learn the three sandbox walls that limit file, network, and process access." askTutor="I'm on Step 1 of What a sandbox is and why it matters. Help me understand exactly what this unsandboxed Python command proves about the risk of running untrusted code locally." />
 
 Every program you run on your machine has access to your files, your network, and your environment variables unless something stops it. Let's prove that with a one-liner.
 
@@ -40,8 +37,6 @@ You will see five items from your home directory. That Python process had full r
 
 ### Step 2 — Understand the three walls of a sandbox
 
-<StepMeta purpose="Build the mental model for how a sandbox reduces risk." action="Study the file-system, network, and process-isolation walls and connect each one to the attack or mistake it prevents." expectedResult="You can explain the three main protection layers a sandbox provides and what each one blocks." whyItMatters="If you cannot name the protection walls, it is easy to choose the wrong isolation level or assume a tool protects more than it really does." nextStep="Test the idea practically by running code inside Docker and comparing what it can see to what the local process could see." askTutor="I'm on Step 2 of What a sandbox is and why it matters. Help me translate these three sandbox walls into concrete risks they stop in real workflows." />
-
 A sandbox restricts a process in three main ways:
 
 | Wall | What it blocks | Example |
@@ -53,8 +48,6 @@ A sandbox restricts a process in three main ways:
 These three walls together mean that code inside a sandbox can crash, delete everything it can see, or try to phone home — and none of it affects your real machine.
 
 ### Step 3 — Run a command inside a Docker sandbox
-
-<StepMeta purpose="Demonstrate that code in a container sees the container's file system, not your real machine's home directory." action="Run the Python directory-listing command inside a Docker container and inspect the files shown under /root." expectedResult="The output shows only container-default files, not the contents of your actual home directory." whyItMatters="Seeing the isolation boundary directly is stronger than reading about it, and it proves Docker is creating a different file view for the process." nextStep="Strengthen the sandbox further by disabling network access and proving outbound connections are blocked." askTutor="I'm on Step 3 of What a sandbox is and why it matters. Help me interpret this Docker output and confirm I am seeing the container's own file space, not my host files." />
 
 Now run the same Python one-liner, but inside a Docker container. The container cannot see your home directory.
 
@@ -73,8 +66,6 @@ docker run --rm python:3.12-slim python -c "import os; print(os.listdir('/root')
 The output will be an empty list or a list of default container files — your personal documents, keys, and credentials are invisible.
 
 ### Step 4 — Prove the container cannot reach the internet
-
-<StepMeta purpose="Show that sandboxing is not just about files; it can also remove outbound network access." action="Run the Docker container with --network none and verify the Python request to example.com fails with a blocked connection error." expectedResult="The container prints BLOCKED and cannot reach the internet while network isolation is enabled." whyItMatters="Many dangerous scripts try to exfiltrate data or download payloads, so network isolation is one of the most valuable sandbox controls." nextStep="Finish the demonstration by proving the container's writable state disappears when the container exits." askTutor="I'm on Step 4 of What a sandbox is and why it matters. Help me verify whether this failed network request means the container is truly cut off from the internet." />
 
 Add `--network none` to cut all network access from the container.
 
@@ -100,8 +91,6 @@ docker run --rm --network none python:3.12-slim python -c "import urllib.request
 You should see `BLOCKED` followed by a connection error. The sandbox wall is working.
 
 ### Step 5 — Prove the container's file system is disposable
-
-<StepMeta purpose="Confirm that files created inside the container do not persist onto your host by default." action="Write a temporary file inside the container, let the container exit with --rm, then check the host for any leaked file." expectedResult="The file exists during the container run but is gone afterward, and no matching file appears on the host machine." whyItMatters="Disposable storage is part of why containers are useful for testing untrusted code: bad outputs disappear unless you explicitly mount or extract them." nextStep="Carry this mental model into the next lesson, where you compare bare metal, virtual environments, Docker, and cloud sandboxes side by side." askTutor="I'm on Step 5 of What a sandbox is and why it matters. Help me understand what this disappearing file proves about container file systems and why that matters for safe execution." />
 
 Write a file inside the container, then verify it disappears when the container exits.
 

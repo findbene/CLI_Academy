@@ -5,7 +5,6 @@ chapterNumber: "19.3"
 pathNumber: "19"
 tutorPreload: "Help me review this pilot evidence and decide whether it is ready for broader use."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Build, pilot, and collect evidence
@@ -16,8 +15,6 @@ Run the integrated workflow on real repo data, capture the evidence that fed the
 ## Walkthrough
 
 ### Step 1: Capture the real integration inputs
-
-<StepMeta purpose="Create the evidence seam between git and Claude Code by freezing the exact repo state the pilot is allowed to summarize." action="Write `git status`, changed content files, and content diff stats into the `portfolio-evidence` folder before any assistant summarization begins." expectedResult="You have the three evidence files the integrated pilot will consume as its only source of repo change information." whyItMatters="Integrated capstones are much easier to audit when the non-agent tools produce explicit handoff files instead of leaving the agent to inspect the repo ad hoc." nextStep="Run the pilot next so Claude Code turns those frozen inputs into the curriculum change brief and run log." askTutor="Review these integration inputs and tell me whether they are sufficient and properly bounded for a curriculum-change brief pilot." />
 Use git to gather the evidence files the agent will summarize.
 
 macOS/Linux:
@@ -37,8 +34,6 @@ git diff --stat -- ..\content\paths | Set-Content portfolio-evidence/content-dif
 These files are the integrated seam: git generated them, and Claude Code will consume them.
 
 ### Step 2: Run the pilot and create the curriculum change brief
-
-<StepMeta purpose="Execute the integrated workflow for real using only the approved evidence seam and changed lesson files." action="Use the provided prompt so Claude Code reads the integration plan, contract, git evidence files, and only the lesson files named by `content-files.txt`, then writes the brief and run log." expectedResult="You produce `pilot-output/curriculum-change-brief.md` plus `portfolio-evidence/run-001.md` from real repo evidence." whyItMatters="This pilot is what proves the integrated workflow can combine multiple tools safely without drifting into unrelated content or undocumented repo state." nextStep="Test the empty-file-list failure mode next so the workflow proves it can refuse to invent a summary when no qualifying content files exist." askTutor="Audit this integrated pilot prompt and tell me whether it is strict enough to prevent the agent from reading beyond the changed-file evidence." />
 Use Claude Code to turn the evidence into a readable artifact.
 
 Use this prompt:
@@ -62,8 +57,6 @@ Get-Content portfolio-evidence/run-001.md
 ```
 
 ### Step 3: Test a failure mode on purpose
-
-<StepMeta purpose="Prove that the integrated workflow can stop cleanly instead of fabricating work when a key input seam is empty." action="Create `empty-content-files.txt`, run the failure-mode prompt, and inspect the resulting `failure-test.md` for a controlled no-op response." expectedResult="You have a documented failure-path artifact showing the workflow does not invent content changes when the changed-file list is empty." whyItMatters="A tested no-op path is one of the clearest signs of good judgment in integrated workflows, because it prevents confident summaries of nonexistent evidence." nextStep="Record one iteration next based on the pilot or failure-test results so the capstone shows improvement, not just execution." askTutor="Review this failure-mode test and tell me whether the no-op behavior is clear enough or whether the workflow could still confuse an empty input with a successful summary request." />
 Create an empty file list and confirm the workflow refuses to invent a summary.
 
 macOS/Linux:
@@ -95,8 +88,6 @@ Get-Content portfolio-evidence/failure-test.md
 ```
 
 ### Step 4: Record one iteration based on the pilot or failure test
-
-<StepMeta purpose="Show that the integrated capstone improved in response to evidence instead of treating the first run as final." action="Write `portfolio-evidence/iteration-001.md` describing what the pilot or failure test exposed, the contract change you made, and why it improves safety or accuracy." expectedResult="The pilot package now includes a concrete iteration record tied to observed workflow behavior." whyItMatters="Iteration evidence demonstrates maturity: you are not just building assistants, you are refining them based on what the evidence says." nextStep="Use the final lesson to pull all three capstones into one portfolio pack with evidence-backed summaries and a next-step roadmap." askTutor="Help me review this iteration note and tell me whether it clearly connects the observed pilot behavior to a meaningful safety or accuracy improvement." />
 If the first brief was too broad or too vague, tighten the contract and document the change.
 
 macOS/Linux:

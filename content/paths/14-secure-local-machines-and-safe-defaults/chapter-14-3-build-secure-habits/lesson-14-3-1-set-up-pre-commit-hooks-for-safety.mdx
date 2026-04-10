@@ -5,7 +5,6 @@ chapterNumber: "14.3"
 pathNumber: "14"
 tutorPreload: "Help me add pre-commit hooks that catch secrets and common mistakes before they get committed."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Set up pre-commit hooks for safety
@@ -26,8 +25,6 @@ After this lesson, your repo will automatically protect you from the most common
 
 ### Step 1 — Create a practice project
 
-<StepMeta purpose="Start with an isolated repo where you can install and intentionally trigger hooks without disrupting other work." action="Create the `hooks-lab` directory, enter it, and initialize Git before installing any tooling." expectedResult="You have a clean practice repository that can safely host pre-commit configuration and test files." whyItMatters="Hook behavior is easiest to understand when every blocked commit and cleanup step happens in a small repo you control completely." nextStep="Install the `pre-commit` framework and verify the CLI is actually available in your shell." askTutor="Check whether this fresh repo is enough for a realistic pre-commit lab and tell me what I should verify before adding hook config files." />
-
 **macOS / Linux:**
 ```bash
 mkdir -p ~/cli-academy/projects/hooks-lab && cd ~/cli-academy/projects/hooks-lab
@@ -42,8 +39,6 @@ git init
 ```
 
 ### Step 2 — Install the pre-commit framework
-
-<StepMeta purpose="Add the hook manager that will turn your config file into an enforced safety gate." action="Install `pre-commit`, then run `pre-commit --version` and confirm the command is available." expectedResult="Your environment can invoke `pre-commit` successfully and reports a version number instead of a command-not-found error." whyItMatters="If the hook runner is not installed cleanly, the rest of the lesson becomes a config file with no actual enforcement behind it." nextStep="Create the repository config file that declares the exact checks you want to run on every commit." askTutor="Help me troubleshoot this install if `pre-commit` is not on my PATH or if the reported version looks wrong for the lesson." />
 
 `pre-commit` is a Python-based tool that manages Git hooks. It works with any project regardless of language.
 
@@ -62,8 +57,6 @@ pre-commit --version
 You should see a version number like `pre-commit 3.x.x`. If `pip` is not available, use `pip3` or install via `brew install pre-commit` (macOS) or `pipx install pre-commit`.
 
 ### Step 3 — Create the .pre-commit-config.yaml file
-
-<StepMeta purpose="Declare the specific safety checks that should run automatically before every commit attempt." action="Create `.pre-commit-config.yaml` with the merge-conflict, whitespace, branch-protection, end-of-file, large-file, and secret-detection hooks exactly as shown." expectedResult="Your repo contains a versioned hook policy that defines what gets blocked before new commits are created." whyItMatters="The config file is the contract that makes your safety checks portable across machines and teammates instead of living only in one local shell history." nextStep="Install the configured hooks into `.git/hooks` so Git actually starts running them during commit attempts." askTutor="Review this pre-commit config and tell me whether these hooks form a good beginner safety baseline or if I should add or remove anything." />
 
 This file tells `pre-commit` which hooks to run. Create it in the root of your project:
 
@@ -137,8 +130,6 @@ repos:
 
 ### Step 4 — Install the hooks into your Git repo
 
-<StepMeta purpose="Turn the YAML config into an active enforcement point inside the repository." action="Run `pre-commit install` and verify that Git reports the pre-commit hook was installed successfully." expectedResult="The repo now has a generated `.git/hooks/pre-commit` file that will run the configured checks whenever you commit." whyItMatters="A hook policy does nothing until it is installed into Git, so this is the step that converts configuration into behavior." nextStep="Generate the `detect-secrets` baseline so the secret scanner can distinguish new findings from approved known values." askTutor="Interpret the hook installation result for me and tell me how I can confirm Git will really run these checks on the next commit." />
-
 ```bash
 pre-commit install
 ```
@@ -150,8 +141,6 @@ pre-commit installed at .git/hooks/pre-commit
 ```
 
 ### Step 5 — Generate the secrets baseline
-
-<StepMeta purpose="Prepare the secret scanner so it can tell new leaks apart from known approved findings or false positives." action="Run `detect-secrets scan > .secrets.baseline`, installing `detect-secrets` first if needed." expectedResult="A `.secrets.baseline` file exists in the repo and is ready to be referenced by the pre-commit secret-detection hook." whyItMatters="Without a baseline, secret scanners can be noisy or unusable, and noisy hooks are the first ones people bypass." nextStep="Commit the config and baseline so the repo safety policy itself becomes version-controlled and reviewable." askTutor="Explain what the secrets baseline does and help me decide how to treat a value that looks secret-like but is actually a false positive." />
 
 The `detect-secrets` hook needs a baseline file — a record of known, intentional "secret-like" strings in your project (so it does not flag false positives on every commit):
 
@@ -166,8 +155,6 @@ detect-secrets scan > .secrets.baseline
 ```
 
 ### Step 6 — Commit the configuration
-
-<StepMeta purpose="Lock the hook policy into repo history and confirm the hooks can pass on a clean commit." action="Stage the config and baseline files, commit them, and read the hook output to ensure every check reports Passed." expectedResult="The repository contains one clean commit for the pre-commit setup and all configured hooks succeed on that commit." whyItMatters="A hook system is only trustworthy after you see it run successfully on a good commit before you start testing its failure paths." nextStep="Create an intentional secret leak and confirm the hook blocks the commit instead of letting it through." askTutor="Review this successful hook output and tell me whether anything in the setup still looks fragile before I start negative testing." />
 
 ```bash
 git add .pre-commit-config.yaml .secrets.baseline
@@ -188,8 +175,6 @@ Detect secrets.............................................Passed
 All green. Your repo is now protected.
 
 ### Step 7 — Test: secret detection
-
-<StepMeta purpose="Prove that the secret scanner actually blocks a bad commit instead of only looking good in the config file." action="Create the fake key file, stage it, attempt the commit, and confirm `detect-secrets` rejects the commit." expectedResult="The commit is blocked and the hook reports the fake API key as a detected secret." whyItMatters="A safety check only matters if it fails closed when you intentionally feed it a high-risk input." nextStep="Clean up the staged secret and then test the merge-conflict hook with another intentionally bad file." askTutor="Help me interpret the blocked commit output and tell me whether the secret hook is working correctly or overfiring." />
 
 Create a file with a fake API key and try to commit it:
 
@@ -223,8 +208,6 @@ Remove-Item config.py
 
 ### Step 8 — Test: merge conflict markers
 
-<StepMeta purpose="Verify that the repo also blocks a very common human error, not just leaked credentials." action="Create the conflict-marker file, stage it, try to commit it, and confirm the merge-conflict hook stops the commit." expectedResult="The commit fails because the file contains unresolved conflict markers." whyItMatters="Conflict-marker detection prevents a noisy but common class of broken commits that can slip through when people rush a merge or cherry-pick." nextStep="Check your branch and test the no-commit-to-branch rule so the repo also protects mainline history by default." askTutor="Interpret this blocked conflict-marker commit and tell me what a healthy hook failure should look like versus a config mistake." />
-
 Create a file with a conflict marker and try to commit:
 
 **macOS / Linux:**
@@ -256,8 +239,6 @@ Remove-Item conflict.txt
 ```
 
 ### Step 9 — Test: no-commit-to-branch
-
-<StepMeta purpose="Reinforce the branch discipline that keeps risky direct commits off `main` or `master`." action="Check the current branch, then create a feature branch if you are on `main` so the branch-protection hook no longer blocks normal work." expectedResult="You understand when `no-commit-to-branch` will fire and how feature branches fit into the repo safety workflow." whyItMatters="Guardrails work best when they shape the daily workflow, and branch protection is part of keeping review and release paths clean." nextStep="Use the next lesson to combine review, testing, and clean commits into one repeatable habit on every code change." askTutor="Explain how this branch-protection hook should fit into a small team workflow and when it is reasonable to make exceptions." />
 
 If you are on the `main` branch, the `no-commit-to-branch` hook will block direct commits. This forces you to work on feature branches:
 

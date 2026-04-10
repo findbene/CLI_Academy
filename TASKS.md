@@ -10,20 +10,15 @@
 - [x] Repair hosted lesson progress so signed-in saves resolve against the live curriculum catalog instead of stale seed rows.
 - [x] Add browser-local learner-progress fallback plus authenticated local-to-hosted backfill for legacy completions.
 - [x] Run authenticated browser QA for onboarding completion, dashboard continue-learning, lesson progress, and verification UX.
-- [x] Complete explicit guided-step schema rollout across Paths 01-19 with authored `StepMeta` on every live walkthrough lesson.
-- [x] Tighten `--strict-step-schema` enforcement in validator and CI now that all live paths are explicit.
-- [x] Add targeted Playwright coverage for local-progress fallback/backfill, learning-mode scaffold changes, step-local tutor launch, lesson code-block rendering, and free-tier tutor mode gating.
-- [x] Add the remaining targeted regression coverage for dashboard hydration reconciliation and continue-learning hydration against browser-local progress.
-- [x] Run the authenticated learner-flow and tutor Playwright specs locally through a confirmed learner session so the env-gated regression pack executes instead of skipping.
-- [x] Run the remaining visual browser pass on `/` and `/lounge` across desktop and mobile breakpoints.
 - [ ] Run editorial QA across the rewritten live paths, prioritizing Paths 11, 12, 14, 15, 16, 18, and 19.
+- [ ] Add targeted regression coverage for local-progress fallback/backfill, dashboard hydration reconciliation, lesson rendering edge cases, and tutor mode gating.
+- [ ] Run the remaining visual browser pass on `/` and `/lounge` across desktop and mobile breakpoints.
 
 ## P1 (Product Hardening)
 
 - [ ] Revisit gamification persistence and concurrency semantics.
 - [ ] Verify CI/CD, deployment, and env references after the recent app and curriculum changes.
 - [ ] Reconcile path-overview completion state with browser-local fallback so `/learn/[pathSlug]` does not lag behind the lesson page/dashboard after local-only saves.
-- [ ] Refresh the saved learner Playwright auth state when the QA session changes so authenticated tutor and learner-flow regressions stay runnable locally.
 - [ ] Continue Pro-tier scoping for `mcp-mastery` and `workflow-automation`.
 
 ## P2 (Structure + Operations)

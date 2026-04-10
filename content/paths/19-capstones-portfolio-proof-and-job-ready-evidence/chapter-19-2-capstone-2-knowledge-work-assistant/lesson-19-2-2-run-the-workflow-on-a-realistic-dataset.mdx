@@ -5,7 +5,6 @@ chapterNumber: "19.2"
 pathNumber: "19"
 tutorPreload: "Help me package this output so another person can reproduce it."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Run the workflow on a realistic dataset
@@ -16,8 +15,6 @@ Run the knowledge workflow on a real codebase folder, capture the raw findings b
 ## Walkthrough
 
 ### Step 1: Capture the raw dataset snapshot from a real codebase
-
-<StepMeta purpose="Freeze the raw TODO-style evidence so the report can be judged against the exact findings the workflow started from." action="Run `rg` across the approved folders, save the results to `source-snapshots/raw-findings.txt`, and note the line count even if it is zero." expectedResult="You have a captured raw dataset snapshot describing every TODO, FIXME, or XXX match in the approved source folders." whyItMatters="Capturing the dataset first is what makes the later report auditable and prevents the agent from scanning fresh or inconsistent inputs during summarization." nextStep="Run the bounded workflow next so Claude Code transforms the frozen dataset into a structured report and logs." askTutor="Review this raw dataset capture step and tell me whether the snapshot is narrow enough and complete enough to support an honest knowledge report." />
 Use a real folder from the repo instead of a practice folder. This creates the baseline that your report must summarize honestly.
 
 macOS/Linux:
@@ -35,8 +32,6 @@ rg -n "TODO|FIXME|XXX" ..\apps ..\content ..\packages ..\tooling ..\tests | Set-
 If the count is zero, that is still a valid dataset. Your workflow should produce a clean no-findings report instead of inventing issues.
 
 ### Step 2: Run the bounded workflow in Claude Code
-
-<StepMeta purpose="Execute the knowledge workflow against the frozen dataset and explicit contract rather than allowing a live rescan or improvisation." action="Use the provided prompt so Claude Code reads the design, contract, and raw findings file, then writes `todo-report.md`, `logs/run-001.md`, and `logs/edge-cases.md`." expectedResult="The capstone produces a structured TODO report plus run and edge-case logs tied directly to the saved dataset." whyItMatters="A bounded run keeps the capstone reproducible and separates the capture phase from the summarization phase, which improves trust and reviewability." nextStep="Inspect the before-and-after evidence next so you can compare the raw findings to the grouped report output." askTutor="Check this bounded run prompt and tell me whether it is strict enough to force the report to derive only from `raw-findings.txt` and not from broader repo context." />
 Use the raw snapshot as the source of truth and keep the run within the capstone contract.
 
 Use this prompt:
@@ -51,8 +46,6 @@ This run should create three artifacts:
 - logs/edge-cases.md
 
 ### Step 3: Inspect the before-and-after evidence
-
-<StepMeta purpose="Compare the raw dataset to the final report so the transformation from evidence to artifact stays transparent." action="Read the raw findings, the structured report, the run log, and the edge-case log in sequence and judge whether the grouping and priorities are defensible." expectedResult="You can show how the capstone turned raw search output into a more usable report without hiding its source material." whyItMatters="Portfolio strength comes from making the transformation legible, not just from producing a polished markdown report." nextStep="Record an explicit edge-case outcome next so the capstone proves it thought about clean datasets or remote rate limits too." askTutor="Help me compare the raw findings and final report and tell me whether the prioritization and grouping stay faithful to the source evidence." />
 Compare the raw search output with the final report so you can show exactly how the workflow transformed the dataset.
 
 macOS/Linux:
@@ -74,8 +67,6 @@ Get-Content logs/edge-cases.md
 Your report does not need to list every finding in full detail. It does need to make the grouping, prioritization, and top review items defensible.
 
 ### Step 4: Record one explicit edge-case outcome
-
-<StepMeta purpose="Make failure and edge-case behavior visible even if the main run used a straightforward local dataset." action="Append the explicit edge-case note to `logs/edge-cases.md`, or replace it with the actual rate-limit behavior if you used a remote source." expectedResult="The capstone includes a durable note explaining how it would handle an empty dataset or remote limit condition." whyItMatters="Explicit edge-case recording shows judgment and foresight, which are part of what makes a capstone credible as portfolio evidence." nextStep="Package the capstone into a case study and timed demo script in the next lesson so the workflow can be presented clearly to another person." askTutor="Review this edge-case note and tell me whether it makes the workflow's failure behavior clear enough for an outside reviewer." />
 Even if you used a local codebase and did not hit a rate limit, record that in the edge-case log so the portfolio artifact shows you thought about failure modes.
 
 macOS/Linux:

@@ -5,7 +5,6 @@ chapterNumber: "16.1"
 pathNumber: "16"
 tutorPreload: "Help me decide whether this task needs computer use, a CLI tool, or a direct API call."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # When computer use is appropriate
@@ -19,8 +18,6 @@ By the end of this lesson you will be able to apply a simple decision framework 
 Just because an AI *can* click buttons on a screen does not mean it *should*. Most tasks have a faster, safer, and more reliable path that never touches the GUI. This lesson gives you a decision ladder to evaluate every automation idea before you commit to a strategy.
 
 ### Step 1 — Learn the three-tier preference order
-
-<StepMeta purpose="Give yourself a default decision ladder so you do not reach for GUI automation before checking safer options." action="Read the API, CLI, then computer-use ordering and connect each tier to its speed, reliability, testability, and risk tradeoff." expectedResult="You can explain why computer use is a last resort rather than a default automation strategy." whyItMatters="This ordering prevents unnecessary fragility and keeps most automation work in tools with clearer contracts and lower risk." nextStep="Stress-test the framework against concrete examples so the preference order becomes a usable judgment tool rather than a slogan." askTutor="Use a task from my workflow and help me place it on this API-versus-CLI-versus-computer-use ladder honestly." />
 
 Always evaluate options in this order:
 
@@ -42,8 +39,6 @@ Always evaluate options in this order:
 
 ### Step 2 — Work through three real examples
 
-<StepMeta purpose="Practice using the decision ladder on realistic tasks instead of treating it as theory." action="Read each example and identify why Slack belongs to APIs, bulk file renaming belongs to CLI automation, and the legacy expense app is the one case where computer use survives the filter." expectedResult="You can justify each choice with a concrete reason tied to available interfaces and not just convenience or novelty." whyItMatters="Examples train the habit of rejecting GUI automation when a contract-based path already exists." nextStep="Review the non-negotiable safety controls that apply when computer use really is the only viable option." askTutor="Challenge my reasoning on one of these examples and tell me whether I am still overusing computer use or underestimating a safer interface." />
-
 **Example A — Post a message to Slack**
 
 - API available? **Yes** — Slack has a well-documented Web API (`chat.postMessage`).
@@ -63,8 +58,6 @@ Always evaluate options in this order:
 
 ### Step 3 — Understand the safety considerations for computer use
 
-<StepMeta purpose="Define the baseline controls that make unavoidable GUI automation less dangerous and more auditable." action="Read the six safeguards and translate them into a pre-flight list: sandboxing, scope restriction, approval gates, budgets, test accounts, and logging." expectedResult="You can name the controls you would demand before approving any real computer-use workflow." whyItMatters="Computer use without explicit guardrails can click destructive actions on real accounts, so these controls are the difference between a demo and an operational tool." nextStep="Create your own written decision sheet so you can apply the preference ladder and safety checks repeatedly in future work." askTutor="Review these safety controls with me and tell me which ones are absolutely mandatory before I let an agent interact with a real website or desktop." />
-
 When computer use is the only option, these safeguards are non-negotiable:
 
 1. **Sandbox the environment.** Run the browser or desktop in a virtual machine or Docker container. If the agent clicks something destructive, the damage stays inside the sandbox.
@@ -80,8 +73,6 @@ When computer use is the only option, these safeguards are non-negotiable:
 6. **Log everything.** Every screenshot, every action, and every decision should be saved to disk so you can audit what happened after the fact.
 
 ### Step 4 — Build your own decision sheet
-
-<StepMeta purpose="Turn the decision framework into a reusable artifact instead of leaving it as a concept you may forget under pressure." action="Create `decision-framework.md`, verify it contains the three-tier order and the pre-flight checklist, and add one task of your own at the bottom." expectedResult="You have a saved reference file that records both the framework and a real example from your own workflow." whyItMatters="A written checklist makes future automation choices faster and more consistent, especially when a task is tempting but GUI-heavy." nextStep="Use the next lessons to practice browser automation with Playwright, where the browser is still scriptable through the DOM rather than pixel-driven screen control." askTutor="Help me review my decision sheet and tell me whether my own example belongs in API, CLI, or computer use based on the framework." />
 
 Create a file that documents the decision framework so you can reference it later.
 

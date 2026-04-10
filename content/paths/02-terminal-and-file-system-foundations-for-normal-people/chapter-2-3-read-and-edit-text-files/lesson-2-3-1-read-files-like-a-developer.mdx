@@ -5,7 +5,6 @@ chapterNumber: "2.3"
 pathNumber: "2"
 tutorPreload: "Summarize this config file in plain English and tell me which lines matter for a beginner."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Read files like a developer
@@ -17,8 +16,6 @@ Read text files from the terminal using `cat`, `head`, `tail`, `wc`, and their P
 ## Walkthrough
 
 ### Step 1 — Read an entire file with `cat` / `Get-Content`
-
-<StepMeta purpose="Start with the simplest read operation so you can see a whole file without opening an editor." action="Move into tiny-agent-project and print the full contents of INSTRUCTIONS.md." expectedResult="The entire file appears in the terminal window from top to bottom." whyItMatters="Reading files directly in the terminal is a core developer skill for quick inspection, debugging, and remote work." nextStep="After you can print the whole file, narrow the view to only the first few lines." askTutor="I'm on Step 1 of Read files like a developer. Help me verify that I printed the whole file correctly and explain when reading a file this way is actually useful." />
 
 Make sure you are inside `tiny-agent-project/` (or wherever your project files live).
 
@@ -40,8 +37,6 @@ The full contents print to the screen. `cat` is short for *concatenate* — it d
 
 ### Step 2 — Read just the first few lines
 
-<StepMeta purpose="Practice grabbing only the top of a file so long outputs stay manageable." action="Run head -n 3 or the PowerShell Select-Object equivalent on INSTRUCTIONS.md." expectedResult="Only the first three lines of the file appear in the terminal." whyItMatters="Partial reads let you inspect large files quickly without flooding the screen with irrelevant text." nextStep="After the top-of-file check, inspect the bottom of the file to see the opposite end of the same content." askTutor="I'm on Step 2 of Read files like a developer. Help me understand why this command shows only the first lines and how to change the number safely." />
-
 Larger files may be hundreds or thousands of lines long. Grab only the top.
 
 **macOS / Linux**
@@ -62,8 +57,6 @@ Get-Content INSTRUCTIONS.md | Select-Object -First 3
 
 ### Step 3 — Read the last few lines
 
-<StepMeta purpose="Learn how to inspect the end of a file where recent or summary information often lives." action="Run tail -n 2 or the PowerShell last-two-lines equivalent on INSTRUCTIONS.md." expectedResult="The terminal shows only the final two lines of the file." whyItMatters="Last-line reads are especially useful for logs, summaries, and confirming appended changes." nextStep="Once you can inspect both the top and bottom, measure the file size with counts instead of reading it all." askTutor="I'm on Step 3 of Read files like a developer. Help me check that these really are the last two lines of the file and explain when tail-style reading is the better choice." />
-
 Sometimes the most recent information is at the bottom — for example, in log files.
 
 **macOS / Linux**
@@ -79,8 +72,6 @@ Get-Content INSTRUCTIONS.md | Select-Object -Last 2
 ```
 
 ### Step 4 — Count lines, words, and characters
-
-<StepMeta purpose="Measure a file quickly without manually reading or scrolling through all of it." action="Run wc or Measure-Object on INSTRUCTIONS.md and inspect the resulting counts." expectedResult="You get numeric totals for lines, words, and characters, or at least a line count." whyItMatters="Counts help you reason about file size, detect empty files, and compare revisions without opening an editor." nextStep="After measuring your own file, read a real system file so these commands feel useful beyond a toy project." askTutor="I'm on Step 4 of Read files like a developer. Help me interpret these file counts and tell me what a beginner can actually learn from them." />
 
 How big is a file? Check without reading the whole thing.
 
@@ -108,8 +99,6 @@ This prints lines, words, and characters in a table.
 
 ### Step 5 — Read a file you did not create
 
-<StepMeta purpose="Apply the same file-reading tools to a real configuration file outside your project." action="Read the first 10 lines of the system hosts file on your platform." expectedResult="You see real config text from the hosts file without changing anything on the machine." whyItMatters="Developer tools become more meaningful when you use them on actual system files, not only on practice content you wrote yourself." nextStep="Once you are comfortable reading a real file, combine commands to answer a small file-count question in your own project." askTutor="I'm on Step 5 of Read files like a developer. Help me understand what this hosts file is and which lines matter for a beginner reading it for the first time." />
-
 Practice on a file that belongs to the system so you see how these commands work on real-world content.
 
 **macOS / Linux**
@@ -129,8 +118,6 @@ Get-Content C:\Windows\System32\drivers\etc\hosts | Select-Object -First 10
 Same file, same idea. You are reading a real system config safely.
 
 ### Step 6 — Combine commands to answer a question
-
-<StepMeta purpose="Use multiple commands together to answer a practical question instead of just reading text." action="Count how many Python files exist in your project using find plus wc or the recursive PowerShell count." expectedResult="The terminal returns the number of Python files in the project, which should be 2 for the starter repo." whyItMatters="Real terminal work often means combining simple commands to extract one useful fact from the filesystem." nextStep="After this step, you should be able to read full files, partial files, and quick counts directly from the terminal without opening an editor." askTutor="I'm on Step 6 of Read files like a developer. Help me understand how this combined command finds Python files and why the expected count should be 2 in this project." />
 
 Count how many Python files are in your project.
 

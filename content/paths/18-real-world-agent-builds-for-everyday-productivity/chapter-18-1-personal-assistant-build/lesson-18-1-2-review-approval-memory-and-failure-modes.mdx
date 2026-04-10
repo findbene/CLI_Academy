@@ -5,7 +5,6 @@ chapterNumber: "18.1"
 pathNumber: "18"
 tutorPreload: "Audit this daily brief assistant like a careful operator."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Review: approval, memory, and failure modes
@@ -15,8 +14,6 @@ Harden your daily brief assistant with human approval gates, brief memory, expli
 
 ## Walkthrough
 ### Step 1: Add review gate and memory policy to CLAUDE.md
-
-<StepMeta purpose="Upgrade the first assistant from a one-shot generator into a safer workflow with explicit human checkpoints and bounded memory." action="Edit `CLAUDE.md` to add the review gate, seven-entry memory limit, and clear failure-handling rules exactly as shown." expectedResult="The contract now requires approval before follow-up actions, records brief run memory, and defines safe behavior for missing inputs or empty git history." whyItMatters="Daily-use assistants become risky when they keep acting after drafting output or accumulate uncontrolled memory over time." nextStep="Create the supporting memory and failure-playbook files next so the new rules have real artifacts behind them." askTutor="Review my hardened `CLAUDE.md` and tell me whether the approval gate, memory retention, and failure handling are explicit enough for recurring use." />
 Open your existing `CLAUDE.md` and add this section:
 
 ```md
@@ -36,8 +33,6 @@ Open your existing `CLAUDE.md` and add this section:
 ```
 
 ### Step 2: Create a memory file and a failure-playbook file
-
-<StepMeta purpose="Back the contract up with concrete files that hold lightweight run memory and deterministic recovery guidance." action="Create `brief-memory.md` and `failure-playbook.md`, then populate the playbook with the three recovery cases from the lesson." expectedResult="The assistant workspace now includes persistent run memory plus a small runbook for predictable failure recovery." whyItMatters="Operational safety improves when error handling lives in an explicit playbook instead of relying on improvisation during failures." nextStep="Run the assistant with approval behavior next so you can test whether the updated contract really changes the interaction pattern." askTutor="Check these support files and tell me whether they are practical for real daily use or still too vague to help during a failure." />
 
 ```bash
 touch brief-memory.md
@@ -62,8 +57,6 @@ New-Item brief-memory.md -ItemType File -Force | Out-Null
 ```
 
 ### Step 3: Run the assistant with explicit approval behavior
-
-<StepMeta purpose="Validate that the assistant now pauses at the right human decision point instead of carrying on autonomously." action="Use the provided Claude Code prompt so the assistant drafts the brief first, then stops and asks for approval before any further action or memory update." expectedResult="The assistant produces a draft and waits for human confirmation rather than continuing on its own." whyItMatters="Approval gates are one of the simplest and strongest controls for keeping useful assistants aligned with human intent." nextStep="Test failure modes next so the assistant's stop behavior is proven under broken-input conditions as well." askTutor="Help me assess whether this approval-flow prompt really forces the assistant to stop and ask before doing anything beyond the draft." />
 Use this Claude Code prompt:
 
 ```text
@@ -71,8 +64,6 @@ Read CLAUDE.md. Draft today's brief first. Then stop and ask for approval before
 ```
 
 ### Step 4: Test failure modes on purpose
-
-<StepMeta purpose="Turn the failure handling from theory into an observed behavior by breaking the workflow deliberately once." action="Temporarily rename `TODO.md`, rerun the assistant, confirm it stops with a clear error, then restore the file." expectedResult="You observe the assistant stopping safely when a required input is missing." whyItMatters="Safety controls only count when they have been exercised under failure, not just documented in the contract." nextStep="Inspect the memory file next so you can verify retention limits and recent-run visibility remain under control." askTutor="Review this failure-mode test with me and tell me whether the stop behavior is clear enough or whether the error handling should be tightened further." />
 Test each case once so your safeguards are real, not theoretical.
 
 ```bash
@@ -88,8 +79,6 @@ Rename-Item TODO.missing TODO.md
 ```
 
 ### Step 5: Confirm stop rules and memory limits
-
-<StepMeta purpose="Verify that the assistant's memory stays bounded and does not quietly grow into a noisy or sensitive log." action="Inspect the tail and line count of `brief-memory.md` and confirm only recent entries remain present." expectedResult="You can show recent run history without uncontrolled file growth." whyItMatters="Bounded memory keeps recurring assistants useful and cheap while reducing the chance that sensitive or low-value history accumulates indefinitely." nextStep="Use the next chapter to build workspace helpers that stay equally bounded while answering operational repo or content questions." askTutor="Help me review the memory-file output and tell me whether the retention behavior is healthy or whether I need stricter limits or safer summaries." />
 
 ```bash
 tail -n 10 brief-memory.md

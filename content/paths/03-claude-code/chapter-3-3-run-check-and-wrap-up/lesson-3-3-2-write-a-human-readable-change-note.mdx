@@ -5,7 +5,6 @@ chapterNumber: "3.3"
 pathNumber: "3"
 tutorPreload: "Turn my diff and terminal output into a teammate-ready summary in plain English."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Write a human-readable change note
@@ -17,8 +16,6 @@ Use Claude Code to generate a CHANGELOG.md entry that explains your recent chang
 ## Walkthrough
 
 ### Step 1 — Review what has changed so far
-
-<StepMeta purpose="Refresh your memory on the repo history before trying to summarize it for someone else." action="Open cli-practice and run git log --oneline to inspect the commits so far." expectedResult="You can see the existing commit history, including the setup, README, and fix commits from previous lessons." whyItMatters="Good change notes are grounded in actual history, not in vague memory of what you think you changed." nextStep="Once the commit history is fresh in your mind, ask Claude Code to draft a plain-English CHANGELOG entry from it." askTutor="I'm on Step 1 of Write a human-readable change note. Help me interpret this git log and identify which commits should definitely be represented in the changelog." />
 
 Before writing a change note, look at the project history to remind yourself what you did:
 
@@ -37,8 +34,6 @@ git log --oneline
 You should see two or three commits from the earlier lessons — the initial commit, the README update, and the fix after the intentional break exercise.
 
 ### Step 2 — Ask Claude Code to write a CHANGELOG entry
-
-<StepMeta purpose="Use Claude Code to translate technical project history into human-readable release notes." action="Launch Claude Code and ask it to create CHANGELOG.md from the git history under a v1.0.0 heading with today's date." expectedResult="Claude Code drafts a CHANGELOG.md file that summarizes the repo history in plain English." whyItMatters="This shows Claude Code's value beyond code generation: it can also turn technical evidence into communication artifacts for teammates." nextStep="After the draft appears, review each bullet for factual accuracy and clarity before you keep it." askTutor="I'm on Step 2 of Write a human-readable change note. Help me evaluate whether Claude Code's draft changelog is actually grounded in the git history and not missing any important change." />
 
 Launch Claude Code:
 
@@ -68,8 +63,6 @@ The result will look something like:
 
 ### Step 3 — Review for accuracy
 
-<StepMeta purpose="Apply the same review discipline to documentation that you already apply to diffs and code changes." action="Check each changelog bullet against the actual commits and revise any missing or misleading detail." expectedResult="The changelog bullets match the real commit history and are understandable to a non-developer reader." whyItMatters="AI-written summaries can sound polished while still being wrong, so accuracy review is mandatory even for documentation." nextStep="Once the changelog is accurate, exit Claude Code and commit the new file to the repo." askTutor="I'm on Step 3 of Write a human-readable change note. Help me compare this changelog bullet to the real commit it describes so I can tell whether the summary is true and complete." />
-
 Read every bullet point and check:
 
 1. **Is it true?** Compare each bullet to the actual commit it describes.
@@ -85,8 +78,6 @@ The second bullet should mention that the Usage section tells people to run npm 
 Claude Code revises the file and shows you the diff.
 
 ### Step 4 — Commit the CHANGELOG
-
-<StepMeta purpose="Save the reviewed plain-English project summary as part of the repo history." action="Exit Claude Code, stage CHANGELOG.md, and commit it with the provided docs message." expectedResult="Git records a commit containing the new changelog file." whyItMatters="Committing documentation changes preserves the narrative of the project alongside the code changes it explains." nextStep="After this step, you are ready for the mini project where you run the full ask-plan-edit-run-commit loop on one real improvement." askTutor="I'm on Step 4 of Write a human-readable change note. Help me verify that CHANGELOG.md is staged correctly and that the commit message fits the documentation change I just reviewed." />
 
 Exit Claude Code with `/exit`, then:
 

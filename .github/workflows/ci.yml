@@ -42,4 +42,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python tooling/scripts/validate_content.py --strict-step-schema
+      - run: python tooling/scripts/validate_content.py

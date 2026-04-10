@@ -5,7 +5,6 @@ chapterNumber: "14.3"
 pathNumber: "14"
 tutorPreload: "Give me the acceptance checklist for a complete beginner security audit."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: security audit your own project
@@ -26,8 +25,6 @@ This is the same process that professional security engineers follow — scaled 
 ## Walkthrough
 
 ### Step 1 — Choose or create a project to audit
-
-<StepMeta purpose="Pick a small target where you can run the whole audit workflow end to end and still inspect every finding manually." action="Create or choose the `audit-target` repo, add the intentionally vulnerable sample project, and commit the initial insecure baseline." expectedResult="You have a practice project in a known-bad starting state with multiple issues spread across code, dependencies, and secrets handling." whyItMatters="An audit is easier to learn when the project is realistic enough to have several classes of problems but still small enough to inspect fully." nextStep="Start with secrets and history scanning so you find the most urgent leak risks before dependency or code analysis." askTutor="Review this audit target and tell me which high-risk issues you expect me to uncover first before I start the scan phases." />
 
 Use a project you have built during CLI Academy, or create a quick practice project:
 
@@ -132,8 +129,6 @@ This project has at least five security problems. Your job is to find them all.
 
 ### Step 2 — Audit phase 1: Scan for secrets
 
-<StepMeta purpose="Run the fastest high-severity checks first by looking for exposed credentials in both the working tree and repo history." action="Use the `git log -S` searches and the codebase grep or Select-String commands, then record each secret-related finding you discover." expectedResult="You identify the hardcoded password, the committed `.env`, and the leaked `DATABASE_URL` style credential as explicit audit findings." whyItMatters="Secrets exposure has immediate impact, so the audit should surface and document those issues before less urgent cleanup work." nextStep="Move to dependency auditing next so you can pair the code-level findings with package-level risk data." askTutor="Help me turn these secret-scan results into clear audit findings with severity and remediation language that a beginner can understand." />
-
 **Check Git history for committed secrets:**
 ```bash
 git log --all -p -S "password"
@@ -163,8 +158,6 @@ Record each finding.
 
 ### Step 3 — Audit phase 2: Check dependencies for vulnerabilities
 
-<StepMeta purpose="Check whether the project inherits known CVEs from outdated package versions even before you read every line of code." action="Run `pip-audit -r requirements.txt` or the package-manager equivalent and capture the vulnerable packages and any CVE references it reports." expectedResult="You produce a dependency findings list that ties old pinned versions to known vulnerability advisories." whyItMatters="Dependency checks scale faster than manual code review and often surface high-value upgrade work early in the audit." nextStep="Inspect the application code itself for the vulnerability patterns you learned in the earlier AI-review lessons." askTutor="Interpret this dependency audit output for me and help me decide which packages or CVEs should be treated as highest priority." />
-
 **For Python projects:**
 
 **macOS / Linux:**
@@ -191,8 +184,6 @@ npm audit
 Record each package with vulnerabilities and the CVE numbers.
 
 ### Step 4 — Audit phase 3: Review code for common vulnerabilities
-
-<StepMeta purpose="Apply the path's earlier review heuristics to the actual source code and confirm the dangerous patterns are present." action="Run the targeted searches for SQL interpolation, `eval()` or `exec()`, and `debug=True`, then inspect the matching lines in `app.py`." expectedResult="You can list the specific code-level vulnerabilities in the search endpoint, eval endpoint, and debug-mode configuration." whyItMatters="A useful audit ties broad security categories to exact lines and exact risky behavior instead of stopping at a generic warning level." nextStep="Write the findings into a structured report with severity, file references, and remediation guidance." askTutor="Review the code findings I collected and tell me whether I have separated secrets issues, dependency issues, and application-code vulnerabilities clearly enough." />
 
 Go through the code file by file. Check for the five AI mistake patterns from Lesson 14.2.2:
 
@@ -238,8 +229,6 @@ Select-String -Path app.py -Pattern 'debug=True'
 - `debug=True` exposes detailed error messages and a debugger to anyone on the network
 
 ### Step 5 — Write the audit report
-
-<StepMeta purpose="Convert your scattered scan results into a prioritized document that can drive remediation instead of just describing problems." action="Create `security-audit-report.md` with the summary table, detailed findings, severities, and remediation priorities shown in the lesson." expectedResult="You have a written report that names at least five concrete findings and explains how each one should be fixed." whyItMatters="An audit only becomes actionable when the findings are documented in a way that another person could follow and implement." nextStep="Use the report to fix the highest-severity issues in the target project in a deliberate order." askTutor="Review my audit report and tell me whether the severity ratings and remediation order make sense for a beginner-friendly security review." />
 
 Create a structured report of everything you found:
 
@@ -377,8 +366,6 @@ EOF
 
 ### Step 6 — Fix the highest-severity issues
 
-<StepMeta purpose="Practice turning the audit report into real remediation work instead of stopping at diagnosis." action="Apply the `.gitignore` and untracking fix, remove the hardcoded credential and `eval()` route, parameterize the query, and upgrade the dependencies as shown." expectedResult="The target project moves from a deliberately insecure baseline to a meaningfully safer state with the most dangerous issues removed or reduced." whyItMatters="Security work is not finished when the findings are written down; the real value comes from reducing the highest-risk attack paths first." nextStep="Commit the audit report itself so the repo history records both the investigation and the remediation guidance." askTutor="Check these fixes against the audit findings and tell me whether any critical issue is still unresolved after the remediation steps." />
-
 Apply the fixes you documented:
 
 **Add .gitignore and remove .env from tracking:**
@@ -468,8 +455,6 @@ git add requirements.txt; git commit -m "fix: update dependencies to patched ver
 ```
 
 ### Step 7 — Commit the audit report
-
-<StepMeta purpose="Finish the mini project with a documented audit trail that shows both the vulnerable starting point and the remediation path." action="Commit `security-audit-report.md`, then inspect `git log --oneline` to confirm the history now includes the initial vulnerable state, the fixes, and the final audit documentation." expectedResult="The repo history tells a complete story of the audit: insecure baseline, remediation commits, and the written report that explains what changed and why." whyItMatters="A security audit should leave behind evidence, not just memory, so future readers can understand both the risks that existed and the actions taken." nextStep="Carry the Path 14 habits into later paths so local safety, code review, and repeatable audit discipline stay part of your default workflow." askTutor="Review this final audit history and tell me whether it shows a complete security story or whether any important evidence is still missing." />
 
 ```bash
 git add security-audit-report.md

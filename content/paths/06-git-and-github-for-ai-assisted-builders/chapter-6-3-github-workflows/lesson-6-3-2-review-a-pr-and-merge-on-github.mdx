@@ -5,7 +5,6 @@ chapterNumber: "6.3"
 pathNumber: "6"
 tutorPreload: "Summarize what this PR changes and whether it is safe to merge."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Review a PR and merge on GitHub
@@ -19,8 +18,6 @@ By the end of this lesson you will review a pull request — read the diff, leav
 This lesson picks up from Lesson 6.3.1. You should have an open PR titled "Add homepage" on the `pr-lab` repository. If not, complete that lesson first.
 
 ### Step 1 — View the PR details from the terminal
-
-<StepMeta purpose="Get a quick reviewable summary of the PR without leaving your terminal." action="Use gh pr view and gh pr diff to inspect the title, description, branch names, and changed lines." expectedResult="You can see the scope of the PR and the exact file changes from the CLI alone." whyItMatters="Fast terminal review helps you stay oriented and is often enough to decide whether a PR deserves deeper browser inspection." nextStep="Open the PR on the web and practice reviewing the diff and leaving feedback there." askTutor="I'm on Step 1 of Review a PR and merge on GitHub. Help me read this gh pr view output and decide what I should inspect more closely before merging." />
 
 ```bash
 gh pr view 1
@@ -40,8 +37,6 @@ This shows the exact file changes — the same diff you see on GitHub's "Files c
 
 ### Step 2 — Review the PR on the web
 
-<StepMeta purpose="Practice the standard browser-based review workflow that most teams use for code discussion and approval." action="Open the Files changed tab, read the diff, leave an inline comment, and submit an approval review." expectedResult="The PR now contains visible review activity showing that someone looked at the diff and responded to it." whyItMatters="Review is the main quality gate before merge, and the web UI is where most teams discuss specific lines and approve changes." nextStep="Try leaving an equivalent review comment and approval from the CLI as well." askTutor="I'm on Step 2 of Review a PR and merge on GitHub. Help me decide what kind of review comment is actually useful instead of just saying 'looks good.'" />
-
 Open the PR URL in your browser (shown in the `gh pr view` output) and go to the **Files changed** tab.
 
 1. **Read the diff.** Green lines are additions, red lines are deletions. For this PR you should see `index.html` added.
@@ -49,8 +44,6 @@ Open the PR URL in your browser (shown in the `gh pr view` output) and go to the
 3. **Submit a review:** Click **Review changes** in the top-right, select **Approve**, and click **Submit review**.
 
 ### Step 3 — Leave a review comment from the CLI
-
-<StepMeta purpose="Learn the terminal version of commenting and approving so review workflows are available even outside the browser." action="Run gh pr comment and gh pr review --approve to add feedback and approval from the command line." expectedResult="The PR shows both a comment and an approval event created from the CLI." whyItMatters="CLI review commands are useful for fast solo workflows, automation, and remote environments where browser access is inconvenient." nextStep="Merge the approved PR using either the web interface or the CLI." askTutor="I'm on Step 3 of Review a PR and merge on GitHub. Help me understand the difference between a PR comment and an approval review in GitHub." />
 
 You can also comment from the terminal:
 
@@ -66,8 +59,6 @@ gh pr review 1 --approve --body "LGTM — ready to merge."
 
 ### Step 4 — Merge the PR from the web
 
-<StepMeta purpose="Complete the review flow through the browser so you see the normal merge controls most teams use." action="Use the Merge pull request button, confirm the merge, and delete the remote branch from the PR page." expectedResult="GitHub marks the PR as merged and removes the remote feature branch after confirmation." whyItMatters="Merging is the moment a reviewed branch becomes part of main, and branch cleanup keeps the repository easier to navigate afterward." nextStep="Practice the equivalent merge-and-delete workflow from the CLI." askTutor="I'm on Step 4 of Review a PR and merge on GitHub. Help me decide when a standard merge commit is the right choice versus squash or rebase." />
-
 On the PR page, click the green **Merge pull request** button. Choose **Create a merge commit** (the default). Click **Confirm merge**.
 
 GitHub shows "Pull request successfully merged and closed."
@@ -75,8 +66,6 @@ GitHub shows "Pull request successfully merged and closed."
 Now click **Delete branch** to remove `feature-homepage` from GitHub.
 
 ### Step 5 — Merge the PR from the CLI
-
-<StepMeta purpose="Learn the terminal-native merge command so the full review-to-merge workflow can stay in one interface." action="Run gh pr merge with --merge and --delete-branch to merge and clean up the remote branch." expectedResult="The PR is merged from the CLI and the remote feature branch is deleted in one command." whyItMatters="The CLI merge flow is fast, repeatable, and useful when you want a reviewable workflow without bouncing back to the browser." nextStep="Update your local repo and delete the local feature branch so your machine matches the merged remote state." askTutor="I'm on Step 5 of Review a PR and merge on GitHub. Help me interpret these gh pr merge flags and understand what state GitHub will be in afterward." />
 
 If you prefer the terminal:
 
@@ -89,8 +78,6 @@ Flags:
 - `--delete-branch` removes the remote feature branch after merging
 
 ### Step 6 — Clean up locally
-
-<StepMeta purpose="Bring your local repository back in sync with the now-merged main branch and remove stale local branches." action="Switch to main, pull the merged changes, and delete the local feature branch with the safe -d flag." expectedResult="Only main remains locally and your local history includes the merged PR changes." whyItMatters="Remote cleanup is not enough; local cleanup prevents stale branches from piling up and confusing future work." nextStep="After one full review-and-merge cycle, ship a complete feature branch from start to finish in the mini-project." askTutor="I'm on Step 6 of Review a PR and merge on GitHub. Help me confirm that my local repo now matches GitHub and that it's safe to delete this branch locally." />
 
 After merging on GitHub, your local repo still has the old branch. Update it:
 

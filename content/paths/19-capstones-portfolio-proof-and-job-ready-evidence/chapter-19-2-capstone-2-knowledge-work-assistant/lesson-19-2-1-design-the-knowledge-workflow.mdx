@@ -5,7 +5,6 @@ chapterNumber: "19.2"
 pathNumber: "19"
 tutorPreload: "Review this workflow design for traceability and oversight."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Design the knowledge workflow
@@ -16,8 +15,6 @@ Design a real knowledge-extraction workflow that produces a structured artifact 
 ## Walkthrough
 
 ### Step 1: Create the capstone workspace and choose the real dataset
-
-<StepMeta purpose="Ground the knowledge workflow in a real codebase dataset so the capstone solves an authentic inspection problem." action="Create the `capstone-2-knowledge` workspace, choose a real repo source folder, and confirm the default TODO extraction workflow, output, and evidence locations." expectedResult="You have a capstone workspace and a real dataset target for the knowledge workflow." whyItMatters="Knowledge workflows are much more defensible when they inspect real source material instead of toy folders created only for the lesson." nextStep="Write the design doc next so the workflow schema, sources, and output format are explicit before any scan is run." askTutor="Review this dataset choice and tell me whether it is realistic enough for a portfolio capstone while still being bounded and safe to inspect." />
 Use a real codebase folder, not a toy folder you created for the lesson. A strong default is the repository you are already working in.
 
 macOS/Linux:
@@ -41,8 +38,6 @@ Recommended default workflow for this chapter:
 - Evidence: logs/run-001.md and logs/edge-cases.md
 
 ### Step 2: Write the design doc with schema, sources, and output format
-
-<StepMeta purpose="Make the knowledge workflow inspectable and reviewable before the agent sees any raw findings." action="Create `WORKFLOW-DESIGN.md` with workflow goal, approved sources, finding schema, output format, and review rules exactly as described." expectedResult="You have a design document that defines what each finding must include and how the final report should be structured." whyItMatters="A strong schema is what turns a noisy grep result into a reusable knowledge artifact instead of an unstructured dump." nextStep="Add the agent contract and edge-case expectations next so the capstone has explicit behavior for empty datasets and remote rate limits." askTutor="Audit this workflow design and tell me whether the schema is specific enough to support consistent reports across multiple runs." />
 Make the workflow inspectable before you run it.
 
 macOS/Linux:
@@ -126,8 +121,6 @@ todo-report.md must contain:
 ```
 
 ### Step 3: Add the agent contract and edge-case expectations
-
-<StepMeta purpose="Constrain the capstone's read and write surface and define how it behaves when the dataset is empty or remote limits interfere." action="Write `CLAUDE.md` so it limits scanning to approved folders and artifacts, bans edits and secret inspection, and defines no-findings and rate-limit stop behavior." expectedResult="The capstone now has a contract that keeps the workflow tied to approved sources and explicit edge-case behavior." whyItMatters="Knowledge extraction becomes untrustworthy when it scans too broadly, invents findings on clean datasets, or retries remote sources without limits." nextStep="Run a design review next so Claude Code can challenge the schema and boundaries before the dataset is captured." askTutor="Compare the design and contract for me and tell me whether the source boundaries and edge-case rules are tight enough for a trustworthy knowledge workflow." />
 Document how the workflow behaves when the dataset is empty or when you switch from a local scan to a remote source that may rate-limit you.
 
 macOS/Linux:
@@ -177,8 +170,6 @@ Edge-case handling:
 ```
 
 ### Step 4: Ask Claude Code to review the design before the run
-
-<StepMeta purpose="Use a pre-run review to catch weak schemas or overly broad source scopes before the capstone generates any report." action="Run the provided review prompt, write the result to `logs/design-review.md`, and inspect whether the schema, folder bounds, and edge-case behavior need tightening." expectedResult="You have a design review artifact that validates or improves the capstone before execution." whyItMatters="Reviewing the design first reduces the chance that a weak schema or loose scope pollutes the evidence and final report later." nextStep="Use the next lesson to capture the raw dataset snapshot and run the workflow against a realistic codebase." askTutor="Help me interpret this design review and tell me which weakness I should fix now if I want the strongest Capstone 2 evidence later." />
 Use a review prompt that forces the agent to challenge the schema and source boundaries before you collect data.
 
 Use this prompt:

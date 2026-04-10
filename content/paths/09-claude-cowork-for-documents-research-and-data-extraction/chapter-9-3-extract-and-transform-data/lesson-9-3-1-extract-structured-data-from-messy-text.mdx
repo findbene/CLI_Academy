@@ -5,7 +5,6 @@ chapterNumber: "9.3"
 pathNumber: "9"
 tutorPreload: "Help me extract structured data from messy meeting notes — names, dates, and action items — and output clean Markdown and JSON."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Extract structured data from messy text
@@ -17,8 +16,6 @@ By the end of this lesson you will take messy, unstructured text (meeting notes)
 ## Walkthrough
 
 ### Step 1 — Create a file with realistic messy text
-
-<StepMeta purpose="Create source material that reflects the ambiguity and inconsistency of real meeting notes." action="Build the extract-lab repo, add meeting-notes.txt with messy notes, and commit the raw text before asking Claude to transform it." expectedResult="You have a versioned source file full of realistic attendee, deadline, and action-item details for Claude to parse." whyItMatters="Extraction quality is easiest to judge when the source text is messy enough to expose missed items, bad assumptions, and invented structure." nextStep="Ask Claude to turn the notes into both Markdown and JSON with a specific extraction schema and normalization rules." askTutor="I'm on Step 1 of Extract structured data from messy text. Help me confirm this sample note file is realistic enough to test Claude's extraction quality." />
 
 Real meeting notes are messy — inconsistent formatting, abbreviations, and scattered information. Create a sample that reflects this.
 
@@ -98,8 +95,6 @@ git commit -m "Add raw meeting notes"
 
 ### Step 2 — Ask Claude to extract structured data
 
-<StepMeta purpose="Turn unstructured notes into repeatable outputs by giving Claude a strict target format for both human and machine readers." action="Prompt Claude to read meeting-notes.txt and create extracted.md plus extracted.json using the exact sections and JSON schema provided." expectedResult="Claude generates one Markdown summary and one JSON file that attempt to capture attendees, dates, actions, decisions, and the next meeting." whyItMatters="Explicit output contracts reduce ambiguity and make it much easier to verify whether Claude followed your extraction and normalization instructions." nextStep="Review the Markdown output first so you can compare each extracted section against the original notes." askTutor="I'm on Step 2 of Extract structured data from messy text. Help me tighten this extraction prompt so Claude outputs clean Markdown and valid JSON with the fields I need." />
-
 Open Claude Code in the `extract-lab` directory:
 
 ```
@@ -129,8 +124,6 @@ the notes use nicknames or initials.
 
 ### Step 3 — Verify the Markdown extraction
 
-<StepMeta purpose="Check the human-readable extraction for omissions, invented details, and lost context before trusting the structured data." action="Open extracted.md and compare the attendees, dates, action items, blockers, and next-meeting details against the original notes." expectedResult="You confirm whether the Markdown extraction captured the right people, dates, and exactly five action items without inventing missing details." whyItMatters="The Markdown view makes semantic mistakes easy to spot, which helps you catch bad assumptions before you move on to JSON validation." nextStep="Once the Markdown content looks right, validate the JSON syntax and field formatting so the machine-readable output is usable too." askTutor="I'm on Step 3 of Extract structured data from messy text. Help me audit extracted.md and identify anything Claude missed or invented from the meeting notes." />
-
 ```bash
 cat extracted.md
 ```
@@ -143,8 +136,6 @@ Check each section against the original notes:
 4. **Blockers:** Marcus's API task is blocked on Sarah's design specs. If Claude missed this dependency, ask for a correction.
 
 ### Step 4 — Verify the JSON extraction
-
-<StepMeta purpose="Confirm that the machine-readable output is both syntactically valid and normalized the way you requested." action="Open extracted.json, parse it with Python, and inspect whether the dates, fields, and structure match the schema and formatting rules." expectedResult="You know whether the JSON is valid, dates are normalized, and the extracted objects match the requested structure." whyItMatters="Structured data is only useful if downstream tools can parse it, so syntax and schema validation are just as important as content accuracy." nextStep="After the JSON parses, do a final hallucination check by matching each extracted value back to the source text." askTutor="I'm on Step 4 of Extract structured data from messy text. Help me validate this JSON output and figure out whether any fields still violate the requested schema." />
 
 **macOS / Linux:**
 
@@ -172,8 +163,6 @@ Also check that dates are in `YYYY-MM-DD` format as requested. If any date is st
 
 ### Step 5 — Cross-check for hallucinated data
 
-<StepMeta purpose="Make sure every extracted value traces back to the source instead of Claude filling in gaps with plausible guesses." action="Search the source notes for each extracted name, date, and task, then remove any value that cannot be directly justified from the original text." expectedResult="The final extracted files contain only data points supported by the meeting notes and no invented expansions or tasks." whyItMatters="Hallucinated fields are especially dangerous in extraction workflows because they look structured and authoritative even when they are false." nextStep="When every field is grounded in the source, stage the Markdown and JSON outputs and commit the verified extraction." askTutor="I'm on Step 5 of Extract structured data from messy text. Help me check this extraction for hallucinated names, dates, or tasks that don't actually appear in the source notes." />
-
 This is the most important verification step. Go through `extracted.json` field by field and confirm every value appears in the original `meeting-notes.txt`.
 
 **macOS / Linux:**
@@ -197,8 +186,6 @@ in meeting-notes.txt. Remove it.
 ```
 
 ### Step 6 — Commit the verified extractions
-
-<StepMeta purpose="Record the structured outputs only after you have proven both files are valid and source-grounded." action="Stage extracted.md and extracted.json, then commit the verified extraction outputs to Git." expectedResult="You create a commit containing both the human-readable and machine-readable extractions after completing syntax and source checks." whyItMatters="Committing verified outputs preserves a trustworthy artifact and reinforces the habit that extraction work needs audit steps, not just transformation prompts." nextStep="Apply the same clean-and-check workflow to a tabular data-cleaning task in the next lesson." askTutor="I'm on Step 6 of Extract structured data from messy text. Help me do a final review so I only commit extraction files that are both valid and source-grounded." />
 
 ```bash
 git add extracted.md extracted.json

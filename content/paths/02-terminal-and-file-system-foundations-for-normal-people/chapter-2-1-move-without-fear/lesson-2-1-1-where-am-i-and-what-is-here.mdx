@@ -5,7 +5,6 @@ chapterNumber: "2.1"
 pathNumber: "2"
 tutorPreload: "I pasted my terminal output. Tell me where I am and whether it is safe to continue."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Where am I and what is here?
@@ -17,8 +16,6 @@ Open your terminal and answer two questions without changing anything: **what fo
 ## Walkthrough
 
 ### Step 1 — Print your current location
-
-<StepMeta purpose="Anchor yourself before exploring so you know exactly which folder the terminal is using." action="Run pwd or Get-Location and read the full path it prints." expectedResult="The terminal shows an absolute path that points to your current directory, usually your home folder." whyItMatters="Most terminal mistakes start with acting in the wrong folder, so path awareness is the first safety habit." nextStep="Once you know where you are, list the items in that folder without changing anything." askTutor="I'm on Step 1 of Where am I and what is here. Help me interpret the path my terminal printed and tell me whether it is a safe place to keep exploring." />
 
 Every terminal session starts inside a folder. Before doing anything else, find out which one.
 
@@ -42,8 +39,6 @@ Read the output carefully. This is your **home directory** — the place the sys
 
 ### Step 2 — List what is in this folder
 
-<StepMeta purpose="Look around the current directory without moving or editing anything." action="Run ls or Get-ChildItem -Name to list the visible items in the folder you just identified." expectedResult="You see file and folder names from the current directory, such as Documents, Downloads, or cli-academy." whyItMatters="Listing contents is how you confirm you are in the place you think you are before navigating deeper." nextStep="After the basic list looks right, reveal the hidden items and richer metadata with a detailed listing." askTutor="I'm on Step 2 of Where am I and what is here. Help me read this directory listing and tell me what it proves about where I am." />
-
 Now look around. You want the names of every file and folder sitting in your current location.
 
 **macOS / Linux**
@@ -63,8 +58,6 @@ Get-ChildItem -Name
 `Get-ChildItem -Name` prints clean names, one per line. PowerShell also accepts `ls` as an alias, but the native command gives you more control.
 
 ### Step 3 — See more detail with flags
-
-<StepMeta purpose="Upgrade from a simple name list to a developer-style view with hidden files and metadata." action="Run ls -la or Get-ChildItem -Force and inspect the extra columns or hidden entries that appear." expectedResult="The output shows detailed rows including hidden items, timestamps, sizes, or permissions." whyItMatters="Real debugging often depends on seeing hidden files, modification times, and file types instead of names alone." nextStep="Once you can read the current folder in detail, inspect a subfolder without moving into it." askTutor="I'm on Step 3 of Where am I and what is here. Explain the extra columns or hidden files in my detailed listing and tell me what a beginner should actually pay attention to." />
 
 Plain `ls` shows names only. Adding a flag reveals sizes, dates, and permissions.
 
@@ -86,8 +79,6 @@ Get-ChildItem -Force
 
 ### Step 4 — Explore a specific subfolder without moving into it
 
-<StepMeta purpose="Practice looking inside another folder while keeping your current location unchanged." action="Pass a subfolder name such as Documents to ls -la or Get-ChildItem -Force instead of changing directories first." expectedResult="You see the contents of the chosen subfolder while your original prompt location stays the same." whyItMatters="Peeking before moving helps you stay oriented and reduces accidental wandering through the file system." nextStep="After exploring another folder safely, do one quick count to understand how crowded the current directory is." askTutor="I'm on Step 4 of Where am I and what is here. Help me verify that I inspected a subfolder without actually moving into it and explain how to tell from the output." />
-
 You can list the contents of any folder by passing its name as an argument.
 
 **macOS / Linux**
@@ -105,8 +96,6 @@ Get-ChildItem Documents -Force
 This lets you peek inside a folder while staying exactly where you are.
 
 ### Step 5 — Count what you found
-
-<StepMeta purpose="Summarize the scale of the current directory with one fast numeric check." action="Run ls | wc -l or (Get-ChildItem).Count to count the visible items in the current folder." expectedResult="The terminal prints a number representing how many items are in the current directory." whyItMatters="Counts give you a quick sense of clutter and help you notice when a folder is larger or emptier than expected." nextStep="After the count, you should be comfortable identifying your location, listing its contents, and checking details before any future navigation work." askTutor="I'm on Step 5 of Where am I and what is here. Help me interpret this item count and tell me whether it seems consistent with the directory listing I saw earlier." />
 
 Check how many items are in your current directory. This is useful when you want a quick sense of clutter.
 

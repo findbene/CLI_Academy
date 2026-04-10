@@ -5,7 +5,6 @@ chapterNumber: "6.2"
 pathNumber: "6"
 tutorPreload: "Show me what branch I am on and help me name this feature branch properly."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Create and switch branches
@@ -17,8 +16,6 @@ By the end of this lesson you will create a feature branch, switch to it, make c
 ## Walkthrough
 
 ### Step 1 — Set up a repository with a commit on main
-
-<StepMeta purpose="Create a simple repo with a stable main branch so branching has a clear starting point." action="Initialize the practice repo, add README.md, and commit it on main before creating any feature branches." expectedResult="You have one base commit on main that both future feature branches can diverge from." whyItMatters="Branches make the most sense when there is an obvious stable base to branch away from and compare back against." nextStep="Create a named feature branch and inspect git branch to see both branch pointers." askTutor="I'm on Step 1 of Create and switch branches. Help me understand why I need a committed main branch before branching and not just an uncommitted working tree." />
 
 **macOS / Linux:**
 
@@ -44,8 +41,6 @@ You now have one commit on `main`.
 
 ### Step 2 — Create a feature branch
 
-<StepMeta purpose="Create an alternate line of development without changing the current branch yet." action="Run git branch feature-greeting and inspect git branch to see the new branch listed alongside main." expectedResult="Git creates the branch pointer while leaving you on main, with both branches pointing at the same commit initially." whyItMatters="Understanding that branch creation alone does not move your working directory is key to building an accurate mental model of Git branches." nextStep="Switch to the new branch so upcoming work is isolated from main." askTutor="I'm on Step 2 of Create and switch branches. Help me picture what changed internally when the branch was created even though no files changed on disk." />
-
 ```bash
 git branch feature-greeting
 ```
@@ -69,8 +64,6 @@ The asterisk shows your current branch.
 
 ### Step 3 — Switch to the feature branch
 
-<StepMeta purpose="Move your working directory onto the branch where the new feature work should live." action="Use git switch feature-greeting and verify the active branch changed with git branch." expectedResult="The asterisk moves to feature-greeting and future commits will land there instead of main." whyItMatters="Switching branches is how you choose which line of history your next edits belong to." nextStep="Create and commit a new file on the feature branch so you can see the branch move ahead of main." askTutor="I'm on Step 3 of Create and switch branches. Help me understand what files Git would change on disk when switching branches in a larger repo." />
-
 ```bash
 git switch feature-greeting
 ```
@@ -90,8 +83,6 @@ git branch
 
 ### Step 4 — Make a change on the feature branch
 
-<StepMeta purpose="Create branch-specific work so you can see that the feature branch and main no longer point to the same history." action="Add greeting.txt on feature-greeting, stage it, and commit the new file." expectedResult="feature-greeting gains one unique commit that does not exist on main." whyItMatters="A branch only becomes useful once it actually diverges and holds work you may later merge or discard independently." nextStep="Visualize the branch relationship with git log --oneline --all --graph." askTutor="I'm on Step 4 of Create and switch branches. Help me confirm that this new commit belongs only to feature-greeting and not to main." />
-
 **macOS / Linux:**
 
 ```bash
@@ -110,8 +101,6 @@ git commit -m "Add greeting file on feature branch"
 
 ### Step 5 — See the branch structure visually
 
-<StepMeta purpose="Convert abstract branch concepts into a visual graph you can read at a glance." action="Run git log --oneline --all --graph and compare the branch labels and commit order." expectedResult="The output shows feature-greeting one commit ahead of main with both labels attached to the right commits." whyItMatters="The graph view is one of the fastest ways to understand how branches diverge and later converge in real repositories." nextStep="Switch back to main and confirm the feature file disappears there, proving branch isolation." askTutor="I'm on Step 5 of Create and switch branches. Help me read this git graph and explain what each branch label and line means." />
-
 ```bash
 git log --oneline --all --graph
 ```
@@ -126,8 +115,6 @@ Output looks like:
 The graph shows that `feature-greeting` is one commit ahead of `main`. Once you add more branches the graph becomes a visual map of parallel work.
 
 ### Step 6 — Switch back to main and verify isolation
-
-<StepMeta purpose="Prove that branch-specific work stays isolated until you deliberately merge it." action="Switch back to main, list the files, and confirm greeting.txt is absent there before switching back again." expectedResult="The feature file disappears on main and reappears when you switch back to feature-greeting." whyItMatters="Branch isolation is the core safety property that lets teams experiment and ship features without destabilizing main immediately." nextStep="Use the one-command create-and-switch shortcut to make a second feature branch from main." askTutor="I'm on Step 6 of Create and switch branches. Help me understand why files appear and disappear when I switch branches and why that is expected behavior." />
 
 ```bash
 git switch main
@@ -148,8 +135,6 @@ ls
 `greeting.txt` is back. Branches give you parallel workspaces inside the same folder.
 
 ### Step 7 — Create a branch and switch in one command
-
-<StepMeta purpose="Learn the faster daily workflow for starting new feature work from the right base branch." action="Return to main, create feature-about with git switch -c, add about.txt, and commit it." expectedResult="A second feature branch now diverges from main with its own independent commit history." whyItMatters="This shortcut is the most common branch-start pattern in daily work, so it is worth making automatic early." nextStep="After branch creation and isolation make sense, move on to merging branches back together and resolving conflicts safely." askTutor="I'm on Step 7 of Create and switch branches. Help me confirm that feature-about diverged from main rather than from feature-greeting and explain why that matters." />
 
 The shortcut `git switch -c` creates and switches in one step:
 

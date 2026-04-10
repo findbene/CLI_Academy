@@ -5,7 +5,6 @@ chapterNumber: "9.1"
 pathNumber: "9"
 tutorPreload: "Help me generate an accurate README by sharing my project files with Claude and iterating on each section."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Generate a project README with Cowork
@@ -17,8 +16,6 @@ By the end of this lesson you will use Claude Code to generate a real `README.md
 ## Walkthrough
 
 ### Step 1 — Set up a practice project with realistic files
-
-<StepMeta purpose="Create a small project with enough real structure for Claude to describe truthfully." action="Build the practice repo, add the sample files, and make the initial commit so the README task has concrete source material." expectedResult="You finish with a committed readme-lab project containing app.py, requirements.txt, and .gitignore." whyItMatters="README quality depends on grounded inputs, and a realistic starter repo gives Claude actual behavior, files, and commands to reference instead of guessing." nextStep="Open Claude in that directory and ask it to draft README.md from the real files you just created." askTutor="I'm on Step 1 of Generate a project README with Cowork. Help me confirm this practice project has the right files and baseline structure before I ask Claude to write the README." />
 
 You need a small project with real structure so Claude has something truthful to describe. Create a practice project with a few files.
 
@@ -121,8 +118,6 @@ git commit -m "Initial task tracker"
 
 ### Step 2 — Ask Claude to generate a README from your actual files
 
-<StepMeta purpose="Produce a first README draft that is tied to actual project files instead of a vague project description." action="Start Claude in the repo, point it at app.py, requirements.txt, and .gitignore, then ask for a README with the listed sections." expectedResult="Claude generates a README draft that includes title, prerequisites, install steps, usage examples, and file structure based on the live repo." whyItMatters="Directing Claude to read the real files is what turns Cowork into a grounded documentation workflow rather than a generic writing exercise." nextStep="Review the draft for invented commands, features, or prerequisites and pick the weakest section to revise." askTutor="I'm on Step 2 of Generate a project README with Cowork. Help me phrase the README prompt so Claude stays anchored to the exact files in this repo." />
-
 Open Claude Code (or start a Cowork session) in the `readme-lab` directory and give it this prompt:
 
 ```
@@ -144,8 +139,6 @@ Skim the output. Does the description match what `app.py` actually does? Do the 
 
 ### Step 3 — Iterate on weak sections
 
-<StepMeta purpose="Tighten the draft by removing inaccurate or vague sections before you treat it as publishable." action="Identify the weakest README section, tell Claude exactly what is wrong, and ask it to rewrite only that part against the real codebase." expectedResult="The revised README removes fabricated claims and improves the accuracy of the weakest section." whyItMatters="First drafts are usually close but not safe, and targeted revision is how you turn a plausible README into a trustworthy one." nextStep="Cross-check the full README against the actual CLI behavior and file layout so every claim is verified." askTutor="I'm on Step 3 of Generate a project README with Cowork. Help me identify the weakest section in this README and write a correction prompt that removes any fabricated claims." />
-
 Almost every first draft has at least one problem — vague description, missing prerequisites, or invented features. Pick the weakest section and ask Claude to fix it:
 
 ```
@@ -162,8 +155,6 @@ cat README.md
 If Installation says `pip install -r requirements.txt` but your `requirements.txt` only lists the `json` standard library module, ask Claude to correct that too. The goal is zero fabricated claims.
 
 ### Step 4 — Verify the README against the real project
-
-<StepMeta purpose="Test the README against reality so you know the document matches the project instead of just sounding reasonable." action="Run the commands and file checks described in the README, then compare the actual behavior and structure to what the document claims." expectedResult="You confirm which README sections are accurate and identify any command, output, or structure mismatches that still need correction." whyItMatters="Verification is the difference between AI-assisted documentation and AI-generated fiction, especially when installation and usage examples are involved." nextStep="Once every section matches the working project, stage the README and inspect the final diff before committing." askTutor="I'm on Step 4 of Generate a project README with Cowork. Help me verify this README section by section against the actual app behavior and file structure." />
 
 Run a manual cross-check. For each section of the README, confirm it matches reality.
 
@@ -192,8 +183,6 @@ Get-ChildItem
 If any command listed in the README fails or produces different output than described, go back to Claude and ask for a correction referencing the actual error.
 
 ### Step 5 — Commit the verified README
-
-<StepMeta purpose="Capture the finished README only after you have validated that it reflects the repo honestly." action="Stage README.md, inspect the staged diff, and commit the verified documentation change to Git." expectedResult="You create a commit containing the reviewed README and can see the final document in the staged diff before it lands." whyItMatters="Committing only after verification reinforces the habit that documentation changes should be reviewed with the same care as code changes." nextStep="Carry the same workflow into the next lesson where you document how contributors should set up and work in a project." askTutor="I'm on Step 5 of Generate a project README with Cowork. Help me do a final pre-commit review so I only commit README content that matches the repo exactly." />
 
 ```bash
 git add README.md

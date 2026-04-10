@@ -5,7 +5,6 @@ chapterNumber: "17.1"
 pathNumber: "17"
 tutorPreload: "Shrink these scopes to the minimum needed for my workflow."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Choose minimum viable scopes
@@ -19,8 +18,6 @@ In this lesson you will inspect the scopes on a real GitHub token using the `gh`
 ## Walkthrough
 
 ### Step 1 — Check what scopes your current GitHub token carries
-
-<StepMeta purpose="Start with the real permissions on your current token instead of assuming they are already minimal." action="Run `gh auth status`, capture the Token scopes line, and note every active scope before comparing them against the workflow requirements." expectedResult="You know exactly which scopes your current GitHub auth is carrying right now." whyItMatters="Least privilege starts from evidence, and many old tokens quietly hold scopes nobody would choose if they were starting fresh." nextStep="Map each required workflow action to the minimum GitHub scope so you can identify the excess precisely." askTutor="Help me interpret the scopes from `gh auth status` and tell me which ones look unjustified for a small GitHub issues workflow." />
 
 `gh auth status` prints the OAuth scopes that your active GitHub token was granted. Run it now:
 
@@ -51,8 +48,6 @@ If `gh` is not installed:
 
 ### Step 2 — Map required actions to minimum scopes
 
-<StepMeta purpose="Translate the workflow into the smallest permissions GitHub actually offers, including its scope limitations." action="Use the action-to-scope table to match each needed operation to the minimum grant and note where GitHub forces a broader scope than you would prefer." expectedResult="You can distinguish truly required scopes from convenience or habit-driven extras." whyItMatters="GitHub scope hygiene is tricky because some coarse scopes, especially `repo`, bundle more power than the workflow ideally needs." nextStep="Write the decision record next so the minimum-scope choices and any over-broad findings are preserved in a reusable document." askTutor="Walk through these GitHub scope tradeoffs with me and tell me where the platform forces a broader grant than the ideal least-privilege design." />
-
 | Action needed | Minimum scope | Over-broad alternative to avoid |
 |---|---|---|
 | Read public repo data | *(no scope — public API)* | `repo` |
@@ -66,8 +61,6 @@ If `gh` is not installed:
 > **GitHub scope caveat:** GitHub's scope system is coarser than most providers. There is no `repo:read` — the full `repo` scope is the smallest available for private repository access. This makes scope hygiene especially important: holding `repo` means you also have write access. Document this limitation explicitly in your decision record.
 
 ### Step 3 — Create your scope decision record
-
-<StepMeta purpose="Turn the scope analysis into a documented decision instead of a temporary terminal observation." action="Create `scope-decisions.md`, list the workflow actions with minimum scopes, and record any extra scopes from your current token that should be removed." expectedResult="You have a written scope decision record with required scopes, over-permissioned findings, and a concrete rotation recommendation." whyItMatters="Without a written record, scope drift returns quickly because nobody remembers which scopes were deliberate and which were leftovers." nextStep="Verify the record exists and includes the minimum-scope table before using it as the baseline for future token rotation." askTutor="Review my scope decision record and tell me whether I documented both the minimum required scopes and the over-permissioned ones clearly enough to act on later." />
 
 **macOS / Linux:**
 ```bash
@@ -131,8 +124,6 @@ Get-Content scope-decisions.md
 ```
 
 ### Step 4 — Verify the scope decision record exists
-
-<StepMeta purpose="Confirm the scope decision artifact is present and contains the key table needed for later revocation and rotation work." action="Run the file and pattern checks, confirm `scope-decisions.md` exists, and verify the Minimum scope text is discoverable in the file." expectedResult="You have terminal confirmation that the decision record exists and is structured correctly." whyItMatters="Verification prevents a common failure mode where the analysis happened mentally but the durable record was never actually saved." nextStep="Use the next lesson to connect the integration safely and document where credentials live before any real API interaction expands." askTutor="Check whether my verification output proves the scope decision record is real and actionable, or whether anything important is still missing." />
 
 **macOS / Linux:**
 ```bash

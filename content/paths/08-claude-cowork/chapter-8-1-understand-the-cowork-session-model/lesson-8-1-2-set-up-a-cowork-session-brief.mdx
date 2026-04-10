@@ -5,7 +5,6 @@ chapterNumber: "8.1"
 pathNumber: "8"
 tutorPreload: "Review my session brief and tell me what's missing before I start the Cowork session."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Set up a Cowork session brief
@@ -18,8 +17,6 @@ By the end of this lesson you will have a written session brief — a short docu
 
 ### Step 1 — Understand why a brief matters
 
-<StepMeta purpose="Understand why Cowork sessions need an explicit contract before Claude starts producing output." action="Read the four parts of a session brief and connect each one to a failure mode it prevents." expectedResult="You can explain why Goal, Context, Success criteria, and Boundaries each belong in the brief before the session starts." whyItMatters="A strong brief is the main control surface for sustained AI work; without it, the session drifts into vague output quickly." nextStep="Create a real brief file so the structure becomes something you can hand directly to Claude." askTutor="I'm on Step 1 of Set up a Cowork session brief. Help me understand why each part of the brief matters before I start writing one." />
-
 Starting a Cowork session without a brief is like hiring a contractor and saying "build something." You will get output, but it probably will not be what you wanted. A brief solves this by answering four questions up front:
 
 1. **Goal** — What is the deliverable?
@@ -28,8 +25,6 @@ Starting a Cowork session without a brief is like hiring a contractor and saying
 4. **Boundaries** — What should Claude avoid doing?
 
 ### Step 2 — Create the brief file
-
-<StepMeta purpose="Turn the brief structure into a real artifact Claude can read and work from." action="Create the cowork-practice folder, add cowork-session-brief.md, and fill it with the provided Goal, Context, Success criteria, and Boundaries content." expectedResult="You have a saved brief file on disk that clearly describes the README task and its limits." whyItMatters="A Cowork session starts more cleanly when the requirements live in a reusable file instead of being improvised from memory in the first chat turn." nextStep="Audit the brief against a short checklist before you trust it as the session source of truth." askTutor="I'm on Step 2 of Set up a Cowork session brief. Help me create the brief file correctly and confirm what makes this example specific enough to work." />
 
 Open your terminal and create a project folder for this exercise. Then create the brief file.
 
@@ -96,8 +91,6 @@ files for broken links.
 
 ### Step 3 — Review your brief against the checklist
 
-<StepMeta purpose="Catch vague or missing requirements before they waste turns in the actual Cowork session." action="Compare the saved brief against the four checklist items and edit it now if any section is weak or incomplete." expectedResult="Your brief passes all four checks and reads like a concrete assignment rather than a loose idea." whyItMatters="Brief review is cheaper than session repair; the earlier you tighten the task definition, the less rework Claude will create later." nextStep="Print the brief in the terminal so you can verify the file exists and looks exactly the way you expect." askTutor="I'm on Step 3 of Set up a Cowork session brief. Help me review my brief and point out anything still vague or missing before I continue." />
-
 Read your brief back and check each item:
 
 | Checklist item | Present? |
@@ -110,8 +103,6 @@ Read your brief back and check each item:
 If any item is missing, edit the file now. A brief with all four sections is far more likely to produce a useful first draft.
 
 ### Step 4 — Verify the file exists and looks right
-
-<StepMeta purpose="Confirm the brief is saved correctly and ready to be shared into the next lesson's Cowork session." action="Print cowork-session-brief.md in the terminal and visually confirm the four sections and their content are present." expectedResult="The terminal shows the full brief cleanly, proving the file exists and contains the expected task definition." whyItMatters="A missing or malformed brief will break the next lesson immediately, so verification here keeps the session launch smooth." nextStep="Generalize the same structure into a reusable template for future Cowork work." askTutor="I'm on Step 4 of Set up a Cowork session brief. Help me verify the brief file is saved correctly and explain what I should check when I print it." />
 
 **macOS / Linux:**
 
@@ -128,8 +119,6 @@ Get-Content cowork-session-brief.md
 You should see your four sections printed cleanly in the terminal. This is the file you will hand to Claude at the start of your Cowork session in the next lesson.
 
 ### Step 5 — Adapt the template for your own tasks
-
-<StepMeta purpose="Extract the useful structure from the example so future Cowork sessions can start faster." action="Review the alternate brief examples and save a blank cowork-brief-template.md with placeholders for the four required sections." expectedResult="You end the lesson with a reusable template file that can be filled in for new Cowork tasks." whyItMatters="Reusable templates reduce startup friction and preserve the practices that made the original session brief work well." nextStep="Use the brief in a real Cowork launch and see how the quality of the opening prompt changes the first response." askTutor="I'm on Step 5 of Set up a Cowork session brief. Help me turn this example into a reusable template for my own future Cowork sessions." />
 
 The brief above is for a README. Here are examples of how the same four-section structure works for completely different tasks:
 

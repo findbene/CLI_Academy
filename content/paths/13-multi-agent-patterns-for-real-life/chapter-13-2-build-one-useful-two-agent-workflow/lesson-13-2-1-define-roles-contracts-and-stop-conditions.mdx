@@ -5,7 +5,6 @@ chapterNumber: "13.2"
 pathNumber: "13"
 tutorPreload: "Review my two-agent contract and tell me if the roles overlap or if the stop conditions are missing."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Define roles, contracts, and stop conditions
@@ -30,8 +29,6 @@ The contract pattern solves all three.
 
 ### Step 1 — Create the project structure
 
-<StepMeta purpose="Create a clean workspace where agent contracts and outputs are easy to inspect separately." action="Make the two-agent-contract directory and switch into it before writing any CLAUDE.md files." expectedResult="You have a dedicated project root ready to hold the coordinator plus both agent contracts." whyItMatters="A clean structure makes the execution order and handoff files much easier to reason about and audit later." nextStep="Write the Researcher contract first so the initial handoff file and boundaries are explicit." askTutor="Help me confirm that this directory layout is enough for a simple two-agent workflow and not missing any key file or folder." />
-
 Open your terminal in `cli-academy/projects/`:
 
 **macOS / Linux:**
@@ -45,8 +42,6 @@ New-Item -ItemType Directory -Path two-agent-contract -Force; Set-Location two-a
 ```
 
 ### Step 2 — Write the Researcher agent contract
-
-<StepMeta purpose="Define the first agent narrowly enough that it produces a reliable handoff instead of a mixed research-plus-analysis blob." action="Create researcher-CLAUDE.md with the exact role, outputs, boundaries, and stop condition shown in the lesson." expectedResult="The Researcher contract writes one findings file and explicitly forbids analysis or extra file creation." whyItMatters="A strong first contract is what keeps downstream analysis grounded in auditable findings instead of vague summaries." nextStep="Add the Analyzer contract next, making sure it only consumes the findings and does not re-do the research." askTutor="Review my Researcher contract and point out any wording that still leaves room for analysis, extra outputs, or endless iteration." />
 
 Create a file called `researcher-CLAUDE.md`. This is the instruction file that defines Agent 1's role, inputs, outputs, and stop condition.
 
@@ -108,8 +103,6 @@ Stop immediately after writing ``research-findings.md``. Do not iterate.
 
 ### Step 3 — Write the Analyzer agent contract
 
-<StepMeta purpose="Create a second role that adds value without overlapping the first agent's work." action="Write analyzer-CLAUDE.md so it consumes the findings file, produces an analysis file, and refuses to gather new information." expectedResult="The Analyzer contract depends on the Researcher output and clearly limits itself to insight extraction and one recommendation." whyItMatters="Distinct responsibilities are what make multi-agent work composable; otherwise you just pay for duplication." nextStep="Write the coordinator file that enforces execution order and protects the handoff boundary." askTutor="Tell me whether the Analyzer contract is truly non-overlapping with the Researcher or whether it still has hidden room to re-research or rewrite facts." />
-
 Create `analyzer-CLAUDE.md` for Agent 2:
 
 **macOS / Linux:**
@@ -170,8 +163,6 @@ Stop immediately after writing ``analysis-report.md``. Do not iterate.
 
 ### Step 4 — Write the coordinator CLAUDE.md
 
-<StepMeta purpose="Centralize the workflow order and safety rules so the two contracts behave like one controlled pipeline." action="Create the top-level CLAUDE.md with execution order, topic, and one-run safety constraints for both agents." expectedResult="The project now has a coordinator contract that spells out sequence, verification points, and failure behavior." whyItMatters="Without a coordinator, even good contracts can run in the wrong order or overwrite each other's work." nextStep="Run the two-agent workflow and verify that each expected output file appears with content." askTutor="Review this coordinator file and tell me whether the execution order and safety rules are strong enough to prevent accidental loops or file collisions." />
-
 This is the main `CLAUDE.md` that orchestrates both agents:
 
 **macOS / Linux:**
@@ -217,8 +208,6 @@ EOF
 ```
 
 ### Step 5 — Run and verify
-
-<StepMeta purpose="Prove that the contracts and coordinator produce a functioning pipeline rather than a good-looking design." action="Run the workflow through Claude Code and verify that both output files exist and reflect the intended researcher-then-analyzer sequence." expectedResult="You end with populated findings and analysis files, and the analysis clearly depends on the research output." whyItMatters="Execution is where contract flaws surface, so this run is the real test of your role split and stop conditions." nextStep="Use the same contract style in the next lesson to build a researcher-writer pipeline on a slightly more real task." askTutor="Help me inspect the outputs from this run and decide whether the handoff worked cleanly or whether one of the agents drifted outside its contract." />
 
 Open Claude Code in the `two-agent-contract/` directory and tell it:
 

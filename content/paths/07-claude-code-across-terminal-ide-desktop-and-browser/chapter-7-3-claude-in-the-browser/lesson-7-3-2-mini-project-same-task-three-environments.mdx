@@ -5,7 +5,6 @@ chapterNumber: "7.3"
 pathNumber: "7"
 tutorPreload: "Help me compare how the same refactoring task works across Claude Code CLI, Claude Desktop, and claude.ai."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini-project: same task, three environments
@@ -17,8 +16,6 @@ By the end of this lesson you will perform the same coding task — refactoring 
 ## Walkthrough
 
 ### Step 1 — Create the project folder and starter file
-
-<StepMeta purpose="Create one shared practice project so every environment tackles the exact same messy input." action="Initialize the env-comparison repo, create messy.js with the provided function, and commit the starter version." expectedResult="You have a Git repo containing the original messy.js function committed as the baseline for all later comparisons." whyItMatters="A fair environment comparison requires identical starting conditions, and the baseline commit gives you a clean point to return to between attempts." nextStep="Use Claude Code CLI to perform the first refactor so you can observe the direct read-edit-save workflow." askTutor="I'm on Step 1 of Mini-project: same task, three environments. Help me set up the repo correctly and explain why the baseline commit matters before I compare the tools." />
 
 Set up a small project with a deliberately messy function that needs refactoring.
 
@@ -119,8 +116,6 @@ The function does three things (validation, calculation, formatting) all in one 
 
 ### Step 2 — Refactor with Claude Code CLI
 
-<StepMeta purpose="Measure the direct-to-disk developer workflow that makes the CLI the fastest surface for active code changes." action="Run Claude Code in the repo, give the refactor prompt, inspect the rewritten file on disk, commit the result, and restore the original baseline." expectedResult="Claude refactors messy.js directly in place, you can read the new code immediately from disk, and Git captures the CLI version as its own commit." whyItMatters="This step shows the CLI advantage clearly: one prompt can read, rewrite, and save the code without manual transfer steps." nextStep="Repeat the same refactor in Claude Desktop so you can compare the manual file-sharing and save workflow." askTutor="I'm on Step 2 of Mini-project: same task, three environments. Help me tell whether the CLI refactor preserved behavior and how to restore the baseline afterward." />
-
 Open your terminal in the `env-comparison` folder and start Claude Code:
 
 ```bash
@@ -159,8 +154,6 @@ git checkout HEAD~1 -- messy.js
 ```
 
 ### Step 3 — Refactor with Claude Desktop
-
-<StepMeta purpose="Compare the graphical discussion workflow against the CLI by running the same refactor through manual file sharing." action="Attach messy.js in Claude Desktop, reuse the same refactor prompt, copy the generated result into messy-desktop.js, and restore the original file." expectedResult="Claude Desktop produces a usable refactor in chat, but you must manually save it into a separate file for comparison." whyItMatters="This step makes the Desktop tradeoff tangible: strong conversation and review, but no automatic write-back to disk without MCP." nextStep="Run the same prompt in the browser so you can compare Desktop's graphical flow with claude.ai." askTutor="I'm on Step 3 of Mini-project: same task, three environments. Help me save the Claude Desktop result cleanly into messy-desktop.js and compare it fairly with the CLI output." />
 
 Open Claude Desktop and start a new conversation. Bring in the file:
 
@@ -203,8 +196,6 @@ git checkout HEAD~1 -- messy.js
 
 ### Step 4 — Refactor with claude.ai in the browser
 
-<StepMeta purpose="Test the lightest-weight Claude surface on the same coding task so convenience can be compared against manual handoff cost." action="Upload messy.js to claude.ai, reuse the same refactor prompt, and save the browser result into messy-browser.js." expectedResult="The browser returns a refactored version of the function, but you still need to copy the result out into a local file manually." whyItMatters="This shows where browser Claude shines and where it stops: it is fast to start, but it does not own your local files or Git workflow." nextStep="Document your real observations in a comparison table so the exercise produces a durable decision aid." askTutor="I'm on Step 4 of Mini-project: same task, three environments. Help me compare the browser result fairly with the CLI and Desktop outputs without assuming they are identical." />
-
 Open [claude.ai](https://claude.ai) in your browser and start a new conversation.
 
 1. Click the paperclip icon and upload `messy.js`.
@@ -239,8 +230,6 @@ Get-Clipboard | Out-File -Encoding utf8 messy-browser.js
 ```
 
 ### Step 5 — Build the comparison table
-
-<StepMeta purpose="Turn your hands-on observations into a reusable rule for choosing the right Claude environment later." action="Create comparison.md and fill the table and notes with what you actually observed about speed, file handling, and follow-up editing in each surface." expectedResult="comparison.md captures a grounded side-by-side record of how CLI, Desktop, and browser handled the same refactoring task." whyItMatters="Writing the comparison down converts one exercise into a durable operating guide you can reuse when deciding how to start future work." nextStep="Commit the comparison artifacts so the full experiment is preserved in Git history." askTutor="I'm on Step 5 of Mini-project: same task, three environments. Help me turn my rough observations into clear comparison notes that are honest and specific." />
 
 Now create a Markdown file documenting what you observed. Create it manually based on your real experience:
 
@@ -319,8 +308,6 @@ Refactor `processOrder()` into three functions: `validateOrder`, `calculateTotal
 Edit the `(your notes here)` placeholders with your real observations after running each step.
 
 ### Step 6 — Commit your comparison
-
-<StepMeta purpose="Preserve the experiment results as a clean Git snapshot so you can revisit and build on them later." action="Stage comparison.md plus the saved Desktop and browser outputs, commit them, and inspect git log --oneline." expectedResult="Git history now includes a commit that captures the environment comparison artifacts and summary." whyItMatters="Committing the exercise makes the comparison reproducible and reinforces that choosing tools well is part of real project history, not just a temporary note." nextStep="From here, move on to later lessons with a much clearer sense of when to reach for CLI, Desktop, or browser Claude." askTutor="I'm on Step 6 of Mini-project: same task, three environments. Help me decide which files belong in the final commit and what the history should show when I am done." />
 
 ```bash
 git add comparison.md messy-desktop.js messy-browser.js

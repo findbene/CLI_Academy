@@ -5,7 +5,6 @@ chapterNumber: "3.1"
 pathNumber: "3"
 tutorPreload: "Help me install Claude Code on {{os}} and tell me how to verify the install before I do anything else."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Install Claude Code the right way
@@ -17,8 +16,6 @@ Install Claude Code from npm, authenticate with your Anthropic account, and conf
 ## Walkthrough
 
 ### Step 1 — Check your Node.js version
-
-<StepMeta purpose="Confirm that your machine meets the runtime requirement before you try to install Claude Code." action="Run node --version and compare the result against the minimum supported version." expectedResult="You either see a Node version at v18.0.0 or higher, or you clearly learn that Node is missing or too old." whyItMatters="Installation troubleshooting is much simpler when you verify prerequisites first instead of discovering them halfway through the setup." nextStep="If Node looks good, install Claude Code globally with npm." askTutor="I'm on Step 1 of Install Claude Code the right way. Help me interpret my Node version output and tell me whether my machine is ready for the install." />
 
 Claude Code requires Node.js 18 or newer. Open a terminal and run:
 
@@ -36,8 +33,6 @@ You need `v18.0.0` or higher. If the command is not found or the version is too 
 
 ### Step 2 — Install Claude Code globally
 
-<StepMeta purpose="Put the Claude Code CLI on your machine so the claude command is available in any terminal." action="Run npm install -g @anthropic-ai/claude-code using the permissions guidance for your platform." expectedResult="npm finishes successfully and reports that the package was added globally." whyItMatters="This is the step that actually installs the CLI binary, so everything later depends on it completing cleanly." nextStep="After the install finishes, open a fresh terminal and verify the claude command is on your PATH." askTutor="I'm on Step 2 of Install Claude Code the right way. Help me understand what this global npm install does and tell me the safest fix if I hit a permissions error." />
-
 **macOS / Linux**
 ```bash
 npm install -g @anthropic-ai/claude-code
@@ -54,8 +49,6 @@ Wait for the install to finish. You will see a summary line like `added X packag
 
 ### Step 3 — Verify the installation
 
-<StepMeta purpose="Confirm that the install created a working claude command, not just a successful npm log line." action="Open a fresh terminal and run claude --version." expectedResult="The terminal prints a Claude Code version string instead of a command-not-found error." whyItMatters="Verification proves the CLI is actually reachable from your shell, which is the only signal that matters before you rely on it." nextStep="Once the binary responds correctly, authenticate it with your Anthropic account." askTutor="I'm on Step 3 of Install Claude Code the right way. Help me figure out why claude --version did or did not work in this new terminal window." />
-
 Close your terminal completely and open a fresh one so your shell picks up the new PATH entry. Then run:
 
 **macOS / Linux**
@@ -71,8 +64,6 @@ claude --version
 You should see a version string such as `1.0.16` (your number may differ). If you see it, the binary is installed correctly.
 
 ### Step 4 — Authenticate with your Anthropic account
-
-<StepMeta purpose="Connect the installed CLI to your Anthropic account so it can start real sessions." action="Run claude auth login and complete the browser-based authorization flow." expectedResult="The browser flow succeeds and the terminal reports a successful login." whyItMatters="Installation alone is not enough; Claude Code also needs an authenticated account before it can help inside a repo." nextStep="After authentication succeeds, you are ready to open a practice repository and start your first real Claude Code session." askTutor="I'm on Step 4 of Install Claude Code the right way. Help me troubleshoot this auth flow and tell me what to do if the browser step or callback did not complete correctly." />
 
 ```bash
 claude auth login

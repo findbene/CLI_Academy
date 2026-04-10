@@ -5,7 +5,6 @@ chapterNumber: "3.2"
 pathNumber: "3"
 tutorPreload: "Review this diff like a patient mentor and tell me if anything unnecessary changed."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Make your first tiny edit
@@ -17,8 +16,6 @@ Ask Claude Code to make one small, concrete change to your practice project, rev
 ## Walkthrough
 
 ### Step 1 — Start a session in your practice repo
-
-<StepMeta purpose="Return to the exact repo context where the first scoped edit will happen." action="Navigate to cli-practice and launch Claude Code again." expectedResult="Claude Code opens inside the practice repo and is ready to accept an edit request." whyItMatters="Starting from the correct repo keeps the diff review focused and prevents changes from landing in the wrong project." nextStep="Once the session is open, request one small edit that touches a single file in a clearly described way." askTutor="I'm on Step 1 of Make your first tiny edit. Help me verify that Claude Code is running from the correct repo before I request the README change." />
 
 **macOS / Linux**
 ```bash
@@ -33,8 +30,6 @@ claude
 ```
 
 ### Step 2 — Request a small, specific edit
-
-<StepMeta purpose="Give Claude Code a tightly scoped change so the review surface stays small and understandable." action="Ask Claude Code to add a one-paragraph Usage section to README.md describing npm start." expectedResult="Claude Code proposes a change centered on README.md and shows a diff with the new usage text." whyItMatters="Specific prompts make safer diffs because the assistant has less room to invent unrelated changes." nextStep="Before accepting anything, review the diff for scope, accuracy, and tone." askTutor="I'm on Step 2 of Make your first tiny edit. Help me judge whether this prompt is specific enough to keep the edit safely limited to README.md." />
 
 At the Claude Code prompt, type:
 
@@ -62,8 +57,6 @@ The diff will look something like:
 
 ### Step 3 — Review the diff carefully
 
-<StepMeta purpose="Train the core review habit that separates safe AI-assisted editing from blind acceptance." action="Inspect the diff and explicitly check scope, factual accuracy, and clarity before deciding to keep it." expectedResult="You can explain whether the diff touches only README.md, whether the instructions are correct, and whether the wording is helpful." whyItMatters="Reviewing diffs is the main control point that keeps you in charge when Claude Code writes text or code." nextStep="If the diff looks correct, confirm the new file contents outside the session and then prepare to commit." askTutor="I'm on Step 3 of Make your first tiny edit. Help me review this diff line by line and tell me whether anything changed that I did not actually ask for." />
-
 Before accepting, check three things:
 
 1. **Scope** — Did it only change `README.md`? Nothing else should appear in the diff.
@@ -80,8 +73,6 @@ Claude Code reverts the file to its previous state. No harm done.
 
 ### Step 4 — Accept the change
 
-<StepMeta purpose="Confirm the approved change actually landed on disk and not just in Claude Code's preview." action="Read README.md from the terminal after the change is applied." expectedResult="The file now includes the new Usage section with the expected npm start instructions." whyItMatters="Disk verification catches cases where the preview looked right but the saved file did not end up as expected." nextStep="Once the file contents look correct, exit Claude Code and commit the change with Git." askTutor="I'm on Step 4 of Make your first tiny edit. Help me compare the saved README to the diff I approved so I can confirm the change really landed correctly." />
-
 If the diff looks good, Claude Code has already written it to disk. Confirm by reading the file outside the session:
 
 **macOS / Linux**
@@ -97,8 +88,6 @@ Get-Content README.md
 You should see the new Usage section in the file.
 
 ### Step 5 — Commit the edit with Git
-
-<StepMeta purpose="Save the reviewed documentation change as a clean project checkpoint." action="Exit Claude Code, stage README.md, and create the commit with the provided message." expectedResult="Git records one commit containing the README usage update." whyItMatters="A clean commit preserves the ask-review-accept loop as durable history that you can inspect or undo later." nextStep="After this step, you are ready to run the project, inspect output, and handle errors with the same disciplined loop." askTutor="I'm on Step 5 of Make your first tiny edit. Help me confirm that only README.md is staged and that this commit message accurately describes the change." />
 
 Leave the Claude Code session with `/exit`, then commit your change:
 

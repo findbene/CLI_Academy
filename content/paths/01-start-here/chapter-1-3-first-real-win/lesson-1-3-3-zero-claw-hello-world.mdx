@@ -5,7 +5,6 @@ chapterNumber: "1.3"
 pathNumber: "1"
 tutorPreload: "Help me debug my hello-agent script. Common errors: Node version, missing API key, module not found."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # ZeroClaw Hello World – Your First Agent in Under 10 Minutes
@@ -18,8 +17,6 @@ You will write a small Node.js script that sends a prompt to an AI model and pri
 
 ### Step 1 — Check that Node.js is installed
 
-<StepMeta purpose="Confirm that your machine can run the JavaScript lesson at all." action="Run node -v and inspect the result." expectedResult="You see a recent Node version or a clear not-installed error." whyItMatters="There is no point debugging an agent script before you know the runtime exists and is new enough." nextStep="If Node is available, create the hello-agent project folder and work there." askTutor="I'm on Step 1 of ZeroClaw Hello World. Help me interpret my node -v output and tell me whether my machine is ready for this lesson." />
-
 This lesson requires Node.js. Run this command to confirm:
 
 **Any OS:**
@@ -30,8 +27,6 @@ node -v
 You should see a version number like `v18.20.0` or higher. If you see `command not found` or `not recognized`, install Node.js from https://nodejs.org before continuing.
 
 ### Step 2 — Create a project folder
-
-<StepMeta purpose="Give this first agent script a dedicated workspace folder." action="Create hello-agent under projects and move into it." expectedResult="A hello-agent folder exists and your prompt is now inside it." whyItMatters="Keeping the agent experiment in its own folder makes package installs and script files easier to manage." nextStep="With the folder ready, initialize a Node.js project so npm can track dependencies." askTutor="I'm on Step 2 of ZeroClaw Hello World. Explain what these folder commands do and help me confirm I'm inside hello-agent before I continue." />
 
 **macOS / Linux:**
 ```bash
@@ -49,8 +44,6 @@ Set-Location hello-agent
 
 ### Step 3 — Initialize a Node.js project
 
-<StepMeta purpose="Create the package metadata npm needs to manage this project." action="Run npm init -y inside hello-agent." expectedResult="package.json is created and npm prints the generated project metadata." whyItMatters="Without package.json, installing dependencies and describing the project becomes inconsistent and fragile." nextStep="After package.json exists, install the Anthropic SDK dependency." askTutor="I'm on Step 3 of ZeroClaw Hello World. Help me understand what npm init -y created and what parts of package.json matter for this lesson." />
-
 ```bash
 npm init -y
 ```
@@ -59,8 +52,6 @@ This creates a `package.json` file. You should see a JSON block printed in the t
 
 ### Step 4 — Install the Anthropic SDK
 
-<StepMeta purpose="Add the library your script will use to call the model." action="Run npm install @anthropic-ai/sdk." expectedResult="npm reports that packages were added and node_modules plus dependency entries appear." whyItMatters="The script cannot talk to the model until the project has the correct SDK installed locally." nextStep="With the dependency installed, set your API key in the current terminal session." askTutor="I'm on Step 4 of ZeroClaw Hello World. Help me verify that the Anthropic SDK installed correctly and explain what npm changed in this project folder." />
-
 ```bash
 npm install @anthropic-ai/sdk
 ```
@@ -68,8 +59,6 @@ npm install @anthropic-ai/sdk
 You should see output ending with `added X packages`. This gives your script the ability to talk to Claude.
 
 ### Step 5 — Set your API key
-
-<StepMeta purpose="Provide the authentication secret the SDK needs without hardcoding it into a committed file." action="Set ANTHROPIC_API_KEY in your current terminal session and verify only the first 8 characters." expectedResult="The environment variable exists for this session and you can confirm the prefix without exposing the full key." whyItMatters="This step teaches the safe pattern for secrets early: environment variables instead of putting keys into source files." nextStep="After the key is set, write the hello-agent.mjs script that will use it." askTutor="I'm on Step 5 of ZeroClaw Hello World. Help me set my API key safely and explain how to verify it's present without leaking the full secret." />
 
 Your script needs an API key to authenticate with the Anthropic API.
 
@@ -102,8 +91,6 @@ $env:ANTHROPIC_API_KEY.Substring(0,8)
 You should see the first 8 characters of your key. Never print the full key.
 
 ### Step 6 — Write the agent script
-
-<StepMeta purpose="Create the smallest possible real agent script that proves your environment works." action="Write hello-agent.mjs with the provided Anthropic client code." expectedResult="The file exists and contains a valid script that sends one prompt and prints the result." whyItMatters="This is the step where setup becomes a real working program instead of a checklist of prerequisites." nextStep="Once the script is written, run it and confirm you receive a model response plus token usage." askTutor="I'm on Step 6 of ZeroClaw Hello World. Walk me through this script in plain English and help me spot the most likely mistake if it does not run the first time." />
 
 Create a file called `hello-agent.mjs`:
 
@@ -169,8 +156,6 @@ main().catch(console.error);
 
 ### Step 7 — Run it
 
-<StepMeta purpose="Prove that the full toolchain works end to end." action="Run node hello-agent.mjs inside the hello-agent folder." expectedResult="The terminal prints a greeting from the model plus a token count." whyItMatters="A successful run confirms Node, npm, the SDK, your API key, and the script itself are all wired together correctly." nextStep="After the first run works, you can experiment by changing the prompt before saving the project in Git." askTutor="I'm on Step 7 of ZeroClaw Hello World. Help me debug the exact error or output I'm seeing when I run node hello-agent.mjs and tell me the safest first fix to try." />
-
 ```bash
 node hello-agent.mjs
 ```
@@ -194,8 +179,6 @@ The exact words will be different every time — that is how generative AI works
 
 ### Step 8 — Experiment (optional)
 
-<StepMeta purpose="Show yourself that changing the prompt changes the behavior of the same script." action="Edit the content string, save the file, and run the script again." expectedResult="The script still runs, but the response changes to match the new question." whyItMatters="This is the first concrete proof that prompt changes are part of how you shape an agent's behavior." nextStep="Once you have seen one variation work, save the whole hello-agent project with Git." askTutor="I'm on Step 8 of ZeroClaw Hello World. Help me choose a safe test prompt and explain what changed between the first and second run." />
-
 Open `hello-agent.mjs` in your editor and change the `content` string to ask a different question — for example:
 
 ```
@@ -205,8 +188,6 @@ Open `hello-agent.mjs` in your editor and change the `content` string to ask a d
 Save the file and run `node hello-agent.mjs` again. Notice how the response changes completely based on what you ask.
 
 ### Step 9 — Commit your work
-
-<StepMeta purpose="Save your first working agent project as a durable checkpoint." action="Stage the hello-agent project folder and create a Git commit." expectedResult="Git records the project files or tells you the work was already committed." whyItMatters="Committing the project turns a one-time demo into a reusable artifact you can extend later." nextStep="After the commit, you have a real first agent project and can build future lessons on top of that confidence." askTutor="I'm on Step 9 of ZeroClaw Hello World. Explain these Git commands and tell me how to check what will be committed before I run them." />
 
 ```bash
 cd ~/cli-academy

@@ -5,7 +5,6 @@ chapterNumber: "5.1"
 pathNumber: "5"
 tutorPreload: "Help me isolate which function in this script is producing the wrong output."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Narrow down a bug with binary search prompts
@@ -17,8 +16,6 @@ When a script has several functions and the output is wrong, you need a strategy
 ## Walkthrough
 
 ### Step 1 — Create a multi-function script with one subtle bug
-
-<StepMeta purpose="Set up a small pipeline with enough moving parts that you need a narrowing strategy instead of reading every line sequentially." action="Create the orders script exactly as shown so one bug is hidden across several functions in the processing flow." expectedResult="You have a multi-step pipeline on disk where the final output is wrong but the culprit function is not obvious yet." whyItMatters="Binary search debugging is most useful when the bug could live in several stages of a workflow and you need to eliminate half the possibilities quickly." nextStep="Run the script once and confirm that the totals are wrong before you start narrowing the search." askTutor="I'm on Step 1 of Narrow down a bug with binary search prompts. Help me understand the pipeline stages here and why this setup is good for binary search debugging." />
 
 This script processes a list of product orders. It has four functions in a pipeline: one cleans the data, one calculates totals, one applies a discount, and one formats the output. Exactly one function has a bug.
 
@@ -119,8 +116,6 @@ print(report)
 
 ### Step 2 — Run the script and see that the numbers are wrong
 
-<StepMeta purpose="Establish the broken end result so you know what the debugging process is trying to explain." action="Run the script, inspect the formatted totals, and compare at least one line against the correct math." expectedResult="You confirm that the output is wrong even though the program runs end to end without crashing." whyItMatters="A wrong final result gives you the symptom, but the binary-search method helps you determine which stage first introduces that wrong data." nextStep="Ask Claude to inspect the midpoint of the pipeline so you can separate the first half from the second half." askTutor="I'm on Step 2 of Narrow down a bug with binary search prompts. Help me compute the correct expected total so I can prove the output is wrong before I start narrowing the pipeline." />
-
 **macOS / Linux**
 
 ```bash
@@ -145,8 +140,6 @@ Widget should be 3 × $9.99 = $29.97 before discount, which is $26.97 after 10% 
 
 ### Step 3 — Binary search prompt 1: test the first half
 
-<StepMeta purpose="Split the problem space in half so you can decide whether the bug appears before or after the midpoint of the pipeline." action="Ask Claude to log the output after calculateTotals so you can compare the intermediate data to the final broken result." expectedResult="The added log tells you whether the first half already produced wrong totals or whether the corruption happens later." whyItMatters="Binary search works because every prompt eliminates a large chunk of the codebase from suspicion instead of inching through it line by line." nextStep="Once you know the first half is guilty, add one more midpoint check to separate cleanOrders from calculateTotals." askTutor="I'm on Step 3 of Narrow down a bug with binary search prompts. Help me interpret this midpoint log and decide which half of the pipeline still needs inspection." />
-
 Ask Claude Code to check the output after just the first two functions:
 
 ```
@@ -163,8 +156,6 @@ Widget total is 12.99. If `quantity * price` were correct, it should be 29.97. T
 
 ### Step 4 — Binary search prompt 2: narrow to one function
 
-<StepMeta purpose="Cut the suspicious half in half again until only one function remains under suspicion." action="Ask Claude to log the output after cleanOrders so you can compare parsed input data to the wrong totals from the previous midpoint." expectedResult="You determine whether data cleaning is correct and whether calculateTotals is the first function to introduce the bad numbers." whyItMatters="The power of binary search is repetition: each prompt halves the remaining uncertainty until the bug lives in one tiny area." nextStep="Now ask Claude to inspect the suspect function directly and explain the incorrect line." askTutor="I'm on Step 4 of Narrow down a bug with binary search prompts. Help me compare the cleanOrders output to calculateTotals so I can isolate the exact guilty function." />
-
 ```
 The totals are already wrong right after calculateTotals. Can you add a console.log after cleanOrders too? I want to know if cleanOrders parsed the data correctly or if calculateTotals computed the wrong total.
 ```
@@ -178,8 +169,6 @@ Claude adds another log. You run and see:
 The cleaned data looks correct — quantity is 3 and price is 9.99. So `cleanOrders` is fine. The bug must be in **calculateTotals**.
 
 ### Step 5 — Binary search prompt 3: pinpoint the line
-
-<StepMeta purpose="Turn the narrowed function-level suspicion into a precise line-level diagnosis." action="Ask Claude to read the isolated function, compare its logic to the correct expected math, and identify the broken operator or statement." expectedResult="Claude points to the exact line and explains why it is wrong, such as using addition where multiplication is required." whyItMatters="After narrowing by halves, the final prompt becomes simple and high-confidence because you are no longer asking Claude to search the whole file blindly." nextStep="Apply the fix, remove the temporary logging, and rerun the full script to confirm the totals are now correct." askTutor="I'm on Step 5 of Narrow down a bug with binary search prompts. Help me verify that this specific line explains the bad totals and that no second bug is hiding nearby." />
 
 ```
 calculateTotals is producing wrong totals. The cleaned data has quantity 3 and price 9.99 but the total comes out as 12.99 instead of 29.97. Read calculateTotals and tell me what's wrong.
@@ -196,8 +185,6 @@ Fix looks good. Now remove all the temporary console.log lines you added.
 ```
 
 ### Step 6 — Run the fixed script
-
-<StepMeta purpose="Confirm that the isolated bug fix repaired the real output and that temporary debugging noise is gone." action="Rerun the cleaned script and compare the final totals against the expected discounted values." expectedResult="The final report now contains mathematically correct totals with no extra debug lines." whyItMatters="A debugging method only matters if the verified end state is correct; this rerun closes the loop from symptom to diagnosis to proof." nextStep="After binary-search debugging, move on to asking Claude to write tests so failures can be checked automatically." askTutor="I'm on Step 6 of Narrow down a bug with binary search prompts. Help me confirm that the final totals now match the correct math and that all temporary logs were removed." />
 
 **macOS / Linux**
 

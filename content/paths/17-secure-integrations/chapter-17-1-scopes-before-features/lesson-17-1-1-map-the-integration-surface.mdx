@@ -5,7 +5,6 @@ chapterNumber: "17.1"
 pathNumber: "17"
 tutorPreload: "Map this integration and highlight the dangerous surfaces."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Map the integration surface
@@ -20,8 +19,6 @@ In this lesson you will create a real `.integration-audit.md` file that catalogs
 
 ### Step 1 — Understand what belongs on the map
 
-<StepMeta purpose="Establish the core fields that make an integration surface understandable before any credentials are granted." action="Read the table and restate the four required dimensions: service, data touched, access type, and credential type, then note what counts as a dangerous surface." expectedResult="You can explain what must be captured for each integration row and why Write, Delete, Admin, or sensitive data rows need extra scrutiny." whyItMatters="If the surface map is vague, later scope decisions are guesswork and broad permissions start to feel normal." nextStep="Create the audit file next so the mapping framework becomes a concrete artifact instead of a concept." askTutor="Test my understanding of integration surface mapping and tell me whether I am missing any dangerous categories before I start documenting real services." />
-
 Every integration has four things worth recording:
 
 | Field | What to capture |
@@ -34,8 +31,6 @@ Every integration has four things worth recording:
 A **dangerous surface** is any row where access type is Write, Delete, or Admin — or where the data touched is sensitive (PII, billing data, auth secrets, private code).
 
 ### Step 2 — Create your integration audit file
-
-<StepMeta purpose="Create the reusable document that will hold the integration surface map and keep secrets out of the process." action="Make the `integration-safety` folder, create `.integration-audit.md`, and confirm the starter table and notes render with real content in the file." expectedResult="You have a non-empty audit file with the table structure, starter rows, and explicit guidance to record credential type rather than raw values." whyItMatters="A durable file creates a shared review surface for future scope, risk, and rotation decisions without leaking credentials into source files." nextStep="Replace the sample rows with your own services so the audit matches your actual planned integrations." askTutor="Review my audit file structure and tell me whether it is recording the right information without accidentally turning into a secret dump." />
 
 **macOS / Linux:**
 ```bash
@@ -96,13 +91,9 @@ Get-Content .integration-audit.md
 
 ### Step 3 — Customize the map for your own integrations
 
-<StepMeta purpose="Move the audit from template state into a real map of your own external-service footprint." action="Replace the examples with at least three actual services and add one-sentence justifications for any row that needs write access." expectedResult="The audit now reflects your real integrations, and each dangerous row has a written explanation for why elevated access is necessary." whyItMatters="Write access that cannot be justified in one sentence is usually a sign that the workflow scope is still too broad or poorly understood." nextStep="Run the file-level verification checks next so you confirm the audit exists, has content, and includes the dangerous-surface signal you need later." askTutor="Challenge my integration map and tell me which row looks over-permissioned or under-documented before I move on to scope decisions." />
-
 Replace the example rows with the real services you plan to use. Map **at least three services**. For each Write-access row, add a one-sentence note in the Notes section explaining *why* write access is necessary — if you cannot justify it in one sentence, you probably do not need it yet.
 
 ### Step 4 — Verify the file is complete
-
-<StepMeta purpose="Check that the audit artifact is real, populated, and ready to support the next least-privilege lesson." action="Run the existence and content checks, confirm the file has more than ten lines, and verify the Dangerous column is present in the output." expectedResult="You have terminal proof that `.integration-audit.md` exists, is populated, and includes the risk-signaling structure required for later review." whyItMatters="Verification catches empty or half-written audit files before they become false confidence in the rest of the integration workflow." nextStep="Use the completed map in the next lesson to shrink GitHub token scopes down to the minimum your workflow truly needs." askTutor="Help me review the verification output and tell me whether this audit is complete enough to support real scope reduction in the next lesson." />
 
 **macOS / Linux:**
 ```bash

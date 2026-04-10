@@ -5,7 +5,6 @@ chapterNumber: "4.2"
 pathNumber: "4"
 tutorPreload: "Help me rename this file and update every import that references it."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Rename files and update imports
@@ -20,8 +19,6 @@ Continue in your cloned project from earlier lessons.
 
 ### Step 1 — Pick a file to rename
 
-<StepMeta purpose="Choose a practice target that is real enough to exercise import updates but not risky enough to break startup." action="Ask Claude for a non-entry-point file that is referenced in multiple places and is safe to rename." expectedResult="You identify a specific source file plus the rough number of files that currently reference it." whyItMatters="A good target lets you practice the rename workflow without accidentally disrupting the project's main execution path." nextStep="Before renaming anything, capture the current reference count so you have a baseline to compare later." askTutor="I'm on Step 1 of Rename files and update imports. Help me choose a safe file to rename and explain why the entry point is a bad practice target." />
-
 Ask Claude which file would be safe to practice on:
 
 ```
@@ -31,8 +28,6 @@ Which source file in this project would be safe to rename for practice? I want o
 Claude suggests a utility or helper file and tells you its import count. For json-server it might pick something like `src/server/utils.js` or a similar module.
 
 ### Step 2 — Record the current reference count
-
-<StepMeta purpose="Create a baseline measurement you can use to verify that every old import was updated." action="Search the codebase for the old file name or import path and count how many matches exist before the rename." expectedResult="You know how many references should disappear for the old name and roughly how many should reappear for the new one." whyItMatters="Without a before-count, it is much harder to prove that the rename was complete instead of almost complete." nextStep="Now instruct Claude to perform the rename and update every import that points to the old path." askTutor="I'm on Step 2 of Rename files and update imports. Help me build the right search pattern so my before-count reflects real import references instead of unrelated matches." />
 
 Before renaming, count every file that references the old name:
 
@@ -52,8 +47,6 @@ Count the results. Write this number down — this is your "before" count.
 
 ### Step 3 — Ask Claude to rename and update
 
-<StepMeta purpose="Perform the rename as one coordinated change across the whole repo instead of manually editing scattered import lines." action="Give Claude the exact old path and new path and require it to list every file it changes." expectedResult="The file is renamed on disk and the repo now points at the new path in every updated import or require statement." whyItMatters="Precise instructions reduce the chance of partial renames or accidental edits to files you did not intend to touch." nextStep="Search for the old file name again and confirm that zero stale references remain." askTutor="I'm on Step 3 of Rename files and update imports. Help me phrase this rename instruction so Claude changes only the intended file and references." />
-
 Give Claude an explicit instruction:
 
 ```
@@ -68,8 +61,6 @@ Claude will:
 Review the list. Make sure it only changed the files you expected.
 
 ### Step 4 — Verify zero stale references remain
-
-<StepMeta purpose="Prove that the old filename has been fully removed from live import paths." action="Run the same search you used before and confirm the old path now produces no matches." expectedResult="The old file name or import path returns zero relevant results across the codebase." whyItMatters="This is the key correctness check for a rename; any leftover old import is a future broken-module error waiting to happen." nextStep="After the old name disappears, search for the new name and compare that count to the baseline." askTutor="I'm on Step 4 of Rename files and update imports. Help me interpret these leftover matches and tell me whether they are real stale imports or harmless strings." />
 
 This is the critical check. Search for the OLD name:
 
@@ -89,8 +80,6 @@ The result must be empty — zero matches for the old filename. If any results a
 
 ### Step 5 — Verify the new name is referenced correctly
 
-<StepMeta purpose="Confirm that the rename not only removed stale imports but also replaced them with the new path everywhere needed." action="Search for the new file name and compare the result count to your original before-count." expectedResult="The new import path appears in the expected places, matching the project state you intended to create." whyItMatters="A rename is only complete when the new path is wired in correctly, not merely when the old path stops appearing." nextStep="Run the test suite so runtime behavior validates the rename beyond string matching." askTutor="I'm on Step 5 of Rename files and update imports. Help me compare my before-count and after-count and decide whether the rename coverage is complete." />
-
 Search for the NEW name:
 
 **macOS / Linux**
@@ -109,8 +98,6 @@ The match count should equal your "before" count from Step 2.
 
 ### Step 6 — Run the tests
 
-<StepMeta purpose="Catch missed paths or broken module resolution that a simple string search might not reveal." action="Run the project's tests and use any failure message to identify unresolved or incorrect import paths." expectedResult="Tests pass cleanly or pinpoint the exact import path that still needs attention." whyItMatters="Runtime verification protects you from subtle rename bugs such as wrong relative depths or environment-specific path issues." nextStep="If verification passes, commit the rename as one clean refactor change." askTutor="I'm on Step 6 of Rename files and update imports. Help me use this test output to figure out whether the rename missed a reference or broke a path depth." />
-
 ```bash
 npm test
 ```
@@ -122,8 +109,6 @@ Tests failed after renaming utils.js to helpers.js. The error says "Cannot find 
 ```
 
 ### Step 7 — Commit the rename
-
-<StepMeta purpose="Record the verified rename as a single refactor unit in git history." action="Stage the deletion, new file, and updated imports together, then commit with a message that names the rename clearly." expectedResult="Git stores the rename and related import edits in one focused commit." whyItMatters="Refactor commits are easiest to review and revert when the entire rename lives in one isolated history entry." nextStep="After a safe rename, move on to adding a new feature file and wiring it into the existing project." askTutor="I'm on Step 7 of Rename files and update imports. Help me make sure this commit includes the full rename and nothing unrelated." />
 
 ```bash
 git add -A

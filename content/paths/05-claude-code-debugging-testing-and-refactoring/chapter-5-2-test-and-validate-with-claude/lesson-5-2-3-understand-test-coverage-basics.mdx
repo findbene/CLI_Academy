@@ -5,7 +5,6 @@ chapterNumber: "5.2"
 pathNumber: "5"
 tutorPreload: "Show me what test coverage means and help me add a test for an uncovered branch."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Understand test coverage basics
@@ -17,8 +16,6 @@ Run a coverage report on your test suite using `npx jest --coverage` or `pytest 
 ## Walkthrough
 
 ### Step 1 — Add a function with branches to test
-
-<StepMeta purpose="Create code with multiple paths so a coverage report has meaningful gaps to reveal." action="Add the new clamp function to the existing source module but intentionally do not write tests for it yet." expectedResult="The source file contains uncovered branch logic that should appear as missing lines in the first coverage report." whyItMatters="Coverage only teaches something interesting when there are branches or lines your tests are not already executing." nextStep="Install or confirm the coverage tooling so you can generate a report against the current suite." askTutor="I'm on Step 1 of Understand test coverage basics. Help me see why we are adding an untested function on purpose before generating the first coverage report." />
 
 We need a function with `if/else` paths so that coverage reporting has something interesting to show. Add a `clamp` function to your existing module.
 
@@ -49,8 +46,6 @@ Do **not** add tests for `clamp` yet. We want the coverage report to show a gap.
 
 ### Step 2 — Install coverage tooling
 
-<StepMeta purpose="Prepare the environment to measure which lines and branches your current tests actually execute." action="Use built-in Jest coverage or install pytest-cov for Python so the next command can produce a coverage report." expectedResult="Your project has the tooling needed to calculate statement, branch, or line coverage from the existing tests." whyItMatters="Coverage is not just another test run; it is extra instrumentation that tracks which parts of the code your tests touched." nextStep="Run the first coverage report with the untested clamp function still present." askTutor="I'm on Step 2 of Understand test coverage basics. Help me verify which coverage tool I need for this stack and whether any extra setup is still missing." />
-
 **JavaScript — Jest has coverage built in. No extra install needed.**
 
 **Python — install pytest-cov**
@@ -66,8 +61,6 @@ pip install pytest-cov
 ```
 
 ### Step 3 — Run the coverage report
-
-<StepMeta purpose="Measure the current gaps in your test suite instead of guessing which code is untested." action="Run the coverage command for your stack and inspect the table showing covered and uncovered lines or branches." expectedResult="The report highlights that the new clamp function lines have not been executed by the existing tests." whyItMatters="Coverage reports are useful because they point you directly to missing exercise in the code, saving you from writing random extra tests." nextStep="Read the report carefully so you understand which columns matter and why the clamp function shows a gap." askTutor="I'm on Step 3 of Understand test coverage basics. Help me interpret this coverage table and identify which lines correspond to the new untested function." />
 
 **macOS / Linux (JavaScript)**
 
@@ -113,8 +106,6 @@ math_utils.py        9      3    67%   9-11
 
 ### Step 4 — Read the coverage report
 
-<StepMeta purpose="Translate raw coverage percentages and missing-line numbers into an actionable testing plan." action="Look at statements, branch coverage, and missing line numbers and connect them back to the clamp function you just added." expectedResult="You understand that uncovered lines mean tests never executed that function or its branches." whyItMatters="Coverage is only useful if you can read the report and decide what specific test would close the gap." nextStep="Ask Claude to write tests that cover every branch in the uncovered clamp function." askTutor="I'm on Step 4 of Understand test coverage basics. Help me make sense of statement coverage versus branch coverage and what each one tells me here." />
-
 The key columns are:
 
 - **% Stmts** (or **Cover**) — what percentage of lines in the file were executed during tests.
@@ -124,8 +115,6 @@ The key columns are:
 Lines 10–12 (or 9–11 in Python) are the `clamp` function. Since we have no tests for `clamp`, those lines were never executed. That is the coverage gap.
 
 ### Step 5 — Ask Claude Code to add a test for the uncovered function
-
-<StepMeta purpose="Turn a specific coverage gap into a targeted new test rather than chasing percentages blindly." action="Tell Claude exactly which function and branches are uncovered and ask it to generate tests for each missing case." expectedResult="Claude creates tests that exercise all three clamp branches: below range, above range, and in range." whyItMatters="The best use of coverage is directing your next test toward a concrete missing path, not trying to improve numbers at random." nextStep="Run coverage again and compare the new report to the original gap." askTutor="I'm on Step 5 of Understand test coverage basics. Help me make this prompt specific enough that Claude covers the uncovered branches instead of generating redundant tests." />
 
 ```
 My coverage report shows that the clamp function on lines 10-12 of math-utils.js is 0% covered. Write tests that cover all three branches: value below min, value above max, and value in range.
@@ -164,8 +153,6 @@ Accept the changes.
 
 ### Step 6 — Run coverage again and compare
 
-<StepMeta purpose="Confirm that the new tests actually closed the intended gap in the report." action="Rerun the same coverage command and compare the new percentages and missing-line output against the first report." expectedResult="The previously uncovered clamp lines now show as exercised, often bringing the file to full coverage." whyItMatters="Comparing before and after proves that the added tests covered the exact gap you targeted instead of only adding noise to the suite." nextStep="Ask Claude what full coverage does and does not guarantee so you treat the metric correctly." askTutor="I'm on Step 6 of Understand test coverage basics. Help me compare the two coverage reports and confirm that the new tests closed the exact gap we set out to cover." />
-
 **macOS / Linux (JavaScript)**
 
 ```bash
@@ -203,8 +190,6 @@ math_utils.py        9      0   100%
 ```
 
 ### Step 7 — Understand what 100% does and does not mean
-
-<StepMeta purpose="Keep coverage in perspective so you use it as a guide rather than mistaking it for proof of correctness." action="Ask Claude whether 100% coverage means the code is bug-free and review the limits of that metric." expectedResult="You understand that coverage means lines ran, not that every important scenario or edge case was validated correctly." whyItMatters="Teams misuse coverage when they optimize for the number instead of the quality of the tests, so this distinction matters early." nextStep="With testing basics covered, move on to refactoring a messy function while using tests as a safety net." askTutor="I'm on Step 7 of Understand test coverage basics. Help me separate the value of coverage from the mistaken idea that 100% means the code is automatically correct." />
 
 Ask Claude Code:
 

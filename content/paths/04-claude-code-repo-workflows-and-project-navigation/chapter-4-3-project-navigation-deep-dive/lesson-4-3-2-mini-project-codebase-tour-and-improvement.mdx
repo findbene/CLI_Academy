@@ -5,7 +5,6 @@ chapterNumber: "4.3"
 pathNumber: "4"
 tutorPreload: "Guide me through a full codebase tour: clone, map, trace, improve, verify, and commit."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini-project: codebase tour and improvement
@@ -23,8 +22,6 @@ Pick a NEW open-source project for this mini-project — do not reuse the one fr
 - **Any language you know:** pick something under 5,000 lines of source code with a clear purpose
 
 ### Step 1 — Clone and enter the project
-
-<StepMeta purpose="Set up a fresh practice repo so you can run the full tour workflow on code you have not seen before." action="Clone a new small open-source project, move into the repo directory, and keep the setup in read-only mode until you understand it." expectedResult="You have a second unfamiliar codebase available locally and are positioned inside it without having executed install scripts yet." whyItMatters="A new repo prevents you from leaning on memory from earlier lessons and makes the mini-project a real test of your navigation process." nextStep="With the new repo cloned, ask Claude for a full orientation covering purpose, structure, entry point, config, and stack." askTutor="I'm on Step 1 of Mini-project: codebase tour and improvement. Help me choose a new small repo and explain how to vet it before I run any install commands." />
 
 **macOS / Linux**
 
@@ -46,8 +43,6 @@ cd morgan
 
 ### Step 2 — Map the structure with Claude
 
-<StepMeta purpose="Create a full working map of the new codebase before you pick a feature or change anything." action="Ask Claude for a structured orientation covering what the project does, how the directories are organized, where the entry point lives, and which configs matter." expectedResult="You get a concise but complete tour of the repo's purpose, structure, key files, and stack." whyItMatters="The quality of the rest of the mini-project depends on this orientation being good enough to guide your later trace and improvement work." nextStep="Pick one core feature and ask Claude to trace it through the repo end to end." askTutor="I'm on Step 2 of Mini-project: codebase tour and improvement. Help me evaluate whether Claude's orientation is complete enough to start tracing features." />
-
 Start Claude Code in the project directory and ask for a full orientation:
 
 ```
@@ -62,8 +57,6 @@ I just cloned this project and have never seen it before. Give me a full orienta
 Read Claude's answer carefully. This is your map of the codebase. Note the entry point and the main source directory.
 
 ### Step 3 — Trace one feature
-
-<StepMeta purpose="Move from broad orientation into one concrete behavior so you can understand how the repo actually works." action="Ask Claude to trace a core feature from input to output and manually verify at least one hop in the resulting flow." expectedResult="You produce a believable feature trace and confirm at least one file or line with your own search." whyItMatters="Feature tracing is where repo understanding becomes operational, because you stop naming directories and start following behavior." nextStep="After understanding one core flow, ask Claude for a safe, bounded improvement you could make to the project." askTutor="I'm on Step 3 of Mini-project: codebase tour and improvement. Help me choose a trace target that is central enough to matter but small enough to verify." />
 
 Pick a core feature and ask Claude to trace it end-to-end:
 
@@ -89,8 +82,6 @@ Confirm the file and line match Claude's trace.
 
 ### Step 4 — Identify an improvement
 
-<StepMeta purpose="Choose a real change that improves the repo without turning the exercise into an open-ended feature project." action="Ask Claude for one safe internal improvement that does not change the public API and select the best bounded option." expectedResult="You pick a small improvement such as docs cleanup, a clearer error message, or a tiny internal refactor." whyItMatters="A bounded improvement lets you practice making real changes in an unfamiliar repo while keeping risk and review scope low." nextStep="Once the improvement is chosen, have Claude implement it and show the exact edits." askTutor="I'm on Step 4 of Mini-project: codebase tour and improvement. Help me reject risky suggestions and choose an improvement that is genuinely small and safe." />
-
 Ask Claude for a safe, small improvement:
 
 ```
@@ -107,8 +98,6 @@ Pick whichever suggestion feels right.
 
 ### Step 5 — Make the improvement
 
-<StepMeta purpose="Turn the chosen idea into an actual repo change with a clear explanation of what changed and why." action="Ask Claude to implement the bounded improvement and review the resulting diff carefully." expectedResult="The repo now contains one small focused change that matches the improvement you selected." whyItMatters="Implementation is where you test whether you can guide Claude precisely enough to change unfamiliar code without drifting scope." nextStep="Verify the change with tests or a tight diff review before you commit anything." askTutor="I'm on Step 5 of Mini-project: codebase tour and improvement. Help me review this proposed change and confirm it stays within the safe scope I asked for." />
-
 Ask Claude to implement it:
 
 ```
@@ -118,8 +107,6 @@ Go ahead and make that improvement. Show me exactly what you changed and why.
 Review the change. Confirm it is small, correct, and does not affect the public API.
 
 ### Step 6 — Verify the improvement
-
-<StepMeta purpose="Confirm that the change is correct and limited before you record it in git history." action="Run the relevant tests if available or inspect the diff line by line when the change is documentation-only or otherwise hard to execute." expectedResult="You either see passing verification or gain a precise view of the exact lines changed and their effect." whyItMatters="Verification is what separates a good-looking edit from a trustworthy improvement in a repo you barely know." nextStep="Once the change is verified, commit it with a conventional message that matches the kind of improvement you made." askTutor="I'm on Step 6 of Mini-project: codebase tour and improvement. Help me decide whether this change is sufficiently verified by tests or if I need a stricter manual diff review." />
 
 Install dependencies (if you trust the project) and run the test suite:
 
@@ -140,8 +127,6 @@ Review every line. The change should be exactly what you expected — nothing mo
 
 ### Step 7 — Commit the improvement
 
-<StepMeta purpose="Preserve the verified improvement as a clean milestone in the repo's local history." action="Stage only the intended changes and commit with the conventional commit prefix that fits the improvement type." expectedResult="Git records one clear commit that describes the improvement accurately and contains no unrelated noise." whyItMatters="A clean commit proves that you can finish a real repo task end to end, not just make edits in a dirty working tree." nextStep="After the commit is recorded, ask Claude to summarize the session so you leave behind a reusable artifact." askTutor="I'm on Step 7 of Mini-project: codebase tour and improvement. Help me pick the right conventional commit prefix and confirm I am not staging anything unrelated." />
-
 ```bash
 git add -A
 git commit -m "docs: add JSDoc comment to compile function"
@@ -154,8 +139,6 @@ Use the appropriate conventional commit type:
 - `test:` for adding or fixing tests
 
 ### Step 8 — Write a session summary
-
-<StepMeta purpose="Capture the full repo tour and improvement work in a short artifact you can reuse or share later." action="Ask Claude for a markdown summary of the project, the feature trace, the improvement, and the outcome, then save it to a file." expectedResult="You produce a session-summary document that records what repo you explored and what you changed." whyItMatters="A written summary reinforces what you learned and gives you proof of completion for later review or portfolio use." nextStep="After this mini-project, you have completed the full Path 04 repo-tour workflow and can reuse the same pattern on real repos." askTutor="I'm on Step 8 of Mini-project: codebase tour and improvement. Help me turn this session into a short useful summary instead of a long rambling log." />
 
 Ask Claude to summarize the tour:
 

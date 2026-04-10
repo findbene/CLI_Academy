@@ -5,7 +5,6 @@ chapterNumber: "15.3"
 pathNumber: "15"
 tutorPreload: "Show me how to use tmux so Claude Code survives an SSH disconnect."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Use tmux or screen for persistent sessions
@@ -19,8 +18,6 @@ By the end of this lesson you will be able to start a tmux session on a remote s
 When you close your laptop lid or your WiFi drops, your SSH connection dies — and every process attached to it dies too, including Claude Code. Terminal multiplexers like tmux and screen solve this by running your shell inside a persistent session on the server. You detach when you leave and reattach when you come back.
 
 ### Step 1 — Install tmux on the server
-
-<StepMeta purpose="Add the session manager that will keep long-running remote shells alive after the SSH connection drops." action="SSH into the server, install `tmux` using the appropriate package manager, and verify the version with `tmux -V`." expectedResult="The server has tmux installed and ready to create named persistent sessions." whyItMatters="Without a multiplexer, every SSH disconnect kills the attached Claude process, which makes remote agent work fragile and frustrating." nextStep="Create a named tmux session so you can start remote work inside a context that survives disconnects." askTutor="Help me confirm tmux installed correctly and explain why it is the preferred fix for dropped SSH sessions in this workflow." />
 
 SSH into your server first, then:
 
@@ -45,8 +42,6 @@ tmux -V
 
 ### Step 2 — Start a named tmux session
 
-<StepMeta purpose="Create the persistent container for your future Claude session instead of running directly in the ephemeral SSH shell." action="Run `tmux new -s work` and note the status bar that indicates you are now inside a named tmux session." expectedResult="A tmux session named `work` is active and everything you launch next will stay attached to that server-side session." whyItMatters="A named session gives you a stable anchor for reconnecting later, which is the whole reason tmux is valuable for remote development." nextStep="Start Claude Code inside this session so the agent process benefits from tmux persistence too." askTutor="Explain what changes when I am inside tmux instead of a normal SSH shell and how the named session helps when I reconnect later." />
-
 ```bash
 tmux new -s work
 ```
@@ -57,8 +52,6 @@ Everything you type from here runs inside the tmux session. If your SSH connecti
 
 ### Step 3 — Run Claude Code inside tmux
 
-<StepMeta purpose="Move the remote agent session into the persistent tmux context so it can outlive your network connection." action="Change into your project directory and launch `claude` from within the tmux session." expectedResult="Claude Code runs normally, but now its shell is anchored to tmux on the server rather than to the transient SSH connection." whyItMatters="Running Claude Code inside tmux is the main operational habit that makes remote usage resilient instead of brittle." nextStep="Detach from tmux cleanly so you can test that the session and Claude process remain alive after you disconnect." askTutor="Check whether I launched Claude Code from inside tmux correctly and explain how I can tell the process will survive after detaching." />
-
 ```bash
 cd ~/projects/my-app
 claude
@@ -67,8 +60,6 @@ claude
 Claude Code is now running inside a persistent session. You can interact with it normally.
 
 ### Step 4 — Detach from the session
-
-<StepMeta purpose="Practice leaving the running tmux session without terminating the work inside it." action="Use `Ctrl+b`, then `d`, return to the normal shell, and then disconnect from SSH with `exit`." expectedResult="The tmux session remains on the server while your SSH connection closes normally." whyItMatters="Detaching correctly is the key difference between a resilient remote workflow and accidentally killing the exact process you wanted to preserve." nextStep="SSH back in later and reattach so you can prove the session is still there with Claude Code intact." askTutor="Explain the detach flow to me and help me distinguish between leaving tmux safely and accidentally exiting the process running inside it." />
 
 Press `Ctrl+b`, then press `d`.
 
@@ -81,8 +72,6 @@ exit
 ```
 
 ### Step 5 — Reattach to the session later
-
-<StepMeta purpose="Verify the persistence promise by reconnecting after a disconnect and recovering the exact working session." action="SSH back into the server, run `tmux ls`, and reattach with `tmux attach -t work`." expectedResult="You return to the same tmux session and find Claude Code where you left it instead of starting from scratch." whyItMatters="Persistence only matters if recovery is simple and reliable, and this reattach flow is the proof that the pattern works." nextStep="Review the small command set you need most often so tmux becomes a practical tool rather than a one-off trick." askTutor="Help me interpret the `tmux ls` output and tell me what to do if the session name is different or the session is unexpectedly missing." />
 
 SSH back into the server:
 
@@ -107,8 +96,6 @@ Claude Code is right where you left it — no work lost.
 
 ### Step 6 — Essential tmux commands
 
-<StepMeta purpose="Give yourself a minimal operating manual for tmux so the tool is usable beyond one attach-detach cycle." action="Read through the listed commands for windows, panes, session listing, killing sessions, and scrolling, then note the ones you will use most." expectedResult="You know the small subset of tmux actions needed to manage everyday remote Claude work confidently." whyItMatters="Tools only become durable habits when you know enough commands to recover, navigate, and clean up without searching docs every time." nextStep="Review the GNU Screen alternative so you still have a fallback pattern if tmux is unavailable on an older server." askTutor="Turn these tmux commands into a small cheat sheet for me focused only on the operations I need for remote Claude sessions." />
-
 | Action | Key / Command |
 |---|---|
 | Detach | `Ctrl+b` then `d` |
@@ -124,8 +111,6 @@ Claude Code is right where you left it — no work lost.
 | Scroll up (copy mode) | `Ctrl+b` then `[`, then arrow keys or Page Up; press `q` to exit |
 
 ### Step 7 — Alternative: GNU Screen (if tmux is unavailable)
-
-<StepMeta purpose="Provide a compatible fallback for older or constrained servers that do not have tmux available." action="Review the basic `screen` start, detach, list, and reattach commands and compare them to the tmux flow you already learned." expectedResult="You can keep a remote session alive with GNU Screen even if tmux cannot be installed on the target host." whyItMatters="Remote environments vary, and having one fallback multiplexer pattern keeps you productive when the preferred tool is unavailable." nextStep="Use the mini-project next to combine SSH keys, aliases, remote installs, and tmux into one end-to-end remote development environment." askTutor="Compare tmux and screen for me and tell me when it is worth using screen instead of spending time trying to install tmux on an older server." />
 
 Some older servers have `screen` but not `tmux`:
 

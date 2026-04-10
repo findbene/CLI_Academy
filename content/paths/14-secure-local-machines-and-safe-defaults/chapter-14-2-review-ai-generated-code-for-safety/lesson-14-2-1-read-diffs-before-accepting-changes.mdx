@@ -5,7 +5,6 @@ chapterNumber: "14.2"
 pathNumber: "14"
 tutorPreload: "Show me a diff and help me spot the security problem hidden in it."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Read diffs before accepting changes
@@ -26,8 +25,6 @@ Reading diffs is your last line of defense before code enters your project.
 
 ### Step 1 — Set up a practice project
 
-<StepMeta purpose="Create a controlled repo where you can practice diff review without mixing the lesson with real production files." action="Make the `diff-review-lab` directory, enter it, and initialize Git before adding the baseline server file." expectedResult="You have a small practice repository ready for a safe-versus-dangerous diff comparison." whyItMatters="Diff review is easier to learn when the code sample is small enough that every removed and added line is visible and meaningful." nextStep="Create the baseline server file with validation so you have a safe starting point to compare against later." askTutor="Confirm that this practice setup is enough for a meaningful diff-review exercise and tell me what kind of change size is easiest to review well." />
-
 **macOS / Linux:**
 ```bash
 mkdir -p ~/cli-academy/projects/diff-review-lab && cd ~/cli-academy/projects/diff-review-lab
@@ -42,8 +39,6 @@ git init
 ```
 
 ### Step 2 — Create a baseline file with security protections
-
-<StepMeta purpose="Establish a known-safe version of the code so the later diff has something real to compare against." action="Create `server.js` with the validated integer parsing, error response, and baseline commit exactly as shown." expectedResult="Your repo has one committed server file that clearly includes input validation and no obviously dangerous dynamic behavior." whyItMatters="Diff review only works when you know what good looked like before the proposed change started removing or weakening protections." nextStep="Replace the baseline with the AI-style change that introduces dangerous patterns so you can inspect the resulting diff." askTutor="Review this baseline server and tell me which lines are the key safety controls I should watch for if an AI edit tries to simplify them away." />
 
 Create a small web server file that has proper input validation:
 
@@ -88,8 +83,6 @@ git add server.js; git commit -m "initial: server with input validation"
 ```
 
 ### Step 3 — Simulate a dangerous AI-suggested change
-
-<StepMeta purpose="Generate a realistic bad edit that looks helpful on the surface but weakens the code badly." action="Overwrite `server.js` with the AI-style version that removes validation, interpolates SQL, adds `eval()`, and hardcodes a URL." expectedResult="Your working copy now contains a risky change set that is ready to inspect with `git diff`." whyItMatters="You need to practice spotting subtle dangerous edits in code that still looks polished and plausible, because that is how AI mistakes often arrive." nextStep="Read the diff instead of the final file so you can focus on what changed rather than only on the new snapshot." askTutor="Before I read the diff, tell me which kinds of changes in this modified server are most likely to hide inside a helpful-looking AI patch." />
 
 Now simulate what an AI might suggest — a change that looks helpful but introduces three security problems:
 
@@ -139,8 +132,6 @@ app.listen(3000, () => console.log('Server running on http://api.example.com:300
 
 ### Step 4 — Read the diff
 
-<StepMeta purpose="Practice the core review habit of reading additions and removals line by line before accepting a change." action="Run `git diff server.js`, then separate removed safety lines from newly added risky lines using the red-minus and green-plus mental model." expectedResult="You can point to the exact validation that disappeared and the exact new behavior that was introduced." whyItMatters="The diff is where harmful tradeoffs become visible, especially when the final file still looks clean and coherent." nextStep="Name the specific security problems hidden in the diff and explain why each one matters." askTutor="Walk me through this diff line by line and help me label each removal or addition as safe, risky, or suspicious." />
-
 Now read the diff exactly as you would when reviewing an AI suggestion:
 
 ```bash
@@ -169,8 +160,6 @@ You will see output like this:
 
 ### Step 5 — Spot the three security problems
 
-<StepMeta purpose="Translate the raw diff into a concrete security diagnosis instead of a vague feeling that something looks off." action="Identify the removed input validation, the SQL injection pattern, the `eval()` endpoint, and the hardcoded URL bonus issue." expectedResult="You can explain each risky line in plain language and tie it to the class of vulnerability it introduces." whyItMatters="Security review improves when you can name the problem category quickly rather than only noticing that code feels unusual." nextStep="Turn those observations into a reusable diff-review checklist that you can apply to every future AI patch." askTutor="Check my list of security problems from this diff and tell me whether I missed any hidden issue or misclassified one of the risks." />
-
 Go through the diff line by line. Here is what to look for:
 
 **Problem 1 — Input validation removed:**
@@ -187,8 +176,6 @@ The new `/api/config` endpoint runs `eval(req.query.data)`. This lets anyone exe
 
 ### Step 6 — Practice the diff-review checklist
 
-<StepMeta purpose="Convert a one-off exercise into a repeatable review habit." action="Read and internalize the five-question checklist, especially the checks for removed validation, dangerous execution, input use, and unknown dependencies." expectedResult="You have a short practical review routine you can run before accepting any future AI-generated code change." whyItMatters="Good security review depends on consistency, and a checklist reduces the chance that you will skip the same type of bug under time pressure." nextStep="Discard the bad change and verify you are back on the safe baseline so the practice repo ends in a clean state." askTutor="Turn this lesson into a compact review checklist I could keep beside my terminal when I inspect AI diffs." />
-
 Before accepting any AI-generated change, check every diff for these patterns:
 
 1. **Was validation removed?** Look for deleted `if` blocks, `parseInt()`, `isNaN()`, regex checks, or type guards.
@@ -198,8 +185,6 @@ Before accepting any AI-generated change, check every diff for these patterns:
 5. **Are there new dependencies or imports you don't recognize?** Verify they exist and are legit.
 
 ### Step 7 — Reset and practice reviewing a clean fix
-
-<StepMeta purpose="End the exercise by restoring the known-safe version and verifying that your repo state is clean again." action="Use `git checkout -- server.js`, then run `git diff server.js` and confirm the output is empty." expectedResult="The dangerous change is gone and the working copy matches the original secure baseline." whyItMatters="Resetting bad experiments cleanly is part of safe review practice, because it proves you can reject a risky diff without leaving residue behind." nextStep="Use the next lesson to study repeated AI code failure patterns so you can recognize them faster than one diff at a time." askTutor="Interpret my empty or non-empty post-reset diff and tell me whether I fully restored the safe baseline or still have leftover edits." />
 
 Discard the dangerous change:
 ```bash

@@ -5,7 +5,6 @@ chapterNumber: "5.2"
 pathNumber: "5"
 tutorPreload: "Write a simple automated test for this function and show me how to run it."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Ask Claude to write your first test
@@ -17,8 +16,6 @@ Take a simple function you have already written, ask Claude Code to generate an 
 ## Walkthrough
 
 ### Step 1 — Create a small module with a function to test
-
-<StepMeta purpose="Create a tiny known-good function so the lesson stays focused on test-writing rather than bug-fixing." action="Set up the practice folder and write the simple source module with add and multiply functions." expectedResult="You have a minimal source file on disk with behavior simple enough to test and understand completely." whyItMatters="Your first testing lesson works best when the code under test is familiar and obviously correct, because the new skill is the testing workflow itself." nextStep="Initialize the test runner for your language so Claude has a place to put the generated test file." askTutor="I'm on Step 1 of Ask Claude to write your first test. Help me keep this module small enough that I can focus on the mechanics of testing instead of the application logic." />
 
 We need a simple, working function so we can focus entirely on learning to test — not on fixing bugs.
 
@@ -62,8 +59,6 @@ def multiply(a, b):
 
 ### Step 2 — Initialize the test runner
 
-<StepMeta purpose="Prepare the project so automated tests can actually run from the command line." action="Install or confirm the test runner and make sure the project has the correct test command configured." expectedResult="Your environment is ready to execute Jest or pytest without extra setup after Claude writes the test file." whyItMatters="A generated test file is only useful if the repo already knows how to discover and run it." nextStep="Ask Claude to generate a basic test file for the functions you just created." askTutor="I'm on Step 2 of Ask Claude to write your first test. Help me verify that Jest or pytest is configured correctly before I ask Claude to generate tests." />
-
 **JavaScript — install Jest**
 
 ```bash
@@ -96,8 +91,6 @@ pip install pytest
 > **Real danger — `npm install` and `pip install` execute code.** Only install packages you recognize and trust. `jest` and `pytest` are the standard test runners for their respective ecosystems and are safe.
 
 ### Step 3 — Ask Claude Code to write a test
-
-<StepMeta purpose="Use Claude to generate the repetitive structure of a first test file while you focus on what cases matter." action="Prompt Claude to write tests for the simple math functions using the standard test framework for your language." expectedResult="Claude creates a discoverable test file with several straightforward assertions covering the target functions." whyItMatters="Test generation is a high-leverage use case for Claude because the structure is repetitive but still benefits from clear human intent about what to cover." nextStep="Run the generated tests from the terminal and confirm that the runner discovers them successfully." askTutor="I'm on Step 3 of Ask Claude to write your first test. Help me judge whether Claude's generated tests cover the obvious cases without adding unnecessary complexity." />
 
 Open Claude Code in the project directory and prompt:
 
@@ -162,8 +155,6 @@ Accept the file Claude generates.
 
 ### Step 4 — Run the tests
 
-<StepMeta purpose="Verify that the test file is discoverable, syntactically correct, and matches the current source code behavior." action="Run the test command for your stack and inspect the output for passes, failures, or discovery issues." expectedResult="The terminal shows the generated tests running and all of them pass cleanly." whyItMatters="Running the tests is what converts a static test file into an actual automated safety check you can reuse later." nextStep="Once the suite is green, ask Claude to explain what each test is checking in plain English." askTutor="I'm on Step 4 of Ask Claude to write your first test. Help me interpret this test-run output and tell me whether the runner discovered the file the way it should." />
-
 **macOS / Linux (JavaScript)**
 
 ```bash
@@ -214,8 +205,6 @@ test_math_utils.py::test_multiply_by_zero PASSED
 ```
 
 ### Step 5 — Understand what each test does
-
-<StepMeta purpose="Connect the test syntax back to the real behaviors each assertion is protecting." action="Ask Claude to explain each generated test case in plain English and why that case matters." expectedResult="You can describe what each test input and expected value is proving about the function." whyItMatters="Understanding the purpose of a test is what lets you write your own later instead of treating test files as magic boilerplate." nextStep="With one green test suite in place, move on to a red-green cycle where a deliberate bug causes the tests to fail and Claude helps fix it." askTutor="I'm on Step 5 of Ask Claude to write your first test. Help me translate these assertions into plain-English behavior so I understand why each test exists." />
 
 Ask Claude Code:
 

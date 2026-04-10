@@ -5,7 +5,6 @@ chapterNumber: "11.1"
 pathNumber: "11"
 tutorPreload: "Help me decide which isolation approach fits my use case — local venv, Docker, or a cloud sandbox."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Compare local, Docker, and cloud sandboxes
@@ -17,8 +16,6 @@ By the end of this lesson you will understand four levels of code isolation — 
 ## Walkthrough
 
 ### Step 1 — See what bare metal execution looks like
-
-<StepMeta purpose="Set the zero-isolation baseline so the tradeoffs of stronger sandboxing are easier to judge." action="Run the bare-metal Python command and observe that it can read your username, list home-directory contents, and resolve DNS normally." expectedResult="You see direct evidence that a normal local process has unrestricted file and network access by default." whyItMatters="Comparisons only make sense when you start from the real baseline: without isolation, code runs with your full permissions and network reach." nextStep="Use that baseline to compare the four isolation levels and what each one actually protects." askTutor="I'm on Step 1 of Compare local, Docker, and cloud sandboxes. Help me interpret this bare-metal command so I can use it as the baseline for the rest of the comparison." />
 
 When you run code directly on your machine with no isolation, the process has the same permissions you do.
 
@@ -45,8 +42,6 @@ The script can read your username, list your files, and reach the internet. This
 
 ### Step 2 — Understand the four isolation levels
 
-<StepMeta purpose="Create a decision framework for choosing the lightest isolation level that still matches the risk." action="Read the comparison table and map bare metal, venvs, Docker, and cloud sandboxes to their file, network, dependency, cost, and use-case tradeoffs." expectedResult="You can explain how the four isolation levels differ and what each one is best suited for." whyItMatters="People often overestimate what a venv protects or underestimate when Docker or a cloud sandbox is justified, so this table anchors those decisions." nextStep="Test one of the key distinctions directly by proving a venv isolates packages but not file access." askTutor="I'm on Step 2 of Compare local, Docker, and cloud sandboxes. Help me turn this comparison table into a practical rule for choosing the right isolation level." />
-
 | Level | Tool | File isolation | Network isolation | Dependency isolation | Cost | Best for |
 |---|---|---|---|---|---|---|
 | **Bare metal** | None | None — full access | None — full access | None — system Python | Free | Trusted code you wrote yourself |
@@ -57,8 +52,6 @@ The script can read your username, list your files, and reach the internet. This
 Key insight: each level adds a wall, but also adds complexity. Use the lightest isolation that matches your threat.
 
 ### Step 3 — Prove that a virtual environment does NOT isolate files
-
-<StepMeta purpose="Show that Python virtual environments are for dependency separation, not security isolation." action="Create a temporary venv, run Python from inside it, and verify it can still list files from your actual home directory." expectedResult="The venv Python can still see real home-directory contents even though it uses a separate package environment." whyItMatters="This is the most common conceptual mistake with venvs: they prevent dependency clashes but do nothing to stop file reads, shell access, or network calls." nextStep="Contrast that behavior with Docker, where the process sees a separate file system instead of your host home directory." askTutor="I'm on Step 3 of Compare local, Docker, and cloud sandboxes. Help me explain why this venv test proves package isolation without proving any security isolation." />
 
 Create a venv and show that code inside it can still read your home directory.
 
@@ -82,8 +75,6 @@ Your home directory is fully visible. A venv only isolates installed packages �
 
 ### Step 4 — Prove that Docker DOES isolate files
 
-<StepMeta purpose="Contrast Docker with venvs by proving Docker changes the file view available to the process." action="Run the same visibility check inside a Docker container and compare the /root listing to what the venv could see." expectedResult="Docker shows only container-owned files, not your real home directory contents." whyItMatters="This direct contrast is what makes the file-isolation difference memorable: venvs share your host file system, Docker does not unless you mount it." nextStep="Translate the comparison into a practical selection rule for real projects and threat levels." askTutor="I'm on Step 4 of Compare local, Docker, and cloud sandboxes. Help me compare this Docker file view to the earlier venv test so I can explain the difference clearly." />
-
 Run the same check inside a Docker container.
 
 **macOS / Linux**
@@ -102,8 +93,6 @@ The container sees only its own empty `/root` — your real home directory is in
 
 ### Step 5 — Understand when to use each level
 
-<StepMeta purpose="Convert the isolation theory into a fast decision flow you can apply during real work." action="Use the three scenario questions to decide whether your current task belongs on bare metal, in a venv, inside Docker, or in a cloud sandbox." expectedResult="You can choose an isolation level based on trust, dependency-conflict risk, and local tooling availability." whyItMatters="A sandbox comparison is only useful if it helps you choose a safe default quickly when code or tooling shows up in real projects." nextStep="Record what isolation options are actually available on your machine so your future decisions are grounded in your current setup." askTutor="I'm on Step 5 of Compare local, Docker, and cloud sandboxes. Help me apply these three questions to a real scenario I have in mind so I pick the right level of isolation." />
-
 Answer these three questions for your scenario to pick the right level.
 
 | Question | If yes → | If no → |
@@ -113,8 +102,6 @@ Answer these three questions for your scenario to pick the right level.
 | Do I have Docker installed locally? | Use Docker with `--rm --network none` | Use a cloud sandbox like E2B or Codespaces |
 
 ### Step 6 — Create your own comparison snapshot
-
-<StepMeta purpose="Capture the isolation tools you actually have available so your future choices are based on your machine, not abstractions." action="Generate sandbox-comparison.md listing the date and the detected versions or absence of venv, Docker, and similar tools." expectedResult="You create a local comparison snapshot file documenting which isolation tools are currently available on your machine." whyItMatters="A tool availability snapshot turns the lesson into a reusable personal reference and prevents decision advice from drifting away from your actual environment." nextStep="Use the same evidence-based mindset in the Docker lesson where you build a locked-down container for untrusted code." askTutor="I'm on Step 6 of Compare local, Docker, and cloud sandboxes. Help me turn this snapshot file into a practical reminder of which isolation tools I can actually use right now." />
 
 Save a record of what isolation tools are available on your machine.
 

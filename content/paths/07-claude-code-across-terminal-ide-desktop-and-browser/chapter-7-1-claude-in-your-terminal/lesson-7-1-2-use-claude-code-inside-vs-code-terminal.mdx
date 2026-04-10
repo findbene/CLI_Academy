@@ -5,7 +5,6 @@ chapterNumber: "7.1"
 pathNumber: "7"
 tutorPreload: "Explain the difference between running Claude Code in a standalone terminal versus the VS Code integrated terminal."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Use Claude Code inside VS Code terminal
@@ -17,8 +16,6 @@ By the end of this lesson you will launch Claude Code from inside the VS Code in
 ## Walkthrough
 
 ### Step 1 — Open the VS Code integrated terminal
-
-<StepMeta purpose="Start from the terminal that already shares context with the open editor workspace." action="Open the VS Code integrated terminal and confirm its working directory matches the folder open in the Explorer sidebar." expectedResult="The terminal opens at the workspace root and the printed path matches the project shown in VS Code." whyItMatters="Shared working directory is what makes Claude, shell commands, and editor navigation line up without extra path juggling." nextStep="Launch Claude Code inside this terminal so it operates directly inside the open workspace." askTutor="I'm on Step 1 of Use Claude Code inside VS Code terminal. Help me confirm that the integrated terminal is really starting in the correct workspace folder." />
 
 Launch VS Code and open a project folder. Then open the terminal:
 
@@ -50,8 +47,6 @@ The output should match the folder shown in the VS Code Explorer sidebar.
 
 ### Step 2 — Start Claude Code inside the integrated terminal
 
-<StepMeta purpose="Run Claude Code inside VS Code so the terminal prompt and the editor stay in the same workspace." action="Start Claude or your alias from the integrated terminal and wait for the interactive Claude prompt to appear." expectedResult="Claude Code opens successfully inside the terminal panel and is ready to accept requests." whyItMatters="This setup combines terminal-native Claude control with immediate visual feedback from the editor in the same window." nextStep="Ask Claude to read an existing project file so you confirm workspace file access is working." askTutor="I'm on Step 2 of Use Claude Code inside VS Code terminal. Help me start Claude successfully inside the integrated terminal and explain what should appear when it is ready." />
-
 Run Claude Code exactly as you would in any terminal:
 
 ```bash
@@ -70,8 +65,6 @@ Claude Code starts and its interactive prompt appears right inside VS Code. You 
 
 ### Step 3 — Ask Claude Code to read a file in the workspace
 
-<StepMeta purpose="Verify that Claude can inspect real files from the current workspace without manual copy-paste." action="Prompt Claude to read a known file such as package.json or README.md and summarize a specific detail from it." expectedResult="Claude replies using the contents of a real workspace file that it opened from disk." whyItMatters="Reliable file reading is the baseline capability that makes Claude useful for real project work inside VS Code." nextStep="Create a disposable file and ask Claude to edit it so you can watch the editor update live." askTutor="I'm on Step 3 of Use Claude Code inside VS Code terminal. Help me choose a safe file to test with and confirm Claude is reading the right one." />
-
 Try a simple request to prove it has access:
 
 ```
@@ -87,8 +80,6 @@ If your project does not have a `package.json`, pick any file visible in the sid
 ```
 
 ### Step 4 — Ask Claude Code to edit a file and watch VS Code update
-
-<StepMeta purpose="See the live-edit loop that makes the integrated terminal especially useful during coding sessions." action="Create claude-test.txt, ask Claude to add the second line, and then open the file in the editor to confirm the change." expectedResult="The file contains both lines and VS Code shows Claude's edit immediately in the workspace." whyItMatters="Instant visibility of Claude's file writes is the main ergonomic advantage over using a separate terminal window." nextStep="Keep Claude running while you use surrounding VS Code tools like Source Control and Problems." askTutor="I'm on Step 4 of Use Claude Code inside VS Code terminal. Help me verify whether Claude really edited the file on disk or only described the change in chat." />
 
 Create a tiny test file so this step is risk-free:
 
@@ -119,8 +110,6 @@ This instant sync is the main advantage of running Claude Code inside VS Code: y
 
 ### Step 5 — Use VS Code features alongside Claude Code
 
-<StepMeta purpose="Practice combining Claude with VS Code features instead of treating them as separate workflows." action="Try at least one supporting feature such as split terminal, Problems, Source Control, or Go to Definition while Claude stays open." expectedResult="You can use editor diagnostics, Git UI, or navigation tools alongside Claude without leaving the window." whyItMatters="The real productivity gain comes from pairing Claude with VS Code's built-in feedback loops, not just from running Claude in a smaller terminal." nextStep="Compare this integrated workflow against a standalone terminal so you know when each surface is better." askTutor="I'm on Step 5 of Use Claude Code inside VS Code terminal. Help me understand which VS Code features pair best with Claude during a normal coding session." />
-
 While Claude Code is running in the terminal panel, you still have full access to VS Code features:
 
 - **Split the terminal:** Click the split icon in the terminal toolbar (or press `Ctrl+Shift+5`) to open a second terminal side by side. Run normal shell commands in one pane while Claude Code runs in the other.
@@ -129,8 +118,6 @@ While Claude Code is running in the terminal panel, you still have full access t
 - **Peek definitions:** Click on a function name in the editor while Claude Code is explaining it — use `F12` to jump to the definition.
 
 ### Step 6 — Compare: standalone terminal vs VS Code terminal
-
-<StepMeta purpose="Turn the comparison into a concrete decision rule instead of a vague preference." action="Read the comparison table and decide which environment you would choose for terminal-heavy work versus editor-heavy work." expectedResult="You can name at least one situation where the integrated terminal is better and one where a standalone terminal is better." whyItMatters="Choosing the right surface deliberately helps you avoid cramped layouts when you need full terminal space and avoid unnecessary window switching when you need editor feedback." nextStep="Clean up the temporary exercise file so the workspace stays tidy." askTutor="I'm on Step 6 of Use Claude Code inside VS Code terminal. Help me build a simple rule for when to use the integrated terminal versus a standalone terminal." />
 
 Here is a practical comparison:
 
@@ -147,8 +134,6 @@ Here is a practical comparison:
 The standalone terminal wins when you need maximum terminal space (long logs, large diffs). The VS Code terminal wins when you are actively editing code alongside Claude Code.
 
 ### Step 7 — Clean up
-
-<StepMeta purpose="Finish the exercise without leaving behind throwaway files in the project." action="Delete claude-test.txt and confirm the temporary practice file is gone from the workspace." expectedResult="The test file is removed and the workspace no longer contains the practice artifact from the lesson." whyItMatters="Cleanup is part of safe AI-assisted editing because quick experiments can otherwise leave confusing noise in a real project." nextStep="Next, try the graphical Claude Desktop workflow for local projects and richer non-terminal discussions." askTutor="I'm on Step 7 of Use Claude Code inside VS Code terminal. Help me verify the cleanup worked and explain how I would recover the file if I deleted the wrong one." />
 
 Remove the test file so it does not clutter your project:
 

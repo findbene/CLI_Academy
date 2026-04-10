@@ -5,7 +5,6 @@ chapterNumber: "10.3"
 pathNumber: "10"
 tutorPreload: "Walk me through automating one team ritual end to end — from picking it to committing the template."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini-project: automate a team ritual
@@ -17,8 +16,6 @@ In this mini-project you will pick one recurring team ritual, automate it with C
 ## Walkthrough
 
 ### Step 1 — Pick a team ritual to automate
-
-<StepMeta purpose="Choose a recurring workflow that is worth automating and safe to hand to a Claude-assisted process." action="Evaluate candidate rituals against the weekly, formatting-heavy, and low-risk criteria, then commit to one concrete ritual for the mini-project." expectedResult="You select one ritual, such as weekly changelog generation, that is realistic to automate with Claude." whyItMatters="Picking the right ritual determines whether the project is useful and safe; high-frequency, low-risk formatting work is the best place to start." nextStep="Create a dedicated automation directory for that ritual so the scripts, prompts, and outputs stay together." askTutor="I'm on Step 1 of Mini-project: automate a team ritual. Help me judge whether this ritual is the right kind of repeated, low-risk work to automate with Claude." />
 
 Choose a ritual that:
 - Happens at least weekly
@@ -36,8 +33,6 @@ For this walkthrough, we will automate **weekly changelog generation from git**.
 
 ### Step 2 — Create the automation directory
 
-<StepMeta purpose="Create a self-contained project area where the automation assets can live as a reusable package." action="Make the weekly-changelog automation directory inside the repo and move into it before writing scripts or prompts." expectedResult="You have a dedicated folder ready for the gather scripts, session brief, README, and generated outputs." whyItMatters="Keeping the automation package in one place makes it easier to share, document, and commit as a reusable team asset instead of a loose experiment." nextStep="Write the data-gathering script that collects the raw inputs Claude will need for the ritual." askTutor="I'm on Step 2 of Mini-project: automate a team ritual. Help me structure this automation directory so the final package is easy for teammates to run and maintain." />
-
 **macOS / Linux**
 
 ```bash
@@ -53,8 +48,6 @@ Set-Location "$HOME\my-project\automations\weekly-changelog"
 ```
 
 ### Step 3 — Write the data-gathering script
-
-<StepMeta purpose="Automate the collection of raw evidence so Claude receives consistent inputs every time the ritual runs." action="Create the Bash and PowerShell gather scripts that export commits, diff stats, and merged branches into the output directory." expectedResult="You end with at least one data-gathering script that produces the raw files needed for changelog generation." whyItMatters="Reliable automation starts with deterministic inputs, and the gather script is what turns a repeatable ritual into something teammates can run consistently." nextStep="Write the Claude session brief that tells Claude how to turn those raw files into a changelog without inventing details." askTutor="I'm on Step 3 of Mini-project: automate a team ritual. Help me review this gather script and check whether it collects the right raw inputs for a trustworthy changelog." />
 
 Create a script that collects the raw inputs for Claude.
 
@@ -125,8 +118,6 @@ Get-ChildItem $OutputDir
 ```
 
 ### Step 4 — Write the Claude session brief for this ritual
-
-<StepMeta purpose="Define the exact transformation Claude should perform on the gathered data." action="Create changelog-prompt.md with the context, file list, grouping rules, formatting expectations, and output path for the weekly changelog." expectedResult="You have a reusable session brief that tells Claude how to generate the changelog from the raw output files." whyItMatters="The session brief is the contract between your data-gathering step and Claude's summarization step, which keeps the automation consistent across runs." nextStep="Run the gather script, inspect the collected files, and then feed the session brief to Claude for the full end-to-end flow." askTutor="I'm on Step 4 of Mini-project: automate a team ritual. Help me tighten this session brief so Claude groups the changelog correctly without guessing beyond the raw files." />
 
 **macOS / Linux**
 
@@ -209,8 +200,6 @@ Save to: output/changelog-YYYY-MM-DD.md
 
 ### Step 5 — Run the full automation
 
-<StepMeta purpose="Exercise the full pipeline so you can see whether the scripts and prompt work together in practice." action="Execute the gather script, inspect the generated output files, then open Claude in the directory and run the session brief against those files." expectedResult="The automation produces raw data files and a first changelog draft generated from them." whyItMatters="A pipeline only becomes real when every handoff works end to end, from shell script output to Claude-generated deliverable." nextStep="Audit the changelog against the raw commit data before treating the automation as complete." askTutor="I'm on Step 5 of Mini-project: automate a team ritual. Help me verify that the gather script output is good enough before I run the Claude prompt against it." />
-
 Execute the data-gathering script, then feed the results to Claude.
 
 **macOS / Linux**
@@ -240,8 +229,6 @@ Get-Content output\diffstat.txt
 ```
 
 ### Step 6 — Verify the changelog against the raw data
-
-<StepMeta purpose="Make sure the generated changelog is grounded in actual commits and categorized honestly." action="Compare the changelog entries to output/commits.txt and the other raw files, checking for invented features, misgrouped fixes, or missing items." expectedResult="You confirm that each changelog entry traces back to real raw data and that the grouping is accurate." whyItMatters="Stakeholder-facing ritual automation only works when the generated output stays trustworthy, and changelogs are especially sensitive to invented claims." nextStep="Document the entire process in a README so another teammate can run the automation without reverse-engineering it." askTutor="I'm on Step 6 of Mini-project: automate a team ritual. Help me audit this generated changelog so I can catch any invented or miscategorized entries before sharing it." />
 
 After Claude generates the changelog, check every entry:
 
@@ -273,8 +260,6 @@ Confirm:
 > **Real danger:** Sharing a changelog with invented entries — features that were not built, bugs that were not fixed — misleads stakeholders and erodes trust. Always verify before distribution.
 
 ### Step 7 — Document the process in a README
-
-<StepMeta purpose="Turn the working automation into a reusable team package by explaining what it does and how to run it." action="Write a README covering the purpose, run steps, file layout, and schedule for the weekly changelog automation." expectedResult="The automation directory includes a README that explains how teammates can run, review, and understand the workflow." whyItMatters="Reusable automation needs local documentation, otherwise the scripts and prompt become tribal knowledge that only the author can operate." nextStep="Add output/ to .gitignore and commit the reusable automation template from the project root." askTutor="I'm on Step 7 of Mini-project: automate a team ritual. Help me write a README that makes this automation package understandable to someone who did not build it." />
 
 **macOS / Linux**
 
@@ -335,8 +320,6 @@ Run every Friday before the team sync.
 ```
 
 ### Step 8 — Gitignore output files and commit the template
-
-<StepMeta purpose="Finalize the reusable automation package while keeping generated output out of version control." action="Add output/ to .gitignore inside the automation directory, then stage and commit the full weekly-changelog package from the repo root." expectedResult="You create a clean commit containing the scripts, prompt, and README, while generated artifacts remain ignored." whyItMatters="Ignoring generated output keeps the template reusable and the repo clean, which is essential if the team will run the ritual repeatedly." nextStep="Use the same package approach for future team rituals so each automation has clear inputs, prompt contracts, docs, and verification steps." askTutor="I'm on Step 8 of Mini-project: automate a team ritual. Help me do a final package review so I commit the reusable template but keep generated output out of version control." />
 
 **macOS / Linux**
 

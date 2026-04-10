@@ -5,7 +5,6 @@ chapterNumber: "2.3"
 pathNumber: "2"
 tutorPreload: "Turn everything I used today into a cheat sheet I can actually trust."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: create your command cheat sheet
@@ -17,8 +16,6 @@ Build a real `command-cheat-sheet.md` file by running every command you learned 
 ## Walkthrough
 
 ### Step 1 — Create the cheat sheet workspace
-
-<StepMeta purpose="Create a dedicated place for your reusable terminal reference instead of mixing it with project files." action="Move to your home directory, create cli-academy/cheatsheets if needed, enter it, and print the path." expectedResult="You are inside a cheatsheets folder under cli-academy and the location is confirmed in the terminal." whyItMatters="A predictable storage location makes the cheat sheet easy to revisit and expand after future lessons." nextStep="Once the workspace exists, create the markdown file and write a simple header into it." askTutor="I'm on Step 1 of Mini project: create your command cheat sheet. Help me verify that I created the cheatsheets folder in the right place and not inside some unrelated project." />
 
 Start from your home directory.
 
@@ -42,8 +39,6 @@ Get-Location
 
 ### Step 2 — Create the file and write the header
 
-<StepMeta purpose="Turn the new workspace into a real document with a clear title and opening description." action="Create command-cheat-sheet.md and write the header plus one short description paragraph." expectedResult="A markdown file exists with a title and introductory text instead of an empty file." whyItMatters="Starting with a clean header makes the cheat sheet readable and gives later sections a stable document structure." nextStep="After the header is in place, add the navigation commands you learned in this path." askTutor="I'm on Step 2 of Mini project: create your command cheat sheet. Help me confirm that these commands created the file correctly and explain how to tell whether I overwrote or appended at each line." />
-
 **macOS / Linux**
 
 ```bash
@@ -63,8 +58,6 @@ Add-Content command-cheat-sheet.md ""
 ```
 
 ### Step 3 — Add the navigation section
-
-<StepMeta purpose="Capture the movement commands from Path 02 while they are still fresh." action="Append the Navigation heading and the listed navigation command bullets to the cheat sheet." expectedResult="The file gains a new navigation section with the key location and movement commands for your platform." whyItMatters="Documenting commands immediately after using them turns short-term memory into a durable reference you can trust later." nextStep="Once navigation is captured, add the commands for creating files and folders." askTutor="I'm on Step 3 of Mini project: create your command cheat sheet. Help me review this navigation section and tell me whether any command descriptions are misleading for a beginner." />
 
 Run each command and then record it in your cheat sheet.
 
@@ -96,8 +89,6 @@ Add-Content command-cheat-sheet.md ""
 
 ### Step 4 — Add the file creation section
 
-<StepMeta purpose="Record the creation commands that build files and folders from the terminal." action="Append the Creating files and folders heading plus the listed creation command bullets." expectedResult="The cheat sheet now includes a section describing mkdir and file-writing commands for your shell." whyItMatters="Creation commands are the ones learners most often confuse with destructive overwrites, so documenting them clearly has long-term value." nextStep="After creation commands are documented, add the move, rename, and copy commands that help reorganize files safely." askTutor="I'm on Step 4 of Mini project: create your command cheat sheet. Help me check that these file-creation entries clearly distinguish between creating new content and appending to existing files." />
-
 **macOS / Linux**
 
 ```bash
@@ -122,8 +113,6 @@ Add-Content command-cheat-sheet.md ""
 
 ### Step 5 — Add the move / rename / copy section
 
-<StepMeta purpose="Capture the file-organization commands you practiced in the previous chapter." action="Append the moving, renaming, and copying section with the listed file-operation bullets." expectedResult="The document gains a section covering rename, move, copy, and recursive copy commands." whyItMatters="These commands are powerful enough to cause damage, so a written reference helps slow you down and reduce mistakes later." nextStep="Once file movement commands are written down, add the reading and editing tools from the final chapter of the path." askTutor="I'm on Step 5 of Mini project: create your command cheat sheet. Help me review whether these move and copy entries are accurate for my platform and call out any dangerous ones that deserve extra caution." />
-
 **macOS / Linux**
 
 ```bash
@@ -147,8 +136,6 @@ Add-Content command-cheat-sheet.md ""
 ```
 
 ### Step 6 — Add the reading and editing section
-
-<StepMeta purpose="Complete the cheat sheet with the file-inspection and safe-editing commands from this chapter." action="Append the Reading and editing heading plus the listed file-reading, diff, and editor commands." expectedResult="The file now includes a section covering full reads, partial reads, counts, comparisons, and opening files in an editor." whyItMatters="Reading and editing commands are the bridge between file management and real development work, so they need a permanent place in your reference." nextStep="After the command catalog is complete, add the safety habits that explain how to use those commands responsibly." askTutor="I'm on Step 6 of Mini project: create your command cheat sheet. Help me check whether this section covers the most important reading and editing commands from Path 02 without mixing up the safe and destructive ones." />
 
 **macOS / Linux**
 
@@ -178,8 +165,6 @@ Add-Content command-cheat-sheet.md ""
 
 ### Step 7 — Add the safety habits section
 
-<StepMeta purpose="End the cheat sheet with behavioral rules, not just commands." action="Append the Safety habits section and the listed protective habits to the file." expectedResult="The cheat sheet includes a final section of plain-language reminders about verification, backups, and cautious command use." whyItMatters="A trustworthy cheat sheet needs safety rules alongside syntax so you remember how to use the commands, not just how to type them." nextStep="Once the habits section is in place, read the full cheat sheet back to verify the structure and content end to end." askTutor="I'm on Step 7 of Mini project: create your command cheat sheet. Help me review these safety habits and tell me whether any other rule from Path 02 deserves to be on this list." />
-
 **macOS / Linux**
 
 ```bash
@@ -202,8 +187,6 @@ Add-Content command-cheat-sheet.md "- Use Get-ChildItem before Move-Item to chec
 
 ### Step 8 — Read back your finished cheat sheet
 
-<StepMeta purpose="Do one full review pass on the completed reference before you trust it." action="Print the full command-cheat-sheet.md file to the terminal and read through every section." expectedResult="You can see the entire cheat sheet in the terminal with all major sections present and in order." whyItMatters="A full readback catches formatting problems, missing sections, and obvious copy-paste errors before the reference becomes part of your routine." nextStep="After the readback looks solid, count the documented command lines to confirm the sheet has enough useful content." askTutor="I'm on Step 8 of Mini project: create your command cheat sheet. Help me review the finished cheat sheet and tell me whether the sections flow logically for a beginner using it later." />
-
 **macOS / Linux**
 
 ```bash
@@ -217,8 +200,6 @@ Get-Content command-cheat-sheet.md
 ```
 
 ### Step 9 — Count the commands you documented
-
-<StepMeta purpose="Measure whether the cheat sheet is substantial enough to be genuinely useful." action="Count the dash-prefixed command entries in command-cheat-sheet.md." expectedResult="The terminal prints at least 20 command lines from the finished cheat sheet." whyItMatters="A final count verifies that you captured a meaningful portion of the path instead of stopping after a few example commands." nextStep="After this step, you have a real reusable command reference built entirely from terminal work and ready to extend in later paths." askTutor="I'm on Step 9 of Mini project: create your command cheat sheet. Help me interpret this entry count and tell me whether the sheet looks complete enough to use as a real reference." />
 
 **macOS / Linux**
 

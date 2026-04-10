@@ -5,7 +5,6 @@ chapterNumber: "7.3"
 pathNumber: "7"
 tutorPreload: "Show me how to use claude.ai in the browser to quickly prototype and iterate on an idea without setting up a local project."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Use Claude AI for quick prototyping
@@ -17,8 +16,6 @@ By the end of this lesson you will use claude.ai in the browser to upload a file
 ## Walkthrough
 
 ### Step 1 — Open claude.ai and start a conversation
-
-<StepMeta purpose="Use the fastest possible Claude entry point so you can feel how little setup the browser surface requires." action="Open claude.ai, sign in, start a new chat, and send one simple exploratory prompt." expectedResult="Claude responds immediately in the browser without any local installation or terminal setup." whyItMatters="The browser is valuable precisely because it removes startup friction when you want to think, draft, or prototype quickly." nextStep="Upload a real file so the conversation moves from generic brainstorming into grounded analysis." askTutor="I'm on Step 1 of Use Claude AI for quick prototyping. Help me understand what the browser experience is good for before I upload any files or build anything." />
 
 Open your browser and navigate to [claude.ai](https://claude.ai). Sign in with your Anthropic account.
 
@@ -33,8 +30,6 @@ What are three things I should think about before building a to-do app?
 Claude responds immediately in the browser. No setup time.
 
 ### Step 2 — Upload a file for analysis
-
-<StepMeta purpose="Ground the browser conversation in a real artifact from your work instead of staying abstract." action="Upload a project file and ask Claude to explain what it does or flag possible issues." expectedResult="Claude analyzes the uploaded file contents and responds specifically to that file rather than speaking in generalities." whyItMatters="File upload is the browser equivalent of providing working context, and it is how quick prototyping becomes informed instead of generic." nextStep="Turn the conversation into something interactive by asking Claude to generate an artifact." askTutor="I'm on Step 2 of Use Claude AI for quick prototyping. Help me choose a useful file to upload and a prompt that will prove Claude read it carefully." />
 
 Click the **paperclip icon** (📎) at the bottom of the chat input, or drag a file from your file manager directly into the chat.
 
@@ -51,8 +46,6 @@ Claude reads the uploaded file and gives analysis. You can upload multiple files
 > **Limitation:** Uploaded files live only in the current conversation. They are not saved to your disk or synced anywhere. If you start a new conversation, you must upload again.
 
 ### Step 3 — Create an artifact
-
-<StepMeta purpose="Use the browser-only live preview feature to turn an idea into something you can interact with immediately." action="Ask Claude to build a simple HTML or UI artifact, open the preview, and iterate with at least one follow-up change request." expectedResult="Claude generates code and renders a working preview in the artifact panel beside the conversation." whyItMatters="Artifacts are one of the clearest reasons to choose the browser first when you want quick visual iteration without project setup." nextStep="Organize the work into a Project so files and conversations can persist together across multiple chats." askTutor="I'm on Step 3 of Use Claude AI for quick prototyping. Help me understand what artifacts can and cannot do and how to fix one that does not render." />
 
 Artifacts are a browser-only feature that lets Claude generate interactive previews — like a mini web page or a runnable React component — right inside the chat.
 
@@ -79,8 +72,6 @@ Artifacts are great for:
 
 ### Step 4 — Use the Projects feature
 
-<StepMeta purpose="Give your browser work longer-lived structure so you do not have to rebuild context from scratch every time." action="Create a Project, add persistent reference files, and start a conversation inside that Project." expectedResult="Claude can refer to the project files across chats within the same Project without requiring repeated uploads." whyItMatters="Projects are the browser's answer to reusable context, making longer prototype threads much less repetitive." nextStep="Review the limitations table so you know where browser convenience stops and local tooling becomes necessary." askTutor="I'm on Step 4 of Use Claude AI for quick prototyping. Help me understand when Projects are worth creating and what kind of files belong in them." />
-
 Projects let you organize related conversations and attach reference files that persist across chats.
 
 1. Click **Projects** in the left sidebar (or the menu on mobile).
@@ -102,8 +93,6 @@ Based on the files in this project, suggest a folder structure for the To-do app
 - Sharing a project with collaborators (if your plan supports it).
 
 ### Step 5 — Understand the limitations
-
-<StepMeta purpose="Build a realistic boundary around browser Claude so you use it for the work it accelerates instead of the work it cannot finish." action="Study the browser versus CLI comparison and decide which tasks you would keep in the browser versus move to local tools." expectedResult="You can name at least one browser-first use case and one case where the CLI is clearly required." whyItMatters="Fast prototyping is only helpful when you also know when to stop prototyping and switch to a surface that can touch real files and commands." nextStep="Export one generated result so you can move browser work back into a local project." askTutor="I'm on Step 5 of Use Claude AI for quick prototyping. Help me compare browser Claude with the CLI in a way that guides real tool choice." />
 
 The browser interface is powerful for conversation and prototyping, but it cannot do everything the CLI can. Here is the honest comparison:
 
@@ -134,8 +123,6 @@ The browser interface is powerful for conversation and prototyping, but it canno
 - You need to modify multiple files across a project.
 
 ### Step 6 — Export your work from the browser
-
-<StepMeta purpose="Close the loop by moving a useful browser output into a real local file you can keep working on." action="Copy code from the artifact or conversation, save it into a file locally, and confirm you can continue from there outside the browser." expectedResult="A local file such as prototype.html contains the Claude-generated output from the browser session." whyItMatters="Browser Claude is strongest when it feeds a broader workflow, so exporting work cleanly is how prototypes become reusable assets." nextStep="Next, compare the same coding task across CLI, Desktop, and browser to decide which environment fits which job best." askTutor="I'm on Step 6 of Use Claude AI for quick prototyping. Help me export browser output cleanly into a local file without losing formatting or structure." />
 
 Anything Claude generates in the browser stays in the browser. To bring it into your local project:
 

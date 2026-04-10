@@ -33,32 +33,9 @@ export default async function LoungePage() {
   });
 
   return (
-    <div
-      className="relative min-h-screen overflow-x-clip selection:bg-[var(--color-accent-subtle-strong)] selection:text-[var(--color-fg-default)]"
-      style={{
-        background:
-          "linear-gradient(180deg, var(--color-bg-page) 0%, var(--color-bg-lesson) 38%, var(--color-bg-page) 100%)",
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[34rem]"
-        style={{
-          background:
-            "radial-gradient(circle at top left, rgba(22, 176, 168, 0.18), transparent 32%), radial-gradient(circle at 84% 18%, rgba(201, 134, 18, 0.14), transparent 18%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(20, 32, 58, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 32, 58, 0.04) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-          maskImage: "linear-gradient(180deg, white 0%, white 42%, transparent 78%)",
-        }}
-      />
-      <div className="pointer-events-none absolute -left-24 top-28 h-72 w-72 rounded-full bg-[rgba(22,176,168,0.12)] blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 top-12 h-64 w-64 rounded-full bg-[rgba(201,134,18,0.1)] blur-3xl" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[var(--color-bg-page)] to-transparent" />
+    <div className="relative min-h-screen bg-[#0F1117] selection:bg-[#00D4FF]/30 selection:text-white">
+      <div className="pointer-events-none absolute top-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-[#00D4FF]/10 blur-[150px]" />
+      <div className="pointer-events-none absolute right-[-10%] bottom-[-10%] h-[40%] w-[40%] rounded-full bg-[#FFB300]/5 blur-[150px]" />
 
       <div className="relative z-10 w-full">
         <AgentLounge items={items} />

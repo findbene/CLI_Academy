@@ -5,7 +5,6 @@ chapterNumber: "15.2"
 pathNumber: "15"
 tutorPreload: "Compare Google Cloud Shell and AWS CloudShell, including preinstalled tools and session limits."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Use Google Cloud Shell or AWS CloudShell
@@ -19,8 +18,6 @@ By the end of this lesson you will be able to open a terminal session in Google 
 Both Google Cloud Platform (GCP) and Amazon Web Services (AWS) offer free browser-based terminals. These are not full virtual machines you own — they are managed shells with limitations. Understanding those limits prevents surprises.
 
 ### Step 1 — Open Google Cloud Shell
-
-<StepMeta purpose="Inspect a managed browser-based shell where the cloud provider already supplies most of the CLI tooling." action="Open Google Cloud Shell from the console, then run the environment inspection commands for user, home directory, Node, Python, and `gcloud`." expectedResult="You understand what Google Cloud Shell provides by default, what persists in `$HOME`, and how the session is constrained." whyItMatters="Managed cloud shells are convenient, but only if you understand what is preinstalled and what disappears when the session ends." nextStep="Install Claude Code in Google Cloud Shell so you can see how a persistent browser shell behaves as a remote agent environment." askTutor="Help me interpret the Google Cloud Shell environment and tell me what parts persist between sessions versus what gets wiped." />
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com).
 2. Click the **Activate Cloud Shell** icon (terminal icon in the top-right toolbar).
@@ -58,8 +55,6 @@ gcloud --version
 
 ### Step 2 — Install Claude Code in Google Cloud Shell
 
-<StepMeta purpose="Turn Google Cloud Shell into a lightweight remote Claude environment using the tooling it already ships with." action="Install `@anthropic-ai/claude-code` globally with npm and verify the result with `claude --version`." expectedResult="Claude Code is installed in Google Cloud Shell and can be authenticated for use in later sessions." whyItMatters="This shows how quickly a managed provider shell can become a temporary agent workstation without you provisioning a server yourself." nextStep="Open AWS CloudShell next and compare its defaults, storage limits, and ergonomics to Google's version." askTutor="Troubleshoot this Google Cloud Shell install with me if npm or Claude Code fails, and tell me whether the `$HOME` persistence changes what I need to reinstall later." />
-
 ```bash
 npm install -g @anthropic-ai/claude-code
 claude --version
@@ -68,8 +63,6 @@ claude --version
 Authenticate by following the URL printed in the terminal. Remember: your `$HOME` directory persists, so Claude Code stays installed between sessions.
 
 ### Step 3 — Open AWS CloudShell
-
-<StepMeta purpose="Compare a second provider-managed shell so you can judge tradeoffs instead of assuming all cloud shells work the same way." action="Open AWS CloudShell from the AWS console and inspect the user, home directory, Node, Python, and AWS CLI versions." expectedResult="You can compare AWS CloudShell's base environment and storage constraints against Google Cloud Shell from the previous steps." whyItMatters="Remote shell selection matters because provider defaults, persistence, and storage limits change what tasks are realistic in each environment." nextStep="Install Claude Code in AWS CloudShell too, then note how the smaller persistent storage affects package management decisions." askTutor="Explain the main environment differences between AWS CloudShell and Google Cloud Shell based on these inspection commands." />
 
 1. Sign in to [console.aws.amazon.com](https://console.aws.amazon.com).
 2. Click the **CloudShell** icon (terminal icon in the top navigation bar).
@@ -105,8 +98,6 @@ aws --version
 
 ### Step 4 — Install Claude Code in AWS CloudShell
 
-<StepMeta purpose="Validate that Claude Code can also run inside AWS's managed shell, while staying aware of tighter storage limits." action="Install Claude Code with npm and verify the install with `claude --version`, then keep the 1 GB `$HOME` limit in mind." expectedResult="Claude Code runs in AWS CloudShell, but you recognize that the environment is best for lightweight work rather than large multi-tool builds." whyItMatters="Tooling that fits comfortably in one remote shell may become fragile in another, and storage pressure is a real operational constraint." nextStep="Review the practical session and platform limits that matter most before relying on either provider shell for repeated work." askTutor="Help me decide whether AWS CloudShell is sufficient for my task or whether its storage and tooling limits make a full server or Codespace a better fit." />
-
 ```bash
 npm install -g @anthropic-ai/claude-code
 claude --version
@@ -115,8 +106,6 @@ claude --version
 Since `$HOME` is only 1 GB on AWS CloudShell, installing many global packages will fill up fast. Use it for lightweight tasks, not full project builds.
 
 ### Step 5 — Know the limits that matter
-
-<StepMeta purpose="Make sure you understand the operational and security boundaries before trusting a managed shell with real work." action="Read the side-by-side limits table and the safety note about account permissions, then identify which limitation matters most for your intended workflow." expectedResult="You can explain the practical restrictions around persistence, networking, Docker, background processes, and account-scoped permissions." whyItMatters="The right remote shell depends less on whether it launches and more on whether its limits match the type of work you need to do." nextStep="Use those environment tradeoffs in the next lessons, where you move from managed browser shells to running Claude Code on a real remote server you control." askTutor="Compare these Cloud Shell limits for me and recommend when I should choose Codespaces, Google Cloud Shell, AWS CloudShell, or a full remote server instead." />
 
 Both cloud shells have restrictions that can catch you off guard:
 

@@ -5,7 +5,6 @@ chapterNumber: "3.3"
 pathNumber: "3"
 tutorPreload: "Coach me through the ask-plan-edit-run-verify loop one step at a time without doing the thinking for me."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Mini project: first real improvement
@@ -17,8 +16,6 @@ Put the full Claude Code loop together: open a repo, ask Claude Code to identify
 ## Walkthrough
 
 ### Step 1 — Open your practice repo in Claude Code
-
-<StepMeta purpose="Start the capstone exercise from the repo and tool context where the full workflow will happen." action="Move into cli-practice and launch Claude Code." expectedResult="Claude Code opens inside the practice repository and is ready for a new session." whyItMatters="The full ask-plan-edit-run-commit loop only works if every later action is grounded in the same repo context from the start." nextStep="Once the session is live, ask Claude Code to suggest one concrete improvement without making changes yet." askTutor="I'm on Step 1 of Mini project: first real improvement. Help me verify that Claude Code is open in the correct practice repo before I ask for an improvement idea." />
 
 **macOS / Linux**
 ```bash
@@ -33,8 +30,6 @@ claude
 ```
 
 ### Step 2 — Ask Claude Code to suggest an improvement
-
-<StepMeta purpose="Generate one bounded improvement idea before any editing begins." action="Ask Claude Code for a concrete improvement that makes the greeter more useful, but explicitly forbid changes for now." expectedResult="Claude Code suggests one or more small improvements and names which files would be involved." whyItMatters="Separating idea generation from implementation keeps you in planning mode long enough to choose the right scope." nextStep="After you pick an improvement, ask Claude Code to show the exact planned diff before writing anything." askTutor="I'm on Step 2 of Mini project: first real improvement. Help me evaluate Claude Code's suggested improvement ideas and choose one that is useful but still safely small." />
 
 At the prompt, type:
 
@@ -52,8 +47,6 @@ Read the suggestion. Pick the one that sounds most interesting to you (or ask fo
 
 ### Step 3 — Review the plan before approving
 
-<StepMeta purpose="Force the assistant to expose its implementation plan before it touches the files." action="Ask Claude Code to implement the chosen change but show the diff first, then review the proposed edit carefully." expectedResult="You can inspect the planned file changes, touched files, and new lines before deciding whether to keep them." whyItMatters="Previewing the change preserves your control over scope and makes the assistant's reasoning visible enough to challenge." nextStep="Once the proposed change makes sense, exit the session and run the project to verify the improvement in action." askTutor="I'm on Step 3 of Mini project: first real improvement. Help me review this proposed diff and tell me whether it matches the improvement I approved without sneaking in extra changes." />
-
 Once you have picked an improvement, confirm the scope:
 
 ```
@@ -69,8 +62,6 @@ Claude Code outlines the exact edits — which files change, what lines are adde
 When you are satisfied, let Claude Code write the change to disk. (If your version of Claude Code auto-writes, the file is already saved. If it asks for confirmation, approve it.)
 
 ### Step 4 — Run the project and verify
-
-<StepMeta purpose="Prove that the approved improvement works in the running project, not just in the diff preview." action="Exit Claude Code, run npm start, and if relevant test the new behavior such as a command-line name argument." expectedResult="The project runs successfully and the new behavior appears exactly as intended." whyItMatters="Runtime verification is the step that turns a plausible edit into a trustworthy improvement." nextStep="If the run looks good, stage the change and commit it with a feature-focused message." askTutor="I'm on Step 4 of Mini project: first real improvement. Help me compare the expected output to the real output so I can tell whether the improvement truly works or still needs debugging." />
 
 Exit Claude Code with `/exit` and run the project:
 
@@ -96,8 +87,6 @@ If the output matches, the improvement works. If there is an error, relaunch Cla
 
 ### Step 5 — Commit the improvement
 
-<StepMeta purpose="Record the shipped improvement as its own clean feature checkpoint." action="Stage the changed files and commit them with a message that describes what the improvement does." expectedResult="Git records one feature commit corresponding to the improvement you just verified." whyItMatters="Commit messages should describe user-visible behavior so later readers understand the change without reading the diff first." nextStep="After the feature commit lands, update the changelog so the human-readable history stays current." askTutor="I'm on Step 5 of Mini project: first real improvement. Help me confirm that my staged files match the verified feature and that the commit message describes the outcome clearly." />
-
 ```bash
 git add -A
 git commit -m "feat: accept name argument from command line"
@@ -106,8 +95,6 @@ git commit -m "feat: accept name argument from command line"
 Use a message that describes what the improvement does, not how you did it. Adjust the message to match whatever change you actually made.
 
 ### Step 6 — Update the CHANGELOG
-
-<StepMeta purpose="Keep the non-technical project narrative aligned with the newly shipped feature." action="Launch Claude Code, ask it to add the new feature entry to CHANGELOG.md, review the diff, then save it." expectedResult="CHANGELOG.md gains one new entry in the same style as the previous notes." whyItMatters="A project history is strongest when technical commits and human-readable summaries stay in sync." nextStep="After the changelog update is committed, inspect the full git log so you can see the end-to-end story of the practice repo." askTutor="I'm on Step 6 of Mini project: first real improvement. Help me review this new changelog entry and confirm that it accurately describes the feature I just committed." />
 
 Launch Claude Code one more time:
 
@@ -127,8 +114,6 @@ git commit -m "docs: update CHANGELOG with new feature"
 ```
 
 ### Step 7 — Celebrate the full loop
-
-<StepMeta purpose="Close the mini project by reflecting on the complete workflow you just executed." action="Run git log --oneline and review the commit history from initial setup through feature and changelog updates." expectedResult="The terminal shows a clean sequence of commits that tells the story of the practice project." whyItMatters="Seeing the whole history reinforces that Claude Code is most powerful inside a disciplined loop, not as a shortcut around review and verification." nextStep="After this step, you have completed the full Claude Code beginner loop and are ready to apply the same pattern in larger repos and later paths." askTutor="I'm on Step 7 of Mini project: first real improvement. Help me read this git history as a workflow story and point out whether any part of the loop is still missing or messy." />
 
 Run `git log --oneline` to see the full history of your practice project:
 

@@ -5,7 +5,6 @@ chapterNumber: "6.1"
 pathNumber: "6"
 tutorPreload: "Walk me through what git status is showing me and what my safest next step is."
 verifyType: "terminal_output"
-stepSchemaVersion: 1
 ---
 
 # Stage, commit, and push your first change
@@ -17,8 +16,6 @@ By the end of this lesson you will complete the full add → commit → push cyc
 ## Walkthrough
 
 ### Step 1 — Start a fresh repository with a file
-
-<StepMeta purpose="Create a minimal repo so you can practice the full push workflow from a clean starting point." action="Initialize a new repository, create README.md, and inspect git status before staging anything." expectedResult="Git shows the new file as untracked and the repo contains no commits yet." whyItMatters="Starting small keeps the push workflow readable: you can see each state change in git status without other noise." nextStep="Stage the README and observe how git status changes before the first commit." askTutor="I'm on Step 1 of Stage, commit, and push your first change. Help me read this initial git status output and explain what untracked really means." />
 
 **macOS / Linux:**
 
@@ -46,8 +43,6 @@ Output shows `README.md` as untracked. Git sees the file but is not watching it 
 
 ### Step 2 — Stage the file and check status again
 
-<StepMeta purpose="Move the file into the staging area so Git knows exactly what should go into the next snapshot." action="Run git add README.md and compare the new git status output to the untracked state from before." expectedResult="README.md moves under Changes to be committed, showing that it is staged but not yet recorded." whyItMatters="Staging is Git's review buffer, and understanding it prevents accidental commits of the wrong files later." nextStep="Commit the staged snapshot and confirm the working tree becomes clean afterward." askTutor="I'm on Step 2 of Stage, commit, and push your first change. Help me understand the difference between staging a file and actually committing it." />
-
 ```bash
 git add README.md
 git status
@@ -56,8 +51,6 @@ git status
 Now `README.md` appears under **Changes to be committed** in green. Staging is like placing items on a counter before packing them into a box. Nothing is permanent yet.
 
 ### Step 3 — Commit and check status once more
-
-<StepMeta purpose="Record the staged file as the first real local snapshot before you involve any remote service." action="Commit the staged README, run git status again, and inspect git log --oneline." expectedResult="Git reports a clean working tree and shows one local commit with your message." whyItMatters="The local commit is the unit you will push later, so it is important to separate local history from remote publishing in your mental model." nextStep="Create the matching empty repository on GitHub so the local repo has somewhere to push." askTutor="I'm on Step 3 of Stage, commit, and push your first change. Help me connect the clean working tree message to the fact that my snapshot is now only stored locally." />
 
 ```bash
 git commit -m "Initial commit with README"
@@ -74,8 +67,6 @@ One commit with your message.
 
 ### Step 4 — Create a GitHub repository
 
-<StepMeta purpose="Provision the remote destination that will receive your local commit history." action="Create a new GitHub repository with the same project name and leave README creation unchecked so it stays empty." expectedResult="GitHub gives you a fresh remote repo and setup instructions that assume your local history already exists." whyItMatters="Keeping the remote empty avoids unnecessary merge noise when you connect and push your local main branch for the first time." nextStep="Choose how you want GitHub authentication to work before you connect the remote URL." askTutor="I'm on Step 4 of Stage, commit, and push your first change. Help me understand why GitHub should not generate a README here and how that keeps the first push simple." />
-
 Go to [github.com/new](https://github.com/new) and create a new repository. Use these settings:
 
 - **Repository name:** `first-push-lab`
@@ -85,8 +76,6 @@ Go to [github.com/new](https://github.com/new) and create a new repository. Use 
 Click **Create repository**. GitHub shows setup instructions — you will use the commands below.
 
 ### Step 5 — Choose your authentication method
-
-<StepMeta purpose="Pick a GitHub authentication path that will let pushes succeed reliably from your machine." action="Decide between HTTPS with a personal access token or SSH with a keypair and configure the one you want to use." expectedResult="You either have a token ready for HTTPS pushes or a tested SSH key connection to GitHub." whyItMatters="Most first-push problems are authentication problems, so choosing and validating the auth method early saves confusion later." nextStep="Add the GitHub remote URL and push the local main branch to origin." askTutor="I'm on Step 5 of Stage, commit, and push your first change. Help me choose between HTTPS and SSH for this machine and explain the tradeoffs clearly." />
 
 GitHub requires authentication to push. You have two options.
 
@@ -135,8 +124,6 @@ You should see `Hi <username>! You've successfully authenticated`.
 
 ### Step 6 — Connect and push
 
-<StepMeta purpose="Link the local repo to GitHub and publish the main branch for the first time." action="Add origin, rename the branch to main if needed, and run the first git push -u origin main." expectedResult="The push succeeds and Git records origin/main as the default upstream for future pushes." whyItMatters="This is the moment local history becomes shared remote history, which is the core handoff between solo work and collaboration." nextStep="Verify that the remote tracking branch exists and that GitHub shows the files you pushed." askTutor="I'm on Step 6 of Stage, commit, and push your first change. Help me interpret this first push output and tell me what the -u upstream flag changed." />
-
 Replace `YOUR_USERNAME` with your actual GitHub username.
 
 **HTTPS:**
@@ -159,8 +146,6 @@ git push -u origin main
 
 ### Step 7 — Verify the push
 
-<StepMeta purpose="Confirm that the local repo and the remote repo now agree about the branch state." action="Run git status and inspect the GitHub repository page to verify the README and commit history are present remotely." expectedResult="Git reports that your branch is up to date with origin/main and GitHub shows the pushed repository contents." whyItMatters="Verification matters because a successful-looking push command is only useful if the remote really reflects the expected state." nextStep="Make one more small edit and push again so the add-commit-push loop feels routine instead of one-time." askTutor="I'm on Step 7 of Stage, commit, and push your first change. Help me verify that origin/main is actually tracking the right remote branch and not just reporting a cached state." />
-
 ```bash
 git status
 ```
@@ -170,8 +155,6 @@ Output: `Your branch is up to date with 'origin/main'.`
 Now visit `https://github.com/YOUR_USERNAME/first-push-lab` in your browser. You should see your README file and your commit message.
 
 ### Step 8 — Make a second change and push again
-
-<StepMeta purpose="Repeat the full workflow once more so the push loop becomes a habit instead of a one-off success." action="Append a line to README.md, stage it, commit it, and push without retyping the full remote target." expectedResult="A second commit lands on GitHub and git status returns to a clean up-to-date state afterward." whyItMatters="The second push proves the upstream is configured correctly and reinforces the everyday add-commit-push rhythm you will use constantly." nextStep="With basic push skills in place, move on to branches so work can be isolated from main safely." askTutor="I'm on Step 8 of Stage, commit, and push your first change. Help me confirm why git push is shorter now and what Git remembered from the first push." />
 
 **macOS / Linux:**
 
