@@ -1,11 +1,17 @@
+import { AcademyStandardsPanel } from "@/components/academy/AcademyStandardsPanel";
 import { FlagshipCourseCard } from "@/components/academy/FlagshipCourseCard";
 import { AssetVaultCard } from "@/components/assets/AssetVaultCard";
 import { getAllLocalAssets } from "@/lib/assets";
-import { PROMPT_STUDIO_TRACKS } from "@/lib/academy";
+import { CHAPTER_MEDIA_REQUIREMENTS, MASTERY_TRACKS, PROMPT_STUDIO_TRACKS } from "@/lib/academy";
 
 export default function PromptContextStudioPage() {
   const studioAssets = getAllLocalAssets().filter((asset) =>
-    ["prompt-context-studio-starter-pack", "builder-extension-pack-blueprint"].includes(asset.slug),
+    [
+      "prompt-context-studio-starter-pack",
+      "builder-extension-pack-blueprint",
+      "cost-engineering-multi-provider-playbook",
+      "chapter-mini-notes-series",
+    ].includes(asset.slug),
   );
 
   return (
@@ -23,6 +29,18 @@ export default function PromptContextStudioPage() {
         {PROMPT_STUDIO_TRACKS.map((course) => (
           <FlagshipCourseCard key={course.title} course={course} />
         ))}
+      </section>
+
+      <section id="mastery-track" className="mt-8">
+        <div>
+          <div className="eyebrow">Mastery track</div>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight">Add cost, scaling, and multi-provider resilience after the capstone</h2>
+        </div>
+        <div className="mt-8 grid gap-4 xl:grid-cols-2">
+          {MASTERY_TRACKS.map((course) => (
+            <FlagshipCourseCard key={course.title} course={course} />
+          ))}
+        </div>
       </section>
 
       <section id="workflow-studio" className="mt-8 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
@@ -80,6 +98,14 @@ export default function PromptContextStudioPage() {
           ))}
         </div>
       </section>
+
+      <div className="mt-8">
+        <AcademyStandardsPanel
+          standards={CHAPTER_MEDIA_REQUIREMENTS}
+          eyebrow="Studio standard"
+          title="Prompt and context lessons stay visual, printable, and beginner-readable"
+        />
+      </div>
     </main>
   );
 }

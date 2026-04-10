@@ -6,6 +6,14 @@ export default function AssetVaultPage() {
   const assets = getAllLocalAssets();
   const freeCount = assets.filter((asset) => asset.tier === "free").length;
   const proCount = assets.filter((asset) => asset.tier === "pro").length;
+  const spotlightAssets = assets.filter((asset) =>
+    [
+      "chapter-mini-notes-series",
+      "2026-runtime-and-deployment-update-brief",
+      "cost-engineering-multi-provider-playbook",
+      "capstone-showcase-submission-kit",
+    ].includes(asset.slug),
+  );
 
   return (
     <main className="page-shell py-12">
@@ -29,6 +37,18 @@ export default function AssetVaultPage() {
           <span className="badge" data-tone="accent">{freeCount} free assets</span>
           <span className="badge" data-tone="warning">{proCount} pro assets</span>
           <span className="badge">{assets.length} total vault entries</span>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <div>
+          <div className="eyebrow">New in this pass</div>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight">Mini Notes, 2026 update briefs, mastery playbooks, and showcase packs</h2>
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {spotlightAssets.map((asset) => (
+            <AssetVaultCard key={asset.slug} asset={asset} />
+          ))}
         </div>
       </section>
 

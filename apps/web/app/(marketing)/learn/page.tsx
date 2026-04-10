@@ -1,9 +1,20 @@
 import Link from "next/link";
+import { AcademyBadgesPanel } from "@/components/academy/AcademyBadgesPanel";
+import { AcademyStandardsPanel } from "@/components/academy/AcademyStandardsPanel";
+import { CommunityShowcasePanel } from "@/components/academy/CommunityShowcasePanel";
 import { AcademySurfaceCard } from "@/components/academy/AcademySurfaceCard";
 import { FastPathWeekCard } from "@/components/academy/FastPathWeekCard";
+import { FlagshipCourseCard } from "@/components/academy/FlagshipCourseCard";
 import { SpineProjectDashboard } from "@/components/academy/SpineProjectDashboard";
 import { getCatalogPathBySlug, type CatalogPath } from "@/lib/catalog";
-import { ACADEMY_SURFACES, FAST_PATH_WEEKS } from "@/lib/academy";
+import {
+  ACADEMY_BADGES,
+  ACADEMY_SURFACES,
+  CHAPTER_MEDIA_REQUIREMENTS,
+  COMMUNITY_SHOWCASE_HIGHLIGHTS,
+  FAST_PATH_WEEKS,
+  MASTERY_TRACKS,
+} from "@/lib/academy";
 
 export default async function LearnOverviewPage() {
   const bridgePaths = (
@@ -50,6 +61,22 @@ export default async function LearnOverviewPage() {
 
       <section className="mt-8 grid gap-4">
         <div>
+          <div className="eyebrow">Mastery layer</div>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight">Finish in 8 weeks, then grow into cost-aware production work</h2>
+          <p className="mt-3 max-w-4xl text-sm leading-6 text-[var(--color-fg-muted)]">
+            The core path stays finishable. After the Week 8 capstone, the mastery layer adds token budgets,
+            provider fallbacks, scaling patterns, and operational cost discipline.
+          </p>
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          {MASTERY_TRACKS.map((course) => (
+            <FlagshipCourseCard key={course.title} course={course} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8 grid gap-4">
+        <div>
           <div className="eyebrow">Bridge into the live product</div>
           <h2 className="mt-3 text-4xl font-semibold tracking-tight">Start the academy shell, then drop into the current learner runtime</h2>
         </div>
@@ -85,6 +112,18 @@ export default async function LearnOverviewPage() {
           ))}
         </div>
       </section>
+
+      <div className="mt-8">
+        <AcademyStandardsPanel standards={CHAPTER_MEDIA_REQUIREMENTS} />
+      </div>
+
+      <div className="mt-8">
+        <AcademyBadgesPanel badges={ACADEMY_BADGES} />
+      </div>
+
+      <div className="mt-8">
+        <CommunityShowcasePanel highlights={COMMUNITY_SHOWCASE_HIGHLIGHTS} />
+      </div>
     </main>
   );
 }

@@ -12,6 +12,7 @@ Harden the learner-facing web product while reframing CLI Academy around the new
 4. add regression coverage around learner-flow surfaces, tutor modes, and lesson rendering edge cases
 5. revisit gamification persistence and other backend write semantics after learner-flow behavior is stable
 6. layer in the academy-shell architecture: fast-path framing, Setup Academy, spine-project progress, and Asset Vault unification without replacing the lesson engine
+7. complete the approved 2026 academy polish pass: micro-modules, chapter media standards, Course 21 mastery, and light badge/showcase hooks
 
 ## Success criteria
 
@@ -21,3 +22,4 @@ Harden the learner-facing web product while reframing CLI Academy around the new
 - root docs accurately describe the live learner-flow architecture and current priorities
 - validation remains green on the current frontend tree
 - the public shell clearly communicates the install-to-production moat and the 8-week Personal AI Workforce progression
+- the approved 2026 upgrades feel native across the academy shell, asset vault, and dashboard rather than living only in docs

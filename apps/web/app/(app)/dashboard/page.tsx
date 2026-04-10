@@ -21,7 +21,7 @@ import {
 import { FreeTierShowcase } from "@/components/marketing/FreeTierShowcase";
 import { AlumniHub } from "@/components/dashboard/AlumniHub";
 import { SpineProjectDashboard } from "@/components/academy/SpineProjectDashboard";
-import { FAST_PATH_WEEKS } from "@/lib/academy";
+import { ACADEMY_BADGES, FAST_PATH_WEEKS } from "@/lib/academy";
 
 function getRecommendedPaths(input: {
   catalogPaths: CatalogPath[];
@@ -373,6 +373,23 @@ export default async function DashboardPage() {
         </section>
 
         <SpineProjectProgress activeWeek={activeFastPathWeek} />
+
+        <section className="panel p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="eyebrow">Academy badges</div>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight">Motivation stays tied to real artifacts</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--color-fg-muted)]">
+                Badges are lightweight markers for real milestones in setup, prompting, runtime work, and the final workforce capstone.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ACADEMY_BADGES.map((badge) => (
+                <span key={badge.title} className="badge" data-tone="warning">{badge.title}</span>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           <article className="panel p-5">

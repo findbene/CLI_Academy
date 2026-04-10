@@ -21,6 +21,7 @@
 ## P1 (Product Hardening)
 
 - [x] Reframe the academy shell around the 8-week fast path, Setup Academy, spine-project progress, and Asset Vault positioning without replacing the guided lesson engine.
+- [x] Implement the approved 2026 academy polish pass across the academy shell, including micro-modules, media standards, Course 21 mastery, and light badge/showcase hooks.
 - [ ] Revisit gamification persistence and concurrency semantics.
 - [ ] Verify CI/CD, deployment, and env references after the recent app and curriculum changes.
 - [ ] Reconcile path-overview completion state with browser-local fallback so `/learn/[pathSlug]` does not lag behind the lesson page/dashboard after local-only saves.
