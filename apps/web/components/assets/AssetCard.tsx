@@ -32,6 +32,24 @@ export function AssetCard({ asset }: AssetCardProps) {
         {asset.printable ? <span>Print-friendly</span> : null}
       </div>
 
+      {asset.previewBullets?.length ? (
+        <ul className="mt-4 space-y-2 text-sm text-[var(--color-fg-muted)]">
+          {asset.previewBullets.slice(0, 3).map((bullet) => (
+            <li key={bullet}>• {bullet}</li>
+          ))}
+        </ul>
+      ) : null}
+
+      {asset.compatibility?.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {asset.compatibility.slice(0, 4).map((item) => (
+            <span key={item} className="badge">
+              {item}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
       {asset.locked ? (
         <div className="mt-5">
           <CheckoutButton className="button-primary" label="Unlock with Pro" />

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FastPathTimeline } from "@/components/academy/FastPathTimeline";
 import { PATH_SECTIONS, getCatalogPathsBySection, getPathCta } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Learning Paths",
   description:
-    "Browse every CLI Academy learning path — from Claude Code setup to MCP mastery and role-based tracks. Honest status labels, tier access, and live lesson counts.",
+    "Browse every CLI Academy learning path, from setup and first wins to capstones and portfolio proof. Honest status labels, tier access, and live lesson counts.",
 };
 
 import { getServerViewer } from "@/lib/viewer";
@@ -16,13 +17,23 @@ export default async function PathsCatalogPage() {
   return (
     <main className="page-shell">
       <div className="max-w-3xl">
-        <div className="eyebrow">Path catalog</div>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight">Structured learning paths for real machines and real first wins</h1>
+        <div className="eyebrow">Learn</div>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight">Structured learning paths for install, build, and ship moments that matter</h1>
         <p className="mt-4 text-lg leading-8 text-[var(--color-fg-muted)]">
-          Browse every learning path with honest status labels, tier access, and live lesson counts.
-          Start with the foundations, then move to the role and environment that matches your goals.
+          Browse the live catalog, follow the 8-week fast path, or go deeper by workflow, runtime, and delivery shape.
         </p>
       </div>
+
+      <section className="mt-10 grid gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold">8-week fast path at a glance</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">
+            The fast path is designed to be finishable in about 80 hours while still leaving room for deeper
+            dives into safety, runtimes, automation, and capstones.
+          </p>
+        </div>
+        <FastPathTimeline activeWeek={1} compact />
+      </section>
 
       <div className="mt-10 grid gap-10">
         {await Promise.all(PATH_SECTIONS.map(async (section) => {

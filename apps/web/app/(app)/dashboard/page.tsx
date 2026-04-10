@@ -7,7 +7,9 @@ import {
   MessageCircle,
   Sparkles,
 } from "lucide-react";
+import { SpineProjectProgress } from "@/components/academy/SpineProjectProgress";
 import { getPublishedCatalogPaths, type CatalogPath } from "@/lib/catalog";
+import { getPathBlueprint } from "@/lib/data/academy";
 import { getLessonsForPath } from "@/lib/mdx";
 import { getRecommendedPathSlugs } from "@/lib/learning";
 import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
@@ -18,6 +20,8 @@ import {
 } from "@/components/dashboard/ProgressHydration";
 import { FreeTierShowcase } from "@/components/marketing/FreeTierShowcase";
 import { AlumniHub } from "@/components/dashboard/AlumniHub";
+import { SpineProjectDashboard } from "@/components/academy/SpineProjectDashboard";
+import { FAST_PATH_WEEKS } from "@/lib/academy";
 
 function getRecommendedPaths(input: {
   catalogPaths: CatalogPath[];
@@ -78,6 +82,8 @@ export default async function DashboardPage() {
             <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Ask the floating tutor anything about your current lesson, OS, or setup.</p>
           </article>
         </section>
+
+          <SpineProjectProgress activeWeek={1} />
 
           <section className="grid gap-4">
             <div className="flex items-center justify-between gap-3">
@@ -233,6 +239,7 @@ export default async function DashboardPage() {
         totalCount: number;
       }
     | null = null;
+  let activeFastPathWeek = 1;
 
   for (const slug of continueLearningCandidates) {
     const catalogPath = catalogPaths.find((path) => path.slug === slug);
@@ -266,6 +273,7 @@ export default async function DashboardPage() {
       progressPercent: Math.round((completedSlugs.size / lessons.length) * 100),
       totalCount: lessons.length,
     };
+    activeFastPathWeek = getPathBlueprint(slug)?.fastPathWeek ?? activeFastPathWeek;
     break;
   }
 
@@ -279,6 +287,7 @@ export default async function DashboardPage() {
     typeof answers.target_env === "string" ? answers.target_env.replaceAll("-", " ") : "local laptop";
 
   const isFreeTier = viewer.profile.tier === "free";
+  const firstIncompleteWeek = FAST_PATH_WEEKS[0];
 
   return (
     <main className="page-shell">
@@ -293,6 +302,29 @@ export default async function DashboardPage() {
             badgesCompleted={achievements?.length || 0} 
           />
         )}
+
+        <section className="panel p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="eyebrow">Academy fast path</div>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight">Keep the week-by-week arc visible while you work the live paths</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--color-fg-muted)]">
+                The execution catalog is still the working layer, but the academy now frames it as one 8-week build.
+                Current focus: Week {firstIncompleteWeek.week} — {firstIncompleteWeek.title}.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/learn" className="button-secondary">
+                Open fast path
+              </Link>
+              <Link href={firstIncompleteWeek.liveHref} className="button-primary">
+                Continue Week {firstIncompleteWeek.week}
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <SpineProjectDashboard currentStage={3} />
 
         <section className="grid gap-5 md:grid-cols-3">
           <article className="panel panel-lift group p-5">
@@ -339,6 +371,8 @@ export default async function DashboardPage() {
             <p className="mt-2 text-sm text-[var(--color-fg-muted)]">{tutorLimit - tutorUsedCount} messages remaining.</p>
           </article>
         </section>
+
+        <SpineProjectProgress activeWeek={activeFastPathWeek} />
 
         <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           <article className="panel p-5">

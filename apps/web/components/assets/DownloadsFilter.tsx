@@ -15,19 +15,17 @@ const tierFilters = [
   { label: "Pro", value: "pro" },
 ] as const;
 
-const categoryFilters = [
-  { label: "All categories", value: "all" },
-  { label: "Checklists", value: "Checklist" },
-  { label: "Quick references", value: "Quick reference" },
-  { label: "Templates", value: "Template" },
-  { label: "Starter packs", value: "Starter pack" },
-  { label: "Library assets", value: "Library asset" },
-] as const;
-
 export function DownloadsFilter({ downloads }: DownloadsFilterProps) {
   const [query, setQuery] = useState("");
   const [tier, setTier] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
+  const categoryFilters = useMemo(() => {
+    const labels = [...new Set(downloads.map((download) => download.categoryLabel))].sort((a, b) =>
+      a.localeCompare(b),
+    );
+
+    return [{ label: "All categories", value: "all" }, ...labels.map((label) => ({ label, value: label }))];
+  }, [downloads]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
