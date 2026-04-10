@@ -2,7 +2,7 @@
 
 ## Objective
 
-Harden the learner-facing web product while reframing CLI Academy around the new beginner-first install-to-production academy shell.
+Harden the learner-facing web product now that the repo normalization and large curriculum migration are in place.
 
 ## Approved sequence
 
@@ -11,7 +11,6 @@ Harden the learner-facing web product while reframing CLI Academy around the new
 3. continue editorial QA on rewritten live paths with command realism and learner-outcome review
 4. add regression coverage around learner-flow surfaces, tutor modes, and lesson rendering edge cases
 5. revisit gamification persistence and other backend write semantics after learner-flow behavior is stable
-6. layer in the academy-shell architecture: fast-path framing, Setup Academy, spine-project progress, and Asset Vault unification without replacing the lesson engine
 
 ## Success criteria
 
@@ -20,4 +19,3 @@ Harden the learner-facing web product while reframing CLI Academy around the new
 - learner-facing dashboard, lesson page, and resume state stay consistent enough for real use
 - root docs accurately describe the live learner-flow architecture and current priorities
 - validation remains green on the current frontend tree
-- the public shell clearly communicates the install-to-production moat and the 8-week Personal AI Workforce progression

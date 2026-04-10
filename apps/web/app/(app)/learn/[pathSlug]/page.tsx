@@ -1,11 +1,9 @@
 import { AssetCard } from "@/components/assets/AssetCard";
-import { SpineProjectProgress } from "@/components/academy/SpineProjectProgress";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
 import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
-import { getPathBlueprint } from "@/lib/data/academy";
 import { getLessonsForPath } from "@/lib/mdx";
 import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
 import { getServerViewer } from "@/lib/viewer";
@@ -107,7 +105,6 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
   }
 
   const lessons = await getLessonsForPath(pathSlug);
-  const blueprint = getPathBlueprint(pathSlug);
   const recommendedAssets = getRecommendedAssetsForPath(pathSlug)
     .slice(0, 3)
     .map((asset) => toDownloadSurfaceAsset(asset, viewer.profile?.tier ?? "free"));
@@ -152,24 +149,13 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
         <h1 className="mt-4 text-4xl font-semibold tracking-tight">{path.title}</h1>
         <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">{path.summary}</p>
         <div className="metadata-bar mt-4">
-          {blueprint?.fastPathWeek ? <span>Week {blueprint.fastPathWeek} of the fast path</span> : null}
           <span>{lessons.length} lessons</span>
           <span>{completedLessonSlugs.size} completed</span>
           <span>{path.estimatedHours}</span>
           <span>{path.tier.toUpperCase()}</span>
           {path.lastReviewedAt ? <span>Reviewed {path.lastReviewedAt}</span> : null}
         </div>
-        {blueprint ? (
-          <div className="mt-5 rounded-[var(--radius-xl)] bg-[var(--color-bg-panel-subtle)] px-4 py-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-fg-muted)]">
-              Spine project contribution
-            </div>
-            <div className="mt-2 text-sm text-[var(--color-fg-default)]">{blueprint.spineOutcome}</div>
-          </div>
-        ) : null}
       </section>
-
-      {blueprint?.fastPathWeek ? <SpineProjectProgress activeWeek={blueprint.fastPathWeek} /> : null}
 
       {recommendedAssets.length ? (
         <section className="mt-8 grid gap-4">

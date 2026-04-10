@@ -36,20 +36,20 @@ export function Navbar({ signedIn = false }: NavbarProps) {
   const links = signedIn
     ? [
         { href: "/dashboard", label: "Dashboard" },
-        { href: "/learn", label: "Learn" },
-        { href: "/setup-academy", label: "Setup Academy" },
-        { href: "/prompt-context-studio", label: "Prompt & Context" },
-        { href: "/asset-vault", label: "Asset Vault" },
-        { href: "/paths", label: "Live Paths" },
+        { href: "/paths", label: "Paths" },
+        { href: "/lounge", label: "Agentic Era" },
+        { href: "/resources", label: "Resources" },
+        { href: "/downloads", label: "Downloads" },
+        { href: "/trust", label: "Trust" },
         { href: "/pricing", label: "Pricing" },
         { label: "Sign out", isAction: true },
       ]
     : [
-        { href: "/learn", label: "Learn" },
-        { href: "/setup-academy", label: "Setup Academy" },
-        { href: "/prompt-context-studio", label: "Prompt & Context" },
-        { href: "/asset-vault", label: "Asset Vault" },
-        { href: "/paths", label: "Live Paths" },
+        { href: "/paths", label: "Paths" },
+        { href: "/lounge", label: "Agentic Era" },
+        { href: "/resources", label: "Resources" },
+        { href: "/troubleshooting", label: "Troubleshooting" },
+        { href: "/trust", label: "Trust" },
         { href: "/pricing", label: "Pricing" },
         { href: "/login", label: "Log in" },
       ];

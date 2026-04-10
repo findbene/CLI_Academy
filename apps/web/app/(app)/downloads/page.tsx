@@ -59,10 +59,10 @@ export default async function DownloadsPage() {
             <Download className="size-6 text-[var(--color-accent-primary)]" />
           </div>
           <div>
-            <div className="eyebrow">Asset Vault</div>
-            <h1 className="mt-2 text-4xl font-semibold tracking-tight">Builder assets, field manuals, and starter packs</h1>
+            <div className="eyebrow">Downloads center</div>
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight">Downloads and printable guides</h1>
             <p className="mt-3 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">
-              Keep the most useful setup playbooks, field manuals, prompt packs, templates, and troubleshooting references open while you work.
+              Keep the most useful setup checklists, starter templates, and troubleshooting references open while you work.
             </p>
           </div>
         </div>

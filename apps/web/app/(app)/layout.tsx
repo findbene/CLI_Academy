@@ -40,8 +40,8 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
                 {viewer.user?.email ?? "Guest"}
               </div>
             </div>
-            <Link href="/learn" className="button-secondary">
-              Learn
+            <Link href="/paths" className="button-secondary">
+              Paths
             </Link>
           </div>
         </div>

@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug, getPathCta } from "@/lib/catalog";
-import { getPathBlueprint } from "@/lib/data/academy";
 import { getLessonsForPath } from "@/lib/mdx";
 import { getServerViewer } from "@/lib/viewer";
 
@@ -48,7 +47,6 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
   }
 
   const lessons = path.status === "available" ? await getLessonsForPath(path.slug) : [];
-  const blueprint = getPathBlueprint(path.slug);
   const cta = getPathCta(path, { signedIn: Boolean(viewer.user), tier: viewer.profile?.tier ?? null });
   const recommendedAssets = getRecommendedAssetsForPath(path.slug)
     .slice(0, 2)
@@ -69,21 +67,12 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">{path.title}</h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">{path.summary}</p>
           <div className="metadata-bar mt-5">
-            {blueprint?.fastPathWeek ? <span>Week {blueprint.fastPathWeek}</span> : null}
             <span>{path.section}</span>
             <span>{path.availableLessonCount} lessons</span>
             <span>{path.estimatedHours}</span>
             {path.lastReviewedAt ? <span>Reviewed {path.lastReviewedAt}</span> : null}
             {path.versionLabel ? <span>{path.versionLabel}</span> : null}
           </div>
-          {blueprint ? (
-            <div className="mt-5 rounded-[var(--radius-xl)] bg-[var(--color-bg-panel-subtle)] px-4 py-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-fg-muted)]">
-                Spine project role
-              </div>
-              <div className="mt-2 text-sm text-[var(--color-fg-default)]">{blueprint.spineOutcome}</div>
-            </div>
-          ) : null}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={cta.href} className="button-primary">
               {cta.label}

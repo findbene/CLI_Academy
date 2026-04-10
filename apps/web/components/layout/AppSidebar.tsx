@@ -3,17 +3,15 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Download, Settings, Compass, Menu, BookOpen, LibraryBig, Wrench, X } from "lucide-react";
+import { LayoutDashboard, Library, Download, Settings, Compass, Menu, Newspaper, X } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { SearchTrigger } from "@/components/ui/search-dialog";
 import { LogoMark } from "@/components/ui/LogoMark";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/learn", label: "Learn", icon: BookOpen },
-  { href: "/setup-academy", label: "Setup Academy", icon: Wrench },
-  { href: "/prompt-context-studio", label: "Prompt Studio", icon: Compass },
-  { href: "/asset-vault", label: "Asset Vault", icon: LibraryBig },
+  { href: "/lounge", label: "Agentic Era", icon: Newspaper },
+  { href: "/resources", label: "Resources", icon: Library },
   { href: "/downloads", label: "Downloads", icon: Download },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -42,7 +40,7 @@ export function AppSidebar({ tier = "free", tutorMessagesRemaining, userEmail }:
             <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[var(--color-fg-default)]">
               CLI Academy
             </div>
-            <div className="text-xs text-[var(--color-fg-subtle)]">Install · Build · Ship</div>
+            <div className="text-xs text-[var(--color-fg-subtle)]">Learn · Build · Ship</div>
           </div>
         </Link>
 
@@ -82,7 +80,7 @@ export function AppSidebar({ tier = "free", tutorMessagesRemaining, userEmail }:
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--color-fg-muted)] transition-all duration-150 hover:bg-[var(--color-bg-panel-subtle)] hover:text-[var(--color-fg-default)]"
           >
             <Compass className="h-4 w-4 flex-shrink-0" />
-            Live Paths
+            Browse Paths
           </Link>
         </nav>
 
@@ -209,7 +207,7 @@ export function AppSidebar({ tier = "free", tutorMessagesRemaining, userEmail }:
                 className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[var(--color-fg-muted)]"
               >
                 <Compass className="size-4" />
-                Live Paths
+                Browse Paths
               </Link>
             </div>
 

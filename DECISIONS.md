@@ -41,9 +41,3 @@
 **Decision:** Keep browser-local lesson progress as a resilience layer, but scope it per authenticated user and only merge legacy anonymous entries when no competing signed-in scopes exist.
 
 **Why:** Local progress can later be reconciled into hosted rows. Treating that state as browser-global risks cross-account leakage and incorrect backfill on shared machines.
-
-## ADR-008 — Reframe the academy around an install-to-production shell without replacing the lesson engine
-
-**Decision:** Keep the existing lesson runtime, MDX content contract, progress plumbing, and tutor integration intact, then layer the new academy shell on top through shared product metadata for fast-path weeks, spine milestones, setup tracks, and asset-vault taxonomy.
-
-**Why:** The repo already has a capable guided-learning engine and live curriculum corpus. The larger problem was positioning and organization, not lesson rendering. Reframing around Setup Academy, the 8-week fast path, and the Personal AI Workforce spine delivers the new product promise with less migration risk than rebuilding core delivery infrastructure.
