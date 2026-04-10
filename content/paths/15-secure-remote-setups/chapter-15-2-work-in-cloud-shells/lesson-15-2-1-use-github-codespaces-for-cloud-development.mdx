@@ -5,6 +5,7 @@ chapterNumber: "15.2"
 pathNumber: "15"
 tutorPreload: "Explain how GitHub Codespaces works and what the free-tier limits are."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Use GitHub Codespaces for cloud development
@@ -19,6 +20,8 @@ GitHub Codespaces gives you a full Linux development environment running in Micr
 
 ### Step 1 — Create a Codespace from a repository
 
+<StepMeta purpose="Launch a disposable remote Linux dev environment without doing any local system setup first." action="Open a GitHub repository, use the Code button's Codespaces tab, and create a Codespace on the branch you want." expectedResult="GitHub provisions a cloud VM, clones the repository, and opens a browser-based VS Code session for that repo." whyItMatters="Codespaces are often the fastest way to get a clean remote CLI environment when the local machine is locked down or temporary." nextStep="Open the terminal inside the Codespace and verify what environment you were actually given." askTutor="Explain what GitHub is creating behind the scenes when I launch a Codespace and when it is a better choice than setting up a local shell." />
+
 1. Go to any GitHub repository (your own or a public one).
 2. Click the green **Code** button.
 3. Switch to the **Codespaces** tab.
@@ -27,6 +30,8 @@ GitHub Codespaces gives you a full Linux development environment running in Micr
 GitHub provisions a virtual machine, clones the repo, and opens VS Code in your browser within about 60 seconds.
 
 ### Step 2 — Explore the Codespace terminal
+
+<StepMeta purpose="Orient yourself inside the remote Linux environment before you start installing tools or editing code." action="Open the Codespace terminal and run `uname -a`, `whoami`, and `pwd` to inspect the OS, user, and working directory." expectedResult="You can confirm that the Codespace is a Linux environment, see the default user, and locate the cloned repo under `/workspaces/`." whyItMatters="Remote environments are easier to trust and troubleshoot when you know exactly what machine, user, and filesystem layout you are inside." nextStep="Install Claude Code next so the Codespace becomes a usable cloud-based agent environment, not just a remote editor." askTutor="Interpret these terminal outputs for me and tell me what they imply about how a Codespace is isolated from my local machine." />
 
 At the bottom of the VS Code browser UI, open the **Terminal** panel (`` Ctrl+` `` or **View → Terminal**). This is a real Linux bash shell:
 
@@ -44,6 +49,8 @@ pwd
 Your repo files are already cloned into `/workspaces/`. Git is configured with your GitHub identity.
 
 ### Step 3 — Install Claude Code in the Codespace
+
+<StepMeta purpose="Turn the Codespace into a real Claude Code workstation running in the cloud." action="Check the Node.js version, install `@anthropic-ai/claude-code` globally with npm, and verify the install with `claude --version`." expectedResult="Claude Code is installed inside the Codespace and ready for authentication and use." whyItMatters="A remote editor becomes much more useful once the agent tooling runs in the same cloud environment as the repository and shell." nextStep="Review the free-tier limits before you leave the Codespace running longer than you intend." askTutor="Help me verify that the Codespace already has the right Node version and troubleshoot the install if `claude --version` fails afterward." />
 
 The Codespace has Node.js preinstalled:
 
@@ -66,6 +73,8 @@ After authentication, Claude Code works exactly as it does locally — but the c
 
 ### Step 4 — Understand the free-tier limits
 
+<StepMeta purpose="Make the cloud environment financially predictable before it turns into an accidental billing leak." action="Read the core-hour, storage, and spending-limit guidance, then note how to stop or delete Codespaces when you are done." expectedResult="You know the monthly allowances, the main cost risks, and the exact controls that prevent surprise charges." whyItMatters="Remote convenience loses its value fast if you forget that idle cloud environments can keep consuming billable resources in the background." nextStep="Connect to the Codespace from your local terminal next so you understand both the browser and local-shell access patterns." askTutor="Summarize the Codespaces cost controls for me and tell me what habits matter most if I want to avoid charges completely." />
+
 | Resource | Free-tier allowance (per month) |
 |---|---|
 | Core hours (2-core machine) | 60 hours |
@@ -85,6 +94,8 @@ gh codespace stop
 - **Set a spending limit.** Go to **Settings → Billing → Spending limits → Codespaces** and set it to $0 to prevent any charges.
 
 ### Step 5 — Connect to a Codespace from your local terminal
+
+<StepMeta purpose="Show that a Codespace is not limited to the browser UI and can also be used from local tooling via GitHub CLI." action="Install `gh` on your local machine if needed, then run `gh codespace ssh` to open a remote shell into the Codespace." expectedResult="You can access the running Codespace from your local terminal over an SSH-style tunnel with full filesystem access." whyItMatters="Multiple access paths make Codespaces practical in real workflows where you may want a browser editor but a local terminal or automation entry point." nextStep="Compare this managed environment to Google Cloud Shell and AWS CloudShell in the next lesson so you can choose the right remote shell for the job." askTutor="Explain the difference between using a Codespace in the browser and connecting to it from my local terminal with `gh codespace ssh`." />
 
 If you prefer your local editor, install the GitHub CLI:
 

@@ -5,6 +5,7 @@ chapterNumber: "6.3"
 pathNumber: "6"
 tutorPreload: "Help me write a clear PR title and description for this feature branch."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Push to GitHub and create a pull request
@@ -16,6 +17,8 @@ By the end of this lesson you will push a feature branch to GitHub and create a 
 ## Walkthrough
 
 ### Step 1 — Set up a local repo connected to GitHub
+
+<StepMeta purpose="Create a local project and connect it to a real GitHub repository so pull requests have a remote destination." action="Initialize or reuse a small repo, create the empty GitHub repository, add origin, and push main to it." expectedResult="Your local main branch is now published to GitHub and tracked by origin/main." whyItMatters="A pull request only exists in relation to a remote repository, so this setup is what turns local branch work into something reviewable on GitHub." nextStep="Create a feature branch and make one real change that can be proposed through a pull request." askTutor="I'm on Step 1 of Push to GitHub and create a pull request. Help me confirm that this repo is connected to the right GitHub remote before I start feature work." />
 
 If you already have a repo from Lesson 6.1.2, you can reuse it. Otherwise, create one now.
 
@@ -51,6 +54,8 @@ Replace `YOUR_USERNAME` with your actual GitHub username. Use the SSH URL if you
 
 ### Step 2 — Create a feature branch with real changes
 
+<StepMeta purpose="Produce a branch-specific change set that is worth reviewing instead of opening an empty PR." action="Create feature-homepage, add index.html, and commit the homepage file on that branch." expectedResult="The feature branch now contains one commit that main does not have." whyItMatters="Pull requests compare branch differences, so you need a clean isolated commit on a feature branch before a PR makes sense." nextStep="Push the feature branch to GitHub so the branch is available remotely for comparison." askTutor="I'm on Step 2 of Push to GitHub and create a pull request. Help me check that this commit lives on the feature branch and not accidentally on main." />
+
 ```bash
 git switch -c feature-homepage
 ```
@@ -79,6 +84,8 @@ git commit -m "Add homepage"
 
 ### Step 3 — Push the feature branch to GitHub
 
+<StepMeta purpose="Publish the feature branch so GitHub can compare it against main and offer PR creation." action="Run git push -u origin feature-homepage and verify the branch appears on GitHub." expectedResult="The remote now has origin/feature-homepage, and GitHub recognizes that the branch contains recent changes." whyItMatters="Until the branch is pushed, the work only exists locally and there is nothing for GitHub's review tools to inspect." nextStep="Use the web interface to create a pull request from feature-homepage into main." askTutor="I'm on Step 3 of Push to GitHub and create a pull request. Help me interpret this push output and confirm the branch is now available remotely for a PR." />
+
 ```bash
 git push -u origin feature-homepage
 ```
@@ -88,6 +95,8 @@ This pushes the branch to GitHub. The `-u` flag sets the upstream so future `git
 Visit your repo on GitHub. You should see a banner: **"feature-homepage had recent pushes"** with a **Compare & pull request** button.
 
 ### Step 4 — Create a pull request (web interface)
+
+<StepMeta purpose="Learn the standard visual workflow for proposing changes and giving reviewers context." action="Use GitHub's Compare & pull request flow to set the base and compare branches, then write a clear title and description." expectedResult="An open PR exists on GitHub with the correct branches and a useful summary of the change." whyItMatters="A PR is not just a diff; it is also communication about what changed, why it changed, and what reviewers should expect." nextStep="Repeat the same creation flow from the command line with GitHub CLI so you can do it without leaving the terminal." askTutor="I'm on Step 4 of Push to GitHub and create a pull request. Help me write a PR title and description that are short but still useful to a reviewer." />
 
 1. Click **Compare & pull request** on GitHub.
 2. Fill in:
@@ -99,6 +108,8 @@ Visit your repo on GitHub. You should see a banner: **"feature-homepage had rece
 You now have an open PR. The diff tab shows exactly what changed.
 
 ### Step 5 — Create a pull request (GitHub CLI)
+
+<StepMeta purpose="Practice the terminal-native way to open a PR so the workflow works even when you prefer not to switch to the browser." action="Install gh if needed, authenticate, and run gh pr create with an explicit title, body, and base branch." expectedResult="GitHub CLI returns a PR URL for the new review request or walks you through creating it interactively." whyItMatters="The CLI version is fast and scriptable, which makes PR creation easier to standardize in real daily work." nextStep="Verify that the PR exists by listing it from the CLI or viewing the repo pull requests page." askTutor="I'm on Step 5 of Push to GitHub and create a pull request. Help me understand the gh auth flow and what gh pr create is doing under the hood." />
 
 If you prefer the terminal, install the GitHub CLI first.
 
@@ -139,6 +150,8 @@ Output shows the PR URL. Click it to see the PR on GitHub.
 > **Tip:** If you skip `--title` and `--body`, `gh pr create` opens an interactive prompt.
 
 ### Step 6 — Verify the pull request exists
+
+<StepMeta purpose="Confirm that GitHub now sees the branch and the PR exactly the way you intended." action="Use gh pr list or the GitHub pulls page to verify the open PR title, branch, and status." expectedResult="You can see the PR listed as open and associated with the expected feature branch." whyItMatters="Verification prevents confusion later when review or merge commands refer to the wrong PR or no PR at all." nextStep="With PR creation understood, learn how to review, comment on, approve, and merge a PR safely." askTutor="I'm on Step 6 of Push to GitHub and create a pull request. Help me verify that this PR is targeting the right base branch and that GitHub sees the exact change I expected." />
 
 ```bash
 gh pr list

@@ -5,6 +5,7 @@ chapterNumber: "3.1"
 pathNumber: "3"
 tutorPreload: "I'm in this folder. Confirm whether it is the correct repo root for Claude Code."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Open your first practice repo
@@ -16,6 +17,8 @@ Create a small practice project with real files, then launch Claude Code inside 
 ## Walkthrough
 
 ### Step 1 — Create a project folder
+
+<StepMeta purpose="Create a clean workspace folder dedicated to your first Claude Code practice repo." action="Make the cli-practice folder under your projects area and move into it." expectedResult="A new cli-practice directory exists and your prompt is now inside it." whyItMatters="Giving Claude Code a small isolated project makes the first session easier to understand and easier to troubleshoot." nextStep="Once the folder exists, initialize it as a Git repository so Claude Code can use repo context." askTutor="I'm on Step 1 of Open your first practice repo. Help me confirm that I created cli-practice in a sensible location and that my shell is now inside the repo folder." />
 
 Pick a location where you keep coding projects and create a new folder:
 
@@ -32,6 +35,8 @@ Set-Location "$HOME\projects\cli-practice"
 
 ### Step 2 — Initialize a Git repo
 
+<StepMeta purpose="Turn the plain folder into a repository Claude Code can reason about more effectively." action="Run git init inside cli-practice and confirm Git recognizes the new repository." expectedResult="Git reports that it initialized an empty repository in the current folder." whyItMatters="Claude Code gets more useful context from Git-aware projects, and later lessons depend on commit history being available." nextStep="After Git is initialized, create a few starter files so the repo contains something real to inspect." askTutor="I'm on Step 2 of Open your first practice repo. Help me verify that git init succeeded in the correct folder and explain why Claude Code prefers working inside repos." />
+
 Claude Code works best inside a Git repository because it uses the file history for context.
 
 ```bash
@@ -41,6 +46,8 @@ git init
 This is the same command on every platform. You should see `Initialized empty Git repository`.
 
 ### Step 3 — Add starter files
+
+<StepMeta purpose="Give the new repo enough real content for Claude Code to summarize and edit meaningfully." action="Create index.js, README.md, and package.json with the provided starter content." expectedResult="All three files exist at the repo root with the expected starter code and metadata." whyItMatters="A repo without meaningful files gives Claude Code nothing useful to explain, edit, or run in later lessons." nextStep="Once the files exist, make an initial commit so the repo has a baseline history." askTutor="I'm on Step 3 of Open your first practice repo. Help me verify that these file-creation commands produced the right files in the repo root before I commit anything." />
 
 Create three files that give Claude Code something to read.
 
@@ -106,6 +113,8 @@ A small starter project for learning Claude Code.
 
 ### Step 4 — Make an initial commit
 
+<StepMeta purpose="Create a clean baseline snapshot before Claude Code starts suggesting edits." action="Stage all files and create the initial Git commit with the provided message." expectedResult="Git records the first commit for the practice project and the working tree becomes clean." whyItMatters="A baseline commit makes diffs, undo, and later change reviews much easier to understand." nextStep="After the repo has a first commit, launch Claude Code from the project root and inspect the welcome session." askTutor="I'm on Step 4 of Open your first practice repo. Help me check that I am staging the expected files and explain what this initial commit gives me before I use Claude Code." />
+
 ```bash
 git add -A
 git commit -m "Initial commit: starter greeter project"
@@ -114,6 +123,8 @@ git commit -m "Initial commit: starter greeter project"
 Having at least one commit lets Claude Code see your project history.
 
 ### Step 5 — Launch Claude Code
+
+<StepMeta purpose="Start the first real Claude Code session inside a repo that now has both files and history." action="Run claude from the cli-practice folder, inspect the welcome prompt, try /help, then exit." expectedResult="Claude Code opens an interactive session and responds to /help before you exit cleanly." whyItMatters="This is the first proof that installation, authentication, terminal setup, and repo context are all working together." nextStep="After this step, you are ready to ask Claude Code for understanding before you let it make any edits." askTutor="I'm on Step 5 of Open your first practice repo. Help me confirm that this welcome screen means Claude Code started correctly in the repo I just prepared." />
 
 From inside the `cli-practice` folder, start a session:
 

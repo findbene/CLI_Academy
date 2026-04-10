@@ -5,6 +5,7 @@ chapterNumber: "14.1"
 pathNumber: "14"
 tutorPreload: "Show me the fastest way to find secrets that were already committed to my repo."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Never commit .env files or API keys
@@ -25,6 +26,8 @@ This is the lesson you wish you had read *before* your API key showed up on a Gi
 
 ### Step 1 — Set up a practice repository
 
+<StepMeta purpose="Create a disposable repo where you can practice history rewriting without risking a real project." action="Make the `secrets-incident-lab` directory, enter it, and initialize Git as shown." expectedResult="You have a fresh practice repository ready for an intentional secret leak and cleanup exercise." whyItMatters="History rewriting is invasive, so learning it in a throwaway repo keeps the risk low while the commands are still new." nextStep="Create an accidental secret commit so you can see the difference between deleting a file and actually cleaning Git history." askTutor="Confirm that this practice repo is safe for testing history rewrite commands and tell me what would change on a shared team repo." />
+
 Create a throwaway repo so you can safely practice history rewriting without touching anything real.
 
 **macOS / Linux:**
@@ -41,6 +44,8 @@ git init
 ```
 
 ### Step 2 — Simulate an accidental secret commit
+
+<StepMeta purpose="Make the exact mistake you are learning to detect and recover from." action="Create a fake `.env`, commit it, then delete it and commit the deletion plus `.gitignore` so the leak still exists in history." expectedResult="The working tree looks cleaned up, but the secret still exists in past commits where Git can still reveal it." whyItMatters="Most beginners believe deleting the file fixes the problem, and this exercise proves why that assumption is dangerously wrong." nextStep="Search the full repo history for the leaked pattern so you can see the secret survive after deletion." askTutor="Explain why the secret is still compromised after the file was removed from the working directory and added to `.gitignore`." />
 
 Create a file with a fake API key and commit it — this is the mistake you need to learn to detect and fix.
 
@@ -70,6 +75,8 @@ git commit -m "remove .env and add gitignore"
 The file is gone from the working directory. But **the secret is still in Git history**.
 
 ### Step 3 — Hunt for secrets in Git history
+
+<StepMeta purpose="Learn the fastest commands for proving a secret exists somewhere in repo history." action="Run the `git log --all` searches for `.env` additions and secret-like string patterns, then verify the fake key appears in the output." expectedResult="You can point to the exact commit and diff where the leaked secret first entered history." whyItMatters="Incident response starts with evidence, and these searches are how you confirm both scope and exposure before cleanup." nextStep="Use `git filter-repo` to remove the secret-bearing file from every commit in the repository history." askTutor="Help me choose the right `git log` search for a suspected secret leak if I only know part of the key pattern or file name." />
 
 These commands reveal secrets hiding in past commits. Run them in any real project you want to check.
 
@@ -103,6 +110,8 @@ You should see the full diff including `OPENAI_API_KEY=sk-proj-FAKE1234567890abc
 
 ### Step 4 — Remove secrets from history with git filter-repo
 
+<StepMeta purpose="Practice the modern cleanup workflow for removing a leaked file from the full commit graph." action="Install `git-filter-repo`, run the `--invert-paths --path .env --force` command, and then rerun the secret search to confirm the leak is gone." expectedResult="The `.env` file disappears from repository history and the `git log -S` search for the fake key returns no results." whyItMatters="Cleanup commands are only trustworthy after you verify them against the same pattern that proved the leak existed." nextStep="Review the BFG alternative so you know when to replace specific strings instead of removing whole files." askTutor="Review this cleanup approach and tell me when `git filter-repo` is the better choice than BFG for a real secret incident." />
+
 `git filter-repo` is the modern, safe replacement for `git filter-branch`. It rewrites your entire history.
 
 > **Warning:** History rewriting changes every commit hash after the affected commit. Coordinate with your team before running this on a shared repo.
@@ -133,6 +142,8 @@ git log --all -p -S "sk-proj-"
 This should return **nothing**. The secret no longer exists in any commit.
 
 ### Step 5 — Alternative: BFG Repo-Cleaner for string replacement
+
+<StepMeta purpose="Learn the faster cleanup option for cases where you need to replace a leaked string rather than delete a whole path." action="Read through the BFG workflow, including the secrets list file, the Java command, and the reflog and GC cleanup steps." expectedResult="You understand how BFG replaces matching secret strings with `***REMOVED***` across history and how its cleanup differs from file-based removal." whyItMatters="Real incidents vary, and string replacement can be a better fit when the leak appears in multiple files or mixed content." nextStep="Finish with the human incident-response sequence so you know what must happen before and after history rewriting." askTutor="Compare BFG and `git filter-repo` for me and recommend which one fits a repo where a token was copied into multiple files." />
 
 BFG is faster for large repos and can replace specific strings rather than removing whole files.
 
@@ -165,6 +176,8 @@ git gc --prune=now --aggressive
 After BFG runs, the secret text is replaced with `***REMOVED***` in every commit.
 
 ### Step 6 — Incident response: what to do when a real secret leaks
+
+<StepMeta purpose="Memorize the response order that limits damage when a leak is real instead of simulated." action="Read the six-step incident flow closely and make sure you can restate it as rotate, clean, force-push, notify, verify, and inspect damage." expectedResult="You can explain the full leak-response sequence in the correct order without mixing cleanup before rotation." whyItMatters="In a real incident, the order matters because a still-active key is dangerous even if the Git history cleanup has not finished yet." nextStep="Carry this leak mindset into the code-review lessons, where you practice catching risky AI changes before they ever get committed." askTutor="Quiz me on the incident response order and tell me what the most dangerous mistake would be if I handled a real key leak under time pressure." />
 
 If you discover a real secret in your repo (or get an alert from GitHub Secret Scanning), follow this exact sequence:
 

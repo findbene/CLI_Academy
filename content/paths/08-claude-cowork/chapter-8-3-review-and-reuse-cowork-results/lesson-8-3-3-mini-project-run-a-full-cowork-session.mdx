@@ -5,6 +5,7 @@ chapterNumber: "8.3"
 pathNumber: "8"
 tutorPreload: "Guide me through a full end-to-end Cowork session so I can practice every step from brief to deliverable."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Mini project: run a full Cowork session
@@ -16,6 +17,8 @@ In this mini project you will run a complete Cowork session from start to finish
 ## Walkthrough
 
 ### Step 1 — Set up the project folder
+
+<StepMeta purpose="Create a small realistic project so the Cowork session has concrete files and metadata to work from." action="Make the cowork-mini-project directory, add package.json plus placeholder source and test files, and confirm the practice project exists." expectedResult="You have a local taskflow practice project with a minimal Node CLI structure ready for documentation work." whyItMatters="A realistic project makes the Cowork session feel like real product work rather than a purely abstract writing exercise." nextStep="Write the session brief that tells Claude exactly what documentation this project needs." askTutor="I'm on Step 1 of Mini project: run a full Cowork session. Help me set up the practice project correctly and explain which files Claude will likely use as context." />
 
 Create a practice project to work with. This simulates having an existing codebase that needs documentation.
 
@@ -72,6 +75,8 @@ Set-Content -Path tests\cli.test.js -Value "// Test placeholder" -Encoding utf8
 ```
 
 ### Step 2 — Write the session brief
+
+<StepMeta purpose="Define the task contract so the end-to-end Cowork session begins with a precise deliverable and review standard." action="Create cowork-session-brief.md for taskflow using the provided goal, context, success criteria, and boundaries." expectedResult="The mini project includes a complete session brief that scopes the README and CONTRIBUTING work clearly." whyItMatters="The brief is what turns a general collaboration into a bounded workflow with a known definition of done." nextStep="Start Claude and use the brief plus package metadata as the grounding context for the session." askTutor="I'm on Step 2 of Mini project: run a full Cowork session. Help me review this taskflow brief and point out anything unclear before I start the session." />
 
 Use the template from your `cowork-patterns/` folder (Lesson 8.3.2) or create a fresh one:
 
@@ -143,6 +148,8 @@ Produce two files: README.md and CONTRIBUTING.md for the ``taskflow`` project.
 
 ### Step 3 — Start the Cowork session
 
+<StepMeta purpose="Launch the real collaboration loop and confirm Claude is grounded in the brief before any drafting begins." action="Open Claude in the project directory, ask it to read cowork-session-brief.md and package.json, and verify the summary matches the brief." expectedResult="Claude summarizes the taskflow goals, constraints, and deliverables accurately before drafting." whyItMatters="Misunderstandings are cheapest to fix at the summary stage; after drafting begins, corrections become more expensive and disruptive." nextStep="Use outline-first drafting and section-by-section review so the session stays steerable." askTutor="I'm on Step 3 of Mini project: run a full Cowork session. Help me phrase the startup prompt so Claude confirms the brief and package metadata before it writes anything." />
+
 Open Claude Code in the project directory (or create a claude.ai Project and upload the brief plus `package.json`).
 
 **macOS / Linux:**
@@ -167,6 +174,8 @@ Send your opening prompt:
 Wait for Claude's summary. Verify it matches your brief. If anything is wrong, correct it now.
 
 ### Step 4 — Iterate: outline → sections → review
+
+<StepMeta purpose="Run the full Cowork rhythm end to end: structure first, then content, then targeted revision." action="Request the README outline, steer it, draft sections one at a time, then repeat the same review-first flow for CONTRIBUTING.md." expectedResult="Claude produces reviewed drafts for both README and CONTRIBUTING through multiple guided turns rather than one uncontrolled dump." whyItMatters="This is the core operational pattern of Cowork, and practicing it across two files makes the habit durable." nextStep="Check both deliverables against the review checklist before you decide they are done." askTutor="I'm on Step 4 of Mini project: run a full Cowork session. Help me keep the README and CONTRIBUTING workflow reviewable instead of letting it turn into one giant uncontrolled conversation." />
 
 **Turn 1 — Request the README outline:**
 
@@ -213,6 +222,8 @@ Review and steer:
 
 ### Step 5 — Review against the checklist
 
+<StepMeta purpose="Apply the post-session quality gate so both deliverables are checked before they become project files." action="Score README.md and CONTRIBUTING.md against command accuracy, success criteria, boundaries, tone, and dual-platform coverage, then fix anything that fails." expectedResult="Both deliverables pass the review table or have clear corrective actions before you save them." whyItMatters="Structured review is what turns Cowork output into trustworthy project documentation instead of attractive but unreliable drafts." nextStep="Save the approved deliverables to disk and verify the files exist in the project." askTutor="I'm on Step 5 of Mini project: run a full Cowork session. Help me review README and CONTRIBUTING against the checklist and decide what still needs correction." />
+
 Once Claude has produced final drafts of both files, run through the review checklist from Lesson 8.3.1:
 
 | Check | README.md | CONTRIBUTING.md |
@@ -226,6 +237,8 @@ Once Claude has produced final drafts of both files, run through the review chec
 Fix any issues by giving Claude specific feedback or editing the files yourself.
 
 ### Step 6 — Save deliverables
+
+<StepMeta purpose="Move the approved Cowork output out of chat and into the real project where it can be used and versioned." action="Verify README.md and CONTRIBUTING.md exist if Claude wrote them directly, or copy the approved text into those files yourself." expectedResult="The project directory contains final README.md and CONTRIBUTING.md files ready for use or commit." whyItMatters="A Cowork session is only finished when the final approved work exists as durable files in the project, not just as conversation text." nextStep="Extract the session flow into a generalized pattern so the next documentation session starts faster." askTutor="I'm on Step 6 of Mini project: run a full Cowork session. Help me save the final deliverables cleanly and verify I did not copy an intermediate draft by mistake." />
 
 If Claude wrote the files directly in Claude Code, verify they exist:
 
@@ -265,6 +278,8 @@ Get-Clipboard | Set-Content -Path CONTRIBUTING.md -Encoding utf8
 ```
 
 ### Step 7 — Template the pattern
+
+<StepMeta purpose="Preserve the working session flow as a reusable playbook instead of treating the mini project as a one-off success." action="Create a prompt-project-docs pattern file that records when to use the workflow, the session steps, key prompts, and expected turn count." expectedResult="The project now contains a generalized Cowork pattern that could guide a similar README plus CONTRIBUTING session later." whyItMatters="Mini projects become durable skills when you extract the process that worked, not just the artifacts it produced." nextStep="Commit the project, session brief, and optionally the patterns folder so the full exercise is preserved in history." askTutor="I'm on Step 7 of Mini project: run a full Cowork session. Help me capture the successful workflow as a reusable pattern without leaving it tied only to taskflow." />
 
 This session worked. Save the pattern for future use:
 
@@ -329,6 +344,8 @@ When a project needs a README and CONTRIBUTING guide generated from a session br
 ```
 
 ### Step 8 — Commit everything
+
+<StepMeta purpose="Finish the mini project with a clean project snapshot that captures both the deliverables and the process artifacts." action="Initialize Git if needed, stage the intended files explicitly, commit the documentation output, and optionally commit the patterns folder in a follow-up snapshot." expectedResult="Git history contains a focused commit for the docs deliverables and, if chosen, a separate commit for reusable Cowork patterns." whyItMatters="Explicit commits turn the end-to-end Cowork exercise into a reproducible artifact you can inspect, share, and build on later." nextStep="With the full Cowork flow complete, the next migration target is Path 09 unless you pivot to regression coverage or editorial QA." askTutor="I'm on Step 8 of Mini project: run a full Cowork session. Help me decide what belongs in the final commit and whether the patterns folder should be committed separately." />
 
 **macOS / Linux and Windows PowerShell:**
 

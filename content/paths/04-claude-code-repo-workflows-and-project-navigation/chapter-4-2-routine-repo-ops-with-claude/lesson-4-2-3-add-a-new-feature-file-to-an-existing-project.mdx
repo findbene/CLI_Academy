@@ -5,6 +5,7 @@ chapterNumber: "4.2"
 pathNumber: "4"
 tutorPreload: "Help me add a new feature to this project that integrates with the existing code."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Add a new feature file to an existing project
@@ -17,6 +18,8 @@ Use Claude Code to add a new feature file — such as a middleware module or uti
 
 ### Step 1 — Define the feature with Claude
 
+<StepMeta purpose="Choose a small addition that genuinely plugs into the existing project instead of creating an isolated toy file." action="Ask Claude for one safe, single-file feature idea that connects to the current codebase and comes with a clear target location." expectedResult="You pick a specific feature and know both what it should do and where the new file should live." whyItMatters="A bounded feature keeps the exercise realistic while still teaching you how to extend an existing repo responsibly." nextStep="Once the feature is defined, ask Claude to create the file and wire it into the existing code." askTutor="I'm on Step 1 of Add a new feature file to an existing project. Help me judge whether Claude's feature suggestion is small enough and truly integrated with the repo." />
+
 Ask Claude to suggest a small addition that connects to existing code:
 
 ```
@@ -26,6 +29,8 @@ What small feature could I add to this project in a single new file? I want some
 For json-server, Claude might suggest a custom middleware file like `src/server/request-logger.js` that logs every incoming request. For a Python project it might suggest a new endpoint or a utility module. Pick whichever suggestion makes sense.
 
 ### Step 2 — Ask Claude to create the file and wire it in
+
+<StepMeta purpose="Implement the feature as a connected change instead of leaving the new file orphaned." action="Give Claude a precise spec for the new file and require it to show both the new file and the existing integration edits." expectedResult="Claude creates a new module and updates the server or app setup so the feature is actually invoked." whyItMatters="New files only matter when the rest of the project knows about them, so integration is part of the feature, not an optional extra." nextStep="Verify that the new file really exists on disk and matches the code Claude showed you." askTutor="I'm on Step 2 of Add a new feature file to an existing project. Help me write an implementation prompt that makes Claude both create the file and wire it into the correct place." />
 
 Give a specific instruction:
 
@@ -41,6 +46,8 @@ Claude will:
 Review both outputs carefully before moving on.
 
 ### Step 3 — Verify the new file exists
+
+<StepMeta purpose="Confirm that Claude created the file you asked for and that its contents match the claimed implementation." action="List the new file on disk and open it to inspect the generated code directly." expectedResult="You can see the file, verify its location, and compare its contents to what Claude said it wrote." whyItMatters="Direct inspection catches path mistakes, truncated files, and mismatches between Claude's summary and the actual code." nextStep="After the file itself looks right, verify that an existing app file imports and registers it correctly." askTutor="I'm on Step 3 of Add a new feature file to an existing project. Help me review this new file and spot anything suspicious before I trust the integration." />
 
 **macOS / Linux**
 
@@ -60,6 +67,8 @@ Confirm the file exists and the code matches what Claude showed you.
 
 ### Step 4 — Verify it is imported and registered
 
+<StepMeta purpose="Make sure the project actually uses the new feature instead of merely storing it in the repo." action="Search existing server files for the new import and the registration or call site that activates the feature." expectedResult="You find both the import/require line and the line where the feature is registered or invoked." whyItMatters="A feature file that is never imported is dead code, so integration checks are what prove the change is real." nextStep="Run the project and trigger the feature manually to confirm that it behaves as intended." askTutor="I'm on Step 4 of Add a new feature file to an existing project. Help me tell whether this integration search proves the feature is really wired into the request flow." />
+
 Search for the integration point in the existing server code:
 
 **macOS / Linux**
@@ -77,6 +86,8 @@ Select-String -Path src\server\*.js -Pattern "request-logger|requestLogger"
 You should see both an import/require line and a registration line (e.g., `app.use(requestLogger)`). If either is missing, tell Claude: "I see the import but not the `app.use()` call. Did you forget to register the middleware?"
 
 ### Step 5 — Run the project and test manually
+
+<StepMeta purpose="Observe the new feature in action instead of relying only on static code inspection." action="Start the project, send a simple request, and look for the new behavior in the running app or terminal output." expectedResult="The running project demonstrates the new feature, such as request logging or another visible behavior you intended to add." whyItMatters="Manual exercise confirms the integration path works at runtime, not just on paper or in diffs." nextStep="Once manual behavior looks right, run the automated tests to check for broader regressions." askTutor="I'm on Step 5 of Add a new feature file to an existing project. Help me verify this feature at runtime and tell me what visible signal I should expect." />
 
 Start the server:
 
@@ -110,6 +121,8 @@ Check the server's terminal output. You should see your logger printing the meth
 
 ### Step 6 — Run the existing test suite
 
+<StepMeta purpose="Check that the new feature did not break existing behavior elsewhere in the codebase." action="Run the current test suite and use any failures to decide whether the feature needs adjustment or gating." expectedResult="Tests either stay green or reveal a specific interaction, such as stdout noise or setup assumptions, that needs fixing." whyItMatters="Integration work is only safe when the pre-existing project behavior still holds after your new file is added." nextStep="If tests and manual behavior both look good, commit the feature as one clean change." askTutor="I'm on Step 6 of Add a new feature file to an existing project. Help me interpret this test failure and decide whether the new feature should be gated or rewritten." />
+
 ```bash
 npm test
 ```
@@ -131,6 +144,8 @@ if (process.env.NODE_ENV !== 'test') {
 ```
 
 ### Step 7 — Commit the new feature
+
+<StepMeta purpose="Capture the new working feature in version control with all related integration edits together." action="Stage the new file and supporting changes, then commit with a message that describes the added feature clearly." expectedResult="Git records one focused feature commit containing the new file, its wiring, and any supporting test-safe adjustments." whyItMatters="A self-contained feature commit makes review and rollback straightforward and shows that you finished the integration cleanly." nextStep="After repo operations, practice using Claude to jump between related files and map dependency chains faster." askTutor="I'm on Step 7 of Add a new feature file to an existing project. Help me confirm which files belong in this feature commit and whether the message reflects the actual change." />
 
 ```bash
 git add -A

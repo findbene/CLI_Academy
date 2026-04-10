@@ -5,6 +5,7 @@ chapterNumber: "5.1"
 pathNumber: "5"
 tutorPreload: "Help me read this error traceback and fix the bug in my code."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Paste an error and get a real fix
@@ -16,6 +17,8 @@ Create a small script that has a deliberate bug, run it, watch it crash, and the
 ## Walkthrough
 
 ### Step 1 — Create a project folder and a buggy script
+
+<StepMeta purpose="Set up a tiny reproducible bug so you can practice the full crash-to-fix debugging loop with real error output." action="Create the practice folder and write one deliberately broken script in the language you want to debug." expectedResult="You end up with a small script on disk that is guaranteed to fail for a clear, explainable reason." whyItMatters="Good debugging practice starts with a minimal reproducible example, because small failures are easier to understand and verify than app-sized crashes." nextStep="Run the broken script and capture the full terminal error before you ask Claude to help." askTutor="I'm on Step 1 of Paste an error and get a real fix. Help me create the smallest possible buggy example and explain why a tiny reproducible crash is best for learning this loop." />
 
 We need a tiny script with a real bug so we can practice the full error-to-fix cycle. We will create a JavaScript version and a Python version — use whichever language you are more comfortable with.
 
@@ -65,6 +68,8 @@ print(f"Top score: {top_score}")
 
 ### Step 2 — Run the script and watch it fail
 
+<StepMeta purpose="Generate the real runtime error that Claude can use as concrete debugging evidence." action="Run the buggy script from the terminal and copy the full traceback or stack trace output instead of paraphrasing it." expectedResult="The script crashes and the terminal shows an error message with enough detail to identify the broken line and failure type." whyItMatters="Claude can diagnose much more accurately from the actual runtime output than from a vague summary like 'it crashed somewhere.'" nextStep="Paste the complete error into Claude Code along with the command you ran." askTutor="I'm on Step 2 of Paste an error and get a real fix. Help me decide which parts of this traceback matter most and whether I copied enough context for Claude to debug it." />
+
 **macOS / Linux (JavaScript)**
 
 ```bash
@@ -106,6 +111,8 @@ Do not try to fix it yourself yet. Copy the **entire** terminal output including
 
 ### Step 3 — Paste the error into Claude Code
 
+<StepMeta purpose="Turn the raw error output into a precise debugging request that anchors Claude in the current file and failure." action="Paste the exact command and the full error output into Claude Code and ask what is wrong and how to fix it." expectedResult="Claude reads the traceback, identifies the failing line, explains the bug, and proposes a targeted code change." whyItMatters="The fastest debugging loop in Claude Code starts from concrete evidence, not from broad prompts like 'find the bug somewhere in this file.'" nextStep="Review Claude's proposed diff carefully before deciding whether to apply it." askTutor="I'm on Step 3 of Paste an error and get a real fix. Help me phrase this debugging prompt so Claude focuses on the actual traceback instead of rewriting the script." />
+
 Open Claude Code in the same directory and paste the full error as your prompt. A good pattern is:
 
 ```
@@ -123,6 +130,8 @@ Claude reads the traceback, opens `buggy.js`, and explains:
 Claude then proposes a code change. It will show you a diff — the old line and the new line.
 
 ### Step 4 — Accept or reject the fix
+
+<StepMeta purpose="Evaluate Claude's proposed fix instead of blindly applying the first change it suggests." action="Read the diff, decide whether the change matches your intent, then run the script again if you accept it." expectedResult="You either apply a sensible fix and see the script run correctly, or reject the change and ask for clarification first." whyItMatters="Debugging is not finished when Claude proposes a patch; it is finished when the runtime behavior proves the patch solved the real problem." nextStep="If you want extra practice, repeat the same crash-to-fix loop with the alternative Python version." askTutor="I'm on Step 4 of Paste an error and get a real fix. Help me review this diff and tell me whether Claude is fixing the real bug or changing the program's meaning." />
 
 Claude Code asks whether to apply the change. Read the diff carefully:
 
@@ -152,6 +161,8 @@ Active users: [ { age: 30, active: true }, { age: 27, active: true } ]
 No crash. The bug is gone.
 
 ### Step 5 — Try the same loop with the Python version
+
+<StepMeta purpose="Reinforce the debugging loop across a second language so the skill feels general instead of tied to one syntax." action="Run the equivalent Python example, paste the error into Claude, and verify the fix the same way you did for JavaScript." expectedResult="You see that the same evidence-driven loop works for a different runtime and error style." whyItMatters="The transferable habit is what matters here: run, capture the real failure, ask Claude, inspect the diff, and verify the fix." nextStep="After direct error debugging, move on to cases where the program is wrong without crashing and you need debug logging instead." askTutor="I'm on Step 5 of Paste an error and get a real fix. Help me compare the Python and JavaScript versions of this loop so I understand what stays the same across languages." />
 
 If you used Python, the conversation looks like:
 

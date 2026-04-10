@@ -5,6 +5,7 @@ chapterNumber: "9.3"
 pathNumber: "9"
 tutorPreload: "Help me clean a messy CSV — fix date formats, normalize names, remove duplicates — and verify the output manually."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Clean and reformat CSV or JSON with Claude
@@ -16,6 +17,8 @@ By the end of this lesson you will take a messy CSV file with inconsistent dates
 ## Walkthrough
 
 ### Step 1 — Create a realistically messy CSV
+
+<StepMeta purpose="Generate a messy but believable CSV so the cleaning workflow has concrete formatting and deduplication problems to solve." action="Create the csv-clean-lab repo, add contacts.csv with inconsistent rows, and commit the raw file before asking Claude to clean it." expectedResult="You have a versioned CSV containing mixed date formats, duplicate contacts, inconsistent casing, whitespace issues, and missing values." whyItMatters="Data cleaning is only meaningful when the source includes realistic defects, because that lets you judge whether Claude actually normalized the data correctly." nextStep="Count the starting rows so you have a hard baseline for deduplication checks after Claude produces the cleaned file." askTutor="I'm on Step 1 of Clean and reformat CSV or JSON with Claude. Help me check whether this sample CSV has enough realistic messiness to test the cleaning workflow properly." />
 
 Real data exports are messy — mixed date formats, inconsistent capitalization, trailing whitespace, and duplicate rows. Create a sample that reflects this.
 
@@ -71,6 +74,8 @@ This CSV has five real problems: duplicate rows, inconsistent date formats, mixe
 
 ### Step 2 — Count rows before cleaning
 
+<StepMeta purpose="Establish a measurable baseline so you can verify whether deduplication removed the right amount of data later." action="Run the line-count command for your shell and record the starting total for contacts.csv before any cleaning happens." expectedResult="You know the raw file contains 11 lines total, including the header and 10 data rows." whyItMatters="Without a starting count, it is harder to tell whether Claude removed too many rows, too few rows, or the wrong duplicates." nextStep="Ask Claude to clean the CSV using explicit normalization and logging rules so you can compare the output against this baseline." askTutor="I'm on Step 2 of Clean and reformat CSV or JSON with Claude. Help me use this starting row count as a baseline for verifying deduplication later." />
+
 Know your starting point so you can verify the cleaning later.
 
 **macOS / Linux:**
@@ -88,6 +93,8 @@ wc -l contacts.csv
 You should see 11 lines (1 header + 10 data rows).
 
 ### Step 3 — Ask Claude to clean the CSV
+
+<StepMeta purpose="Turn the raw export into a controlled cleaning task with explicit transformation rules and an audit trail." action="Prompt Claude to create contacts-clean.csv and cleaning-log.md while applying the listed normalization, deduplication, and missing-value rules." expectedResult="Claude produces a cleaned CSV plus a log describing the changes it claims to have made." whyItMatters="Clear cleaning rules help you evaluate Claude's output objectively because you can check each rule one by one instead of guessing what 'clean' should mean." nextStep="Inspect the cleaned file and confirm the deduplicated row count matches the number of unique contacts you expect." askTutor="I'm on Step 3 of Clean and reformat CSV or JSON with Claude. Help me write a prompt that makes Claude clean the CSV systematically and produce a useful change log." />
 
 Open Claude Code in the `csv-clean-lab` directory:
 
@@ -109,6 +116,8 @@ by type (duplicates removed, dates normalized, etc.) with row numbers.
 ```
 
 ### Step 4 — Verify row count after deduplication
+
+<StepMeta purpose="Check whether Claude removed duplicates correctly before you spend time on field-level formatting review." action="Open contacts-clean.csv, count the lines again, and compare the deduplicated total to the six unique contacts you expect to keep." expectedResult="You can tell whether the cleaned file has the correct seven total lines: one header and six unique data rows." whyItMatters="Row-count verification catches major merge and deduplication errors fast, especially when near-duplicates could be removed incorrectly." nextStep="After the row count matches expectations, spot-check specific rows to confirm dates, emails, cities, and missing fields were normalized correctly." askTutor="I'm on Step 4 of Clean and reformat CSV or JSON with Claude. Help me verify whether Claude removed the right duplicates and kept the right six contacts." />
 
 ```bash
 cat contacts-clean.csv
@@ -137,6 +146,8 @@ wc -l contacts-clean.csv
 Expected: 7 lines (1 header + 6 data rows). If the count is different, check which rows Claude kept or removed incorrectly.
 
 ### Step 5 — Spot-check specific fields
+
+<StepMeta purpose="Verify that the cleaned rows actually follow the formatting rules, not just the expected row count." action="Search for specific contacts and missing values, then confirm dates, email casing, city formatting, and MISSING markers match the requested rules." expectedResult="You confirm that representative rows like Sarah Connor, Marcus Johnson, and Wei Zhang were normalized correctly." whyItMatters="A correct row count can still hide bad field-level decisions, so spot checks make sure the retained rows are also clean and usable." nextStep="Review the change log next so you can see whether Claude documented the transformations with enough detail to audit them." askTutor="I'm on Step 5 of Clean and reformat CSV or JSON with Claude. Help me choose the best rows to spot-check so I can verify the cleaning rules quickly." />
 
 Verify the cleaning rules were applied correctly for at least 3 rows.
 
@@ -173,6 +184,8 @@ Marcus Johnson should have `MISSING` in the Phone column. Wei Zhang should have 
 
 ### Step 6 — Review the cleaning log
 
+<StepMeta purpose="Make the cleaning process auditable by checking whether Claude documented what changed, where, and why." action="Open cleaning-log.md and inspect whether each transformation includes the original value, the new value, and the original row reference." expectedResult="You know whether the cleaning log is specific enough to justify the cleaned output and explain every deduplication or normalization decision." whyItMatters="A cleaning log turns the result from a black box into a reviewable process, which matters whenever data cleaning decisions could remove or alter information." nextStep="When the output and audit log are both solid, stage them together and review the final diff before committing." askTutor="I'm on Step 6 of Clean and reformat CSV or JSON with Claude. Help me judge whether this cleaning log is specific enough to audit every change Claude made." />
+
 ```bash
 cat cleaning-log.md
 ```
@@ -187,6 +200,8 @@ and the new value with the row number from the original file.
 ```
 
 ### Step 7 — Commit the cleaned data and log
+
+<StepMeta purpose="Capture the cleaned dataset only after the row counts, field formatting, and audit trail all check out." action="Stage contacts-clean.csv and cleaning-log.md, review the staged diff, and commit the cleaned data package to Git." expectedResult="You create a commit containing both the cleaned CSV and the reviewed change log." whyItMatters="Versioning the cleaned output together with its audit log preserves both the result and the reasoning behind it, which is essential for trustworthy data work." nextStep="Use the same research, extraction, review, and commit rhythm in the mini-project that combines every Path 09 skill into one pipeline." askTutor="I'm on Step 7 of Clean and reformat CSV or JSON with Claude. Help me do a final review before I commit the cleaned CSV and the cleaning log together." />
 
 ```bash
 git add contacts-clean.csv cleaning-log.md

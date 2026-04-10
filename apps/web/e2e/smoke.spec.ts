@@ -8,6 +8,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Public pages", () => {
   const publicRoutes = [
     { path: "/", title: "CLI Academy" },
+    { path: "/lounge", title: "Agent Lounge" },
     { path: "/paths", title: "Learning Paths" },
     { path: "/pricing", title: "Pricing" },
     { path: "/login", title: "Log in" },
@@ -26,6 +27,14 @@ test.describe("Public pages", () => {
       await expect(page).toHaveTitle(new RegExp(route.title, "i"));
     });
   }
+
+  test("marketing pages do not render the floating tutor launcher", async ({ page }) => {
+    for (const route of ["/", "/lounge"]) {
+      const response = await page.goto(route);
+      expect(response?.status()).toBeLessThan(500);
+      await expect(page.getByRole("button", { name: /open ai tutor/i })).toHaveCount(0);
+    }
+  });
 });
 
 test.describe("Security headers", () => {

@@ -5,6 +5,7 @@ chapterNumber: "8.3"
 pathNumber: "8"
 tutorPreload: "Help me review this Cowork output and decide what to keep, what to fix, and what to throw away."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Review session output and extract value
@@ -16,6 +17,8 @@ By the end of this lesson you will have a repeatable process for reviewing every
 ## Walkthrough
 
 ### Step 1 — Gather everything the session produced
+
+<StepMeta purpose="Separate the real deliverables from the surrounding session noise before you start editing or saving anything." action="Inspect the project directory or the conversation transcript and identify which files or final drafts actually matter." expectedResult="You can point to the final deliverables and distinguish them from revisions, explanations, and abandoned drafts." whyItMatters="Post-session review gets much easier once you know which outputs are candidates for saving and which ones should simply be ignored." nextStep="Run a structured accuracy pass on the candidate deliverables instead of trusting fluent AI output automatically." askTutor="I'm on Step 1 of Review session output and extract value. Help me identify which parts of the session are real deliverables and which parts are just noise." />
 
 A Cowork session generates a lot of text: drafts, revisions, explanations, false starts, and the final deliverables. Your first job after the session ends is to separate what matters from what does not.
 
@@ -39,6 +42,8 @@ If you worked in **claude.ai**, the output lives in the conversation. Scroll thr
 
 ### Step 2 — Run the accuracy check
 
+<StepMeta purpose="Replace the vague idea of review with a concrete checklist that tests whether the output is safe to keep." action="Review every candidate deliverable for factual accuracy, completeness, boundary compliance, tone, and platform coverage." expectedResult="You know exactly which parts of the output pass review and which need fixes before saving." whyItMatters="AI output often sounds finished before it is actually correct, so a checklist protects you from committing polished mistakes." nextStep="Test every shell command or concrete instruction in a real environment so plausible-looking syntax gets verified." askTutor="I'm on Step 2 of Review session output and extract value. Help me apply the five-point accuracy checklist to this output and spot anything that still needs correction." />
+
 AI output is fluent. That does not mean it is correct. Before saving anything, review every deliverable against this checklist:
 
 | Check | Question to ask | Action if it fails |
@@ -50,6 +55,8 @@ AI output is fluent. That does not mean it is correct. Before saving anything, r
 | **Platform coverage** | If you required Windows + macOS/Linux commands, are both present? | Add the missing platform variant for every command block. |
 
 ### Step 3 — Test every command
+
+<StepMeta purpose="Verify commands through reality instead of trusting that they merely look plausible in prose." action="Run each command from the deliverable in a real terminal and fix or mark anything that fails or cannot yet be tested." expectedResult="Every command in the saved deliverable is either confirmed working or explicitly marked as untested." whyItMatters="Command accuracy is one of the easiest places for AI-generated docs to go wrong, and testing keeps your deliverables trustworthy." nextStep="Save only the reviewed deliverables into their proper project files once the command checks pass." askTutor="I'm on Step 3 of Review session output and extract value. Help me decide how to test these commands safely and what to do when one of them fails." />
 
 If the deliverable contains shell commands, run each one in a real terminal. Do not trust that Claude got the syntax right just because it looks plausible.
 
@@ -70,6 +77,8 @@ lintr --version
 If a command fails, fix it in the deliverable before saving. Mark commands you cannot test (e.g., deployment steps) with a note: `<!-- UNTESTED: requires production credentials -->`.
 
 ### Step 4 — Save the deliverables to your project
+
+<StepMeta purpose="Turn reviewed output into durable project files instead of leaving the final state trapped inside the session." action="Keep the file Claude already wrote or copy the approved final text from the conversation into the correct local file path." expectedResult="The reviewed deliverable is now saved as a real project file such as README.md." whyItMatters="Cowork only creates lasting value when the approved output ends up in the project in the place where future work can use it." nextStep="Discard or isolate everything that was useful for thinking but should not clutter the project itself." askTutor="I'm on Step 4 of Review session output and extract value. Help me save only the final reviewed version and avoid overwriting the wrong file." />
 
 Once a deliverable passes the accuracy check, save it to the right location.
 
@@ -96,6 +105,8 @@ Get-Clipboard | Set-Content -Path README.md -Encoding utf8
 
 ### Step 5 — Discard the rest
 
+<StepMeta purpose="Keep the repository clean by separating valuable deliverables from session residue and throwaway context." action="Delete or ignore intermediate drafts, and if you want a learning record, save the full session separately from the project deliverables." expectedResult="Only the final files remain in the main project area, while optional session logs live in a separate location or are omitted entirely." whyItMatters="Repositories become noisy fast when every exploratory draft gets preserved alongside the real output, so selective retention matters." nextStep="Stage and commit only the finished deliverables if the project uses Git." askTutor="I'm on Step 5 of Review session output and extract value. Help me decide what should stay in the project and what should be discarded or kept only as a separate log." />
+
 Not everything Claude produced is worth keeping. Intermediate drafts, explanations of its own process, and abandoned approaches are noise. Do not save them to your project.
 
 If you want a record of the session for learning purposes, save the full conversation separately:
@@ -118,6 +129,8 @@ Get-Clipboard | Set-Content -Path session-logs/2026-04-09-readme-session.md -Enc
 Keep session logs out of version control unless they are explicitly part of your project documentation.
 
 ### Step 6 — Commit the deliverables
+
+<StepMeta purpose="Capture the reviewed outputs as an explicit project snapshot instead of leaving them as untracked local changes." action="Stage only the final deliverable files and commit them with a message that describes the Cowork-generated documentation work." expectedResult="Git history contains a clean commit with the final reviewed deliverables and excludes session logs or draft noise." whyItMatters="A focused commit preserves the value of the session in a form teammates and future-you can inspect and trust." nextStep="Once you know how to review and save output, extract the reusable parts of the session into templates for future Cowork work." askTutor="I'm on Step 6 of Review session output and extract value. Help me decide which files belong in the commit and how to phrase a clean commit message." />
 
 If your project uses Git, add only the final deliverables — not the session logs:
 

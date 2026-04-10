@@ -5,6 +5,7 @@ chapterNumber: "13.3"
 pathNumber: "13"
 tutorPreload: "Define review triggers for this multi-agent workflow."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Add a review gate between agents
@@ -19,6 +20,8 @@ By the end you will have a three-stage pipeline (Researcher → Writer → Revie
 
 ### Step 1 — Set up the project
 
+<StepMeta purpose="Create a clean workspace for the three-agent review-gated pipeline." action="Make the review-gate-pipeline directory and enter it before recreating the contracts and loop script." expectedResult="You have a project folder ready for the Researcher, Writer, Reviewer, and orchestration files." whyItMatters="A separate workspace keeps the review loop easy to inspect and makes each generated file part of one auditable pipeline." nextStep="Recreate the Researcher and Writer contracts so the review agent has concrete source and draft files to compare later." askTutor="Help me verify that this review-gate project has the right starting structure before I add the reviewer and loop logic." />
+
 **macOS / Linux:**
 ```bash
 mkdir -p review-gate-pipeline && cd review-gate-pipeline
@@ -30,6 +33,8 @@ New-Item -ItemType Directory -Path review-gate-pipeline -Force; Set-Location rev
 ```
 
 ### Step 2 — Create the Researcher and Writer contracts
+
+<StepMeta purpose="Prepare the producing agents that the reviewer will later judge." action="Copy or recreate the Researcher and Writer contracts, keeping the Writer aware of optional review-feedback.md input." expectedResult="The project contains two upstream contracts that can generate a findings file and an article draft ready for review." whyItMatters="A review gate only works when the Writer contract is explicitly designed to accept structured feedback on later passes." nextStep="Create the Reviewer contract that can pass or fail the article and emit actionable feedback." askTutor="Check whether my Writer contract is ready for a review loop or whether it still needs a clearer rule about reading review-feedback.md." />
 
 Re-use the contracts from Lesson 13.2.2 (copy them into this directory or recreate them). The key files are `researcher-CLAUDE.md` and `writer-CLAUDE.md` with the same structure you already know.
 
@@ -101,6 +106,8 @@ Stop after writing ``article-draft.md``.
 
 ### Step 3 — Create the Reviewer contract
 
+<StepMeta purpose="Add a third agent whose only job is to judge factual fidelity instead of rewriting content." action="Write reviewer-CLAUDE.md with PASS or FAIL output rules, specific issue reporting, and an optional review-feedback.md file when the article fails." expectedResult="A Reviewer contract exists that checks article-draft.md against research-findings.md without editing either source file." whyItMatters="A dedicated reviewer is what turns the pipeline into a gated workflow instead of a one-way write path." nextStep="Encode the review loop in the Bash orchestration script and cap the number of revisions before running it." askTutor="Review this Reviewer contract and tell me whether the pass-fail criteria are strict enough to catch unsupported claims without forcing endless failures." />
+
 This is the new agent. Its job is to compare the article against the findings and produce a pass/fail verdict.
 
 **macOS / Linux:**
@@ -161,6 +168,8 @@ Stop after writing your output files.
 
 ### Step 4 — Write the orchestration script with review loop (macOS / Linux)
 
+<StepMeta purpose="Automate the review gate so the writer can revise from feedback without creating an unbounded loop." action="Create run-review-pipeline.sh exactly as shown, including the review-verdict check and MAX_REVISIONS cap." expectedResult="You have a Bash workflow that runs Researcher, Writer, Reviewer, and conditionally reruns the Writer when the verdict is FAIL." whyItMatters="The cap is the difference between useful review escalation and runaway cost, so it belongs in the script from the start." nextStep="If you need Windows support, add the PowerShell version and keep the same review semantics before you execute the pipeline." askTutor="Inspect this Bash review-loop script and tell me whether any branch could still create an accidental infinite revision cycle." />
+
 ```bash
 cat > run-review-pipeline.sh << 'SCRIPT'
 #!/usr/bin/env bash
@@ -208,6 +217,8 @@ chmod +x run-review-pipeline.sh
 
 ### Step 5 — Write the orchestration script (Windows PowerShell)
 
+<StepMeta purpose="Preserve the same gated review behavior for Windows users." action="Create run-review-pipeline.ps1 with the same max-revision loop, verdict check, and writer rerun behavior as the Bash script." expectedResult="The PowerShell version can run the same three-agent review pipeline with a hard stop after the configured number of revisions." whyItMatters="The safety properties of the pipeline should survive the shell translation, not just the happy-path agent outputs." nextStep="Run the pipeline and observe whether it passes immediately or enters one capped revise-and-review cycle." askTutor="Compare the PowerShell review loop to the Bash version and tell me whether the verdict handling and revision cap still behave the same way." />
+
 ```powershell
 @"
 `$ErrorActionPreference = "Stop"
@@ -254,6 +265,8 @@ Write-Host "Final verdict: `$((Get-Content review-verdict.md -First 1))"
 ```
 
 ### Step 6 — Run and observe
+
+<StepMeta purpose="See the review gate behave in practice so pass-first and fail-then-revise outcomes both make sense." action="Run the platform-appropriate review pipeline script and watch whether the reviewer returns PASS immediately or triggers one revision cycle." expectedResult="The pipeline either exits cleanly on PASS or reruns the Writer with feedback until it passes or hits the revision cap." whyItMatters="A review loop only earns its cost when it catches real drift and stops predictably when enough attempts have been used." nextStep="Use the same capped-failure mindset in the next lesson, where you add timeout, retry, and fallback handling for broken agent runs." askTutor="Help me interpret this review-loop run and decide whether the reviewer feedback is useful enough or whether the criteria need tightening." />
 
 **macOS / Linux:**
 ```bash

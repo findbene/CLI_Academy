@@ -5,6 +5,7 @@ chapterNumber: "18.1"
 pathNumber: "18"
 tutorPreload: "Help me scope a daily brief assistant to the smallest version worth using."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Build: daily brief assistant
@@ -14,6 +15,8 @@ Build a real CLAUDE.md-driven assistant that creates a morning summary file name
 
 ## Walkthrough
 ### Step 1: Create a bounded workspace and starter files
+
+<StepMeta purpose="Start the assistant in a small, isolated repo so its job stays clear and its file access stays bounded." action="Create the `daily-brief-agent` folder, initialize git, and seed a minimal `TODO.md` with just the starter priorities the assistant will read." expectedResult="You have a dedicated workspace with version control and one simple input file for the assistant." whyItMatters="Bounding the workspace is the first safety control because it keeps the assistant from wandering across unrelated repositories or files." nextStep="Define the assistant contract in `CLAUDE.md` next so the workspace has explicit rules before any automation runs." askTutor="Review this starter workspace with me and tell me whether the boundary is tight enough for a first daily brief assistant or whether I am still giving it too much room to roam." />
 Use a dedicated folder so your assistant never runs across unrelated repos.
 
 ```bash
@@ -34,6 +37,8 @@ git init
 ```
 
 ### Step 2: Add the assistant contract in CLAUDE.md
+
+<StepMeta purpose="Write the exact operating contract that constrains the assistant to one output, one task, and a narrow command set." action="Create `CLAUDE.md` with purpose, allowed commands, must-do steps, forbidden actions, and stop conditions exactly as the lesson describes." expectedResult="The assistant has a written contract that limits it to generating a daily brief file and nothing else." whyItMatters="A useful assistant is not just capable; it is predictable, and prediction comes from explicit contracts rather than implied intent." nextStep="Seed one commit next so the brief has real git activity to summarize when you run the assistant." askTutor="Audit this `CLAUDE.md` contract and tell me whether the purpose, allowed commands, and stop conditions are strong enough to prevent side effects." />
 This contract keeps the agent focused on one task: produce a daily brief, no side effects.
 
 ```bash
@@ -94,6 +99,8 @@ Create one file named daily-brief-YYYY-MM-DD.md from yesterday's git log and TOD
 
 ### Step 3: Seed one commit so the brief has data
 
+<StepMeta purpose="Create a small amount of real repository history so the assistant has something concrete to summarize." action="Add `README.md`, stage the initial files, and create the seed commit shown in the lesson." expectedResult="The repo now contains at least one commit and the assistant has both git history and TODO data to work from." whyItMatters="Assistants are easier to validate when they operate on real inputs instead of empty repositories that force edge-case behavior immediately." nextStep="Run the assistant through Claude Code next using the exact prompt so the contract is exercised end to end." askTutor="Explain why this seed commit matters for testing the daily brief workflow and tell me whether one commit is enough to validate the basic assistant behavior." />
+
 ```bash
 printf "# Daily Brief Agent\n" > README.md
 git add README.md TODO.md CLAUDE.md
@@ -107,6 +114,8 @@ git commit -m "chore: seed daily brief assistant"
 ```
 
 ### Step 4: Trigger the assistant in Claude Code
+
+<StepMeta purpose="Execute the contract exactly once in the environment where the assistant is meant to run." action="Use the provided Claude Code prompt verbatim so the assistant reads `CLAUDE.md`, runs the allowed read commands, and creates only the dated brief file." expectedResult="Claude Code generates one daily brief markdown file based on yesterday's git log and `TODO.md`." whyItMatters="Running the exact prompt is what proves the contract can govern a real assistant session rather than just sitting unused in a file." nextStep="Verify the output and repository boundaries next so you confirm the assistant created the right artifact without touching anything else." askTutor="Review the run prompt with me and tell me whether it is specific enough to force contract-first behavior from Claude Code." />
 In Claude Code, run this exact prompt:
 
 ```text
@@ -114,6 +123,8 @@ Read CLAUDE.md and execute the contract exactly. Run git log --since="yesterday"
 ```
 
 ### Step 5: Verify output quality and boundaries
+
+<StepMeta purpose="Check both the content quality of the brief and the absence of unintended side effects in the repo." action="List the generated brief file, read its contents, and inspect `git status --short` for any extra changes beyond the one expected output." expectedResult="You can show one generated brief file and a clean boundary around the rest of the repo." whyItMatters="A bounded assistant is only successful when it produces useful output and also avoids surprising writes outside its contract." nextStep="Harden the same assistant in the next lesson with approval gates, memory retention limits, and explicit failure handling." askTutor="Help me review this first daily brief run and tell me whether the output quality and repo boundaries meet the contract or if the assistant already drifted." />
 
 ```bash
 ls daily-brief-*.md

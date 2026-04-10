@@ -5,6 +5,7 @@ chapterNumber: "14.3"
 pathNumber: "14"
 tutorPreload: "Walk me through the review-test-commit cycle for my latest change."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Practice the review-test-commit cycle
@@ -24,6 +25,8 @@ In this lesson you will practice the full cycle on a real code change, building 
 ## Walkthrough
 
 ### Step 1 — Set up a project with tests
+
+<StepMeta purpose="Create a tiny repo where review, testing, and committing can all be practiced on one understandable change." action="Make the `rtc-lab` directory, initialize Git, create the calculator module and tests, and commit the validated baseline." expectedResult="You have a baseline calculator project with input validation and four passing tests committed to history." whyItMatters="The cycle is easiest to internalize when the project is small enough that one removed guard or one failing test is obvious immediately." nextStep="Apply the AI-style change that adds a feature while quietly removing a safety check so you can practice catching it." askTutor="Review this baseline calculator and tell me which validation and tests are the most important safety anchors for the next change." />
 
 **macOS / Linux:**
 ```bash
@@ -120,6 +123,8 @@ git commit -m "initial: calculator with input validation and tests"
 
 ### Step 2 — Make a change (simulate an AI suggestion)
 
+<StepMeta purpose="Create a realistic feature edit that includes a subtle regression instead of an obviously broken patch." action="Replace `calculator.py` with the AI-style version that adds `multiply` but removes validation from `add`." expectedResult="Your working copy now contains one desirable feature plus one hidden safety regression that must be caught in review." whyItMatters="This is the exact pattern that makes AI-assisted coding risky: the new capability looks useful enough to distract you from the deleted protection." nextStep="Read the diff before running tests so you practice spotting the regression from the change itself." askTutor="Before I test this change, help me predict what kind of bug or security issue could hide inside a feature addition like this one." />
+
 Imagine you asked Claude Code to add a `multiply` function and it gave you a modified `calculator.py`. Apply this change:
 
 **macOS / Linux:**
@@ -162,6 +167,8 @@ def multiply(a, b):
 
 ### Step 3 — REVIEW: Read the diff
 
+<StepMeta purpose="Make code review the first reflex instead of jumping straight from editing to committing." action="Run `git diff calculator.py`, identify the removed type-checking block, and write down the safety regression you found." expectedResult="You can point to the exact lines where validation disappeared and explain why the feature change is not safe yet." whyItMatters="Review comes first because tests do not tell you intent - the diff reveals what protections were lost while the feature was added." nextStep="Run the tests next and confirm whether your test suite catches the regression you just noticed in the diff." askTutor="Walk me through this calculator diff and tell me whether I found the most important removed safeguard or if I missed another regression." />
+
 This is the first step in the cycle. **Do not skip it.**
 
 ```bash
@@ -184,6 +191,8 @@ Read the output carefully. You should spot:
 Write down what you found. In a real workflow, this is where you would tell Claude Code to keep the validation.
 
 ### Step 4 — TEST: Run the test suite
+
+<StepMeta purpose="Use the existing tests as a second line of defense after manual diff review." action="Run `python -m pytest test_calculator.py -v` and observe which test fails and why." expectedResult="The string-rejection test fails, proving that the removed validation changed behavior in a way the project already considered unacceptable." whyItMatters="Tests convert a review suspicion into evidence and stop you from committing a regression just because the feature mostly works." nextStep="Repair the code, add tests for the new function, then repeat the review and test steps before committing." askTutor="Interpret this failing test run and connect it back to the exact validation lines that disappeared from the diff." />
 
 Even before fixing the problem, run the tests to see if your existing safety net catches the regression:
 
@@ -211,6 +220,8 @@ test_calculator.py::test_divide_by_zero PASSED
 This is exactly why you test before committing.
 
 ### Step 5 — Fix the change, then re-review and re-test
+
+<StepMeta purpose="Complete the cycle properly by restoring the lost protection and extending it to the new feature too." action="Put numeric validation back into `add`, add the same validation to `multiply`, append the new tests, then rerun both `git diff` and `pytest`." expectedResult="Your new feature remains in place, the safety checks are restored, and all six tests pass after the repair." whyItMatters="The goal is not to reject every AI-generated change - it is to keep the useful part while refusing the hidden regression." nextStep="Stage the intended changes carefully and run one last secret scan before creating the final commit." askTutor="Review my repaired diff and test results and tell me whether the updated `multiply` function now matches the validation standard of the existing code." />
 
 Restore the validation and add it to the new function too:
 
@@ -308,6 +319,8 @@ All six tests should pass.
 
 ### Step 6 — Check for secrets before committing
 
+<StepMeta purpose="Add one final pre-commit inspection so even a good feature change does not accidentally stage unrelated sensitive data." action="Use `git add -p` to stage deliberately, then scan the staged diff for secret-like strings and confirm the search returns nothing." expectedResult="Only the intended calculator and test changes are staged, and the staged diff contains no credentials or other obvious leak patterns." whyItMatters="A clean implementation can still become a risky commit if you stage too broadly, so staging discipline is part of the safety cycle too." nextStep="Create the final atomic commit only after review, testing, and the staged secret scan are all clean." askTutor="Help me interpret my staged diff and tell me whether I staged only the intended feature work or picked up extra changes by accident." />
+
 Scan your staged changes for anything that looks like a secret:
 
 ```bash
@@ -331,6 +344,8 @@ git diff --staged | Select-String -Pattern '(key|password|secret|token|sk-|ghp_|
 This should return nothing — your code has no secrets.
 
 ### Step 7 — COMMIT: Create a clean, atomic commit
+
+<StepMeta purpose="Finish the workflow with one intentional commit that contains only the reviewed and tested change." action="Commit the repaired feature, then inspect `git log --oneline` and `git show --stat HEAD` to confirm the history is clean and focused." expectedResult="You end with a single atomic feature commit that includes only `calculator.py` and `test_calculator.py` after the full cycle succeeded." whyItMatters="The point of the cycle is not just safer code - it is safer history, where each commit tells a clear story about a reviewed and verified change." nextStep="Use the final lesson in the path to apply these habits to a broader security audit instead of one single code change." askTutor="Review this final commit summary and tell me whether it qualifies as a clean atomic commit or whether the scope still feels too broad." />
 
 Only now — after reviewing, testing, and scanning — commit:
 

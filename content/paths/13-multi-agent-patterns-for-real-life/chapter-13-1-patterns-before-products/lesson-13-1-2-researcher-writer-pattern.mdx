@@ -5,6 +5,7 @@ chapterNumber: "13.1"
 pathNumber: "13"
 tutorPreload: "Design a researcher-writer split for this task and define the handoff contract."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # When to use subagents vs a single session
@@ -19,6 +20,8 @@ By the end you will be able to look at any task and say confidently: "One sessio
 
 ### Step 1 — Learn the three decision criteria
 
+<StepMeta purpose="Give yourself a decision rule so you do not split tasks into agents by instinct alone." action="Read the size, independence, and specialization questions and decide how each one changes the case for one session versus multiple agents." expectedResult="You can apply the three-criteria test to a real task without hand-waving about complexity or scale." whyItMatters="Most bad multi-agent designs start with an unjustified split, so the decision framework is the real foundation of the path." nextStep="Create a small decision-record workspace where you can score example scenarios concretely." askTutor="Walk through a real task I have and help me score it honestly on size, independence, and specialization." />
+
 Use these three questions to decide:
 
 1. **Size** — Will the task exceed what one session can hold in context? If your project has dozens of files and thousands of lines, a single session may lose track. Splitting lets each agent focus on a small slice.
@@ -31,6 +34,8 @@ If you answer "yes" to at least two of these three, splitting is likely worth it
 
 ### Step 2 — Set up a decision-record directory
 
+<StepMeta purpose="Create a lightweight workspace for thinking clearly instead of keeping the decision in your head." action="Make the agent-decisions directory and move into it so your reasoning lives in a saved markdown record." expectedResult="You have a clean place to write and revise explicit split-versus-single-session decisions." whyItMatters="Saving the reasoning makes the framework reusable and easier to review or refine later." nextStep="Use the new file to score several scenarios and force a clear decision for each one." askTutor="Suggest a simple structure for this decision record if I want to reuse it on future workflow choices." />
+
 **macOS / Linux:**
 ```bash
 mkdir -p agent-decisions && cd agent-decisions
@@ -42,6 +47,8 @@ New-Item -ItemType Directory -Path agent-decisions -Force; Set-Location agent-de
 ```
 
 ### Step 3 — Evaluate three scenarios
+
+<StepMeta purpose="Practice the framework on concrete cases before you trust yourself to use it in live work." action="Write out the scenario analyses exactly or in your own words, making sure each one names all three criteria and ends with a clear decision." expectedResult="Your decision record contains grounded reasoning for several scenarios rather than vague 'it depends' conclusions." whyItMatters="The scoring only becomes useful when it produces a defendable yes-or-no decision about splitting." nextStep="Read the scenarios back and pressure-test whether the criteria really support the final choices." askTutor="Review my scenario writeups and tell me where the logic between the criteria and the decision is still weak." />
 
 Create a decision record that analyzes three scenarios. Write it as a Markdown file:
 
@@ -97,6 +104,8 @@ EOF
 
 ### Step 4 — Review your reasoning
 
+<StepMeta purpose="Catch sloppy logic before the framework hardens into a bad habit." action="Read the finished scenarios and check whether each one evaluated every criterion and whether the decision actually follows from those inputs." expectedResult="You either confirm the record is coherent or identify the places where your scoring and conclusion do not line up." whyItMatters="A review pass keeps the framework honest and teaches you to justify splits with evidence instead of preference." nextStep="Add one scenario from your own work so the framework leaves the lesson and enters your real workflow." askTutor="Pressure-test one of my decisions and argue the opposite side so I can see whether my reasoning still holds up." />
+
 Read back your decision record:
 
 **macOS / Linux:**
@@ -115,6 +124,8 @@ For each scenario, check:
 - Could you defend the choice to someone who disagrees?
 
 ### Step 5 — Add your own scenario
+
+<StepMeta purpose="Move from canned examples to a judgment call that will matter in your actual work." action="Append a fourth scenario based on something you really do and fill in the size, independence, specialization, and decision fields honestly." expectedResult="Your decision record ends with one real task that you have classified using the same framework as the lesson examples." whyItMatters="The framework only becomes useful when it shapes how you start real Claude work, not just lesson exercises." nextStep="Carry this decision skill into the next lesson, where you will define explicit roles and contracts for a split that is truly worth doing." askTutor="Help me evaluate my real scenario and tell me whether I am reaching for multiple agents too early." />
 
 Append a fourth scenario based on a real task from your own work:
 

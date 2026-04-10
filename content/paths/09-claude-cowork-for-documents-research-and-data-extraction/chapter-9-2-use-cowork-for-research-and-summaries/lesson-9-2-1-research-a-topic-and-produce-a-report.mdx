@@ -5,6 +5,7 @@ chapterNumber: "9.2"
 pathNumber: "9"
 tutorPreload: "Help me research a technical topic thoroughly, iterate on depth, and produce a Markdown report I can trust."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Research a topic and produce a report
@@ -16,6 +17,8 @@ By the end of this lesson you will ask Claude Code to research a technical topic
 ## Walkthrough
 
 ### Step 1 — Create a workspace for the research output
+
+<StepMeta purpose="Set up a clean workspace so each research draft and revision has a visible history." action="Create the db-research directory, initialize Git, and prepare to store your report iterations inside that repo." expectedResult="You have a dedicated research workspace under version control before Claude writes the first draft." whyItMatters="Research improves through iteration, and Git gives you a simple way to track what changed as you refine claims, structure, and sourcing." nextStep="Ask Claude for a structured first draft with explicit sections and source-confidence expectations." askTutor="I'm on Step 1 of Research a topic and produce a report. Help me set up this workspace so I can track report revisions cleanly." />
 
 **macOS / Linux:**
 
@@ -34,6 +37,8 @@ git init
 Having a Git repo lets you track each iteration of the report. You will commit drafts as you refine them.
 
 ### Step 2 — Ask Claude for a first draft with a structured prompt
+
+<StepMeta purpose="Get a usable first report draft by defining the exact structure and evidence expectations up front." action="Prompt Claude to compare SQLite and PostgreSQL using the specified headings, table fields, and source-confidence rules, then save the output as report.md." expectedResult="Claude generates a structured Markdown report with a comparison table, recommendation sections, and sourcing caveats." whyItMatters="Research prompts become more reliable when the output format, factual boundaries, and uncertainty rules are explicit before drafting starts." nextStep="Read the table closely and verify the factual rows one by one against what you already know or can confirm." askTutor="I'm on Step 2 of Research a topic and produce a report. Help me tighten this prompt so the report is structured and clearly separates sourced claims from uncertain ones." />
 
 Open Claude Code in the `db-research` directory and use a prompt that defines the output format upfront:
 
@@ -63,6 +68,8 @@ Save that report as report.md in the current directory.
 
 ### Step 3 — Verify the comparison table row by row
 
+<StepMeta purpose="Stress-test the highest-risk factual claims before you trust the report as a research artifact." action="Open report.md, inspect each comparison-table row, and correct any inaccurate concurrency, size, licensing, or capability claims." expectedResult="The comparison table reflects verified or clearly flagged facts instead of plausible-sounding errors." whyItMatters="Tables compress a lot of meaning into a small space, so even one wrong cell can distort the final recommendation." nextStep="Once the baseline facts are sound, deepen any weak narrative sections so the report becomes more useful than a raw table." askTutor="I'm on Step 3 of Research a topic and produce a report. Help me audit this comparison table and turn any vague or incorrect rows into grounded claims." />
+
 Open the report and check each claim in the comparison table.
 
 ```bash
@@ -86,6 +93,8 @@ add a note citing the SQLite documentation.
 
 ### Step 4 — Ask Claude to deepen a weak section
 
+<StepMeta purpose="Turn a shallow report into a decision-support document by pushing Claude for specific criteria and examples." action="Identify the thinnest narrative section, ask Claude for more concrete thresholds and real-world examples, then review the revision." expectedResult="The revised section includes specific decision criteria and examples rather than generic advice like 'for small apps.'" whyItMatters="Depth is what makes research outputs reusable, and specific criteria help a reader apply the report to their own situation." nextStep="Review the sourcing section so the final document distinguishes well-supported claims from ones that still need confirmation." askTutor="I'm on Step 4 of Research a topic and produce a report. Help me spot which section is too vague and write a prompt that makes Claude add concrete decision criteria." />
+
 If the "When to choose SQLite" section is vague (e.g., "for small apps"), push for specifics:
 
 ```
@@ -106,6 +115,8 @@ Confirm the new content adds substance rather than filler.
 
 ### Step 5 — Check the Sources and Caveats section
 
+<StepMeta purpose="Make the report honest about evidence quality so readers can see which claims are grounded and which still need verification." action="Inspect the Sources and Caveats section, add official documentation links where possible, and flag any unsupported claims as unverified." expectedResult="The final report clearly separates doc-backed claims, general knowledge, and uncertain statements that require follow-up." whyItMatters="Good research documents are explicit about confidence, and this section prevents readers from treating every sentence as equally certain." nextStep="After the sources are in good shape, stage the report and review the complete diff one more time before committing." askTutor="I'm on Step 5 of Research a topic and produce a report. Help me strengthen the Sources and Caveats section so the report is explicit about confidence and verification gaps." />
+
 This is the most important section for a research report. Claude should clearly separate:
 
 1. Claims based on official documentation (e.g., sqlite.org, postgresql.org)
@@ -122,6 +133,8 @@ Mark any claim you cannot tie to a specific source as "unverified — confirm be
 ```
 
 ### Step 6 — Commit the final report
+
+<StepMeta purpose="Capture the research report only after you have corrected facts, strengthened weak sections, and documented uncertainty." action="Stage report.md, inspect the staged diff, and commit the finished report to the repo." expectedResult="You create a commit containing a reviewed research report with traceable revisions and explicit sourcing notes." whyItMatters="Versioning the final report makes your research process auditable and preserves a clean checkpoint you can refer back to later." nextStep="Use the same disciplined workflow in the next lesson when comparing tools inside a scored decision document." askTutor="I'm on Step 6 of Research a topic and produce a report. Help me do a last-pass review so I only commit a report whose claims and caveats are consistent." />
 
 ```bash
 git add report.md

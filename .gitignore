@@ -17,3 +17,4 @@ Thumbs.db
 .mypy_cache/
 coverage/
 *.log
+test-results/

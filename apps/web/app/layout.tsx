@@ -1,30 +1,23 @@
 import type { Metadata } from "next";
-import { Sora, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { SearchDialog } from "@/components/ui/search-dialog";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import { FloatingTutor } from "@/components/tutor/FloatingTutor";
 import { TutorRuntimeProvider } from "@/components/tutor/TutorRuntimeProvider";
 import "./globals.css";
 
-const sora = Sora({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-  weight: ["400", "500", "600", "700"],
-});
-
-const instrumentSans = Instrument_Sans({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cliacademy.com";
@@ -65,7 +58,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`h-full antialiased ${sora.variable} ${instrumentSans.variable} ${ibmPlexMono.variable}`}
+      className={`h-full antialiased ${inter.variable} ${jetBrainsMono.variable}`}
     >
       <body className="min-h-full">
         <a href="#main-content" className="skip-link">

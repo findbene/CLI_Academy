@@ -5,6 +5,7 @@ chapterNumber: "11.3"
 pathNumber: "11"
 tutorPreload: "Show me the review-then-sandbox workflow for code that Claude Code generates."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Sandbox AI-generated code before running
@@ -16,6 +17,8 @@ By the end of this lesson you will follow a repeatable workflow for handling cod
 ## Walkthrough
 
 ### Step 1 — Set up a sandbox workspace
+
+<StepMeta purpose="Create a neutral holding area for AI-generated code before it touches a real project." action="Make the ai-sandbox-lab directory and move into it so generated files stay separate until they are reviewed and tested." expectedResult="You have a dedicated workspace where AI-generated code can be examined and executed without mixing it into a live project." whyItMatters="Separating generated code from the real repo reduces accidental trust and makes the review-then-sandbox workflow much easier to enforce." nextStep="Use Claude to generate a bounded script, but keep it as a file only and do not run it yet." askTutor="I'm on Step 1 of Sandbox AI-generated code before running. Help me understand why this separate workspace matters instead of generating the code directly inside my real project." />
 
 Create a dedicated directory for AI code review. This keeps generated code separate from your project until you trust it.
 
@@ -34,6 +37,8 @@ Set-Location "$HOME\ai-sandbox-lab"
 
 ### Step 2 — Have Claude Code generate a script
 
+<StepMeta purpose="Produce a concrete example of AI-generated code that is useful enough to test but simple enough to review fully." action="Ask Claude to write data_processor.py with the bounded CSV task and explicitly tell it not to run the script." expectedResult="Claude creates a runnable Python file in the sandbox workspace without executing it." whyItMatters="The safety workflow starts by treating AI-generated code as untrusted output, and the 'do not run' instruction keeps creation and execution separate." nextStep="Read the script line by line before it gets anywhere near execution, even inside a sandbox." askTutor="I'm on Step 2 of Sandbox AI-generated code before running. Help me phrase this prompt so Claude generates only the file I asked for and does not overreach into execution or extra behavior." />
+
 Open Claude Code and give it a task that produces a runnable script:
 
 ```
@@ -48,6 +53,8 @@ Do NOT run the script. Just write the file.
 Claude will create `data_processor.py` in your current directory.
 
 ### Step 3 — Review the generated code before doing anything else
+
+<StepMeta purpose="Catch suspicious behavior before execution by doing a human review of every line." action="Open data_processor.py and inspect imports, file paths, shell calls, environment access, and any behavior unrelated to the CSV task." expectedResult="You either confirm the script is narrowly scoped or identify lines that need to be removed or rewritten before any run happens." whyItMatters="Human review is the first safety gate, and it is much cheaper to reject unsafe code here than after it has already started running." nextStep="If the code looks acceptable, run it inside a locked-down Docker container rather than on the host." askTutor="I'm on Step 3 of Sandbox AI-generated code before running. Help me review this generated script for red flags before I even consider running it in a sandbox." />
 
 This is the most important step. Read every line before running it.
 
@@ -77,6 +84,8 @@ If you find any of these, ask Claude to rewrite the script without them, or remo
 > **Real danger:** AI models can hallucinate import statements for packages that do not exist. If you `pip install` a hallucinated package name, an attacker who registered that name can execute arbitrary code on your machine. Always verify that every import corresponds to a real, trusted package.
 
 ### Step 4 — Run the script in a Docker sandbox
+
+<StepMeta purpose="Test the reviewed AI-generated code inside an isolated environment instead of trusting your host machine." action="Run data_processor.py in Docker with network disabled, a read-only root file system, and a writable tmpfs working directory." expectedResult="The script executes inside a constrained container and prints the expected filtered rows without touching your host directly." whyItMatters="Even reviewed code can contain mistakes, so the sandbox is the second safety gate that limits the blast radius if the script behaves unexpectedly." nextStep="If the sandbox run succeeds, mount a controlled output directory so you can capture and inspect the generated files." askTutor="I'm on Step 4 of Sandbox AI-generated code before running. Help me check whether these Docker flags are enough to make this first execution meaningfully safer than running locally." />
 
 Even after review, run the code in isolation first.
 
@@ -111,6 +120,8 @@ docker run `
 The script runs in `/tmp` inside the container (writable via tmpfs) but cannot access your real files or network. Check the output — it should print the filtered rows.
 
 ### Step 5 — Extract the output if the sandbox run succeeded
+
+<StepMeta purpose="Capture the script's outputs in a controlled place only after the initial sandbox run looks safe." action="Create the output directory, rerun the script with that directory mounted, and inspect the generated CSV files afterward." expectedResult="The sandbox writes its outputs into the mounted output directory so you can examine them without promoting anything yet." whyItMatters="Separating execution from promotion keeps the workflow disciplined: first prove the code runs safely, then inspect what it produced before copying anything onward." nextStep="Use the five-step workflow summary to decide when and how anything should be promoted into the real project." askTutor="I'm on Step 5 of Sandbox AI-generated code before running. Help me inspect these output files and decide whether they are safe and correct enough to consider promoting." />
 
 If the script ran cleanly, run it again but mount an output directory to capture the generated files.
 
@@ -147,6 +158,8 @@ Get-ChildItem "$HOME\ai-sandbox-lab\output"
 The output directory now contains the generated CSV files. You can inspect them before copying anything into your real project.
 
 ### Step 6 — Promote to your project only after verification
+
+<StepMeta purpose="Close the loop with an explicit promotion rule so only reviewed and verified outputs reach the real project." action="Follow the review, sandbox, inspect, promote, and commit sequence, and copy files into the real project only after the earlier checks pass." expectedResult="You understand the full safe-execution pipeline and can move approved output into the project with a clear audit trail." whyItMatters="Without a promotion rule, sandboxing becomes a half measure; the real safety comes from requiring successful review and verification before anything enters the repo." nextStep="Use the same layered safety model in the permission-boundaries lesson, where the focus shifts from code execution to tool and command limits." askTutor="I'm on Step 6 of Sandbox AI-generated code before running. Help me decide what evidence I should require before promoting any sandbox output into the real project." />
 
 The full workflow is:
 

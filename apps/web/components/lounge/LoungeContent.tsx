@@ -32,7 +32,7 @@ function renderInlineContent(text: string) {
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noreferrer" : undefined}
-          className="text-teal-400 hover:text-teal-300 underline underline-offset-2"
+          className="text-[var(--color-fg-link)] hover:text-[var(--color-accent-primary)] underline underline-offset-2"
         >
           {label}
         </a>
@@ -55,7 +55,7 @@ function renderBlock(block: string, index: number) {
   if (block.startsWith("<Screenshot")) {
     const attrs = getTagAttributes(block);
     return (
-      <figure key={index} className="my-10 overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-2xl">
+      <figure key={index} className="my-10 overflow-hidden rounded-[1.5rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-2)]">
         <Image
           src={attrs.src}
           alt={attrs.alt || "Article illustration"}
@@ -64,7 +64,7 @@ function renderBlock(block: string, index: number) {
           className="h-auto w-full object-cover"
         />
         {attrs.caption ? (
-          <figcaption className="border-t border-white/5 p-3 text-center text-xs font-serif italic text-slate-500">
+          <figcaption className="border-t border-[var(--color-border-subtle)] p-3 text-center text-xs italic text-[var(--color-fg-muted)]">
             {attrs.caption}
           </figcaption>
         ) : null}
@@ -75,16 +75,16 @@ function renderBlock(block: string, index: number) {
   if (block.startsWith("<TerminalSimulation")) {
     const attrs = getTagAttributes(block);
     return (
-      <div key={index} className="my-8 overflow-hidden rounded-xl border border-emerald-500/20 bg-[#081018] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-emerald-300">Terminal</span>
-          <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+      <div key={index} className="my-8 overflow-hidden rounded-[1.5rem] border border-[rgba(22,176,168,0.18)] bg-[var(--color-bg-code)] shadow-[var(--shadow-2)]">
+        <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-accent-primary)]">Terminal</span>
+          <span className="rounded-full bg-[rgba(22,176,168,0.15)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-accent-primary)]">
             {attrs.status || "success"}
           </span>
         </div>
-        <div className="space-y-3 p-4 font-mono text-sm text-slate-200">
-          <div className="text-emerald-300">$ {attrs.command}</div>
-          <div className="text-slate-300">{attrs.output}</div>
+        <div className="space-y-3 p-4 font-mono text-sm text-[var(--color-fg-inverse)]">
+          <div className="text-[var(--color-accent-primary)]">$ {attrs.command}</div>
+          <div className="text-white/75">{attrs.output}</div>
         </div>
       </div>
     );
@@ -94,8 +94,8 @@ function renderBlock(block: string, index: number) {
   const ctaMatch = block.match(/<div className="tavern-cta">([\s\S]*?)<\/div>/);
   if (ctaMatch) {
     return (
-      <div key={index} className="my-8 rounded-xl border border-teal-500/30 bg-teal-500/5 p-6 text-center">
-        <p className="text-lg text-[rgba(255,255,255,0.9)]">{renderInlineContent(ctaMatch[1].trim())}</p>
+      <div key={index} className="my-8 rounded-[1.5rem] border border-[rgba(22,176,168,0.24)] bg-[var(--color-accent-subtle)] p-6 text-center">
+        <p className="text-lg text-[var(--color-fg-default)]">{renderInlineContent(ctaMatch[1].trim())}</p>
       </div>
     );
   }
@@ -113,7 +113,7 @@ function renderBlock(block: string, index: number) {
     return (
       <div 
         key={index} 
-        className="my-8 overflow-hidden rounded-xl shadow-2xl border border-white/5 bg-black"
+        className="my-8 overflow-hidden rounded-[1.5rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-2)]"
         dangerouslySetInnerHTML={{ __html: block }} 
       />
     );
@@ -124,7 +124,7 @@ function renderBlock(block: string, index: number) {
   if (imageMatch) {
     const [, alt, src] = imageMatch;
     return (
-      <figure key={index} className="my-10 relative overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-2xl">
+      <figure key={index} className="my-10 relative overflow-hidden rounded-[1.5rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] shadow-[var(--shadow-2)]">
         <Image
           src={src}
           alt={alt || "Article illustration"}
@@ -133,7 +133,7 @@ function renderBlock(block: string, index: number) {
           className="h-auto w-full object-cover"
         />
         {alt && (
-          <figcaption className="p-3 text-center text-xs text-slate-500 font-serif italic border-t border-white/5">
+          <figcaption className="border-t border-[var(--color-border-subtle)] p-3 text-center text-xs italic text-[var(--color-fg-muted)]">
             {alt}
           </figcaption>
         )}
@@ -142,20 +142,20 @@ function renderBlock(block: string, index: number) {
   }
 
   if (block === "---") {
-    return <hr key={index} className="my-8 border-white/10" />;
+    return <hr key={index} className="my-8 border-[var(--color-border-subtle)]" />;
   }
 
   if (block.startsWith("## ")) {
-    return <h2 key={index} className="mt-12 mb-4 text-2xl font-bold text-white">{block.slice(3).trim()}</h2>;
+    return <h2 key={index} className="mb-4 mt-12 text-2xl font-bold text-[var(--color-fg-default)]">{block.slice(3).trim()}</h2>;
   }
 
   if (block.startsWith("### ")) {
-    return <h3 key={index} className="mt-8 mb-3 text-xl font-semibold text-white/90">{block.slice(4).trim()}</h3>;
+    return <h3 key={index} className="mb-3 mt-8 text-xl font-semibold text-[var(--color-fg-default)]">{block.slice(4).trim()}</h3>;
   }
 
   if (block.split("\n").every((line) => line.trim().startsWith("- "))) {
     return (
-      <ul key={index} className="my-4 ml-6 list-disc space-y-2 text-white/70">
+      <ul key={index} className="my-4 ml-6 list-disc space-y-2 text-[var(--color-fg-muted)]">
         {block
           .split("\n")
           .map((line) => line.trim())
@@ -168,7 +168,7 @@ function renderBlock(block: string, index: number) {
   }
 
   // Fallback as paragraph
-  return <p key={index} className="my-4 text-[1.1rem] leading-relaxed text-white/70">{renderInlineContent(block)}</p>;
+  return <p key={index} className="my-4 text-[1.1rem] leading-relaxed text-[var(--color-fg-muted)]">{renderInlineContent(block)}</p>;
 }
 
 export async function LoungeContent({ slug }: LoungeContentProps) {
@@ -176,9 +176,9 @@ export async function LoungeContent({ slug }: LoungeContentProps) {
 
   if (!article) {
     return (
-      <div className="rounded-xl border border-white/10 bg-[#0f1115] p-6">
-        <h2 className="text-2xl font-semibold text-white">Item not found</h2>
-        <p className="mt-3 text-white/60">
+      <div className="rounded-[1.5rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-6 shadow-[var(--shadow-1)]">
+        <h2 className="text-2xl font-semibold text-[var(--color-fg-default)]">Item not found</h2>
+        <p className="mt-3 text-[var(--color-fg-muted)]">
           This piece of content is currently missing or has been fully archived.
         </p>
       </div>

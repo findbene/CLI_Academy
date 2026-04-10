@@ -5,6 +5,7 @@ chapterNumber: "9.2"
 pathNumber: "9"
 tutorPreload: "Help me build a structured decision document comparing CSS frameworks with a clear recommendation and reasoning."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Compare tools or frameworks in a decision doc
@@ -16,6 +17,8 @@ By the end of this lesson you will use Claude Code to produce a decision documen
 ## Walkthrough
 
 ### Step 1 — Set up a workspace and define your evaluation context
+
+<StepMeta purpose="Create a decision workspace and make the evaluation criteria explicit before Claude compares options." action="Set up the css-decision repo, write context.md with the project constraints, and commit that context as the baseline." expectedResult="You have a Git-tracked workspace with a context file that states the team, timeline, constraints, and priorities for the CSS decision." whyItMatters="Decision docs are only as good as their context, and writing the constraints first prevents Claude from optimizing for the wrong problem." nextStep="Use context.md to ask Claude for a structured comparison with concrete criteria, scoring, and a recommendation." askTutor="I'm on Step 1 of Compare tools or frameworks in a decision doc. Help me make sure my context file is specific enough to drive a useful recommendation." />
 
 A good decision doc starts by stating what you are building and what matters most. Create a workspace and a context file.
 
@@ -63,6 +66,8 @@ git commit -m "Add project context for CSS decision"
 
 ### Step 2 — Ask Claude to produce a structured comparison
 
+<StepMeta purpose="Generate a comparison document that turns your context into a scored decision rather than a loose pros-and-cons list." action="Prompt Claude to read context.md and create decision.md with the requested table, weighted scoring, recommendation, and risk sections." expectedResult="Claude produces a structured decision document comparing Tailwind CSS, Bootstrap 5, and vanilla CSS against the stated project constraints." whyItMatters="A fixed structure makes the tradeoffs reviewable because you can inspect context, evidence, math, and recommendation separately." nextStep="Open the draft and verify the factual claims in the comparison table before trusting the scores or recommendation." askTutor="I'm on Step 2 of Compare tools or frameworks in a decision doc. Help me shape this prompt so Claude's comparison stays concrete and tied to the project context." />
+
 Open Claude Code in the `css-decision` directory and provide this prompt:
 
 ```
@@ -92,6 +97,8 @@ Structure:
 
 ### Step 3 — Verify the comparison table for accuracy
 
+<StepMeta purpose="Correct the factual foundation of the decision document before you spend time debating the recommendation." action="Read decision.md, inspect each comparison row, and fix any wrong claims about tooling, installation, or bundle behavior." expectedResult="The comparison table reflects realistic setup and runtime details for each CSS option instead of mixed-up framework assumptions." whyItMatters="If the capability rows are wrong, the weighted scoring becomes misleading no matter how neat the document looks." nextStep="After the factual rows are fixed, audit the weighted-score arithmetic so the totals actually reflect the table." askTutor="I'm on Step 3 of Compare tools or frameworks in a decision doc. Help me review this comparison table and catch any wrong framework or build-tooling claims." />
+
 ```bash
 cat decision.md
 ```
@@ -113,6 +120,8 @@ Fix this row and note the distinction.
 
 ### Step 4 — Check the scoring math
 
+<StepMeta purpose="Verify that the recommendation is supported by correct arithmetic rather than a hidden calculation mistake." action="Check Claude's weighted-score math, ask it to recalculate if needed, and manually verify a few totals yourself." expectedResult="The scoring section shows correct weight-times-score calculations and trustworthy totals for each option." whyItMatters="Claude can write coherent reasoning around bad math, so you need to confirm the numbers before treating the ranking as evidence." nextStep="Once the numbers are correct, pressure-test the recommendation by asking Claude to argue for the runner-up." askTutor="I'm on Step 4 of Compare tools or frameworks in a decision doc. Help me verify this weighted scoring section and spot arithmetic mistakes quickly." />
+
 Verify that the weighted scores add up correctly. Claude sometimes makes arithmetic mistakes.
 
 ```
@@ -130,6 +139,8 @@ Manually verify one or two totals. For example, if "Setup complexity" has weight
 
 ### Step 5 — Challenge the recommendation
 
+<StepMeta purpose="Strengthen the decision by forcing the document to acknowledge when the second-best option could actually win." action="Ask Claude to add a dissenting view that argues for the runner-up and names the scenario where it would be the better choice." expectedResult="The decision doc includes a serious counterargument rather than pretending the chosen option is universally best." whyItMatters="Good decision documents survive pushback because they show you considered credible alternatives and the conditions that would change the call." nextStep="With the recommendation and dissent both reviewed, stage the finished decision document and inspect the final diff." askTutor="I'm on Step 5 of Compare tools or frameworks in a decision doc. Help me challenge this recommendation and get a useful dissenting-view section instead of filler." />
+
 A good decision doc survives pushback. Ask Claude to argue against its own recommendation:
 
 ```
@@ -141,6 +152,8 @@ option. What scenario would make it the better choice? Add this as a
 This section makes the document more useful for team discussions because it shows you considered alternatives seriously.
 
 ### Step 6 — Commit the decision document
+
+<StepMeta purpose="Finalize the decision record only after the facts, math, and recommendation have all been challenged and corrected." action="Stage decision.md, review the staged diff, and commit the completed decision document to Git." expectedResult="You create a commit containing a decision doc with checked assumptions, correct scoring, and a documented counterargument." whyItMatters="Decision records are more valuable when they preserve both the reasoning and the evidence that led to the choice at a specific moment in time." nextStep="Carry the same extract-and-verify discipline into the next lesson, where Claude turns messy notes into structured data." askTutor="I'm on Step 6 of Compare tools or frameworks in a decision doc. Help me do a final quality check on this decision.md before I commit it." />
 
 ```bash
 git add decision.md

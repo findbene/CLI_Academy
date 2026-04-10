@@ -5,6 +5,7 @@ chapterNumber: "3.2"
 pathNumber: "3"
 tutorPreload: "Before changing anything, summarize this repo and tell me the safest first improvement."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Ask for understanding before editing
@@ -16,6 +17,8 @@ Learn the most important Claude Code habit: always ask first, edit second. You w
 ## Walkthrough
 
 ### Step 1 — Open a Claude Code session
+
+<StepMeta purpose="Re-enter the practice repo in the exact tool where you will soon ask for code understanding." action="Navigate to cli-practice and launch Claude Code." expectedResult="The Claude Code interactive prompt opens while you are inside the correct repo." whyItMatters="Understanding-first only works if Claude Code is looking at the right project from the right root directory." nextStep="Once the session is live, ask Claude Code to summarize the project and enumerate each file." askTutor="I'm on Step 1 of Ask for understanding before editing. Help me confirm that I launched Claude Code from the correct repo root before I ask it to explain the project." />
 
 Navigate to your practice repo and start Claude Code:
 
@@ -34,6 +37,8 @@ claude
 You should see the interactive Claude Code prompt.
 
 ### Step 2 — Ask Claude Code to describe the project
+
+<StepMeta purpose="Build the habit of requesting understanding before any edit is proposed." action="Prompt Claude Code to explain what the project does and give a one-sentence summary of every file." expectedResult="Claude Code returns a repo summary that matches the files you created earlier." whyItMatters="The best safeguard against bad edits is making sure both you and the assistant share the same mental model of the codebase first." nextStep="After the summary looks accurate, ask Claude Code for the smallest safe improvement it would suggest." askTutor="I'm on Step 2 of Ask for understanding before editing. Help me compare Claude Code's repo summary to the actual files so I can tell whether its understanding is trustworthy." />
 
 Type this prompt at the Claude Code `>` cursor:
 
@@ -55,6 +60,8 @@ Read the answer carefully. Confirm for yourself that it matches what you created
 
 ### Step 3 — Ask what could be improved
 
+<StepMeta purpose="Separate understanding from editing by asking for ideas before approving changes." action="Ask Claude Code for the smallest, safest improvement it would suggest for the project." expectedResult="Claude Code proposes one or more modest improvements without changing files yet." whyItMatters="Improvement ideas are useful only when they stay bounded and reviewable, especially in beginner workflows." nextStep="Pick one idea and ask follow-up questions about files touched or possible risks before you let any edit happen." askTutor="I'm on Step 3 of Ask for understanding before editing. Help me judge whether Claude Code's suggested improvement is truly small and safe enough for a first edit." />
+
 Now type:
 
 ```
@@ -71,6 +78,8 @@ You are **not** accepting any changes yet. You are building the habit of asking 
 
 ### Step 4 — Ask a follow-up question
 
+<StepMeta purpose="Practice interrogating a proposed change before approving it." action="Ask which files the change would touch or what could go wrong if you made it." expectedResult="Claude Code responds with file-specific scope and possible side effects instead of vague advice." whyItMatters="Good review starts with scoped questions about impact, not blind trust that the first suggestion is fine." nextStep="After the follow-up answers make sense, exit the session without changing anything so the understanding-first loop stays intact." askTutor="I'm on Step 4 of Ask for understanding before editing. Help me turn Claude Code's answer into a concrete checklist for what I should review before approving a future change." />
+
 Practice going deeper. Try one of these prompts:
 
 ```
@@ -84,6 +93,8 @@ What could go wrong if we made that change?
 Claude Code responds with specifics — file names, potential side effects, and confidence level. This is the information you need before you say "yes, go ahead."
 
 ### Step 5 — Leave the session without making changes
+
+<StepMeta purpose="Prove to yourself that a productive Claude Code session can end with understanding only, not automatic edits." action="Exit the Claude Code session after reviewing the summary and improvement discussion." expectedResult="You are back in the terminal and the project files remain unchanged on disk." whyItMatters="This reinforces the core workflow rule for beginners: ask first, then decide whether an edit is even worth making." nextStep="After this step, you are ready for the next lesson where you allow one tiny, highly scoped edit and review the diff carefully." askTutor="I'm on Step 5 of Ask for understanding before editing. Help me verify that nothing changed on disk and explain why leaving without editing is still a successful session." />
 
 Type `/exit` to quit. Nothing in your project has changed. You have a clear picture of the codebase and a candidate improvement for the next lesson.
 

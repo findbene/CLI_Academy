@@ -5,6 +5,7 @@ chapterNumber: "7.2"
 pathNumber: "7"
 tutorPreload: "Explain what Claude Desktop can and cannot do compared to Claude Code in the terminal."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Use Claude Desktop for local projects
@@ -16,6 +17,8 @@ By the end of this lesson you will have Claude Desktop installed, opened a local
 ## Walkthrough
 
 ### Step 1 — Install Claude Desktop
+
+<StepMeta purpose="Get the graphical Claude Desktop app installed so you can compare it with the CLI from real experience." action="Download the official installer for your operating system, complete the installation, launch the app, and sign in." expectedResult="Claude Desktop opens successfully on your machine and you are authenticated with your Anthropic account." whyItMatters="You cannot evaluate Desktop versus CLI fairly until the app is actually available and working on your own system." nextStep="Open a local project by sharing a few files so Claude Desktop has concrete material to discuss." askTutor="I'm on Step 1 of Use Claude Desktop for local projects. Help me choose the correct installer for my OS and confirm the app installed properly." />
 
 Download the app from the official source.
 
@@ -48,6 +51,8 @@ Launch it from your application menu or run `claude-desktop` in a terminal.
 
 ### Step 2 — Open a local project folder
 
+<StepMeta purpose="Learn the Desktop file-sharing workflow that replaces direct filesystem access." action="Use drag and drop or the attachment button to bring a few project files into a Claude Desktop conversation." expectedResult="Claude Desktop displays the attached files in the chat and can reference their contents in follow-up answers." whyItMatters="This manual sharing model is the core difference from the CLI, so it is important to feel exactly how context enters a Desktop conversation." nextStep="Ask Claude to analyze the shared files so you see how useful the attached context becomes." askTutor="I'm on Step 2 of Use Claude Desktop for local projects. Help me decide which files are best to attach first and explain what Claude can infer from them." />
+
 Claude Desktop can work with files you share with it. There are two ways to bring files in:
 
 **Method A — Drag and drop:**
@@ -68,6 +73,8 @@ Either method copies the file contents into the conversation. Claude can now ana
 
 ### Step 3 — Ask Claude Desktop to analyze your project files
 
+<StepMeta purpose="Verify that Claude Desktop can reason over the files you shared even though it cannot browse your disk directly." action="Prompt Claude to summarize the project, inspect dependencies, or point out bugs based on the attached files." expectedResult="Claude gives answers grounded in the file contents you explicitly provided in the chat." whyItMatters="This proves that Desktop is strong for explanation and planning work once you have supplied the relevant context." nextStep="Generate a new file in chat so you can experience the manual save step that separates Desktop from the CLI." askTutor="I'm on Step 3 of Use Claude Desktop for local projects. Help me write a prompt that will prove Claude is actually using the attached files instead of answering generically." />
+
 Once you have dragged in a few files, try these prompts:
 
 ```
@@ -85,6 +92,8 @@ Summarize the dependencies listed in package.json.
 Claude Desktop reads the content you provided and responds. It cannot browse your file system on its own — it only knows about the files you explicitly share.
 
 ### Step 4 — Try creating a new file with Claude Desktop
+
+<StepMeta purpose="Experience the Desktop generate-then-save workflow instead of assuming it edits files automatically." action="Ask Claude to generate file contents, then copy the result out of the chat and save it into a real file yourself." expectedResult="You end up with the generated content in a new file on disk, but only after a manual copy-paste step." whyItMatters="Understanding this manual handoff helps you choose Desktop for planning and drafting rather than for direct disk edits." nextStep="Compare Desktop and CLI capabilities directly so you know what work each surface is actually good at." askTutor="I'm on Step 4 of Use Claude Desktop for local projects. Help me save Claude's generated text into a real file without mangling formatting or line endings." />
 
 Ask Claude to generate something:
 
@@ -116,6 +125,8 @@ This copy-paste step is a key difference from Claude Code in the terminal, which
 
 ### Step 5 — Understand what Claude Desktop can and cannot do
 
+<StepMeta purpose="Build an honest mental model of Desktop strengths and limits so you stop expecting CLI behavior from it." action="Read the comparison table and decide which tasks belong in Claude Desktop versus Claude Code CLI." expectedResult="You can clearly explain at least one scenario where Desktop is the better tool and one where the CLI is better." whyItMatters="Tool choice gets easier once you stop treating every Claude surface as interchangeable and instead match the surface to the task." nextStep="Try the visual-file workflow next by sharing an image or PDF that the CLI would handle less naturally." askTutor="I'm on Step 5 of Use Claude Desktop for local projects. Help me compare Claude Desktop and Claude Code in a way that is practical, not just theoretical." />
+
 Here is the honest comparison:
 
 | Capability | Claude Code (CLI) | Claude Desktop |
@@ -144,6 +155,8 @@ Here is the honest comparison:
 - You need Git integration or shell access.
 
 ### Step 6 — Try image and PDF sharing
+
+<StepMeta purpose="Use one Desktop-native strength that feels different from the terminal experience." action="Drag in a screenshot or PDF and ask Claude to explain the error, content, or design shown in the visual file." expectedResult="Claude analyzes the uploaded image or PDF directly in the graphical interface and responds with a grounded explanation." whyItMatters="This is one of the clearest reasons to reach for Desktop first: it handles visual context naturally while the CLI stays focused on text and shell work." nextStep="Move on to MCP so Claude Desktop can go beyond manual attachments and access approved local folders directly." askTutor="I'm on Step 6 of Use Claude Desktop for local projects. Help me pick a useful image or PDF test and explain what kinds of questions Claude can answer from it." />
 
 Claude Desktop handles visual files that the CLI cannot. Try this:
 

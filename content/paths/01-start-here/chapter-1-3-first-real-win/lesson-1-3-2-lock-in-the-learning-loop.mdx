@@ -5,6 +5,7 @@ chapterNumber: "1.3"
 pathNumber: "1"
 tutorPreload: "Based on my struggles in this lesson, recommend the next mode and why."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Lock in the learning loop
@@ -17,6 +18,8 @@ You will create a `learning-log.md` file, write your first dated entry describin
 
 ### Step 1 — Navigate to your notes folder
 
+<StepMeta purpose="Return to the notes area where your reflective learning record belongs." action="Change into ~/cli-academy/notes." expectedResult="Your prompt confirms you are inside the notes folder." whyItMatters="Keeping the learning log in notes makes it easy to update after each lesson without hunting for the file." nextStep="Once you are in notes, create learning-log.md with a real first entry." askTutor="I'm on Step 1 of Lock in the learning loop. Help me confirm that I'm in the correct notes folder before I create the learning log." />
+
 **macOS / Linux:**
 ```bash
 cd ~/cli-academy/notes
@@ -28,6 +31,8 @@ Set-Location ~/cli-academy/notes
 ```
 
 ### Step 2 — Create learning-log.md with your first entry
+
+<StepMeta purpose="Create the long-term record you will use to reinforce what you learn." action="Write learning-log.md from the template and keep the parts that reflect what you actually did." expectedResult="The file exists with an Entry 1 section that covers what you did, what surprised you, and what you want next." whyItMatters="A consistent log turns isolated lessons into a visible progression you can review later." nextStep="After creating the file, fill in the personal sections so the log sounds like you instead of a template." askTutor="I'm on Step 2 of Lock in the learning loop. Help me understand this learning-log template and tell me what parts should be personalized before I treat it as finished." />
 
 Write a real log entry — not a template. Describe what you actually did in Path 01.
 
@@ -85,6 +90,8 @@ EOF
 
 ### Step 3 — Fill in the personal sections
 
+<StepMeta purpose="Replace placeholders with honest reflection so the log becomes personally useful." action="Open learning-log.md in an editor and fill in the surprised-me, next-step, and rating sections." expectedResult="The file contains real sentences and chosen ratings instead of prompts or option lists." whyItMatters="The value of the log comes from your own observations, not from copying the lesson language back into a file." nextStep="Once the personal sections are filled in, print the finished entry to review it end to end." askTutor="I'm on Step 3 of Lock in the learning loop. Help me turn my rough thoughts into one clear reflection and one clear next-step goal for this entry." />
+
 Open the file in your editor:
 
 **Any OS:**
@@ -101,6 +108,8 @@ Save the file.
 
 ### Step 4 — Read the completed entry
 
+<StepMeta purpose="Verify that the finished entry now reads like a real snapshot of your learning." action="Print learning-log.md to the terminal and review the filled-in entry." expectedResult="You see a dated Entry 1 with personal notes and final ratings." whyItMatters="Reviewing the finished entry reinforces the lesson while also confirming you saved the file correctly." nextStep="After you read the entry back, commit to repeating this same ritual after future lessons." askTutor="I'm on Step 4 of Lock in the learning loop. Help me review my finished learning-log entry and tell me whether it looks specific enough to be useful later." />
+
 **macOS / Linux:**
 ```bash
 cat learning-log.md
@@ -115,6 +124,8 @@ You should see a complete dated entry with your personal notes filled in.
 
 ### Step 5 — Understand the ritual
 
+<StepMeta purpose="Turn this one-off reflection into a repeatable learning habit." action="Read the four-part ritual and picture yourself repeating it after each lesson." expectedResult="You can explain the post-lesson routine in your own words." whyItMatters="A durable learning loop depends on repetition, not just on a single good lesson experience." nextStep="With the ritual clear, save the log in Git so it becomes part of your ongoing learning record." askTutor="I'm on Step 5 of Lock in the learning loop. Help me translate this ritual into a simple after-each-lesson routine I can realistically stick to." />
+
 After every CLI Academy lesson going forward, you will:
 
 1. Open `learning-log.md`
@@ -125,6 +136,8 @@ After every CLI Academy lesson going forward, you will:
 This takes about two minutes and builds a personal record of everything you learn. When you look back after 10 lessons, you will be amazed at how far you have come.
 
 ### Step 6 — Commit your log
+
+<StepMeta purpose="Preserve the first learning-log entry as a durable checkpoint." action="Stage notes/learning-log.md and create a Git commit." expectedResult="Git records the learning-log file or reports that the changes are already committed." whyItMatters="Saving reflection work in version control reinforces that notes and learning evidence are part of the real project, not side clutter." nextStep="After the commit, carry the same log ritual into the next lesson so your progress keeps compounding." askTutor="I'm on Step 6 of Lock in the learning loop. Explain these Git commands and tell me what to check first if I'm unsure whether the log is ready to commit." />
 
 ```bash
 cd ~/cli-academy

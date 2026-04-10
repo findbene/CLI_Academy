@@ -5,6 +5,7 @@ chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Review my file-operations script and flag anything that could delete data I did not intend to lose."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Use scripts to automate file operations
@@ -18,6 +19,8 @@ By the end of this lesson you will have three working scripts: one that organize
 File operations — sorting, renaming, deleting — are the bread and butter of automation. A well-written script does in seconds what would take you 30 minutes by hand, and it does it the same way every time.
 
 ### Step 1 — Organize files by extension
+
+<StepMeta purpose="Show how a simple local script can replace repetitive file-manager clicking for a common housekeeping task." action="Create the organize script for your platform, generate the dummy test files, run the script against the test folder, and inspect the new extension-based subfolders." expectedResult="Files are sorted into `pdf`, `txt`, `jpg`, `csv`, or `no-ext` folders and the moves are reported clearly in the terminal." whyItMatters="Local file automation is often a better fit than browser or computer-use automation because it is fast, testable, and does not depend on screen state." nextStep="Build the batch-rename script next so you practice a second file operation pattern with safer guards against repeated runs." askTutor="Review this organize script and tell me whether any part of it could move the wrong files or behave unexpectedly on a real folder." />
 
 This script scans a folder and moves each file into a subfolder named after its extension (e.g., `.pdf` files go into `pdf/`, `.jpg` files go into `jpg/`).
 
@@ -109,6 +112,8 @@ You should see subfolders like `pdf/`, `txt/`, `jpg/`, `csv/` with the correspon
 
 ### Step 2 — Batch rename files
 
+<StepMeta purpose="Practice a second common automation pattern that changes many filenames consistently without manual repetition." action="Create the rename script, test it on a small folder, and confirm the date prefix is added exactly once per file." expectedResult="The test files are renamed with a date prefix and any already-prefixed files are skipped rather than doubled." whyItMatters="Rename automation is useful only when it is idempotent enough to rerun safely, so the skip guard is part of the design, not an extra nicety." nextStep="Use a dry-run-first cleanup script next so you can automate deletion tasks without turning one mistake into data loss." askTutor="Check this batch-rename script for me and tell me whether the prefix guard is strong enough to prevent repeated accidental renaming." />
+
 This script adds a date prefix to every file in a folder — useful for photos, invoices, or any set of files you want sorted chronologically.
 
 **macOS / Linux (`batch-rename.sh`):**
@@ -186,6 +191,8 @@ Get-ChildItem test-rename | Select-Object Name
 ```
 
 ### Step 3 — Clean up old log files
+
+<StepMeta purpose="Teach the safer pattern for deletion automation: preview first, then require an explicit force step for real removal." action="Create the cleanup script, run it in dry-run mode, and inspect the printed candidate files before considering a real delete run." expectedResult="The script lists files older than the configured threshold without deleting anything by default." whyItMatters="Deletion is the highest-risk local file automation in this lesson, so the dry-run default is the main safety feature you are practicing here." nextStep="Use the next lesson to schedule scripts like these so they become recurring automation instead of one-off terminal commands." askTutor="Review this cleanup script and tell me whether the dry-run and age-threshold design are safe enough before I ever let it delete real files." />
 
 This script deletes files older than a specified number of days. Always perform a dry run first.
 

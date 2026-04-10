@@ -5,6 +5,7 @@ chapterNumber: "17.2"
 pathNumber: "17"
 tutorPreload: "Review this write action and tell me how to make it reversible."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Enable one bounded write action
@@ -18,6 +19,8 @@ This is the first time in Path 17 that you will make a change that persists outs
 ## Walkthrough
 
 ### Step 1 — Choose your target repository
+
+<StepMeta purpose="Constrain the first live write to a repository you control so the blast radius stays small and reversible." action="Set `GH_OWNER` and `GH_REPO`, then verify the target repository exists and that your permissions include push access before attempting the write." expectedResult="You have an explicitly named target repo and evidence that the token can write there." whyItMatters="Most integration mistakes happen before the write itself, when the wrong target is chosen and the API dutifully changes the wrong resource." nextStep="Create the bounded issue next using a single POST request with a clearly labeled title and body." askTutor="Check my chosen target repository and tell me whether it is safe for this bounded write test or whether I should pick a less risky repo." />
 
 Use a repo you own or a personal test repo. Do **not** use a team or org repo for this exercise — creating test issues on shared repositories creates noise for your teammates.
 
@@ -47,6 +50,8 @@ gh api /repos/$env:GH_OWNER/$env:GH_REPO | ConvertFrom-Json |
 Look for `"push": true` in the output. If you see `"push": false` you do not have write access and the next step will fail with a 403.
 
 ### Step 2 — Create one bounded issue (the write action)
+
+<StepMeta purpose="Perform one tightly scoped persistent write with a clear identifier so it can be reviewed and rolled back safely." action="Run the POST request to create the labeled test issue, capture the JSON response, and extract the issue number for follow-up checks and rollback." expectedResult="A single test issue is created in the chosen repo and you have its number and URL captured for control." whyItMatters="A bounded write is only safe when it is singular, targeted, and immediately traceable to a rollback path." nextStep="Read the issue back next so you confirm the write produced exactly the state you intended." askTutor="Review this bounded write step and tell me whether the issue creation flow is scoped tightly enough and documented clearly enough to stay reversible." />
 
 **macOS / Linux:**
 ```bash
@@ -78,6 +83,8 @@ Open the URL printed in your terminal and verify the issue appears on GitHub. Th
 
 ### Step 3 — Verify the issue was created (read-back check)
 
+<StepMeta purpose="Confirm that the write produced the exact resource and state you intended before taking any further action." action="Call the issue endpoint for the specific issue number you just created and inspect the returned number, title, state, and timestamp." expectedResult="The read-back shows the exact issue is present and currently open with the expected title." whyItMatters="Read-after-write checks catch mismatched IDs, wrong targets, or unexpected state changes before they compound into larger mistakes." nextStep="Execute the rollback next by closing the issue and verifying that the external state returns to the intended final condition." askTutor="Help me inspect this read-back response and tell me whether it proves the write happened exactly where and how I intended." />
+
 Always read back after a write to confirm what you intended to create actually exists:
 
 **macOS / Linux:**
@@ -99,6 +106,8 @@ gh api /repos/$env:GH_OWNER/$env:GH_REPO/issues/$issueNumber |
 Expected: `state: "open"`, title matches what you set. If the state is wrong or the title changed, stop and investigate before proceeding.
 
 ### Step 4 — Execute the rollback (close the issue)
+
+<StepMeta purpose="Practice the reversal path immediately so the first write is paired with a tested undo operation." action="Run the PATCH request that closes the issue, then read the issue state again until you confirm it is closed." expectedResult="The test issue is rolled back cleanly and the verified final state is closed." whyItMatters="Safe integrations depend on known rollback mechanics, not just successful writes, because every external change should be reversible when possible." nextStep="Document both the write and rollback next so the pattern becomes a repeatable operational record." askTutor="Review my rollback step and tell me whether it is strong enough to count as a real bounded-write reversal instead of just an informal cleanup." />
 
 Closing the issue is the rollback for this write action. For a real workflow, "rollback" means you know the exact API call that reverses the action before you commit to the write.
 
@@ -128,6 +137,8 @@ gh api /repos/$env:GH_OWNER/$env:GH_REPO/issues/$issueNumber |
 ```
 
 ### Step 5 — Document the write action and its rollback
+
+<StepMeta purpose="Capture the full lifecycle of the bounded write so future reviews can see what changed, why, and how it was undone." action="Create `bounded-write-record.md` with the POST endpoint, captured issue number, rollback PATCH endpoint, and final closed-state verification." expectedResult="You have a durable write record showing the action, rollback path, and resulting scope implications." whyItMatters="Documented bounded writes are easier to audit, reproduce, and improve than ad hoc API mutations done from memory." nextStep="Use the next lessons to build the incident-response and risk-review side of secure integrations now that you have experienced a real reversible write." askTutor="Review my bounded write record and tell me whether it proves both the original write and the rollback with enough detail for a future audit." />
 
 **macOS / Linux:**
 ```bash

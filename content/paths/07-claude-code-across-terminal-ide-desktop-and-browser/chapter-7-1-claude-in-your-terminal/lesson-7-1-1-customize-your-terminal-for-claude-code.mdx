@@ -5,6 +5,7 @@ chapterNumber: "7.1"
 pathNumber: "7"
 tutorPreload: "Show me how to set up my terminal prompt so I can see my git branch and Node version at a glance."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Customize your terminal for Claude Code
@@ -16,6 +17,8 @@ By the end of this lesson you will have a terminal prompt that shows your curren
 ## Walkthrough
 
 ### Step 1 — Show the Git branch in your prompt
+
+<StepMeta purpose="Make your current Git branch visible directly in the prompt so you stop guessing which line of work you are on." action="Edit the correct shell profile, add the branch-aware prompt snippet, reload the profile, and confirm the branch appears inside a Git repo." expectedResult="Your prompt shows the current path and the active branch whenever you are inside a repository." whyItMatters="Claude Code sessions regularly involve branching, and seeing the branch inline helps prevent accidental work on the wrong branch." nextStep="Extend the prompt so it also shows the Node.js version your current project is using." askTutor="I'm on Step 1 of Customize your terminal for Claude Code. Help me figure out which shell config file I should edit and how to reload it safely." />
 
 When you work with Claude Code inside a repository, knowing which branch you are on prevents mistakes. A prompt that displays the branch saves you from running `git branch` constantly.
 
@@ -86,6 +89,8 @@ Your prompt now shows the folder path and current Git branch in color.
 
 ### Step 2 — Show the Node.js version in your prompt
 
+<StepMeta purpose="Expose the active Node.js version in the same prompt so runtime mismatches stop being invisible." action="Update your prompt definition to include node -v, reload the shell profile, and verify the version now appears beside the branch." expectedResult="The prompt shows both the branch and the current Node.js version whenever Node is available on PATH." whyItMatters="Many Claude-assisted projects depend on a specific Node version, so surfacing it early reduces avoidable environment bugs." nextStep="Create a dedicated terminal profile with its own colors so Claude sessions stand out from ordinary shell work." askTutor="I'm on Step 2 of Customize your terminal for Claude Code. Help me add the Node version to my prompt without breaking the branch display." />
+
 Many Claude Code projects depend on a specific Node version. Displaying it avoids silent version-mismatch bugs.
 
 **macOS / Linux (Bash):**
@@ -126,6 +131,8 @@ Reload:
 
 ### Step 3 — Set up terminal profiles with distinct colors
 
+<StepMeta purpose="Visually separate Claude work sessions from other terminal activity so you can orient yourself instantly." action="Create a terminal profile named Claude Code, point it at your projects folder, and assign a distinct theme or tab color." expectedResult="You can open a clearly labeled Claude Code terminal profile that looks different from your default shell." whyItMatters="Visual separation lowers context mistakes when you juggle development, logs, and routine shell commands across multiple terminals." nextStep="Add a short alias so starting Claude Code becomes a one-command habit." askTutor="I'm on Step 3 of Customize your terminal for Claude Code. Help me set up a dedicated Claude Code terminal profile in the terminal app I use." />
+
 Color-coding terminals helps you separate Claude Code sessions from regular shell work.
 
 **Windows Terminal (built-in on Windows 11):**
@@ -155,6 +162,8 @@ Now when you open a new tab you can pick "Claude Code" and instantly recognize i
 3. Pick a dark color palette and set a custom background tint so it stands out.
 
 ### Step 4 — Create a short alias for Claude Code
+
+<StepMeta purpose="Reduce startup friction by creating a short command that launches Claude Code quickly." action="Add an alias such as cc to your shell profile, reload it, and verify the alias resolves to Claude rather than another tool." expectedResult="Your chosen shortcut launches Claude Code or prints the Claude version successfully." whyItMatters="Small command shortcuts matter because they shave friction off every future session and make the customized environment actually feel faster." nextStep="Open a fresh terminal session and prove the prompt, profile, and alias all persist without manual rework." askTutor="I'm on Step 4 of Customize your terminal for Claude Code. Help me choose a safe alias and verify it does not conflict with an existing command." />
 
 Typing `claude` every time is fine, but `cc` is faster.
 
@@ -189,6 +198,8 @@ Both should print the Claude Code version, confirming the alias works.
 > **Safety note:** Make sure `cc` does not collide with another command on your system. Run `Get-Command cc` (PowerShell) or `which cc` (Bash) before creating the alias. On some Linux systems, `cc` is a symlink to the C compiler. If that is the case, use `cla` or `cl` instead.
 
 ### Step 5 — Persist everything and validate
+
+<StepMeta purpose="Prove the environment tweaks survived beyond the current shell session and work the way you expect every day." action="Open a new terminal, enter a Git repo, confirm the prompt shows branch and Node, and run the alias version check." expectedResult="A fresh terminal session shows the customized prompt automatically and your alias works without extra reload steps." whyItMatters="Environment improvements only matter if they persist across new sessions, so this final check turns one-time setup into a repeatable workflow." nextStep="Carry the same Claude workflow into the VS Code integrated terminal and compare the experience there." askTutor="I'm on Step 5 of Customize your terminal for Claude Code. Help me troubleshoot why my prompt or alias works in one terminal window but not in a new one." />
 
 All changes above edit dotfiles (`~/.bashrc`, `$PROFILE`). They only take effect in new terminal sessions or after a reload. Run through this checklist:
 

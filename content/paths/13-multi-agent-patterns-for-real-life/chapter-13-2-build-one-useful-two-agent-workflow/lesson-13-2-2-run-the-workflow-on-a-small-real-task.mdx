@@ -5,6 +5,7 @@ chapterNumber: "13.2"
 pathNumber: "13"
 tutorPreload: "Read this run and tell me where the handoff broke down."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Build a two-agent research-and-write pipeline
@@ -19,6 +20,8 @@ By the end you will have a working `research-write-pipeline/` directory with con
 
 ### Step 1 — Create the pipeline directory
 
+<StepMeta purpose="Create a dedicated workspace for the first full researcher-writer pipeline run." action="Make the research-write-pipeline directory and enter it before creating the two contracts." expectedResult="You have a clean project folder ready for both agent contracts and their handoff/output files." whyItMatters="A separate pipeline directory makes it obvious which files belong to the workflow and simplifies auditing the results later." nextStep="Write the Researcher contract so the pipeline starts from bounded factual output rather than prose." askTutor="Help me verify that this pipeline directory is structured cleanly enough for a simple researcher-writer handoff." />
+
 **macOS / Linux:**
 ```bash
 mkdir -p research-write-pipeline && cd research-write-pipeline
@@ -30,6 +33,8 @@ New-Item -ItemType Directory -Path research-write-pipeline -Force; Set-Location 
 ```
 
 ### Step 2 — Write the Researcher contract
+
+<StepMeta purpose="Define a first agent that produces a narrow, usable findings file on a real beginner topic." action="Create researcher-CLAUDE.md exactly as written so it gathers bullet findings without drifting into recommendations or article prose." expectedResult="The Researcher contract exists and is scoped to produce only research-findings.md in one pass." whyItMatters="A clean writer handoff depends on having a facts-first file instead of a half-finished article from the first agent." nextStep="Add the Writer contract that consumes those findings and turns them into a readable document without inventing anything new." askTutor="Review this Researcher contract and tell me whether it is constrained tightly enough to produce a reliable findings file." />
 
 **macOS / Linux:**
 ```bash
@@ -86,6 +91,8 @@ Stop immediately after writing ``research-findings.md``. One pass. No iteration.
 ```
 
 ### Step 3 — Write the Writer contract
+
+<StepMeta purpose="Define the second agent so the writing phase is grounded in the research handoff instead of fresh speculation." action="Create writer-CLAUDE.md with explicit inputs, outputs, and guardrails against inventing facts or editing the findings file." expectedResult="The Writer contract is ready to transform research-findings.md into article-draft.md while respecting the handoff boundary." whyItMatters="Most researcher-writer failures happen when the writer goes beyond the findings, so the boundary text matters as much as the output format." nextStep="Run the Researcher first and confirm the handoff file exists before you let the Writer start." askTutor="Check whether my Writer contract is strict enough to stop it from adding unsupported claims or bypassing the findings file." />
 
 **macOS / Linux:**
 ```bash
@@ -147,6 +154,8 @@ Stop immediately after writing ``article-draft.md``. Do not iterate.
 
 ### Step 4 — Run the Researcher
 
+<StepMeta purpose="Generate the source-of-truth handoff file that the Writer will depend on next." action="Run the Researcher contract through Claude Code and verify that research-findings.md exists and contains real bullet findings." expectedResult="You get a non-empty findings file that the Writer can consume without ambiguity." whyItMatters="If the handoff file is weak or empty, the rest of the pipeline is invalid before the Writer even starts." nextStep="Start the Writer only after the findings file passes the existence and content check." askTutor="Help me inspect this findings file and tell me whether it is strong enough for the Writer to use safely." />
+
 Open Claude Code in the `research-write-pipeline/` directory. Give it this prompt:
 
 ```
@@ -170,6 +179,8 @@ If the file is missing or empty, re-run the Researcher before continuing. The Wr
 
 ### Step 5 — Run the Writer
 
+<StepMeta purpose="Turn the verified research handoff into a beginner-friendly article while keeping the facts grounded." action="Run the Writer contract exactly, then verify article-draft.md exists and contains the expected titled article structure." expectedResult="The Writer produces a draft article that clearly builds on the findings file rather than on hidden context." whyItMatters="This is where the split either proves its value or reveals drift, because the writer must stay faithful to upstream input." nextStep="Audit the article against the findings side by side and look for unsupported claims or missing translations of key bullets." askTutor="Compare this article draft to the findings file and tell me where the writer may have overreached or underused the source material." />
+
 In the same directory, start a new Claude Code session (or a new prompt in the same session) and say:
 
 ```
@@ -190,6 +201,8 @@ if (Test-Path article-draft.md) { Write-Host "Article created"; Get-Content arti
 ```
 
 ### Step 6 — Audit the handoff
+
+<StepMeta purpose="Validate the integrity of the researcher-to-writer handoff before trusting the pipeline output." action="Compare research-findings.md and article-draft.md claim by claim, confirming each article point traces back to the source bullets." expectedResult="You can explain whether the Writer stayed within contract or identify the exact lines where it invented or distorted content." whyItMatters="Handoff audits are what make multi-agent workflows trustworthy rather than merely polished-looking." nextStep="Use the same handoff mindset in the next lesson, where you automate the sequence and insert checks between agents." askTutor="Help me audit this handoff and point out any article sentence that cannot be traced back to a specific finding." />
 
 Check that the Writer did not invent facts:
 

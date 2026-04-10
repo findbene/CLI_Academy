@@ -5,6 +5,7 @@ chapterNumber: "13.1"
 pathNumber: "13"
 tutorPreload: "Explain the manager-worker pattern using my own planned workflow."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # What multi-agent means in Claude Code
@@ -19,6 +20,8 @@ This is **not** about external frameworks like AutoGen or LangChain. Everything 
 
 ### Step 1 — Understand the core concept
 
+<StepMeta purpose="Build the right mental model before you start creating files or extra sessions." action="Read the manager-worker vocabulary closely and map agent, contract, handoff, and coordinator to one concrete workflow in your head." expectedResult="You can explain what each role does and why file-based handoffs matter in a native Claude Code setup." whyItMatters="Multi-agent work becomes expensive fast when the concepts are fuzzy, so clarity up front prevents cargo-cult complexity later." nextStep="Once the pattern makes sense, create a tiny project where two agent contracts can prove the handoff mechanically." askTutor="Use my planned workflow to explain which part is the manager, which parts are workers, and what file or artifact should act as the handoff." />
+
 In Claude Code, "multi-agent" means running more than one Claude session where each session has a distinct `CLAUDE.md` that constrains what it can do. The agents share a filesystem — one agent writes a file, the next agent reads it.
 
 Key pieces:
@@ -28,6 +31,8 @@ Key pieces:
 - **Coordinator** = a top-level `CLAUDE.md` (or a human) that runs agents in order.
 
 ### Step 2 — Create a project with two agent contracts
+
+<StepMeta purpose="Turn the abstract pattern into a minimal working example with explicit agent boundaries." action="Create the directory and write the two contract files exactly as shown so each agent has a single role and output." expectedResult="You end up with a Lister contract, a Summarizer contract, and a directory that is ready for a sequential run." whyItMatters="The fastest way to understand multi-agent design is to see two sharply separated contracts on disk instead of imagining them conceptually." nextStep="Run the Lister first, verify its output file, and only then hand control to the Summarizer." askTutor="Review these two contracts and tell me whether the roles overlap anywhere or whether either stop condition is still too vague." />
 
 **macOS / Linux:**
 ```bash
@@ -133,6 +138,8 @@ Stop after writing ``summary.md``.
 
 ### Step 3 — Run the agents in sequence
 
+<StepMeta purpose="Prove that the contracts produce a real file handoff instead of just looking well-written." action="Run the Lister, inspect file-inventory.md, then run the Summarizer and inspect summary.md." expectedResult="Both output files are created, and the summary is clearly derived from the inventory rather than from hidden context." whyItMatters="A multi-agent pattern is only real when one agent's output becomes the next agent's verified input." nextStep="After the run works, step back and identify the specific properties that make this workflow auditable and swappable." askTutor="Help me diagnose this run if the second agent produced the wrong summary or if the handoff file looks incomplete." />
+
 Open Claude Code in the `multi-agent-intro/` directory.
 
 First, tell Claude Code to act as the Lister:
@@ -174,6 +181,8 @@ Get-Content summary.md
 You just ran a multi-agent workflow. Two agents, two contracts, one handoff file.
 
 ### Step 4 — Understand what makes this "multi-agent"
+
+<StepMeta purpose="Extract the reusable pattern from the toy example so you can recognize it in larger workflows." action="Review the finished run and name the isolation, explicit handoff, and stop-condition properties that distinguish it from one long session." expectedResult="You can explain why two contracted agents are different from one general Claude conversation doing both jobs." whyItMatters="The real value of multi-agent work is auditability and replaceable steps, not merely having more than one session open." nextStep="Use the same reasoning in the next lesson to decide when a task deserves multiple agents at all." askTutor="Challenge my explanation of why this counts as multi-agent and tell me whether a single session would have been enough here." />
 
 The pattern has three distinctive properties:
 

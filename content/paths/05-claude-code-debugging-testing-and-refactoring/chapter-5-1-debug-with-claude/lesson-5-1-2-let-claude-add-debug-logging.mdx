@@ -5,6 +5,7 @@ chapterNumber: "5.1"
 pathNumber: "5"
 tutorPreload: "Add logging to this script so I can see exactly where the problem is."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Let Claude add debug logging
@@ -16,6 +17,8 @@ Ask Claude Code to insert temporary `console.log` or `print()` statements at key
 ## Walkthrough
 
 ### Step 1 — Create a script with a subtle data bug
+
+<StepMeta purpose="Create a non-crashing wrong-answer bug so you can practice observing runtime values instead of relying on stack traces." action="Write the grading script exactly as shown, including the incorrect hardcoded divisor that produces a believable but wrong result." expectedResult="You have a script that runs successfully but computes the wrong average and grade." whyItMatters="Many real bugs do not crash; they quietly produce bad data, which means you need visibility into values rather than an exception message." nextStep="Run the script and confirm that the output looks wrong even though nothing crashes." askTutor="I'm on Step 1 of Let Claude add debug logging. Help me understand why this bug is harder than a crash and what kind of wrong output I should expect." />
 
 This script is supposed to calculate the average score and assign a letter grade, but it has a subtle bug — the average calculation is wrong because it divides by the wrong number.
 
@@ -81,6 +84,8 @@ print(f"Average: {avg}, Grade: {letter_grade(avg)}")
 
 ### Step 2 — Run it and notice the output is wrong (but no crash)
 
+<StepMeta purpose="Establish the incorrect behavior before you add any instrumentation." action="Run the script once and compare the reported average and grade to the values you know should be correct." expectedResult="You confirm that the program completes normally but returns an obviously wrong result." whyItMatters="Seeing the wrong output first gives you a concrete hypothesis to test when you later inspect the debug trace." nextStep="Ask Claude to insert temporary logging at the key points where totals, divisors, or averages are computed." askTutor="I'm on Step 2 of Let Claude add debug logging. Help me reason about what the average should be so I can prove the output is wrong before adding logs." />
+
 **macOS / Linux**
 
 ```bash
@@ -98,6 +103,8 @@ Output: `Average: 64.75, Grade: F`
 The script runs without any error, but 88, 92, and 79 should average about 86.3, which is a B — not an F. This is the hardest kind of bug: wrong answers with no crash. You need to trace the data.
 
 ### Step 3 — Ask Claude Code to add debug logging
+
+<StepMeta purpose="Instrument the code so you can observe the internal values that lead to the wrong answer." action="Ask Claude to add temporary log statements around the critical calculations instead of guessing which line is broken." expectedResult="Claude inserts readable debug output that exposes the intermediate values involved in the bug." whyItMatters="Observation before guessing is the core of effective debugging, especially when the script is logically wrong but syntactically valid." nextStep="Run the instrumented script and read the logged values to identify where the numbers go off course." askTutor="I'm on Step 3 of Let Claude add debug logging. Help me decide what values are worth logging so the trace explains the bug without flooding the terminal." />
 
 Open Claude Code in the project directory and prompt:
 
@@ -118,6 +125,8 @@ Accept the changes and run the script again.
 
 ### Step 4 — Read the trace and spot the problem
 
+<StepMeta purpose="Use the runtime trace to identify the exact incorrect assumption or hardcoded value causing the bug." action="Run the logged script and compare the printed totals, divisors, and outputs against the expected math." expectedResult="The trace makes the bug visible, such as a hardcoded divisor that does not match the actual array length." whyItMatters="A good trace shrinks debugging time because you stop scanning code abstractly and start reasoning from concrete runtime facts." nextStep="Now that the bug is obvious, ask Claude to replace the broken logic with the correct calculation." askTutor="I'm on Step 4 of Let Claude add debug logging. Help me interpret this trace and point out which logged value proves where the bug lives." />
+
 The output now shows something like:
 
 ```
@@ -130,6 +139,8 @@ Average: 64.75, Grade: F
 You can see it immediately: the total is 259 and there are 3 scores, but the code divides by 4. The hardcoded `4` is the bug. You would have struggled to spot this just by reading the code, but the trace makes it obvious.
 
 ### Step 5 — Ask Claude to fix the bug
+
+<StepMeta purpose="Convert the evidence from the trace into one precise code fix." action="Tell Claude exactly what the trace proved and ask it to replace the hardcoded divisor with the real collection length." expectedResult="Claude updates the calculation so the script returns the mathematically correct average and grade." whyItMatters="Debug logs are only useful if you follow them through to a focused fix rather than leaving the root cause implicit." nextStep="After the result is correct, ask Claude to remove the temporary logging it added." askTutor="I'm on Step 5 of Let Claude add debug logging. Help me verify that this fix addresses the true root cause and not just the visible symptom." />
 
 ```
 The divisor is hardcoded as 4 but there are only 3 scores. Fix it to use the actual array length.
@@ -144,6 +155,8 @@ Average: 86.33333333333333, Grade: B
 Correct.
 
 ### Step 6 — Ask Claude to remove the debug logging
+
+<StepMeta purpose="Clean the script back to a production-worthy state after the debugging session is done." action="Ask Claude to remove every temporary debug log it added, then run the script one final time." expectedResult="The script keeps the correct behavior but no longer prints internal debug noise." whyItMatters="Temporary instrumentation is useful during diagnosis, but leaving it behind makes future output noisy and can leak internal data in real projects." nextStep="After runtime tracing, practice a more systematic isolation method with binary-search debugging prompts." askTutor="I'm on Step 6 of Let Claude add debug logging. Help me confirm that all temporary logging is gone and only the meaningful program output remains." />
 
 ```
 The bug is fixed. Remove all the debug console.log lines you added.

@@ -5,6 +5,7 @@ chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Review my automated daily workflow and tell me what would break if I left it running unattended for a week."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Mini project: automate a daily workflow
@@ -19,6 +20,8 @@ This project ties together everything from Path 16: you will pick a real daily t
 
 ### Step 1 — Choose your daily workflow
 
+<StepMeta purpose="Scope the mini-project around one bounded, repeatable daily task instead of a vague all-purpose automation idea." action="Choose one of the listed workflows or define your own, then commit to what the automation should check or transform each day." expectedResult="You have one specific daily workflow target and understand the observable outputs that will prove it ran correctly." whyItMatters="Automation projects stay teachable and testable when the task is narrow enough to schedule, log, and verify reliably." nextStep="Create the project folder and initialize Git so the workflow scripts and logs live in one tracked home." askTutor="Help me evaluate my chosen daily workflow and tell me whether it is bounded enough to automate safely without turning into a pile of edge cases." />
+
 Pick one of these real workflows (or propose your own):
 
 | Workflow | What it does |
@@ -30,6 +33,8 @@ Pick one of these real workflows (or propose your own):
 For this walkthrough we will build the **Dev environment health check**, but the structure works for any choice.
 
 ### Step 2 — Set up the project folder
+
+<StepMeta purpose="Give the mini-project a clean repo where scripts, summaries, and ignored logs are easy to manage together." action="Create the `daily-workflow` directory, move into it, and initialize Git before writing the main automation script." expectedResult="You have a dedicated project folder ready to hold the health-check scripts, logs, and supporting files." whyItMatters="A bounded workspace keeps the automation reproducible and makes it easier to evolve the workflow over time without scattering files." nextStep="Write the main automation script so the workflow has a repeatable core action before you think about scheduling or summaries." askTutor="Review this project layout with me and tell me whether it gives the daily workflow enough structure without overcomplicating it." />
 
 **macOS / Linux:**
 
@@ -47,6 +52,8 @@ git init
 ```
 
 ### Step 3 — Write the main automation script
+
+<StepMeta purpose="Build the core daily workflow logic before layering on scheduling, reports, or Git packaging." action="Create the platform-appropriate health-check script, then inspect the checks for Node, Python, Git, disk usage, and internet connectivity." expectedResult="You have a runnable main script that logs a timestamped pass, fail, or warning result for each daily check." whyItMatters="The core script is the heart of the automation, and everything else in the mini-project depends on it being observable and understandable first." nextStep="Run the script manually and inspect the generated log before trusting it to run unattended on a schedule." askTutor="Walk through this daily-check script with me and tell me what part of it is most likely to break when left unattended for a week." />
 
 **macOS / Linux (`daily-check.sh`):**
 
@@ -166,6 +173,8 @@ Log "=== Daily health check complete ==="
 
 ### Step 4 — Run the script manually and review the log
 
+<StepMeta purpose="Validate the workflow by hand once before you delegate execution to the operating system." action="Run the daily-check script manually and inspect today's log file to confirm every check produced the expected line and format." expectedResult="A dated log file exists with the current run's output and each individual check is visible inside it." whyItMatters="Manual execution is the safest place to catch path issues, missing binaries, or logging bugs before a scheduler hides them behind delayed failure." nextStep="Schedule the script next so the workflow becomes unattended automation instead of just a manual helper." askTutor="Help me inspect this first manual run and tell me whether the log output is clear enough for future unattended debugging." />
+
 **macOS / Linux:**
 
 ```bash
@@ -183,6 +192,8 @@ Get-Content "logs\$(Get-Date -Format 'yyyy-MM-dd').log"
 You should see five checks, each with a pass or fail indicator, plus a disk usage percentage.
 
 ### Step 5 — Schedule the script
+
+<StepMeta purpose="Hand the daily trigger over to the operating system so the workflow becomes real automation instead of a remembered habit." action="Register the daily-check script with cron or Task Scheduler at the specified morning time and verify the registration command succeeds." expectedResult="The system now contains a scheduled daily task that points at the workflow script using absolute paths." whyItMatters="Scheduling is what transforms a useful script into a dependable routine that runs even when you forget about it." nextStep="Add a summary script so each day's detailed log can be turned into a quick status line." askTutor="Review this scheduled-task setup and tell me whether the timing, quoted paths, and execution settings are correct for unattended runs." />
 
 **macOS / Linux (cron):**
 
@@ -209,6 +220,8 @@ Register-ScheduledTask `
 ```
 
 ### Step 6 — Add a summary report
+
+<StepMeta purpose="Create a lightweight review artifact that compresses the detailed log into a single human-readable status line." action="Write the summary script, run it after the daily check, and confirm it counts passes, failures, and warnings correctly from today's log." expectedResult="The summary script prints a one-line rollup of the current day's automation results." whyItMatters="Summaries make unattended automation easier to review quickly and can later serve as the basis for notifications or dashboards." nextStep="Commit the project with a `.gitignore` that excludes logs so the repo captures the automation code but not noisy run artifacts." askTutor="Check my summary script and tell me whether it is counting the right log markers or whether my output format could break the summary later." />
 
 Create a script that reads the latest log and prints a one-line summary.
 
@@ -256,6 +269,8 @@ Write-Host "Summary for $(Get-Date -Format 'yyyy-MM-dd'): $passes passed, $fails
 ```
 
 ### Step 7 — Commit the project
+
+<StepMeta purpose="Package the mini-project as a reusable automation repo instead of leaving it as an untracked folder of experiments." action="Create `.gitignore`, stage the scripts and config while excluding logs, commit the project, and inspect the latest Git history entry." expectedResult="Your daily workflow project is committed cleanly, with code tracked and generated logs ignored." whyItMatters="Packaging the workflow in Git makes it easy to refine, review, and reuse later without dragging along transient output files." nextStep="Carry these Path 16 lessons forward as the baseline for deciding when to use DOM automation, local scripts, or full computer-use loops in later paths." askTutor="Review this final project commit and tell me whether the repo cleanly separates source files from generated logs and other runtime artifacts." />
 
 ```bash
 cat > .gitignore << 'EOF'

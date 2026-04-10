@@ -5,6 +5,7 @@ chapterNumber: "12.3"
 pathNumber: "12"
 tutorPreload: "Explain the difference between user memory, session memory, and repo memory in Claude Code."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Understand how Claude Code memory works
@@ -16,6 +17,8 @@ By the end of this lesson you will understand the three scopes of Claude Code me
 ## Walkthrough
 
 ### Step 1 — Understand the three memory scopes
+
+<StepMeta purpose="Build a clear model of what each memory scope is for before you start saving anything." action="Read the table and classify which kinds of facts belong in user memory, session memory, and repo memory." expectedResult="You can explain the location and persistence behavior of each memory scope without mixing them up." whyItMatters="Most memory mistakes come from saving the right fact to the wrong scope, which causes either lost context or unwanted bleed across projects." nextStep="Inspect the user memory path on disk so the abstract concept becomes a real file location." askTutor="Give me a few example facts and quiz me on which memory scope each one belongs in." />
 
 Claude Code has three places it stores information to carry context forward:
 
@@ -32,6 +35,8 @@ Claude Code has three places it stores information to carry context forward:
 **Repo memory** is for project-specific facts that should survive across sessions: build commands, environment setup notes, architecture decisions. It lives inside the project repository.
 
 ### Step 2 — Find your user memory directory
+
+<StepMeta purpose="Verify where cross-project persistent memory lives on your machine." action="List the ~/.claude/memory directory and note whether it already contains Markdown files or needs to be created later." expectedResult="You either see existing user memory files or confirm that the directory has not been populated yet." whyItMatters="Knowing the actual disk location makes it easier to audit, edit, or troubleshoot memory entries instead of treating memory as invisible magic." nextStep="Inspect a project's repo-scoped memory location so you can compare the two persistent scopes." askTutor="Help me interpret what I am seeing in my user memory directory and what it implies about previous Claude sessions." />
 
 **macOS / Linux**
 
@@ -52,6 +57,8 @@ if (Test-Path "$HOME\.claude\memory") {
 If the directory does not exist, Claude Code has not written any user memory yet. That is normal for a fresh installation.
 
 ### Step 3 — Find your repo memory directory
+
+<StepMeta purpose="Compare user-level persistence to project-scoped persistence in a real repository." action="Move into a project and check whether .claude/memory exists there, then inspect any repo memory files if present." expectedResult="You can see whether the current repo already has project-specific memory notes stored under its own .claude/memory directory." whyItMatters="Repo memory is how project facts survive across sessions without leaking into unrelated work, so its location matters." nextStep="Ask Claude to save a user memory entry so you can watch persistence happen in practice." askTutor="Explain the difference between what should live in repo memory versus user memory using this project as the example." />
 
 Navigate to any project that has been used with Claude Code:
 
@@ -74,6 +81,8 @@ if (Test-Path ".claude\memory") {
 ```
 
 ### Step 4 — Ask Claude Code to save a user memory
+
+<StepMeta purpose="Create a visible test entry so you can distinguish persistent user memory from temporary session notes." action="Tell Claude to remember a personal preference that should apply across sessions, then inspect the user memory Markdown files afterward." expectedResult="A new or updated user memory note records your preference on disk under ~/.claude/memory." whyItMatters="Seeing the saved note makes memory concrete and proves that user memory is editable local data, not an opaque hidden feature." nextStep="Start a brand new Claude Code session and test whether the saved preference is recalled automatically." askTutor="Help me phrase a memory request so Claude stores it as cross-session user memory rather than temporary session context." />
 
 Start Claude Code in any project:
 
@@ -105,6 +114,8 @@ You should see your preference written as a note in a Markdown file.
 
 ### Step 5 — Confirm user memory persists into a new session
 
+<StepMeta purpose="Validate that the user memory entry survives the end of the current session." action="Restart Claude Code in a fresh session and ask about the preference you just saved without restating it." expectedResult="Claude recalls the preference from user memory and answers correctly in the new session." whyItMatters="Persistence across sessions is the defining difference between user memory and scratchpad-style session context." nextStep="Review the different ways memory can be created so you know when Claude saves something automatically versus when you should do it explicitly." askTutor="If Claude fails to remember my preference in the new session, walk me through the most likely causes in order." />
+
 Start a brand new Claude Code session:
 
 ```
@@ -120,6 +131,8 @@ What are my indentation preferences?
 Claude should recall that you prefer tabs over spaces, even though this is a fresh session. This proves user memory persists across sessions.
 
 ### Step 6 — Understand what is saved automatically versus manually
+
+<StepMeta purpose="Decide when to rely on Claude's judgment versus when to manage memory deliberately yourself." action="Read the table and sort the examples into automatic saves, explicit save requests, and direct file edits." expectedResult="You understand the three save paths and can choose the right one for preferences, project facts, or one-off notes." whyItMatters="Intentional memory hygiene keeps Claude helpful without letting outdated or misplaced notes pile up across sessions." nextStep="Use the same reasoning in the next lesson to design a small, topic-based memory system that stays easy to review." askTutor="Give me a few new examples and ask whether they should be saved automatically, requested explicitly, or written directly to a memory file." />
 
 | How it is saved | What triggers it | Example |
 |---|---|---|

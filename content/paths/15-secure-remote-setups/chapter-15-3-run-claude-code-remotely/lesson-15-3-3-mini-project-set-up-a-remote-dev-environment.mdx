@@ -5,6 +5,7 @@ chapterNumber: "15.3"
 pathNumber: "15"
 tutorPreload: "Walk me through the full remote dev setup from SSH keys to a running Claude Code session in tmux."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Mini-project: Set up a remote dev environment
@@ -18,6 +19,8 @@ By the end of this mini-project you will have a complete remote development envi
 This project ties together lessons 15.1.1 through 15.3.2. You will go from zero to a working remote Claude Code setup. You need a remote server — a VPS from any provider, a cloud VM, or even a GitHub Codespace.
 
 ### Step 1 — Generate SSH keys (if you have not already)
+
+<StepMeta purpose="Begin the full remote setup by establishing secure key-based access from the local machine." action="Generate an Ed25519 key pair if you do not already have one, then verify the public key file exists in `~/.ssh`." expectedResult="Your machine has a usable SSH key pair ready to authorize remote access for the rest of the mini-project." whyItMatters="The whole remote dev environment depends on reliable key-based access, and skipping this foundation only delays the first authentication failure." nextStep="Copy the public key to the remote server and verify passwordless login before adding aliases or tooling." askTutor="Help me decide whether an existing SSH key is good enough for this setup or whether I should generate a fresh dedicated one first." />
 
 Skip this if you completed lesson 15.1.2.
 
@@ -43,6 +46,8 @@ ls ~/.ssh/id_ed25519.pub
 
 ### Step 2 — Copy the public key to the server
 
+<StepMeta purpose="Authorize the local machine on the remote host so every later step can happen over key-based SSH instead of repeated password prompts." action="Upload the public key using `ssh-copy-id` or the PowerShell pipeline, then test the setup with the `echo 'key auth works'` one-off command." expectedResult="The server accepts your key and the test command runs without a password prompt." whyItMatters="Validating key auth early removes ambiguity from the rest of the workflow, especially once aliases and tmux sessions are added." nextStep="Create a stable SSH alias so every later remote command can target the server by a short memorable name." askTutor="Review this key-copy and login test flow with me and tell me what to inspect first if the server still asks for a password afterward." />
+
 **macOS / Linux:**
 
 ```bash
@@ -62,6 +67,8 @@ ssh your-user@your-server-ip "echo 'key auth works'"
 ```
 
 ### Step 3 — Create an SSH config alias
+
+<StepMeta purpose="Simplify the full remote workflow by encoding the host details and connection defaults under one short alias." action="Add the `devbox` host block plus the global defaults to `~/.ssh/config`, then test the alias with `ssh devbox \"hostname\"`." expectedResult="You can reach the server by alias and confirm the alias resolves to the intended remote machine." whyItMatters="A reliable alias keeps long remote setup sequences readable and reduces typing mistakes during future daily use." nextStep="SSH to `devbox` and install the core packages needed for remote Claude work." askTutor="Help me verify that this SSH alias and the global defaults are correct before I rely on `devbox` for the rest of the setup." />
 
 Open `~/.ssh/config` (create it if it does not exist) and add:
 
@@ -85,6 +92,8 @@ ssh devbox "hostname"
 ```
 
 ### Step 4 — Install Node.js on the server
+
+<StepMeta purpose="Prepare the remote host with the runtime and utilities needed for a real remote Claude development environment." action="SSH into `devbox`, install Node.js plus `tmux` and `git` for your server family, and verify each tool with its version command." expectedResult="The remote server has Node, npm, tmux, and git installed and ready for project work." whyItMatters="A usable remote dev box needs more than just SSH access; it needs the actual build, agent, and persistence tools in place." nextStep="Install Claude Code globally on the server now that the runtime dependency is satisfied." askTutor="Review the remote package install results and tell me whether this server is now prepared for Claude Code and persistent sessions." />
 
 SSH in and install:
 
@@ -114,12 +123,16 @@ tmux -V
 
 ### Step 5 — Install Claude Code on the server
 
+<StepMeta purpose="Add the core agent CLI to the remote dev box so the environment becomes an actual Claude workstation." action="Run the global npm install for Claude Code and verify the install with `claude --version`." expectedResult="Claude Code is installed on the remote server and callable from the shell without error." whyItMatters="The remote environment is only complete once the agent can actually run there, not just once the base packages are present." nextStep="Authenticate Claude Code and then secure the token directory before you move on to project work." askTutor="Help me troubleshoot the remote Claude install here and explain how to handle a permission error without making the whole server workflow sloppy." />
+
 ```bash
 npm install -g @anthropic-ai/claude-code
 claude --version
 ```
 
 ### Step 6 — Authenticate Claude Code
+
+<StepMeta purpose="Complete the account-linking step and secure the resulting remote token before using Claude in anger." action="Run `claude`, finish the OAuth flow in a local browser, and then apply restrictive permissions to `~/.claude`." expectedResult="The remote Claude Code install is authenticated and the token directory is locked down to the current user." whyItMatters="A working but poorly protected remote auth token is still a security liability, so setup is not finished until access is secured." nextStep="Clone or transfer a real project onto the server so the environment has useful code to work on." askTutor="Explain the security tradeoffs of authenticating Claude Code on a remote machine and tell me when I should revoke that token later." />
 
 ```bash
 claude
@@ -134,6 +147,8 @@ chmod 700 ~/.claude
 ```
 
 ### Step 7 — Clone a project to work on
+
+<StepMeta purpose="Populate the remote environment with a real codebase so the setup becomes a usable development workspace." action="Create `~/projects`, then either `git clone` the repo on the server or transfer a local copy with `scp`." expectedResult="A project exists under `~/projects/my-app` and is ready to open with Claude Code remotely." whyItMatters="Remote development is only meaningful once the code itself lives where the tools and shell are running." nextStep="Start a tmux session and launch Claude Code inside it so the session remains available after disconnects." askTutor="Compare cloning on the server versus copying from my laptop and recommend the cleaner option for this remote dev box setup." />
 
 ```bash
 mkdir -p ~/projects
@@ -158,6 +173,8 @@ scp -r .\my-app devbox:~/projects/
 
 ### Step 8 — Start a tmux session and launch Claude Code
 
+<StepMeta purpose="Anchor the live remote agent session inside a persistent server-side terminal so the work survives disconnects." action="Start `tmux new -s dev`, change into the project directory, and launch `claude` from inside the session." expectedResult="Claude Code is running inside a named tmux session called `dev` on the remote host." whyItMatters="Persistence is what turns a remote box from a fragile shell into a credible development environment you can step away from." nextStep="Detach and reconnect next so you prove the session actually survives the kind of interruptions this setup is meant to tolerate." askTutor="Check that I launched Claude Code from inside tmux correctly and tell me how to verify the session name and process context before I detach." />
+
 ```bash
 tmux new -s dev
 cd ~/projects/my-app
@@ -167,6 +184,8 @@ claude
 You are now running Claude Code inside a persistent tmux session on your remote server.
 
 ### Step 9 — Detach, disconnect, and reattach
+
+<StepMeta purpose="Validate the whole persistence promise of the remote workflow under a realistic disconnect-and-return cycle." action="Detach from tmux, exit SSH, then reconnect with `ssh devbox` and `tmux attach -t dev` to recover the live session." expectedResult="You re-enter the same tmux session and find Claude Code exactly where you left it." whyItMatters="This reattach sequence is the core proof that the remote environment remains useful even when your laptop sleeps or the network drops." nextStep="Finish by learning the full cleanup routine so you can tear the environment down safely when the project is over." askTutor="Help me verify that the reattached session is really the same remote Claude session and not a new shell that just looks similar." />
 
 1. **Detach from tmux:** Press `Ctrl+b` then `d`.
 2. **Disconnect from SSH:** Type `exit`.
@@ -181,6 +200,8 @@ tmux attach -t dev
 Claude Code is exactly where you left it.
 
 ### Step 10 — Clean up when you are done for good
+
+<StepMeta purpose="End the project with a deliberate shutdown routine that preserves work and stops unnecessary remote cost or exposure." action="Exit Claude, kill the tmux session, optionally remove the project directory, and if appropriate shut down or destroy the remote server only after pushing your work." expectedResult="The remote environment is cleaned up safely and no abandoned session or billable machine is left running by accident." whyItMatters="Remote convenience carries cleanup responsibilities, and a disciplined teardown prevents both lost work and unnecessary cost or exposure." nextStep="Use the same end-to-end remote workflow as a reusable template whenever you need a fresh remote Claude development environment in the future." askTutor="Review my remote cleanup checklist and tell me what I should always do before terminating a server that has been running Claude Code and project files." />
 
 When you finish a project and no longer need the remote environment:
 

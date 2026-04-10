@@ -5,6 +5,7 @@ chapterNumber: "4.2"
 pathNumber: "4"
 tutorPreload: "Help me update one dependency without breaking the project."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Update dependencies and lock files safely
@@ -20,6 +21,8 @@ You need a project with installed dependencies for this lesson. If you have been
 > **Real danger — `npm install` executes arbitrary code.** The `postinstall`, `preinstall`, and `prepare` scripts in `package.json` run automatically during install. Only install dependencies in repos you trust. For unfamiliar repos, read the `"scripts"` block in `package.json` before running install.
 
 ### Step 1 — Install dependencies (if not done)
+
+<StepMeta purpose="Prepare a real working copy of the project so dependency commands and tests can run normally." action="Install the repo's dependencies only after you have checked the install scripts and decided the project is trustworthy enough to execute." expectedResult="The project's dependency tree installs successfully and you are ready to run read-only and test commands from a working environment." whyItMatters="You cannot safely evaluate an update if the project is not even in a runnable baseline state, but installs on unfamiliar repos also deserve caution." nextStep="Once the project is installed, inspect which packages are outdated before changing anything." askTutor="I'm on Step 1 of Update dependencies and lock files safely. Help me decide whether this repo is safe enough to install and explain any install script risk I should check first." />
 
 **macOS / Linux (Node.js)**
 
@@ -47,6 +50,8 @@ python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.
 
 ### Step 2 — Check what is outdated
 
+<StepMeta purpose="See the upgrade surface before touching any package versions." action="Run the dependency-outdated command for your stack and treat the output as a read-only inventory of possible updates." expectedResult="You get a table showing current versus latest versions without changing the project." whyItMatters="A safe update starts with observation, because you want to choose one bounded change instead of upgrading everything blindly." nextStep="Use Claude to choose the lowest-risk single package to update first." askTutor="I'm on Step 2 of Update dependencies and lock files safely. Help me read this outdated-packages output and tell me which columns matter for risk." />
+
 **Node.js**
 
 ```bash
@@ -63,6 +68,8 @@ This prints a table of packages with current and latest versions. This is a read
 
 ### Step 3 — Ask Claude which package to update
 
+<StepMeta purpose="Use semver and project context to choose one low-risk package instead of making a noisy bulk update." action="Paste the outdated output into Claude and ask it to recommend the safest single dependency to update first." expectedResult="Claude recommends one package and explains whether the bump is a patch, minor, or major change." whyItMatters="The smaller the update, the easier it is to verify, roll back, and learn from without breaking the whole repo." nextStep="Perform only the one recommended update and avoid broad latest-version jumps." askTutor="I'm on Step 3 of Update dependencies and lock files safely. Help me decide whether Claude's recommendation is really the safest one and what makes a version bump risky." />
+
 ```
 Here is the output of npm outdated:
 [paste the output]
@@ -73,6 +80,8 @@ Which ONE package is safest to update first? Explain why, and tell me if it is a
 Claude explains semver (major.minor.patch) and recommends a patch or minor update where the risk of breaking changes is lowest. It will warn you away from major version jumps.
 
 ### Step 4 — Update the single package
+
+<StepMeta purpose="Make one tightly scoped dependency change that you can reason about and test." action="Update only the selected package using the package manager command appropriate for your stack." expectedResult="Your manifest and lock file update for a single dependency and the working tree reflects a bounded change." whyItMatters="One-package updates are much easier to verify and revert than sweeping version changes across the whole dependency graph." nextStep="Run the tests immediately to confirm that the update did not break the project." askTutor="I'm on Step 4 of Update dependencies and lock files safely. Help me understand what changed in my manifest and lock file after this single-package update." />
 
 Follow Claude's recommendation. For example, if Claude suggests updating `lodash`:
 
@@ -91,6 +100,8 @@ pip install --upgrade requests
 > **Real danger — major version bumps can break your code.** If npm outdated shows a package at version 3.x and latest is 5.x, do NOT run `npm install package@latest` without understanding what changed. Ask Claude: "What are the breaking changes between [package] v3 and v5?" and only update after you understand the impact.
 
 ### Step 5 — Verify the project still works
+
+<StepMeta purpose="Test whether the dependency update preserved existing behavior before you commit anything." action="Run the project's test suite, inspect any failures, and decide whether the update should stay or be rolled back." expectedResult="Tests either pass cleanly or produce specific failures that tell you what broke." whyItMatters="Dependency updates are only safe when the project still behaves correctly afterward; passing tests are your main evidence." nextStep="If the verification looks good, stage the dependency files and commit the update with a clear message." askTutor="I'm on Step 5 of Update dependencies and lock files safely. Help me interpret this test failure and decide whether I should debug the update or roll it back." />
 
 Run the test suite:
 
@@ -128,6 +139,8 @@ pip install requests==2.28.0    # whatever the old version was
 ```
 
 ### Step 6 — Commit the dependency update
+
+<StepMeta purpose="Capture the verified dependency change as a clean, reviewable unit in git." action="Stage the updated dependency files and commit them with a message that names the package and version change." expectedResult="Git records one focused dependency-update commit that matches the files you intentionally changed." whyItMatters="Small explicit commits make future debugging and rollback much easier, especially for dependency work that can have wide downstream impact." nextStep="After safe updates, practice another common repo operation: renaming files without leaving stale imports behind." askTutor="I'm on Step 6 of Update dependencies and lock files safely. Help me confirm which files belong in this commit and whether my commit message is specific enough." />
 
 **macOS / Linux and Windows PowerShell**
 

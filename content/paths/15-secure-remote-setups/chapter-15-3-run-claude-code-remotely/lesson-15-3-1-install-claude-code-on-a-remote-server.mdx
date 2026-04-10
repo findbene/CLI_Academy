@@ -5,6 +5,7 @@ chapterNumber: "15.3"
 pathNumber: "15"
 tutorPreload: "Guide me through installing Claude Code on a remote Linux server over SSH."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Install Claude Code on a remote server
@@ -19,6 +20,8 @@ Running Claude Code on a remote server is useful when you need more compute than
 
 ### Step 1 — SSH into your server
 
+<StepMeta purpose="Start the remote install from an authenticated shell on the machine that will host Claude Code." action="Connect with `ssh user@host` or your SSH config alias and verify you are on the intended server before installing anything." expectedResult="You have an interactive shell on the remote server and are ready to perform software installation there rather than locally." whyItMatters="Remote install steps are only safe when you are certain which machine you are affecting, especially if later commands use `sudo`." nextStep="Install Node.js on the server, because Claude Code depends on a modern Node runtime before it can be added globally." askTutor="Help me confirm I am on the correct remote host before I start installing Node and Claude Code there." />
+
 From your local terminal (any OS):
 
 ```bash
@@ -32,6 +35,8 @@ ssh myserver
 ```
 
 ### Step 2 — Install Node.js on the server
+
+<StepMeta purpose="Prepare the required runtime on the remote machine instead of assuming the distro default is new enough." action="Run the NodeSource setup for your Linux family, install Node.js, and verify both `node -v` and `npm -v` afterward." expectedResult="The server has Node.js 18 or later plus npm available in the shell for the Claude Code install." whyItMatters="Claude Code depends on a current Node runtime, and remote servers often ship an older package or none at all by default." nextStep="Install Claude Code globally with npm and verify the binary is available on the server." askTutor="Interpret the Node install output for me and tell me whether the resulting version is suitable for Claude Code or still too old." />
 
 Claude Code requires Node.js 18 or later. Most server distributions ship an older version or none at all.
 
@@ -61,6 +66,8 @@ npm -v
 
 ### Step 3 — Install Claude Code
 
+<StepMeta purpose="Add the agent CLI to the remote machine once the runtime dependency is satisfied." action="Run `npm install -g @anthropic-ai/claude-code`, handle `EACCES` if needed, and verify the install with `claude --version`." expectedResult="Claude Code is installed on the remote server and callable from the shell." whyItMatters="Verifying the binary immediately catches permissions or PATH problems before you continue into authentication and project work." nextStep="Authenticate Claude Code on the headless server and secure the resulting token directory." askTutor="Help me troubleshoot a remote Claude Code install failure and explain when using `sudo` for the global npm install is acceptable or risky." />
+
 ```bash
 npm install -g @anthropic-ai/claude-code
 claude --version
@@ -73,6 +80,8 @@ sudo npm install -g @anthropic-ai/claude-code
 ```
 
 ### Step 4 — Authenticate Claude Code
+
+<StepMeta purpose="Link the remote CLI session to your Anthropic account in a headless-server-friendly way." action="Run `claude`, copy the printed auth URL into your local browser, complete the flow, and then lock down `~/.claude` permissions on the server." expectedResult="The remote server stores a working Claude Code auth token in a restricted directory under your user account." whyItMatters="A remote auth token is effectively account access, so the install is not complete until you treat the token storage as sensitive data." nextStep="Run Claude Code inside a real project directory on the server so the remote environment becomes useful beyond installation." askTutor="Explain the security implications of storing the Claude token on a remote server and tell me what permissions or revocation steps matter most." />
 
 ```bash
 claude
@@ -88,6 +97,8 @@ Claude Code prints an authentication URL. Since you are on a headless server, co
 
 ### Step 5 — Run Claude Code on a remote project
 
+<StepMeta purpose="Verify that the newly installed remote CLI can actually open and work against a project directory on the server." action="Change into a remote project folder and launch `claude`, confirming it can see the files and respond to prompts." expectedResult="Claude Code starts normally in the remote repo and behaves like a local session, except every command executes on the server." whyItMatters="The goal of the lesson is not just installation but a working remote development workflow where the code and compute live on the server." nextStep="If the project is not on the server yet, transfer or clone it using the methods in the next step." askTutor="Help me verify that Claude Code is actually running against the remote project directory and not some empty or unintended path." />
+
 Navigate to a project directory and start Claude Code:
 
 ```bash
@@ -98,6 +109,8 @@ claude
 Claude Code works identically to a local session — it reads files, suggests edits, runs commands. The difference is that every command runs on the server, not your laptop.
 
 ### Step 6 — Transfer a project to the server (if needed)
+
+<StepMeta purpose="Give yourself a practical way to get code onto the server so remote Claude sessions have something meaningful to work on." action="Use `scp` from your local machine or `git clone` directly on the server to place a project under `~/projects/`." expectedResult="The target repo exists on the server and is ready to be opened with Claude Code." whyItMatters="Remote tooling only helps when the code is accessible on the remote machine, and transferring it cleanly is part of the end-to-end setup." nextStep="Use tmux in the next lesson so the remote Claude session survives laptop sleep, SSH drops, and longer-running work." askTutor="Compare `scp` versus `git clone` for me and recommend which transfer path is better for a remote Claude workflow in my situation." />
 
 If your project is on your local machine, push via Git or copy with `scp`:
 

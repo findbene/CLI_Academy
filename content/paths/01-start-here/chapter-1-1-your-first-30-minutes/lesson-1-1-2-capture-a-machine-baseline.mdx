@@ -5,6 +5,7 @@ chapterNumber: "1.1"
 pathNumber: "1"
 tutorPreload: "Read my baseline output and tell me what matters for future lessons and what I should not paste publicly."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Capture a machine baseline
@@ -17,6 +18,8 @@ You will run a series of terminal commands to capture your operating system, she
 
 ### Step 1 — Open your terminal and enter the notes folder
 
+<StepMeta purpose="Start the baseline capture from the notes folder where this reference belongs." action="Open your terminal and change into ~/cli-academy/notes." expectedResult="Your prompt is now inside the notes folder with no path errors." whyItMatters="Saving the baseline in a standard place makes it easy to find later when debugging setup problems." nextStep="Once you are in notes, capture your operating system details first." askTutor="I'm on Step 1 of Capture a machine baseline. Help me get into the correct notes folder and explain how to tell if the path is right on my OS." />
+
 **macOS / Linux:**
 ```bash
 cd ~/cli-academy/notes
@@ -28,6 +31,8 @@ Set-Location ~/cli-academy/notes
 ```
 
 ### Step 2 — Capture your OS version
+
+<StepMeta purpose="Record the exact operating system you are working on." action="Run the OS version command for your platform and keep the output for the baseline file." expectedResult="You see a readable OS name or version string in the terminal." whyItMatters="OS details explain many path differences, install steps, and troubleshooting branches in later lessons." nextStep="After the OS check, capture the shell name and version you are using." askTutor="I'm on Step 2 of Capture a machine baseline. Help me understand the OS version output I got and tell me which parts matter for future troubleshooting." />
 
 **macOS:**
 ```bash
@@ -48,6 +53,8 @@ Copy or remember the output — you will paste it in Step 6.
 
 ### Step 3 — Capture your shell name and version
 
+<StepMeta purpose="Identify the shell that is interpreting your commands." action="Run the shell-version command that matches your OS and shell." expectedResult="You see the shell name plus a version number or version string." whyItMatters="Many command differences come from the shell, not the operating system, so this helps future support stay accurate." nextStep="Once shell details are captured, check whether Node.js is installed." askTutor="I'm on Step 3 of Capture a machine baseline. Explain what shell I'm using, what the version means, and whether it changes how later commands will look." />
+
 **macOS / Linux (zsh):**
 ```bash
 echo "$SHELL — $ZSH_VERSION"
@@ -65,6 +72,8 @@ echo "$SHELL — $BASH_VERSION"
 
 ### Step 4 — Capture your Node.js version
 
+<StepMeta purpose="Check whether your machine is ready for Node-based lessons." action="Run node -v and note the version or note that Node is not installed." expectedResult="You either see a Node version like v18+ or a clear not-installed error." whyItMatters="Path 03 and several later project lessons depend on Node, so knowing your starting state prevents surprise failures." nextStep="After Node, check whether VS Code is available from the terminal." askTutor="I'm on Step 4 of Capture a machine baseline. Help me interpret my node -v result and tell me whether I need to install Node before the next major lesson block." />
+
 This command is the same on every platform:
 
 ```bash
@@ -74,6 +83,8 @@ node -v
 If Node is not installed you will see an error — that is fine. Write "not installed" for now. Path 3 covers Node installation.
 
 ### Step 5 — Capture your default code editor
+
+<StepMeta purpose="Confirm whether VS Code can be launched from the command line." action="Run the code --version check for your platform." expectedResult="You either see VS Code version info or a message that VS Code was not found." whyItMatters="A working code command saves time in later lessons when you need to open files quickly from the terminal." nextStep="With OS, shell, Node, and editor details collected, write them into machine-baseline.md." askTutor="I'm on Step 5 of Capture a machine baseline. Help me understand whether my VS Code command output means the editor is set up correctly for terminal-based lessons." />
 
 **macOS / Linux:**
 ```bash
@@ -86,6 +97,8 @@ code --version 2>$null; if ($LASTEXITCODE -ne 0) { "VS Code not found" }
 ```
 
 ### Step 6 — Write the baseline file
+
+<StepMeta purpose="Turn the commands you just ran into a reusable local reference file." action="Create machine-baseline.md from the template and replace each placeholder with your real values." expectedResult="A markdown file exists in notes with real OS, shell, Node, and editor data instead of placeholders." whyItMatters="This file becomes a stable snapshot you can reuse whenever a later setup or debugging lesson asks for machine details." nextStep="After writing the file, print it back to the terminal and confirm the placeholders are gone." askTutor="I'm on Step 6 of Capture a machine baseline. Help me fill in machine-baseline.md correctly and tell me what to do if one of the sections still has a placeholder or missing value." />
 
 Create `machine-baseline.md` with the results you collected. Replace each placeholder with your real output.
 
@@ -132,6 +145,8 @@ PASTE_YOUR_EDITOR_VERSION_HERE
 Now open the file in your editor and replace each placeholder with the real values you captured in Steps 2–5.
 
 ### Step 7 — Verify the file
+
+<StepMeta purpose="Prove the baseline file was written correctly before you depend on it later." action="Print machine-baseline.md to the terminal and inspect all four sections." expectedResult="The file displays real values for OS, shell, Node.js, and editor information." whyItMatters="A quick verification now prevents you from discovering an empty or half-finished baseline when you need support later." nextStep="Keep this file in notes and update it when your setup changes in a meaningful way." askTutor="I'm on Step 7 of Capture a machine baseline. Help me review the contents of machine-baseline.md and tell me whether anything important is missing or too sensitive to share publicly." />
 
 **macOS / Linux:**
 ```bash

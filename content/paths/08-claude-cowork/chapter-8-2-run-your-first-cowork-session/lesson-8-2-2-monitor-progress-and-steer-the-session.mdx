@@ -5,6 +5,7 @@ chapterNumber: "8.2"
 pathNumber: "8"
 tutorPreload: "My Cowork session is drifting off track. Help me figure out how to redirect Claude without starting over."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Monitor progress and steer the session
@@ -17,6 +18,8 @@ By the end of this lesson you will know how to monitor a running Cowork session,
 
 ### Step 1 — Set up a progress checkpoint habit
 
+<StepMeta purpose="Build a review rhythm that catches drift early instead of only after a long session has accumulated bad output." action="After each major Claude response, pause and check it against the brief, the boundaries, and your own quality threshold before moving on." expectedResult="You adopt a habit of reviewing each major output instead of passively letting the session run to the end." whyItMatters="Frequent checkpoints make Cowork controllable; without them, small mismatches compound into larger rewrites later." nextStep="Practice how to phrase steering feedback so one correction turn fixes the real issue." askTutor="I'm on Step 1 of Monitor progress and steer the session. Help me build a practical checkpoint habit so I catch drift before the session gets expensive to fix." />
+
 Once a Cowork session is running, it is tempting to let Claude keep writing turn after turn. Resist this. The longer you wait to review, the harder it is to course-correct.
 
 **Rule of thumb:** Review after every major output, not at the end of the session.
@@ -28,6 +31,8 @@ After Claude delivers a section or draft, stop and ask yourself three questions:
 3. **Would I be comfortable using this as-is?** If not, identify the specific problem before giving feedback.
 
 ### Step 2 — Practice giving precise steering prompts
+
+<StepMeta purpose="Replace vague dissatisfaction with concrete revision instructions Claude can act on in a single turn." action="Compare the vague and precise feedback examples, then model your own steering prompts after the precise version." expectedResult="You can write feedback that names the missing detail, the required fix, and the exact scope of the revision." whyItMatters="Specific steering shortens revision loops and prevents Claude from guessing incorrectly about what you meant." nextStep="Learn how to respond when Claude correctly asks for more information instead of inventing missing details." askTutor="I'm on Step 2 of Monitor progress and steer the session. Help me turn vague feedback like 'redo this' into precise revision instructions Claude can follow." />
 
 Vague feedback wastes turns. Compare these two approaches:
 
@@ -51,6 +56,8 @@ Claude does not know what "not quite right" means. It will guess, and it will pr
 Claude knows exactly what to change and can do it in a single revision.
 
 ### Step 3 — Handle "I don't have enough information"
+
+<StepMeta purpose="Recognize information requests as a healthy part of Cowork instead of a failure condition." action="When Claude says it needs more context, provide the requested file contents or tell Claude to read the relevant file from the project before continuing." expectedResult="Claude resumes the task using the additional context instead of guessing or stalling." whyItMatters="Good Cowork depends on grounded context, and responding calmly to these requests keeps the session accurate rather than merely fluent." nextStep="Watch for bigger session-level warning signs that suggest the conversation itself is starting to derail." askTutor="I'm on Step 3 of Monitor progress and steer the session. Help me respond well when Claude says it doesn't have enough information to continue accurately." />
 
 Sometimes Claude will say something like:
 
@@ -78,6 +85,8 @@ If you are in Claude Code and the file exists in your project, you can also say:
 
 ### Step 4 — Recognize the signs of a derailing session
 
+<StepMeta purpose="Spot session trouble while it is still recoverable instead of only noticing after quality has collapsed." action="Review the warning-sign table and connect each sign to its matching repair move, such as re-stating the goal or restarting with approved context." expectedResult="You can identify at least one practical fix for repetition, generic output, scope creep, or a changed brief." whyItMatters="Cowork sessions rarely fail all at once; they drift, and recognizing the early patterns lets you recover without wasting the whole conversation." nextStep="Deliberately practice a redirect so steering becomes a learned motion rather than a theory." askTutor="I'm on Step 4 of Monitor progress and steer the session. Help me diagnose which derailment pattern I'm seeing and what the cleanest recovery move is." />
+
 Watch for these patterns during a multi-turn session:
 
 | Warning sign | What is happening | How to fix it |
@@ -88,6 +97,8 @@ Watch for these patterns during a multi-turn session:
 | You realize the brief itself was wrong | Your goal or constraints have changed mid-session | Pause and update the brief file, then share the updated version: "I have revised the brief. Read `cowork-session-brief.md` again and adjust your approach." |
 
 ### Step 5 — Practice a mid-session redirect
+
+<StepMeta purpose="Build steering confidence by practicing a correction turn even before a real session goes badly off track." action="Run a short request-response-correction sequence and give Claude one concrete revision request that improves the output." expectedResult="Claude revises the section in a clearly observable way based on your redirect feedback." whyItMatters="Steering becomes easier once you have felt how a focused redirect changes the next turn; otherwise people often avoid correcting Claude until it is too late." nextStep="Preserve the current state of the work so you can recover cleanly if the session ends or the context window fills." askTutor="I'm on Step 5 of Monitor progress and steer the session. Help me practice a mid-session redirect that is specific enough to create a visible improvement in the next answer." />
 
 Open a Cowork session (continuing from Lesson 8.2.1) and deliberately practice a redirect. Ask Claude to write a section, then give it corrective feedback even if the output is decent. The point is to build the muscle memory for steering.
 
@@ -115,6 +126,8 @@ Turn 4 — Claude revises with specific commands and the fourth item.
 That redirect only worked because you gave Claude something concrete to do. "Make it better" would have produced a coin flip.
 
 ### Step 6 — Save your progress before the session ends
+
+<StepMeta purpose="Avoid losing approved work when the chat crashes, the context fills up, or you decide to continue later." action="Ask Claude Code to save the current draft to disk, or copy the approved output from claude.ai into a local file before ending the session." expectedResult="A real file such as README.md preserves the latest approved state of the work outside the conversation." whyItMatters="Cowork is most reliable when conversation progress gets turned into saved artifacts regularly instead of living only in chat history." nextStep="After the session ends, review the saved output carefully and separate final deliverables from drafts and noise." askTutor="I'm on Step 6 of Monitor progress and steer the session. Help me save the current state safely so I can recover even if the session ends right now." />
 
 At any point you can ask Claude to save the current state:
 

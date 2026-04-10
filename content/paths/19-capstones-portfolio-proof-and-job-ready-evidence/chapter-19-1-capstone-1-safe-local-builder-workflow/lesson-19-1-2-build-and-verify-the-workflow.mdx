@@ -5,6 +5,7 @@ chapterNumber: "19.1"
 pathNumber: "19"
 tutorPreload: "Help me define the exact acceptance test for this capstone."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Build and verify the workflow
@@ -15,6 +16,8 @@ Build the bounded automation workflow for real, run it against a real repository
 ## Walkthrough
 
 ### Step 1: Add a prompt file and a real output test
+
+<StepMeta purpose="Create the reusable run input and the structural test that will prove the capstone output meets the scoped contract." action="Write `run-prompt.md` and the platform-specific output-check script so the expected headings and file path are enforced automatically." expectedResult="The capstone has both a reusable run prompt and a concrete test for the promised digest structure." whyItMatters="Capstones become much more credible when they include a repeatable execution prompt and a real test instead of just a one-time successful output." nextStep="Capture the raw repo evidence next so the agent's summary can be traced directly back to observable git inputs." askTutor="Review this run prompt and output test with me and tell me whether the acceptance check is strong enough to prove the workflow delivered what `SCOPE.md` promised." />
 Create a reusable run prompt and a basic test that checks the output file for the sections your scope promised.
 
 macOS/Linux:
@@ -59,6 +62,8 @@ Write-Host 'capstone-1 output check passed'
 ```
 
 ### Step 2: Capture the raw repo evidence before the agent summarizes it
+
+<StepMeta purpose="Preserve the exact git signals the capstone will summarize so later claims can be checked against real evidence." action="Write `git status`, recent `git log`, and `git diff --stat` output into the logs folder before running Claude Code." expectedResult="The capstone now has raw evidence files that describe the repo state independently of the generated digest." whyItMatters="Evidence-first design is what makes portfolio artifacts credible and reduces the risk of polished summaries that overstate or invent repo reality." nextStep="Run the bounded workflow next using the evidence files and the prompt contract you just created." askTutor="Help me inspect these raw git evidence files and tell me whether they are enough to support a trustworthy daily digest without additional repo access." />
 Your portfolio is stronger if you can show what the workflow looked at before it wrote the digest.
 
 macOS/Linux:
@@ -78,6 +83,8 @@ git diff --stat | Set-Content logs/git-diff-stat.txt
 If `git diff --stat` is empty, that is still useful evidence. It means your working tree has no unstaged content changes.
 
 ### Step 3: Run the bounded workflow in Claude Code
+
+<StepMeta purpose="Execute the capstone under the exact bounded inputs and outputs you designed rather than improvising at run time." action="Use the provided prompt so Claude Code reads only the prompt, scope, contract, and evidence files, then writes the digest and run log." expectedResult="You get `output/daily-git-digest.md` plus `logs/run-001.md` built from the captured repo evidence." whyItMatters="The capstone proves judgment when the agent is constrained to real evidence and a fixed output surface, not when it has broad freedom to explore the repo." nextStep="Run the automated test and do one human credibility review next so both structure and truthfulness are checked." askTutor="Review this bounded workflow prompt and tell me whether it adequately ties the digest to the captured evidence instead of letting the agent freestyle." />
 Open Claude Code in this capstone folder and use the prompt file as your run contract.
 
 Use this prompt:
@@ -101,6 +108,8 @@ Get-Content logs/run-001.md
 ```
 
 ### Step 4: Run the test and verify the deliverable matches the scope
+
+<StepMeta purpose="Close the capstone run with both automated structure checks and a human credibility pass against the raw evidence." action="Run the platform-specific test script, then compare the digest to the git evidence files to ensure the content is factual rather than merely well formatted." expectedResult="You have a passing output test and a manual confirmation that the digest's claims match the repo evidence." whyItMatters="Portfolio artifacts need both machine-verifiable structure and human-verifiable truth if they are going to support real claims of skill and judgment." nextStep="Package the capstone into a case study in the next lesson so the build evidence becomes something another person can review and understand quickly." askTutor="Help me review this capstone verification step and tell me whether the digest is not just formatted correctly but also substantively grounded in the raw git inputs." />
 Run the test on your platform.
 
 macOS/Linux:

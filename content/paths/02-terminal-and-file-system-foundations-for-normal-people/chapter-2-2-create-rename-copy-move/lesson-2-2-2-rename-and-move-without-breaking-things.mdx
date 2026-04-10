@@ -5,6 +5,7 @@ chapterNumber: "2.2"
 pathNumber: "2"
 tutorPreload: "Check whether my rename plan will break references or lose files."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Rename and move without breaking things
@@ -16,6 +17,8 @@ Use `mv` / `Move-Item` and `cp` / `Copy-Item` to rename files, move them between
 ## Walkthrough
 
 ### Step 1 — Check your starting point
+
+<StepMeta purpose="Make sure you are manipulating the correct project before renaming or moving anything." action="Move into tiny-agent-project and list its current files and folders." expectedResult="You see the expected project root with README.md, src, docs, and tests before any reorganization starts." whyItMatters="File moves are safe only when you are certain which project root you are operating inside." nextStep="Once the starting structure looks right, rename one file so you can distinguish renaming from moving." askTutor="I'm on Step 1 of Rename and move without breaking things. Help me verify that this listing really is the correct tiny-agent-project root before I start moving files." />
 
 Make sure you are inside `tiny-agent-project/` and review what you have.
 
@@ -37,6 +40,8 @@ You should see `README.md`, plus the `src/`, `docs/`, and `tests/` folders from 
 
 ### Step 2 — Rename a file
 
+<StepMeta purpose="Practice changing a file's name without changing its content or location." action="Rename README.md to INSTRUCTIONS.md and list the project root again." expectedResult="README.md disappears and INSTRUCTIONS.md appears in the same folder." whyItMatters="Renaming is one of the simplest refactors, and it trains you to verify results immediately after the change." nextStep="After renaming successfully, create a backup copy of a source file before attempting a move." askTutor="I'm on Step 2 of Rename and move without breaking things. Help me confirm this command performs only a rename and does not move the file somewhere else." />
+
 On macOS/Linux, `mv` handles both renaming and moving. On Windows, `Rename-Item` is the clearest rename command. Let's rename `README.md` to `INSTRUCTIONS.md`.
 
 **macOS / Linux**
@@ -57,6 +62,8 @@ Confirm `README.md` is gone and `INSTRUCTIONS.md` appears in its place.
 
 ### Step 3 — Copy a file as a backup before moving it
 
+<StepMeta purpose="Build the habit of creating a recovery point before making higher-risk file changes." action="Copy src/main.py to src/main.py.bak and list the src folder contents." expectedResult="Both the original file and the .bak copy exist side by side in src." whyItMatters="Backups turn file moves from stressful one-way actions into reversible experiments." nextStep="With a backup in place, move one file into a different folder and inspect both locations." askTutor="I'm on Step 3 of Rename and move without breaking things. Help me verify that I created a backup copy rather than overwriting the original file." />
+
 Before you move anything important, make a copy. If the move goes wrong you still have the original.
 
 **macOS / Linux**
@@ -76,6 +83,8 @@ Get-ChildItem src\ -Name
 You now have both `main.py` and `main.py.bak` inside `src/`.
 
 ### Step 4 — Move a file into a different folder
+
+<StepMeta purpose="Practice moving a file to a new location while tracking both the source and destination." action="Move docs/plan.md to the project root and inspect the root folder plus docs after the move." expectedResult="plan.md appears at the root and the docs folder becomes empty." whyItMatters="Successful file moves depend on checking both where the file arrived and where it left from." nextStep="Once you have confirmed the move, reverse it to prove the operation is easy to undo." askTutor="I'm on Step 4 of Rename and move without breaking things. Help me verify that plan.md moved to the root and explain how to confirm it is no longer inside docs." />
 
 Move the documentation plan file to the project root.
 
@@ -99,6 +108,8 @@ Get-ChildItem docs\ -Name
 
 ### Step 5 — Undo the move
 
+<StepMeta purpose="Show that a deliberate file move can be reversed cleanly when you change your mind." action="Move plan.md back into docs and list the docs folder to confirm the restore." expectedResult="docs/plan.md exists again and the project layout returns to the earlier shape." whyItMatters="Being able to undo file moves reduces fear and makes reorganization work feel controlled instead of risky." nextStep="After practicing a safe move and reversal, run the overwrite-risk demo to understand the real danger of careless moves." askTutor="I'm on Step 5 of Rename and move without breaking things. Help me confirm that I truly restored the previous structure and did not create a duplicate or stray file." />
+
 Changed your mind? Move it back.
 
 **macOS / Linux**
@@ -118,6 +129,8 @@ Get-ChildItem docs\ -Name
 `plan.md` is safely back inside `docs/`. This is the terminal equivalent of Ctrl+Z.
 
 ### Step 6 — See the danger: overwrite risk
+
+<StepMeta purpose="Experience the overwrite hazard in a disposable way so you respect it in real projects." action="Create alpha.txt and beta.txt with different contents, then move beta over alpha and inspect the result." expectedResult="alpha.txt now contains beta's content, proving the original alpha content was overwritten." whyItMatters="The safest move habits come from understanding that some commands replace files silently if you are not careful." nextStep="After the demo, clean up the temporary files and verify the real project structure one last time." askTutor="I'm on Step 6 of Rename and move without breaking things. Explain why beta.txt overwrote alpha.txt here and tell me the safest habits to avoid doing that by accident in a real repo." />
 
 The `mv` command will silently overwrite an existing file if the destination name already exists. Try this safe demonstration.
 
@@ -160,6 +173,8 @@ Remove-Item alpha.txt
 ```
 
 ### Step 7 — Verify your final structure
+
+<StepMeta purpose="End the lesson with one authoritative view of the reorganized project." action="Run tree or the recursive file listing and compare it to the expected final structure." expectedResult="The project shows INSTRUCTIONS.md at the root, both main.py files in src, plan.md in docs, and test_main.py in tests." whyItMatters="Final verification proves you completed the reorganization without losing any project content." nextStep="With rename, copy, move, and undo all verified, you are ready to start reading and editing files more safely in the next chapter." askTutor="I'm on Step 7 of Rename and move without breaking things. Help me compare my final project tree to the expected structure and spot any missing or misplaced files." />
 
 **macOS / Linux**
 

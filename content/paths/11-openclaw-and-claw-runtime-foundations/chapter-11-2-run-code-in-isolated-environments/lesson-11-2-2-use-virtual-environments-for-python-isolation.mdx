@@ -5,6 +5,7 @@ chapterNumber: "11.2"
 pathNumber: "11"
 tutorPreload: "Show me how to create a Python virtual environment and prove packages are isolated from system Python."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Use virtual environments for Python isolation
@@ -16,6 +17,8 @@ By the end of this lesson you will create a Python virtual environment, install 
 ## Walkthrough
 
 ### Step 1 — Check your system Python's installed packages
+
+<StepMeta purpose="Capture the baseline Python environment before you create a venv." action="List the current system Python packages and print the path to the system interpreter so you have a before-state to compare against later." expectedResult="You see the system Python executable path and a sample of the globally installed packages." whyItMatters="A venv only makes sense when you compare it to the system interpreter it is isolating you from, so this baseline matters for the proof later." nextStep="Create a new virtual environment so you can compare its interpreter and package set to the system baseline." askTutor="I'm on Step 1 of Use virtual environments for Python isolation. Help me understand what baseline details I should pay attention to before creating the venv." />
 
 Before creating a venv, take a snapshot of what your system Python already has installed.
 
@@ -39,6 +42,8 @@ Note the location printed for `sys.executable` — you will compare it to the ve
 
 ### Step 2 — Create a virtual environment
 
+<StepMeta purpose="Create an isolated Python dependency environment for the experiment." action="Make the venv-lab workspace, then run python -m venv .venv to create the environment directory." expectedResult="A .venv folder appears containing a separate Python interpreter and package area." whyItMatters="The venv directory is the mechanism that separates project dependencies from your system interpreter without changing your global Python installation." nextStep="Activate the environment so your shell starts using the venv Python and pip instead of the system ones." askTutor="I'm on Step 2 of Use virtual environments for Python isolation. Help me understand what this .venv directory contains and what it changes about my Python workflow." />
+
 **macOS / Linux**
 
 ```bash
@@ -58,6 +63,8 @@ This creates a `.venv` folder containing a copy of the Python interpreter and an
 
 ### Step 3 — Activate the virtual environment
 
+<StepMeta purpose="Switch your shell context so subsequent python and pip commands target the venv." action="Run the activation command for your shell and confirm the prompt shows the venv indicator." expectedResult="Your shell is now using the .venv interpreter and package context instead of the system Python." whyItMatters="Activation is what makes the environment convenient to use, and without it you can accidentally install packages to the wrong interpreter." nextStep="Verify the active interpreter path and current package list so you can prove the venv is separate from system Python." askTutor="I'm on Step 3 of Use virtual environments for Python isolation. Help me verify that activation actually switched my shell to the venv instead of just changing the prompt text." />
+
 **macOS / Linux**
 
 ```bash
@@ -73,6 +80,8 @@ source .venv/bin/activate
 Your terminal prompt should now show `(.venv)` at the beginning. This means every `python` and `pip` command now targets the venv, not your system Python.
 
 ### Step 4 — Prove the venv has its own Python and empty packages
+
+<StepMeta purpose="Show concretely that the venv uses a different interpreter path and a nearly empty package set." action="Print the active python path, inspect sys.executable, and list installed packages from inside the activated venv." expectedResult="The interpreter path points inside .venv and the package list is limited to the default bootstrap packages." whyItMatters="This is the direct proof that a venv isolates package state even though it does not isolate files or network access." nextStep="Install a harmless package and compare its visibility inside and outside the venv to prove the dependency boundary works." askTutor="I'm on Step 4 of Use virtual environments for Python isolation. Help me compare this venv Python path and package list to the earlier system baseline so I can prove the isolation clearly." />
 
 **macOS / Linux**
 
@@ -93,6 +102,8 @@ pip list --format=columns
 The Python path should point inside `.venv/`, not your system installation. The package list should show only `pip` and `setuptools` — nothing from your system Python.
 
 ### Step 5 — Install a package and prove it exists only in the venv
+
+<StepMeta purpose="Demonstrate package isolation in practice by adding a dependency to the venv and checking that system Python cannot import it." action="Install cowsay inside the venv, run it successfully there, deactivate, and then try importing it from system Python." expectedResult="cowsay works inside the venv and fails with ModuleNotFoundError outside it." whyItMatters="This inside-versus-outside comparison is the clearest proof of what a venv is good at: isolating dependencies, not securing execution." nextStep="Pair that proof with a clear statement of what venvs do not protect you from so you do not mistake them for a security sandbox." askTutor="I'm on Step 5 of Use virtual environments for Python isolation. Help me explain why this cowsay test proves dependency isolation but says nothing about file or network safety." />
 
 Install a small, harmless package and verify it is not visible from system Python.
 
@@ -123,6 +134,8 @@ You should see the cow art from inside the venv, and a `ModuleNotFoundError` fro
 
 ### Step 6 — Understand what a venv does NOT protect
 
+<StepMeta purpose="Prevent a common security mistake by separating dependency isolation from security isolation." action="Read the table of threats venvs do not stop and map each one to the stronger isolation tool you would need instead." expectedResult="You can state clearly that venvs do not block file reads, network calls, shell commands, or malicious install scripts." whyItMatters="Many learners over-trust venvs, and this step prevents you from using the wrong tool when the risk is untrusted code rather than package conflicts." nextStep="Freeze the environment state so the experiment ends with a reproducible dependency snapshot." askTutor="I'm on Step 6 of Use virtual environments for Python isolation. Help me turn this 'what venvs do NOT protect' table into a practical rule for when I should switch to Docker instead." />
+
 A venv isolates installed packages. It does **not** isolate:
 
 | Threat | Venv protection | What to use instead |
@@ -135,6 +148,8 @@ A venv isolates installed packages. It does **not** isolate:
 > **Real danger:** `pip install` executes arbitrary code in the package's `setup.py` during installation. A typosquatted package can steal credentials at install time, even if you never import it. A venv does not prevent this. Use Docker when installing packages you have not verified.
 
 ### Step 7 — Freeze and clean up
+
+<StepMeta purpose="Capture the environment state in a reproducible file before leaving the lab." action="Reactivate the venv if needed, run pip freeze into requirements.txt, inspect the file, and then deactivate cleanly." expectedResult="You end with a requirements.txt file listing the installed package set from the venv." whyItMatters="Freezing the environment is how you preserve the exact dependency state for later recreation, which is a core venv workflow even outside this lesson." nextStep="Carry this package-isolation knowledge into the sandboxed AI-code workflow, where Docker adds the security boundary that venvs lack." askTutor="I'm on Step 7 of Use virtual environments for Python isolation. Help me understand what this requirements.txt captures and how it relates to recreating the same environment later." />
 
 **macOS / Linux**
 

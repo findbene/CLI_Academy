@@ -5,6 +5,7 @@ chapterNumber: "9.1"
 pathNumber: "9"
 tutorPreload: "Help me write a CONTRIBUTING.md that covers environment setup, PR workflow, and coding standards based on my actual project."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Create a contribution guide or onboarding doc
@@ -16,6 +17,8 @@ By the end of this lesson you will use Claude Code to generate a `CONTRIBUTING.m
 ## Walkthrough
 
 ### Step 1 — Prepare a project with real tooling to describe
+
+<StepMeta purpose="Create a small but believable repo so the contribution guide can describe real setup steps, tests, and code conventions." action="Build the sample project, add tests and ignore rules, then commit the baseline so Claude has actual tooling and structure to inspect." expectedResult="You end with a contrib-lab repo containing app.py, tests/test_app.py, and .gitignore committed to Git." whyItMatters="A contribution guide only works when it mirrors the repo contributors will actually clone, so the underlying project needs real commands and files first." nextStep="Ask Claude to draft CONTRIBUTING.md from the full repo and explicitly forbid invented workflows or tools." askTutor="I'm on Step 1 of Create a contribution guide or onboarding doc. Help me make sure this practice repo has enough real structure for a truthful CONTRIBUTING.md." />
 
 You need a project that has enough structure for a meaningful contribution guide. Reuse the `readme-lab` project from lesson 9.1.1, or create a fresh one.
 
@@ -131,6 +134,8 @@ git commit -m "Initial bookmark manager with tests"
 
 ### Step 2 — Ask Claude to draft a CONTRIBUTING.md from the real project
 
+<StepMeta purpose="Generate a first-pass contribution guide that is grounded in the repo instead of generic open source advice." action="Open Claude in the project, ask it to read the files, and request a CONTRIBUTING.md covering prerequisites, setup, tests, PR process, and coding standards." expectedResult="Claude produces a draft contribution guide tailored to the actual files and commands present in the repo." whyItMatters="The strongest contribution docs are operationally specific, and this prompt sets the expectation that Claude must describe the project as it exists today." nextStep="Follow the guide yourself as if you were a new contributor and note any instructions that fail or reference missing files." askTutor="I'm on Step 2 of Create a contribution guide or onboarding doc. Help me write a prompt that makes Claude draft CONTRIBUTING.md from the real repo instead of best-practice boilerplate." />
+
 Open Claude Code in the `contrib-lab` directory and use this prompt:
 
 ```
@@ -147,6 +152,8 @@ Base every instruction on what actually exists in this repo — do not invent to
 Claude reads `app.py`, `tests/test_app.py`, and `.gitignore`, then produces a draft.
 
 ### Step 3 — Walk through the setup steps yourself
+
+<StepMeta purpose="Test the guide from a contributor's point of view before trusting that the setup instructions are usable." action="Run the setup and test commands Claude documented and compare each step to what the repo actually supports." expectedResult="You discover whether the draft's environment setup and test instructions work literally when followed." whyItMatters="Contributor docs fail most often in setup, and manually following the guide is the fastest way to catch invented dependencies or broken commands." nextStep="After the setup instructions are accurate, inspect the workflow section so branch and review guidance also matches the repo." askTutor="I'm on Step 3 of Create a contribution guide or onboarding doc. Help me verify these setup steps like a brand-new contributor and spot instructions that don't really work." />
 
 The most common error in contribution guides is setup instructions that do not work. Follow every step Claude wrote as if you were a new contributor.
 
@@ -173,6 +180,8 @@ and note that the project uses only Python standard library modules.
 
 ### Step 4 — Verify the PR workflow section
 
+<StepMeta purpose="Make sure the workflow guidance matches the repo's real branch and review reality rather than a default GitHub template." action="Check the current branch state and compare it to the PR and branching process described in CONTRIBUTING.md." expectedResult="You confirm whether the workflow section uses the correct branch names and only references processes that actually exist." whyItMatters="Process guidance becomes misleading quickly when it assumes CI, branch names, or review gates that the repo does not use." nextStep="Compare the coding standards section to the codebase so style guidance is just as honest as the workflow guidance." askTutor="I'm on Step 4 of Create a contribution guide or onboarding doc. Help me review the PR workflow section and correct any branch or process assumptions Claude made." />
+
 Check that the branching and commit message conventions Claude described are realistic for a solo or small-team project. Common mistakes:
 
 - Describing a CI pipeline that does not exist
@@ -189,6 +198,8 @@ If the output shows `master` but CONTRIBUTING.md says `main`, ask Claude to corr
 
 ### Step 5 — Check the coding standards section against real code
 
+<StepMeta purpose="Align the documented coding standards with what contributors will actually see in the codebase." action="Open app.py, compare the style guidance in CONTRIBUTING.md to the current code, and decide whether to soften the guide or improve the code." expectedResult="The coding standards section accurately reflects the repo's present conventions or an explicitly chosen standard you are ready to enforce." whyItMatters="Standards docs lose credibility when they describe an idealized codebase instead of the one contributors will open on day one." nextStep="When the guide is truthful about setup, workflow, and style, stage and commit the finished CONTRIBUTING.md." askTutor="I'm on Step 5 of Create a contribution guide or onboarding doc. Help me compare the coding standards section to the actual code and decide what should change." />
+
 Open `app.py` and compare what Claude wrote about coding standards to what the code actually does.
 
 ```bash
@@ -202,6 +213,8 @@ If Claude says "all functions must have docstrings" but `add()` and `load()` hav
 Pick whichever is honest. The contribution guide must not describe a codebase that does not exist.
 
 ### Step 6 — Commit the verified CONTRIBUTING.md
+
+<StepMeta purpose="Record the contribution guide only after every instruction has been checked against the repo." action="Stage CONTRIBUTING.md, inspect the staged diff, and commit the verified contributor documentation." expectedResult="You create a commit containing a contribution guide that has already been tested against the repo's real setup and workflow." whyItMatters="Treating onboarding docs like production artifacts builds the habit that contributor guidance should be validated, not merely drafted." nextStep="Use the same Cowork pattern for research-heavy tasks in the next lesson, where the output is a factual report instead of repo documentation." askTutor="I'm on Step 6 of Create a contribution guide or onboarding doc. Help me do a final review of CONTRIBUTING.md before I commit it." />
 
 ```bash
 git add CONTRIBUTING.md

@@ -5,6 +5,7 @@ chapterNumber: "1.3"
 pathNumber: "1"
 tutorPreload: "Explain exactly what this command will do in my current folder before I press Enter."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Complete the first tiny project
@@ -17,6 +18,8 @@ You will create a personal README.md file from the terminal, add real content to
 
 ### Step 1 — Navigate to your projects folder
 
+<StepMeta purpose="Start your first tiny project in the part of the workspace reserved for real work." action="Change into ~/cli-academy/projects." expectedResult="Your prompt shows you are inside the projects folder." whyItMatters="Putting the project in the right home now keeps later project work organized and predictable." nextStep="Once you are in projects, create a dedicated folder for this first project." askTutor="I'm on Step 1 of Complete the first tiny project. Help me verify that I'm in the correct projects folder before I create anything new." />
+
 **macOS / Linux:**
 ```bash
 cd ~/cli-academy/projects
@@ -28,6 +31,8 @@ Set-Location ~/cli-academy/projects
 ```
 
 ### Step 2 — Create a project folder
+
+<StepMeta purpose="Give your first project a clean folder of its own." action="Create my-first-project and move into it." expectedResult="A new project folder exists and your prompt is now inside it." whyItMatters="Separate project folders prevent files from different lessons from getting mixed together." nextStep="With the folder ready, write a real README.md from the terminal." askTutor="I'm on Step 2 of Complete the first tiny project. Explain what these folder commands do and help me confirm I'm now inside my-first-project." />
 
 Give your first project its own folder.
 
@@ -44,6 +49,8 @@ Set-Location my-first-project
 ```
 
 ### Step 3 — Write your personal README.md
+
+<StepMeta purpose="Create a real project artifact entirely from the command line." action="Write README.md from the lesson template and replace the author placeholder with your own name." expectedResult="README.md exists in the project folder with real markdown content and your name." whyItMatters="This is the first moment where the terminal stops being abstract and starts producing a real project file you own." nextStep="After writing the file, print it back to the terminal and confirm the content looks correct." askTutor="I'm on Step 3 of Complete the first tiny project. Help me understand this file-writing command and show me how to tell whether README.md was created with the right content." />
 
 This is a real Markdown file — the same format used by every open-source project on GitHub.
 
@@ -95,6 +102,8 @@ I did not use a file explorer or a graphical text editor to make this file.
 
 ### Step 4 — Read it back and confirm
 
+<StepMeta purpose="Verify that the README content actually landed in the file you just created." action="Print README.md to the terminal and inspect the output." expectedResult="You can read the full README content directly in the terminal." whyItMatters="Reading files back immediately is the fastest way to catch typos, empty files, or wrong-folder mistakes." nextStep="Once the content looks right, count the lines to prove the file is not empty." askTutor="I'm on Step 4 of Complete the first tiny project. Help me compare my README output with what this lesson expects and tell me what to fix if something looks off." />
+
 **macOS / Linux:**
 ```bash
 cat README.md
@@ -108,6 +117,8 @@ Get-Content README.md
 You should see your full README printed in the terminal. If the Author line still says "Your Name Here", open the file in any editor and replace it with your actual name, then save.
 
 ### Step 5 — Count the lines in your file
+
+<StepMeta purpose="Use a quick sanity check to confirm the README has real substance." action="Run the line-count command for your OS and note the result." expectedResult="You see a line count around the expected range instead of 0 or 1." whyItMatters="A small verification like this helps you spot empty or truncated files before you move on." nextStep="After the count looks reasonable, list the project folder contents to confirm the file is where you think it is." askTutor="I'm on Step 5 of Complete the first tiny project. Help me interpret my line-count output and tell me whether it suggests the README was written correctly." />
 
 A quick way to prove the file has real content.
 
@@ -125,6 +136,8 @@ You should see a number around 16–20. This confirms the file exists and is not
 
 ### Step 6 — List the project contents
 
+<StepMeta purpose="Confirm the folder now contains the project file you intended to create." action="List the contents of my-first-project." expectedResult="README.md appears in the directory listing." whyItMatters="A directory check is a simple way to confirm you created the file in the correct location." nextStep="With the file confirmed, optionally save the work in Git as your first committed mini-project." askTutor="I'm on Step 6 of Complete the first tiny project. Help me verify that my directory listing proves the project folder is set up correctly." />
+
 **macOS / Linux:**
 ```bash
 ls -la
@@ -138,6 +151,8 @@ Get-ChildItem
 You should see `README.md` listed. This is a complete, real project folder — exactly how professional projects start.
 
 ### Step 7 — Commit your first project
+
+<StepMeta purpose="Practice saving a small finished unit of work in version control." action="Stage the README and create a Git commit from the cli-academy root." expectedResult="Git records a commit for the new README or tells you the work was already committed." whyItMatters="Learning to finish tiny pieces of work cleanly is part of building trustworthy repo habits early." nextStep="After the commit, you can treat this folder as your first completed terminal-built project and move into the next lesson with a real win behind you." askTutor="I'm on Step 7 of Complete the first tiny project. Explain what these Git commands are about to do and tell me the safest check to run if I'm not ready to commit yet." />
 
 If Git is set up from the previous lesson:
 

@@ -22,6 +22,8 @@ Checks performed
 Usage
 -----
         python tooling/scripts/validate_content.py
+    python tooling/scripts/validate_content.py --strict-step-schema
+    python tooling/scripts/validate_content.py --allow-missing-step-schema
 
 Exits 0 on success (warnings do not fail), 1 when errors are found.
 """
@@ -45,6 +47,19 @@ STALE_THRESHOLD_DAYS = 365
 
 # Lessons where has_safety_warning=true MUST contain a WarnBlock component
 WARN_BLOCK_PATTERN = re.compile(r"<WarnBlock")
+STEP_HEADING_PATTERN = re.compile(r"^###\s+Step\s+\d+\b", re.MULTILINE)
+STEP_META_BLOCK_PATTERN = re.compile(r"<StepMeta\b([\s\S]*?)\/>")
+STEP_META_ATTRIBUTE_PATTERN = re.compile(r'([A-Za-z][A-Za-z0-9]*)="([^"]*)"')
+STEP_META_REQUIRED_FIELDS = {
+    "purpose",
+    "action",
+    "expectedResult",
+    "whyItMatters",
+    "nextStep",
+    "askTutor",
+}
+STRICT_STEP_SCHEMA_ARG = "--strict-step-schema"
+ALLOW_MISSING_STEP_SCHEMA_ARG = "--allow-missing-step-schema"
 
 
 # ---------------------------------------------------------------------------
@@ -130,11 +145,47 @@ def _display_name(path: Path, path_root: Path) -> str:
         return path.name
 
 
+def _step_schema_version(frontmatter: dict[str, object]) -> int | None:
+    raw = _frontmatter_value(frontmatter, "stepSchemaVersion", "step_schema_version")
+    if raw is None:
+        return None
+
+    value = _coerce_positive_int(raw)
+    return value
+
+
+def _validate_step_schema(name: str, body: str) -> list[tuple[str, str]]:
+    issues: list[tuple[str, str]] = []
+    step_headings = STEP_HEADING_PATTERN.findall(body)
+    step_meta_blocks = list(STEP_META_BLOCK_PATTERN.finditer(body))
+
+    if len(step_meta_blocks) != len(step_headings):
+        issues.append((
+            "error",
+            f"{name}: step schema requires one <StepMeta /> block for each walkthrough step ({len(step_headings)} steps, {len(step_meta_blocks)} StepMeta blocks)",
+        ))
+        return issues
+
+    for index, match in enumerate(step_meta_blocks, start=1):
+        attrs = {
+            attr_match.group(1): attr_match.group(2).strip()
+            for attr_match in STEP_META_ATTRIBUTE_PATTERN.finditer(match.group(1))
+        }
+        missing = sorted(field for field in STEP_META_REQUIRED_FIELDS if not attrs.get(field))
+        if missing:
+            issues.append((
+                "error",
+                f"{name}: StepMeta #{index} missing required fields: {', '.join(missing)}",
+            ))
+
+    return issues
+
+
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
 
-def validate_lesson(path: Path, path_root: Path) -> list[tuple[str, str]]:
+def validate_lesson(path: Path, path_root: Path, strict_step_schema: bool = False) -> list[tuple[str, str]]:
     """Return list of (level, message) tuples. level = 'error' | 'warning'."""
     issues: list[tuple[str, str]] = []
     name = _display_name(path, path_root)
@@ -229,6 +280,21 @@ def validate_lesson(path: Path, path_root: Path) -> list[tuple[str, str]]:
     if has_safety_warning is True and not WARN_BLOCK_PATTERN.search(body):
         issues.append(("error", f"{name}: has_safety_warning=true but <WarnBlock> not found in body"))
 
+    step_schema_version = _step_schema_version(fm)
+    walkthrough_step_count = len(STEP_HEADING_PATTERN.findall(body))
+
+    if walkthrough_step_count and step_schema_version is None:
+        issues.append((
+            "error" if strict_step_schema else "warning",
+            f"{name}: walkthrough lessons should declare stepSchemaVersion and one <StepMeta /> block after each step heading ({walkthrough_step_count} step headings found)",
+        ))
+
+    if step_schema_version is not None:
+        if step_schema_version < 1:
+            issues.append(("error", f"{name}: stepSchemaVersion must be >= 1 when present"))
+        else:
+            issues.extend(_validate_step_schema(name, body))
+
     # Non-empty body
     if not body.strip():
         issues.append(("warning", f"{name}: lesson body is empty"))
@@ -240,7 +306,7 @@ def validate_lesson(path: Path, path_root: Path) -> list[tuple[str, str]]:
     return issues
 
 
-def validate_path(path_dir: Path) -> list[tuple[str, str]]:
+def validate_path(path_dir: Path, strict_step_schema: bool = False) -> list[tuple[str, str]]:
     """Validate all lessons in one learning path directory."""
     issues: list[tuple[str, str]] = []
     mdx_files = _lesson_files(path_dir)
@@ -263,7 +329,7 @@ def validate_path(path_dir: Path) -> list[tuple[str, str]]:
     lesson_numbers: dict[str, str] = {}
 
     for mdx_file in mdx_files:
-        issues.extend(validate_lesson(mdx_file, path_dir))
+        issues.extend(validate_lesson(mdx_file, path_dir, strict_step_schema=strict_step_schema))
 
         # Collision detection
         source = mdx_file.read_text(encoding="utf-8", errors="ignore")
@@ -288,6 +354,16 @@ def validate_path(path_dir: Path) -> list[tuple[str, str]]:
 # ---------------------------------------------------------------------------
 
 def main() -> int:
+    args = set(sys.argv[1:])
+
+    if STRICT_STEP_SCHEMA_ARG in args and ALLOW_MISSING_STEP_SCHEMA_ARG in args:
+        print(
+            f"ERROR: {STRICT_STEP_SCHEMA_ARG} and {ALLOW_MISSING_STEP_SCHEMA_ARG} are mutually exclusive."
+        )
+        return 2
+
+    strict_step_schema = ALLOW_MISSING_STEP_SCHEMA_ARG not in args
+
     if not CONTENT_DIR.exists():
         print(f"WARN: Content directory not found: {CONTENT_DIR}")
         return 0
@@ -305,7 +381,7 @@ def main() -> int:
     for path_dir in path_dirs:
         mdx_count = len(_lesson_files(path_dir))
         total_lessons += mdx_count
-        path_issues = validate_path(path_dir)
+        path_issues = validate_path(path_dir, strict_step_schema=strict_step_schema)
         errs = [m for lvl, m in path_issues if lvl == "error"]
         warns = [m for lvl, m in path_issues if lvl == "warning"]
         all_errors.extend(errs)
@@ -318,6 +394,7 @@ def main() -> int:
     print("=" * 60)
     print(f"  Paths   : {len(path_dirs)}")
     print(f"  Lessons : {total_lessons}")
+    print(f"  Step schema mode: {'strict' if strict_step_schema else 'compatibility'}")
     print(f"  Errors  : {len(all_errors)}")
     print(f"  Warnings: {len(all_warnings)}")
     print()

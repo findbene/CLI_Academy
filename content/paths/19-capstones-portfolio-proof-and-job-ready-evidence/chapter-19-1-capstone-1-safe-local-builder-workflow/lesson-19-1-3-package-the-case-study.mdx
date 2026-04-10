@@ -5,6 +5,7 @@ chapterNumber: "19.1"
 pathNumber: "19"
 tutorPreload: "Turn this capstone into a clear case study that proves skill."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Package the case study
@@ -15,6 +16,8 @@ Turn the automation workflow into portfolio proof. In this lesson, you will pack
 ## Walkthrough
 
 ### Step 1: Gather the evidence you will cite in the case study
+
+<StepMeta purpose="Collect the exact run artifacts before writing so the case study can only make claims supported by evidence." action="List the logs, output, and test files, then read the run log and final digest to refresh the real evidence you will cite." expectedResult="You know exactly which artifacts are available to support the capstone narrative." whyItMatters="Evidence gathering first prevents the case study from drifting into generic portfolio language or claims that the workflow did not actually prove." nextStep="Write `CASE-STUDY.md` next using only the evidence files you just confirmed exist." askTutor="Review the evidence set with me and tell me whether I have enough real artifacts to write a credible case study or if a key proof file is still missing." />
 Before writing, make sure the evidence files are present and readable.
 
 macOS/Linux:
@@ -34,6 +37,8 @@ Get-Content output/daily-git-digest.md
 Your case study should point to evidence you actually have, not evidence you wish you had.
 
 ### Step 2: Write CASE-STUDY.md as a real portfolio artifact
+
+<StepMeta purpose="Turn the bounded workflow into a hiring-manager-readable story that maps directly to artifacts and outcomes." action="Create `CASE-STUDY.md` using the problem, approach, result, evidence, and lessons structure, then edit the placeholders to reflect the actual repo, commit count, and observations from your run." expectedResult="You have a case study that explains what you built, what it produced, and what evidence proves it worked." whyItMatters="Portfolio proof is strongest when the story is concrete, bounded, and explicitly backed by named files rather than broad claims about AI capability." nextStep="Write the operator-facing `README.md` usage section next so someone else could run the workflow without your private chat context." askTutor="Audit this case study draft and tell me whether any sentence overclaims what the capstone actually proved or whether the evidence mapping is solid." />
 Use the capstone evidence to write the case study in a hiring-manager-friendly format.
 
 macOS/Linux:
@@ -91,6 +96,8 @@ The workflow produced output/daily-git-digest.md, recorded its actions in logs/r
 Edit the result so the repo name, commit count, and key observation match your actual run.
 
 ### Step 3: Add a README.md usage section another operator could follow
+
+<StepMeta purpose="Package the capstone as something another operator could execute and understand without hidden context." action="Write `README.md` with run order, safety rules, and expected artifacts so the workflow can be reproduced from the repo alone." expectedResult="The capstone now includes operator documentation that explains how to run and verify it." whyItMatters="Reusable workflows are more valuable than impressive one-offs, and good usage docs are what make the difference." nextStep="Review the portfolio pack next in the same order an outside reviewer would encounter it." askTutor="Review this README usage section and tell me whether it would let another operator run the workflow safely without needing explanations from me." />
 Your README should explain how to run the workflow without relying on private context from your chat session.
 
 macOS/Linux:
@@ -152,6 +159,8 @@ Generates one markdown digest of recent repository activity using local git evid
 ```
 
 ### Step 4: Review the portfolio pack as if someone else will judge it
+
+<StepMeta purpose="Perform the final external-reader check so the capstone package works as a public-facing proof artifact." action="Read `README.md`, `CASE-STUDY.md`, and the final digest in order and judge whether a stranger could understand the workflow, safety controls, and evidence trail." expectedResult="You have a complete, reviewable portfolio pack for Capstone 1." whyItMatters="The last mile of portfolio work is communication quality, because a strong build still fails as proof if an outside reviewer cannot follow what happened." nextStep="Carry the same evidence-first packaging pattern into Capstone 2, where the workflow centers on knowledge extraction instead of git summarization." askTutor="Help me review this portfolio pack as an outsider would and tell me which part still depends too much on my private knowledge instead of the files themselves." />
 Open the three public-facing files and read them in order: README.md, CASE-STUDY.md, output/daily-git-digest.md. If a stranger cannot understand the workflow, your packaging is not done.
 
 macOS/Linux:

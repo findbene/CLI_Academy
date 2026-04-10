@@ -5,6 +5,7 @@ chapterNumber: "10.3"
 pathNumber: "10"
 tutorPreload: "Help me write a playbook that tells my team when and how to use Cowork effectively."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Set up a team Cowork playbook
@@ -16,6 +17,8 @@ By the end of this lesson you will have a team Cowork playbook — a single mark
 ## Walkthrough
 
 ### Step 1 — Create the playbook file
+
+<StepMeta purpose="Create the shared repo document that will define team-wide Cowork conventions." action="Make sure the docs directory exists, move into it, and prepare cowork-playbook.md as the canonical team reference." expectedResult="You have a docs location ready for the team Cowork playbook." whyItMatters="A team convention document needs a stable home in the repo so it can be reviewed, linked, and maintained like any other operational standard." nextStep="Write the initial playbook structure by hand so the highest-risk policy decisions come from a human, not from Claude." askTutor="I'm on Step 1 of Set up a team Cowork playbook. Help me place this playbook where the whole team will actually find and maintain it." />
 
 **macOS / Linux**
 
@@ -32,6 +35,8 @@ Set-Location "$HOME\my-project\docs"
 ```
 
 ### Step 2 — Write the playbook structure by hand
+
+<StepMeta purpose="Define the human policy boundaries first, especially where Cowork is allowed and where it is off-limits." action="Draft cowork-playbook.md with sections for when to use Cowork, when not to use it, templates, review rules, conventions, and feedback loops." expectedResult="You have a first draft that already captures the team's intended boundaries and review posture." whyItMatters="Usage policy, risk boundaries, and approval rules are leadership decisions, and Claude should help refine them rather than invent them." nextStep="Ask Claude to improve the draft with onboarding and escalation help while preserving the practical tone and policy boundaries." askTutor="I'm on Step 2 of Set up a team Cowork playbook. Help me check whether this first draft covers the real high-risk cases where the team should not rely on Cowork." />
 
 Start with the sections that only a human can define: when to use Cowork, and when not to.
 
@@ -147,6 +152,8 @@ When Cowork produces a bad output:
 
 ### Step 3 — Ask Claude to review and extend the playbook
 
+<StepMeta purpose="Use Claude to improve clarity and completeness without turning the playbook into generic AI policy fluff." action="Prompt Claude to add a Quick Start, an escalation section, and contradiction checks while keeping the tone practical and saving back to the same file." expectedResult="The playbook becomes more usable for newcomers and more resilient when something goes wrong after Cowork output is shared." whyItMatters="Claude is useful here as an editor and gap finder, but the prompt constraints keep it from drifting into marketing language or abstract policy jargon." nextStep="Validate the revised playbook against how your team actually works and update any sections that do not match reality." askTutor="I'm on Step 3 of Set up a team Cowork playbook. Help me prompt Claude to improve this playbook without turning it into vague policy boilerplate." />
+
 Open Claude Code in the docs directory:
 
 ```
@@ -159,6 +166,8 @@ Save the updated version to the same file.
 ```
 
 ### Step 4 — Validate the playbook against your actual workflow
+
+<StepMeta purpose="Check whether the playbook matches actual team behavior instead of just sounding sensible on paper." action="Read the revised file, answer the four validation questions honestly, and use the shell checks to confirm the file exists with real content." expectedResult="You know whether the playbook covers genuine use cases, real risk areas, and failure modes the team has actually seen." whyItMatters="A playbook only works when it aligns with the team's real workflow and review habits, not an imagined process." nextStep="Commit and share the playbook, then surface it from the main README so new team members can find it." askTutor="I'm on Step 4 of Set up a team Cowork playbook. Help me evaluate whether this playbook matches the way my team actually uses Claude instead of an idealized workflow." />
 
 Read the final playbook and answer these questions:
 
@@ -186,6 +195,8 @@ Get-Content "$HOME\my-project\docs\cowork-playbook.md" | Select-Object -First 30
 ```
 
 ### Step 5 — Commit and share the playbook
+
+<StepMeta purpose="Publish the validated Cowork policy so it becomes part of team onboarding and daily workflow." action="Stage docs/cowork-playbook.md, commit it from the project root, and add links from the main README to the playbook and prompt library." expectedResult="You create a versioned team playbook that is reachable from the repo entry points people actually read." whyItMatters="Policy docs hidden in a deep folder do not change behavior, so linking the playbook from the README is part of making it operational." nextStep="Use the same structure-plus-verification mindset in the mini-project that automates an entire team ritual end to end." askTutor="I'm on Step 5 of Set up a team Cowork playbook. Help me check that this playbook is both commit-ready and visible enough that teammates will actually use it." />
 
 **macOS / Linux**
 

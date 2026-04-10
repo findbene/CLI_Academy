@@ -5,6 +5,7 @@ chapterNumber: "17.2"
 pathNumber: "17"
 tutorPreload: "Review my connection notes and tell me what should be redacted or rotated."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Connect one integration
@@ -16,6 +17,8 @@ Connecting to an external API for the first time involves two things that beginn
 ## Walkthrough
 
 ### Step 1 — Authenticate with the GitHub API using gh
+
+<StepMeta purpose="Establish a safe first connection path that uses GitHub CLI-managed auth instead of raw token handling." action="Run `gh auth login`, complete the device-flow prompts, and make sure the login finishes through the browser-based approval flow." expectedResult="GitHub CLI stores an active OAuth token in the system keychain without requiring you to paste the raw token into files." whyItMatters="Secure connection setup is about both successful auth and avoiding token exposure through shell history, plaintext files, or copy-paste mistakes." nextStep="Make a real API call next so you know the connection works before documenting anything about its scope or storage location." askTutor="Walk me through the safest way to complete `gh auth login` and tell me how to avoid leaking a token during the initial connection setup." />
 
 The `gh` CLI handles OAuth token storage securely in your system keychain. You do not paste tokens into files or environment variables manually at this stage — `gh` manages that for you.
 
@@ -39,6 +42,8 @@ When prompted:
 You should see: `✓ Authentication complete. Press Enter to continue...`
 
 ### Step 2 — Verify the connection with a real API call
+
+<StepMeta purpose="Confirm the integration is genuinely live by reading a real API response through the stored GitHub auth." action="Run `gh api user` and inspect the returned profile JSON to verify the token is being used successfully behind the scenes." expectedResult="You receive a live GitHub user profile response, proving the CLI auth is active and usable for API calls." whyItMatters="Connection setup is only trustworthy once a real request succeeds, not just because a login flow claimed to finish." nextStep="Inspect the auth status and accessible repos next so you understand what the token can currently see." askTutor="Help me interpret the `gh api user` output and tell me what it proves about the state of my GitHub connection and token storage." />
 
 Fetch your GitHub user profile to confirm the token works:
 
@@ -70,6 +75,8 @@ This is a live API response from GitHub. The `gh api` command uses your stored O
 
 ### Step 3 — Check what the token can see
 
+<StepMeta purpose="Measure the current visibility and scope of the connected token before any workflow starts relying on it." action="Run `gh auth status` and the repo-listing command, then note both the granted scopes and the set of repositories visible to the token." expectedResult="You understand both the scope grant and the reach of the current token across GitHub resources." whyItMatters="A token can be technically connected but still dangerously overpowered, and visibility checks expose that blast radius early." nextStep="Document the credential type and storage model next using a safe `.env.example` reference file that contains no secrets." askTutor="Review my auth-status and repo-visibility output and tell me whether the token's current reach looks broader than this workflow should tolerate." />
+
 **macOS / Linux:**
 ```bash
 # Show your active auth status and scopes
@@ -89,6 +96,8 @@ gh api /user/repos | ConvertFrom-Json | Select-Object -First 10 -ExpandProperty 
 ```
 
 ### Step 4 — Document the connection in a .env reference file
+
+<StepMeta purpose="Capture where the credential lives and how it is managed without ever writing the actual secret into the repo." action="Create `.env.example` as a reference file, documenting credential type, storage location, scope source, refresh path, and revocation method only." expectedResult="You have a safe credential reference file that explains the integration setup without containing any token value." whyItMatters="Good integration docs tell future you where auth lives and how to rotate it while still keeping secret material out of source control." nextStep="Make sure `.env` is ignored next so a future real environment file cannot be committed by accident." askTutor="Review my `.env.example` and tell me whether it documents the connection clearly without crossing the line into secret exposure." />
 
 Never paste raw token values into files. Instead, document *where* the credential lives and what it grants. Create a `.env.example` file that serves as a safe reference:
 
@@ -138,6 +147,8 @@ Get-Content .env.example
 ```
 
 ### Step 5 — Add .env to .gitignore immediately
+
+<StepMeta purpose="Put a hard guardrail in place before any real `.env` file exists with sensitive values inside it." action="Ensure `.env` appears in `.gitignore` and print the matching entry so you can verify the ignore rule is active." expectedResult="The repo now has an explicit ignore rule protecting future `.env` files from accidental commits." whyItMatters="Credential leaks often happen before people think they are dealing with production secrets, so early ignore rules are a low-cost, high-value safeguard." nextStep="Use the next lesson to validate the integration with read-only GET calls before you attempt any write operation." askTutor="Check whether my `.gitignore` change is sufficient for this workflow and tell me if any other secret-bearing files should be protected at the same time." />
 
 If you ever create a real `.env` file with secrets, it must never be committed to git:
 

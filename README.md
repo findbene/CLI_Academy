@@ -65,8 +65,9 @@ The current structure fixes that by:
 - Learner-flow support in `apps/web/` now includes onboarding start-route recommendations, dashboard resume targets, section-progress tracking, server-backed lesson verification, hosted lesson-progress self-healing, browser-local progress fallback/backfill, and password recovery.
 - Supabase-backed lesson progress now resolves against the live curriculum catalog through `apps/web/lib/supabase/curriculum-sync.ts`, with user-scoped local fallback/backfill protecting learners during sync gaps.
 - The floating tutor runtime has been expanded with mode-aware gating, signed-in usage checks, and richer learner-facing context through `apps/web/components/tutor/TutorRuntimeProvider.tsx` and `/api/tutor`.
+- The guided-step lesson contract is now live across Paths 01-19, with every live walkthrough lesson now using explicit `stepSchemaVersion: 1` plus authored `StepMeta` blocks.
 - Shared extraction work is expected to move gradually into `packages/` when duplication justifies it.
-- The current workstream is curriculum QA and learner-flow hardening: keeping live lesson content, hosted progress semantics, tutor behavior, and app UX aligned.
+- The current workstream is curriculum QA and learner-flow hardening: strict guided-step enforcement is now live, the dashboard hydration regression slice is covered in Playwright, the authenticated learner-flow/tutor regression pack now executes locally through QA credentials or a saved learner storage state, and the remaining app work is focused on editorial QA plus final UX alignment.
 
 ## Root operating docs
 
@@ -92,10 +93,10 @@ The current structure fixes that by:
 
 ## Near-term priorities
 
-1. Add regression coverage around hosted lesson progress, browser-local fallback/backfill, dashboard hydration reconciliation, and tutor mode gating.
-2. Continue editorial QA on the rewritten and migrated live paths, especially Paths 11-19.
-3. Revisit backend persistence and gamification concurrency semantics.
-4. Decide the long-term handling strategy for legacy `paths_old/` content and historical lesson artifacts.
+1. Continue editorial QA on the rewritten and migrated live paths, especially Paths 11-19.
+2. Revisit backend persistence and gamification concurrency semantics.
+3. Reconcile path-overview completion state with browser-local fallback so `/learn/[pathSlug]` does not lag behind lesson/dashboard state after local-only saves.
+4. Refresh the saved authenticated Playwright learner state whenever the QA session changes so tutor and learner-flow regressions stay runnable locally.
 
 ## Project-level operating files
 

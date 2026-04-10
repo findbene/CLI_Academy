@@ -5,6 +5,7 @@ chapterNumber: "12.1"
 pathNumber: "12"
 tutorPreload: "Help me write a CLAUDE.md that actually changes how Claude Code behaves in my project."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Create your first project CLAUDE.md
@@ -16,6 +17,8 @@ By the end of this lesson you will create a working `CLAUDE.md` file at the root
 ## Walkthrough
 
 ### Step 1 — Create a practice project folder
+
+<StepMeta purpose="Create a real repository root where Claude Code can discover project instructions consistently." action="Make the practice folder, move into it, and run git init so the directory behaves like a real project root." expectedResult="You end up inside a git repository that is ready to hold a root-level CLAUDE.md file." whyItMatters="Claude Code looks for project instructions from the repo root, so starting with the right directory structure prevents false negatives later." nextStep="Create the CLAUDE.md file at that project root with the core sections Claude needs to read." askTutor="Help me confirm that I am in the correct project root and explain why git init matters for CLAUDE.md discovery." />
 
 We need a real project directory. If you already have one, use it. Otherwise create a throwaway project.
 
@@ -38,6 +41,8 @@ git init
 We initialize git because Claude Code looks for `CLAUDE.md` starting from the repo root.
 
 ### Step 2 — Create the CLAUDE.md file with four sections
+
+<StepMeta purpose="Author the smallest useful project instruction file so Claude has clear project-specific guidance." action="Create CLAUDE.md at the repo root and fill it with the mission, read order, hard rules, and context loading sections shown in the lesson." expectedResult="A root-level CLAUDE.md exists and contains explicit instructions that Claude can load at session start." whyItMatters="The file has to exist in the right place with direct language before you can test whether Claude will actually follow it." nextStep="Open the file you just created and verify the content matches what you intended to teach Claude." askTutor="Review my draft CLAUDE.md and tell me whether the rules are specific enough to change Claude's behavior." />
 
 Create the file at the root of the project.
 
@@ -93,6 +98,8 @@ Optimize for clarity and safety. Never modify files outside this directory.
 
 ### Step 3 — Verify the file exists and looks right
 
+<StepMeta purpose="Catch placement, encoding, or copy mistakes before blaming Claude for ignoring the file." action="Print the contents of CLAUDE.md and confirm all four sections appear exactly once with the wording you expect." expectedResult="You can see the mission, read order, hard rules, and context loading sections in the terminal output." whyItMatters="A quick file check is cheaper than debugging a full Claude session when the real problem is a malformed or misplaced file." nextStep="Start Claude Code from this same directory and ask it to report the project rules back to you." askTutor="Compare my terminal output to the expected CLAUDE.md structure and point out anything that would stop Claude from using it." />
+
 **macOS / Linux**
 
 ```bash
@@ -109,6 +116,8 @@ You should see all four sections: Mission, Read order, Hard rules, and Context l
 
 ### Step 4 — Open Claude Code and test that it reads your file
 
+<StepMeta purpose="Prove that Claude is loading the project instructions automatically instead of just having the file sit on disk." action="Launch Claude Code from the repo root and ask 'What are my project rules?' so Claude has to summarize the file it loaded." expectedResult="Claude responds with the hard rules you wrote in CLAUDE.md without being manually told to open the file." whyItMatters="This is the core behavior you are trying to verify: root instructions should be loaded automatically at session start." nextStep="Give Claude a request that conflicts with one of the hard rules and see whether the rule changes its behavior." askTutor="Help me interpret Claude's answer and decide whether it really loaded my CLAUDE.md or is just guessing." />
+
 Launch Claude Code in this directory:
 
 ```
@@ -124,6 +133,8 @@ What are my project rules?
 Claude should respond with the three hard rules you wrote in `CLAUDE.md`. If it does, your file is working. Claude Code automatically reads `CLAUDE.md` from the repo root at session start — you do not need to tell it to load the file.
 
 ### Step 5 — Test that a rule is actually enforced
+
+<StepMeta purpose="Check whether your instructions are strong enough to shape Claude's actions instead of only its summaries." action="Ask Claude to do something outside the project root and watch whether it refuses, warns, or asks for confirmation." expectedResult="Claude hesitates or declines because the request conflicts with your hard rule about staying inside the project directory." whyItMatters="A CLAUDE.md file is only useful if it changes real behavior under pressure, not just recall when asked about rules." nextStep="If the rule is too weak, rewrite it with more explicit wording and rerun the same test." askTutor="Suggest a stronger version of my boundary rule if Claude was too willing to write outside the project root." />
 
 Give Claude a prompt that violates one of your rules:
 

@@ -5,6 +5,7 @@ chapterNumber: "8.2"
 pathNumber: "8"
 tutorPreload: "Walk me through starting my first real Cowork session and tell me if my opening prompt is strong enough."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Launch a Cowork session with a clear goal
@@ -17,6 +18,8 @@ By the end of this lesson you will start a real Cowork session — either in Cla
 
 ### Step 1 — Choose your environment
 
+<StepMeta purpose="Pick the Cowork surface that matches where your files and work style already live." action="Compare Claude Code and claude.ai Projects, then choose the environment that best fits the README session you are about to run." expectedResult="You make an intentional choice between terminal-based Cowork and browser-based Project Cowork." whyItMatters="Cowork works across surfaces, but the ergonomics differ depending on whether your task is file-heavy, repo-heavy, or document-heavy." nextStep="Open that environment and share the brief so Claude begins from an explicit task definition instead of guesswork." askTutor="I'm on Step 1 of Launch a Cowork session with a clear goal. Help me decide whether Claude Code or a claude.ai Project is the better place to start this session." />
+
 You can run a Cowork session in two places. Pick whichever you have access to:
 
 | Environment | How to start | Best for |
@@ -27,6 +30,8 @@ You can run a Cowork session in two places. Pick whichever you have access to:
 Both give you the same sustained-context collaboration. The difference is where your files live.
 
 ### Step 2 — Open the session and share your brief
+
+<StepMeta purpose="Start the session by grounding Claude in the same brief you prepared outside the conversation." action="Open Claude in your chosen environment, share cowork-session-brief.md, and ask Claude to summarize the goal, context, success criteria, and boundaries back to you." expectedResult="Claude confirms its understanding of the brief before writing any deliverable content." whyItMatters="This confirmation turn is the easiest place to catch misunderstandings before they turn into a long sequence of off-target output." nextStep="Give Claude a narrow first task so you keep a review checkpoint before the full draft appears." askTutor="I'm on Step 2 of Launch a Cowork session with a clear goal. Help me phrase the opening request so Claude proves it understands the brief before we start work." />
 
 **Option A — Claude Code (terminal):**
 
@@ -69,6 +74,8 @@ criteria, and boundaries back to me before we start.
 
 ### Step 3 — Give the first task
 
+<StepMeta purpose="Keep the session reviewable by asking for structure before asking for full prose." action="Request an outline only for the README, with headings and one-line descriptions, and explicitly tell Claude not to draft the full content yet." expectedResult="Claude returns a structured outline instead of a full README wall of text." whyItMatters="Outlines create a low-cost checkpoint where you can steer early, which is one of the main advantages of Cowork over a one-shot prompt." nextStep="Read the outline against the brief and issue corrective guidance before moving into full sections." askTutor="I'm on Step 3 of Launch a Cowork session with a clear goal. Help me write a first task that keeps the session reviewable instead of letting Claude dump the whole document at once." />
+
 Once Claude confirms it understands the brief, give it the first concrete task. Do not say "go ahead and do everything." Break the work into steps so you can review along the way.
 
 Good opening prompt:
@@ -90,6 +97,8 @@ This skips the review step. You will get a full document with no chance to redir
 
 ### Step 4 — Review the outline and steer
 
+<StepMeta purpose="Use the first review checkpoint to shape the structure before more writing locks in bad assumptions." action="Compare Claude's outline against the success criteria and boundaries, then give direct edits for anything missing, extra, or in the wrong order." expectedResult="Claude revises the outline to match your approved structure before any full sections are written." whyItMatters="Top-down steering is faster and safer than rewriting whole documents later because the section plan controls everything that follows." nextStep="Once the structure is approved, request one full section at a time and keep reviewing after each one." askTutor="I'm on Step 4 of Launch a Cowork session with a clear goal. Help me review Claude's outline and phrase a correction that is specific enough to fix it in one turn." />
+
 Read Claude's outline carefully. Check it against your success criteria:
 
 - Does it include installation, usage, example output, contributing, and license?
@@ -105,6 +114,8 @@ If something is wrong, tell Claude directly:
 Claude revises the outline while keeping all your prior context. This is the advantage of a sustained session over a one-shot prompt.
 
 ### Step 5 — Request the first full section
+
+<StepMeta purpose="Shift from structure approval into controlled drafting without losing the review rhythm." action="Ask Claude to draft one specific section, review the result, and give precise feedback if platform commands or details need correction." expectedResult="You end the lesson with at least one fully drafted section that reflects both the brief and your steering feedback." whyItMatters="Cowork works best as a loop of task, review, and redirect, and this step is where that loop becomes a concrete habit." nextStep="In the next lesson, practice monitoring a live session, correcting drift, and handling missing-context requests without starting over." askTutor="I'm on Step 5 of Launch a Cowork session with a clear goal. Help me review the first drafted section and decide what kind of feedback will keep the session moving cleanly." />
 
 Once the outline is approved, ask Claude to write one section at a time:
 

@@ -5,6 +5,7 @@ chapterNumber: "10.1"
 pathNumber: "10"
 tutorPreload: "Help me turn yesterday's git log into a clean standup summary."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Generate standup summaries with Claude
@@ -16,6 +17,8 @@ By the end of this lesson you will generate a formatted daily standup summary fr
 ## Walkthrough
 
 ### Step 1 — Create a project folder for standup outputs
+
+<StepMeta purpose="Create a predictable workspace where standup inputs and generated summaries can accumulate over time." action="Make the standup-summaries folder, move into it, and treat it as your archive for raw logs and dated standup files." expectedResult="You have a dedicated directory ready to hold raw git output and the standup summaries Claude generates from it." whyItMatters="A stable location turns this from a one-off prompt into a repeatable team ritual you can run every day without hunting for files." nextStep="Switch to a repo with recent commits and pull the recent history you want Claude to summarize." askTutor="I'm on Step 1 of Generate standup summaries with Claude. Help me set up this standup workspace so I can reuse it every day instead of improvising each time." />
 
 We need a place to store generated summaries so they accumulate as a lightweight work log.
 
@@ -34,6 +37,8 @@ Set-Location "$HOME\standup-summaries"
 ```
 
 ### Step 2 — Pull yesterday's commits from a real repository
+
+<StepMeta purpose="Collect real activity data so the standup is based on what you actually changed, not memory or guesswork." action="Open a repo with recent work, run git log for your commits in the target time window, and widen the window if the first search returns nothing." expectedResult="You see a short list of recent commits authored by you that can serve as the source for a standup summary." whyItMatters="Git history is the evidence base for the standup, and getting the right window and author filter up front improves the quality of everything Claude writes afterward." nextStep="Save the commit log to a file so Claude can read the exact same source you just reviewed." askTutor="I'm on Step 2 of Generate standup summaries with Claude. Help me adjust this git log command so I pull the right range of commits for a useful standup." />
 
 Navigate to any project you have been committing to. If you do not have one handy, use the CLI Academy repo itself.
 
@@ -69,6 +74,8 @@ git log --since="3 days ago" --author="$(git config user.name)" --oneline
 
 ### Step 3 — Save the log to a file
 
+<StepMeta purpose="Turn the live git output into a reusable source file Claude can inspect and you can audit later." action="Write the filtered git log to raw-log.txt inside the standup workspace and confirm the saved file contains real commit lines." expectedResult="You have a non-empty raw-log.txt file that captures the commit history Claude will summarize." whyItMatters="Saving the log creates a durable handoff point between shell commands and Cowork, which makes verification much easier after Claude drafts the standup." nextStep="Feed raw-log.txt to Claude with a strict output format so the summary stays concise and structured." askTutor="I'm on Step 3 of Generate standup summaries with Claude. Help me verify this raw log file is complete enough to feed to Claude without losing important context." />
+
 **macOS / Linux**
 
 ```bash
@@ -86,6 +93,8 @@ Get-Content "$HOME\standup-summaries\raw-log.txt"
 Confirm the file is not empty. If it is, widen the date range as in Step 2.
 
 ### Step 4 — Feed the log to Claude and request a standup summary
+
+<StepMeta purpose="Convert raw commit history into a readable team update using a prompt that constrains format and speculation." action="Open Claude in the standup workspace, point it at raw-log.txt, and request the standup in the exact What I did / What I'm doing / Blockers format." expectedResult="Claude produces a concise standup summary that groups your work into a teammate-friendly update." whyItMatters="A tightly constrained prompt keeps Claude from drifting into vague status language or inventing unsupported blockers and future work." nextStep="Save the accepted summary as a dated markdown file so it becomes part of your running standup record." askTutor="I'm on Step 4 of Generate standup summaries with Claude. Help me tighten this prompt so Claude summarizes the git log without inventing details or bloating the format." />
 
 Open Claude Code in your `standup-summaries` directory and give it a clear prompt:
 
@@ -108,6 +117,8 @@ Claude will read the file and produce a formatted summary.
 
 ### Step 5 — Save the formatted summary with today's date
 
+<StepMeta purpose="Store the summary in a dated file so each standup becomes a reusable record instead of a transient chat response." action="Ask Claude to save the finished summary using today's date in the filename, then open the saved markdown file from the shell." expectedResult="You have a dated standup markdown file in the workspace that you can reuse, edit, or paste elsewhere." whyItMatters="Persisting the output is what makes the ritual operational because it gives you a file you can review, share, and compare over time." nextStep="Cross-check every bullet in the saved summary against raw-log.txt before you share it with anyone." askTutor="I'm on Step 5 of Generate standup summaries with Claude. Help me save this standup in a dated format that will stay easy to find and review later." />
+
 **macOS / Linux**
 
 ```bash
@@ -125,6 +136,8 @@ Get-Content "$HOME\standup-summaries\standup-$((Get-Date).ToString('yyyy-MM-dd')
 ```
 
 ### Step 6 — Verify the summary is accurate
+
+<StepMeta purpose="Prevent an AI-generated status update from overstating, misgrouping, or fabricating your work." action="Read the saved summary line by line and compare every bullet back to the original raw-log.txt before sharing it." expectedResult="You either confirm the standup is grounded in the git log or correct any inaccurate bullets before distribution." whyItMatters="Standups are trust-sensitive team communication, and verification is the safeguard that keeps a convenient automation from becoming a credibility problem." nextStep="Reuse the same evidence-first process in the weekly-report lesson, where you combine git history with manually supplied plans and blockers." askTutor="I'm on Step 6 of Generate standup summaries with Claude. Help me audit this summary against raw-log.txt and spot any bullet that overstates what the commits actually show." />
 
 Read the generated summary and cross-check every bullet against the original `raw-log.txt`. Claude sometimes groups unrelated commits or invents work you did not do. Delete or correct any bullet that does not match a real commit.
 

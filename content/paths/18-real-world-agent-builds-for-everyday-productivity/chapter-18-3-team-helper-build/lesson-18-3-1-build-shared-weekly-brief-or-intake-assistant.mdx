@@ -5,6 +5,7 @@ chapterNumber: "18.3"
 pathNumber: "18"
 tutorPreload: "Help me turn this into a team-safe workflow with clear ownership."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Build: shared weekly brief or intake assistant
@@ -16,6 +17,8 @@ Build a team-shared assistant that creates either:
 
 ## Walkthrough
 ### Step 1: Create shared inputs
+
+<StepMeta purpose="Create the bounded shared inputs that a team-facing assistant can consume without guessing at who or what it should process." action="Create `team/members.txt` and `requests.md` with the sample data so the assistant has explicit team names or intake items to operate on." expectedResult="The workspace now contains the source files for either the weekly brief mode or the intake-triage mode." whyItMatters="Team assistants become untrustworthy quickly when they infer inputs from broad repo scans instead of reading agreed shared files." nextStep="Define the team-safe contract in `CLAUDE.md` next so the assistant has one clear output path and bounded permissions." askTutor="Review these shared inputs and tell me whether they are explicit enough for a team assistant or whether I still need more source structure before automation is safe." />
 
 ```bash
 mkdir -p team
@@ -45,6 +48,8 @@ bob
 
 ### Step 2: Define team-safe contract in CLAUDE.md
 
+<StepMeta purpose="Turn the team workflow into a narrow operating contract with one output file and explicit safety rules." action="Write `CLAUDE.md` for either the weekly brief or intake assistant, preserving the read-only model except for one output artifact and stop-on-missing-input behavior." expectedResult="You have a team-helper contract that is understandable, mode-specific, and bounded to one generated file." whyItMatters="Shared automation fails fast when nobody can tell what it is allowed to read, what it is allowed to write, or who owns the result." nextStep="Run one assistant mode next so you can see whether the contract produces a useful artifact another teammate could actually consume." askTutor="Audit this team-helper contract and tell me whether it creates enough safety and ownership clarity for shared use." />
+
 ```md
 # Team Helper Contract
 
@@ -65,6 +70,8 @@ bob
 ```
 
 ### Step 3: Run one assistant mode
+
+<StepMeta purpose="Exercise one concrete team workflow so the contract produces a real artifact instead of remaining a design sketch." action="Use either the weekly-brief or intake prompt and generate the corresponding dated markdown output from the shared input files." expectedResult="The assistant creates a single team artifact aligned with the chosen mode." whyItMatters="Shared assistants only become useful when their output is readable and operationally relevant to someone besides the person who built them." nextStep="Validate the generated artifact next by opening it and checking that teammates could understand and use it without extra context." askTutor="Help me evaluate this team-helper run and tell me whether the generated artifact is specific enough for teammates to trust and use." />
 Weekly brief prompt:
 
 ```text
@@ -79,6 +86,8 @@ Read CLAUDE.md and run Option B. Categorize each request and output a triage tab
 
 ### Step 4: Validate team artifact
 
+<StepMeta purpose="Check the generated output from the perspective of another teammate who did not run the assistant." action="List the output file, open it, and verify that the structure, headings, and content make sense without hidden run context." expectedResult="You confirm the assistant produced a team-usable weekly brief or intake-triage file." whyItMatters="A team assistant is only valuable when its artifact stands on its own as a readable, actionable document." nextStep="Add owner and cadence metadata next so the automation has clear accountability and an operational rhythm." askTutor="Review this team artifact with me and tell me whether a teammate could use it immediately or whether the format still assumes too much background knowledge." />
+
 ```bash
 ls *-YYYY-*.md 2>/dev/null || ls team-weekly-brief-*.md intake-triage-*.md
 ```
@@ -90,6 +99,8 @@ Get-ChildItem team-weekly-brief-*.md, intake-triage-*.md -ErrorAction SilentlyCo
 Open the generated file and confirm it is understandable by teammates who did not run the assistant.
 
 ### Step 5: Add owner and cadence metadata
+
+<StepMeta purpose="Add the ownership and scheduling metadata that keeps shared automation from becoming a nobody-owns-this artifact." action="Insert owner, run date, next scheduled run, and escalation contact at the top of the generated file." expectedResult="The output file now names who owns it, when it ran, when it should run again, and who to contact if it fails." whyItMatters="Clear ownership is one of the simplest ways to keep team assistants sustainable once they move beyond personal experiments." nextStep="Run a short pilot in the next lesson so feedback from real users can improve the contract instead of leaving it fixed by assumption." askTutor="Check this metadata block and tell me whether it gives the team enough operational clarity to trust and adopt the assistant." />
 At the top of the output file, include:
 - Owner
 - Run date

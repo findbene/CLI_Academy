@@ -5,6 +5,7 @@ chapterNumber: "18.2"
 pathNumber: "18"
 tutorPreload: "Break this helper idea into a safe first version and a later version."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Build: repo helper or content workflow helper
@@ -16,6 +17,8 @@ Build one practical helper assistant that answers real operational questions in 
 
 ## Walkthrough
 ### Step 1: Choose your helper scope and define a contract
+
+<StepMeta purpose="Force the helper to solve exactly one bounded operational problem instead of becoming a vague general-purpose assistant." action="Pick either Mode A or Mode B, then write `CLAUDE.md` so it clearly defines the allowed questions, allowed paths, and shared safety rules." expectedResult="You have a helper contract that supports one narrow mode at a time and explicitly forbids edits, commits, and broad scans." whyItMatters="Most helper assistants become expensive or unsafe when they try to answer too many questions across too much of the repo at once." nextStep="Run the repo-helper path next if you chose Mode A so the contract can be tested against actual repo history and TODO markers." askTutor="Review this helper contract and tell me whether the chosen mode is genuinely narrow enough for a safe first version or if I am still blending too many responsibilities." />
 Create `CLAUDE.md` rules for one helper mode only.
 
 ```md
@@ -39,6 +42,8 @@ Create `CLAUDE.md` rules for one helper mode only.
 
 ### Step 2: Run the repo helper path
 
+<StepMeta purpose="Test a read-only repo helper that answers concrete maintenance questions from bounded command output." action="Run the last-week git log and TODO search commands, then use the provided Claude Code prompt to produce the paragraph summary and path list." expectedResult="The helper returns a concise summary of recent changes plus a TODO marker file list without editing the repo." whyItMatters="Useful assistants often start as structured read-only summarizers, which are easier to trust and validate than write-capable workflows." nextStep="Run the content-helper path next so you can compare a second bounded helper mode against a different input surface." askTutor="Help me review this repo-helper run and tell me whether the output stays grounded in the command evidence instead of becoming generic filler." />
+
 ```bash
 git log --since="7 days ago" --oneline
 grep -R --line-number "TODO" .
@@ -56,6 +61,8 @@ Read CLAUDE.md and run Mode A only. Return: (1) one-paragraph summary of last-we
 ```
 
 ### Step 3: Run the content helper path
+
+<StepMeta purpose="Practice a second helper pattern that stays tightly scoped to one known content folder and a fixed summary format." action="Create the draft files under `content/drafts/`, then prompt Claude Code to summarize each file into three bullets with the 20-file cap enforced." expectedResult="The helper produces bounded summaries from only the draft files inside the allowed folder." whyItMatters="Path limits and fixed output structure are what keep content helpers efficient instead of drifting into broad editorial or repo-wide behavior." nextStep="Record the helper output next so the run leaves behind an artifact you can review and compare later." askTutor="Check this content-helper setup and tell me whether the scope and output format are constrained enough to keep the run predictable and low-cost." />
 Create draft inputs first.
 
 ```bash
@@ -83,6 +90,8 @@ Read CLAUDE.md and run Mode B only. Summarize every file in content/drafts/ into
 ```
 
 ### Step 4: Record output artifact
+
+<StepMeta purpose="Capture the assistant's answer in a reviewable file instead of leaving it only in a transient chat response." action="Create `helper-output.md` and save the assistant response there as the durable artifact from the run." expectedResult="You have a persistent helper-output file that records the results of the bounded assistant execution." whyItMatters="Output artifacts make assistants easier to audit, compare, and improve than ephemeral chat-only runs." nextStep="Validate repo boundaries next so you confirm the helper stayed read-only apart from the one intended artifact." askTutor="Review this artifact step and tell me whether `helper-output.md` is enough evidence for the run or whether I should preserve additional command context alongside it." />
 Save the assistant response to `helper-output.md`.
 
 ```bash
@@ -96,6 +105,8 @@ New-Item helper-output.md -ItemType File -Force | Out-Null
 Paste your assistant output into that file.
 
 ### Step 5: Validate boundaries
+
+<StepMeta purpose="Confirm the helper remained inside its contract and did not produce unintended code or content changes." action="Run `git status --short` and verify the only expected artifact or changes match the helper workflow you just executed." expectedResult="You can prove the helper stayed within its read-only or tightly bounded write contract." whyItMatters="Boundary validation is what separates a helpful read assistant from a workflow that silently alters the repo under the guise of analysis." nextStep="Add evidence logs and stop rules in the next lesson so the helper's bounded behavior becomes enforceable, not just aspirational." askTutor="Help me interpret this boundary check and tell me whether the helper stayed inside contract or whether any stray file changes suggest the scope is still too loose." />
 
 ```bash
 git status --short

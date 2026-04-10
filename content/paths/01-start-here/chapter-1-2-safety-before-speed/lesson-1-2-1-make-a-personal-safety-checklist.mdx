@@ -5,6 +5,7 @@ chapterNumber: "1.2"
 pathNumber: "1"
 tutorPreload: "Turn my setup into a simple green/yellow/red risk checklist for a beginner."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Make a personal safety checklist
@@ -17,6 +18,8 @@ You will create a `safety-checklist.md` file that lists the rules you follow bef
 
 ### Step 1 — Navigate to your notes folder
 
+<StepMeta purpose="Start in the folder where your written safety rules belong." action="Change into ~/cli-academy/notes before creating the checklist file." expectedResult="Your prompt shows that you are inside the notes folder." whyItMatters="Keeping safety notes in one predictable place makes them easier to revisit before risky commands." nextStep="Once you are in notes, write the checklist file directly from the terminal." askTutor="I'm on Step 1 of Make a personal safety checklist. Help me get into the right notes folder and confirm I'm not about to create this file in the wrong place." />
+
 **macOS / Linux:**
 ```bash
 cd ~/cli-academy/notes
@@ -28,6 +31,8 @@ Set-Location ~/cli-academy/notes
 ```
 
 ### Step 2 — Create safety-checklist.md
+
+<StepMeta purpose="Write down explicit rules you can use before approving AI-suggested commands." action="Create safety-checklist.md from the lesson template in your terminal." expectedResult="A markdown file is created with before-you-say-yes checks, stop rules, and recovery steps." whyItMatters="A written checklist turns vague caution into a repeatable safety routine you can apply under pressure." nextStep="After writing the file, read it back and make sure the rules sound like ones you will actually follow." askTutor="I'm on Step 2 of Make a personal safety checklist. Explain this file-creation command and tell me how to verify the checklist content actually landed in the file." />
 
 Write the checklist directly from the terminal.
 
@@ -50,7 +55,7 @@ cat <<'EOF' > safety-checklist.md
 
 ## Recovery steps
 - Undo unsaved file changes: Ctrl+Z in my editor
-- Undo uncommitted git changes: git checkout -- filename
+- Undo an uncommitted file change: git restore filename
 - Get help: open the CLI Academy Tutor and describe what happened
 EOF
 ```
@@ -74,12 +79,14 @@ EOF
 
 ## Recovery steps
 - Undo unsaved file changes: Ctrl+Z in my editor
-- Undo uncommitted git changes: git checkout -- filename
+- Undo an uncommitted file change: git restore filename
 - Get help: open the CLI Academy Tutor and describe what happened
 "@ | Set-Content safety-checklist.md
 ```
 
 ### Step 3 — Read the checklist back
+
+<StepMeta purpose="Slow down long enough to make the safety rules feel real instead of theoretical." action="Print safety-checklist.md to the terminal and read through every line." expectedResult="You can see the full checklist in the terminal and recognize each rule." whyItMatters="Reading the checklist back is the moment where you turn the file into a habit rather than a forgotten note." nextStep="With the checklist visible, practice one real safety behavior with git status." askTutor="I'm on Step 3 of Make a personal safety checklist. Help me review my checklist output and point out any rule that sounds unclear or too weak to be useful." />
 
 **macOS / Linux:**
 ```bash
@@ -94,6 +101,8 @@ Get-Content safety-checklist.md
 Read each line aloud (or silently) to yourself. These are your new rules.
 
 ### Step 4 — Practice a real safety habit: git status
+
+<StepMeta purpose="Practice the safest Git command before you ever trust yourself or an AI with a commit." action="Initialize Git in cli-academy and run git status." expectedResult="Git reports the repo state and shows untracked files like notes/." whyItMatters="git status is the fastest way to see what changed before you save or publish anything." nextStep="Once git status works, personalize the checklist with one extra rule that matches your real life." askTutor="I'm on Step 4 of Make a personal safety checklist. Help me understand the git status output I'm seeing and explain what a beginner should pay attention to before moving on." />
 
 In later lessons you will use Git to track your work. The single most important safety command in Git is `git status` — it shows you exactly what has changed before you commit anything.
 
@@ -128,7 +137,9 @@ This tells you Git is watching your workspace and nothing has been committed yet
 
 ### Step 5 — Add one personal rule
 
-Open `safety-checklist.md` in any text editor (VS Code, Notepad, TextEdit) and add one personal rule at the bottom of the "Before I say Yes" section. It can be anything, for example:
+<StepMeta purpose="Make the checklist personal enough that you will keep using it after this lesson ends." action="Open safety-checklist.md in an editor and add one real rule you want to follow." expectedResult="The checklist now includes at least one rule that reflects your own habits, limits, or risk tolerance." whyItMatters="Personal rules are easier to remember and more likely to protect you when you are tired, rushed, or unsure." nextStep="After saving the extra rule, re-read the checklist so the final version is the one you leave behind in notes." askTutor="I'm on Step 5 of Make a personal safety checklist. Help me turn my own concern into one strong personal safety rule that fits this checklist." />
+
+Open `safety-checklist.md` in any text editor (VS Code, Notepad, TextEdit) and add one personal rule at the bottom of the "Before I say \"Yes\"" section. It can be anything, for example:
 
 ```
 - [ ] I will not run commands after midnight when I am too tired to read them

@@ -5,6 +5,7 @@ chapterNumber: "2.2"
 pathNumber: "2"
 tutorPreload: "Generate the exact sequence of safe commands to create this folder tree on my machine."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Create a project skeleton from scratch
@@ -16,6 +17,8 @@ Build a multi-level project folder from the terminal using `mkdir` and verify th
 ## Walkthrough
 
 ### Step 1 — Start from a known location
+
+<StepMeta purpose="Begin the project setup from a location you can reason about and verify." action="Move to your home directory or your cli-academy projects folder and print the current path." expectedResult="The terminal shows a known safe starting directory before you create anything." whyItMatters="Creating folders from the wrong location is how project trees end up scattered or hard to find later." nextStep="Once your starting point is confirmed, create the nested project folders in one command." askTutor="I'm on Step 1 of Create a project skeleton from scratch. Help me verify that my current path is a safe place to create this project tree." />
 
 Make sure you are in your home directory (or in the `cli-academy/projects/` folder if you created one in Path 01).
 
@@ -34,6 +37,8 @@ Get-Location
 ```
 
 ### Step 2 — Create nested folders in one command
+
+<StepMeta purpose="Create the whole project structure efficiently instead of building it one folder at a time." action="Run the one-shot directory command that creates tiny-agent-project plus src, docs, and tests." expectedResult="All required folders exist, including the parent project folder and the three subdirectories." whyItMatters="Nested directory creation is a core terminal skill because real projects rarely start as a single flat folder." nextStep="After the folders exist, move into the project and add starter files so the tree feels real." askTutor="I'm on Step 2 of Create a project skeleton from scratch. Explain exactly what this nested folder command will create and tell me how to verify nothing ended up in the wrong place." />
 
 You need `tiny-agent-project/` with three subdirectories: `src`, `docs`, and `tests`. Instead of creating each one separately, use a single command.
 
@@ -54,6 +59,8 @@ New-Item -ItemType Directory -Path tiny-agent-project\src, tiny-agent-project\do
 `-Force` is the PowerShell equivalent of `-p` — it creates the parent and silently skips existing folders.
 
 ### Step 3 — Add starter files
+
+<StepMeta purpose="Turn the empty folder tree into something that looks like a real project." action="Move into tiny-agent-project and create README.md, docs/plan.md, src/main.py, and tests/test_main.py with starter text." expectedResult="Each target file exists in the correct subdirectory with simple starter content." whyItMatters="Creating files in place is the moment where folder structure becomes a usable project rather than an abstract tree." nextStep="Once the starter files exist, inspect the full project tree to confirm every file landed where it belongs." askTutor="I'm on Step 3 of Create a project skeleton from scratch. Help me verify that each file-writing command is targeting the correct folder before I run it." />
 
 Move into the project and create a few files that make it feel like a real project.
 
@@ -80,6 +87,8 @@ Set-Content tests\test_main.py "# Tests go here"
 `Set-Content` writes text to a file and creates the file if it does not exist. On macOS/Linux, `echo "text" > file` does the same thing.
 
 ### Step 4 — Verify the full tree
+
+<StepMeta purpose="Confirm the complete structure before you build on it in later lessons." action="Run tree or the recursive file listing and compare the output to the expected project layout." expectedResult="You can see README.md plus the docs, src, and tests folders with the correct files inside each one." whyItMatters="Visual verification catches misplaced files immediately and reinforces how nested project layouts are supposed to look." nextStep="After the tree matches the expectation, spot-check one file's contents to prove the text landed correctly too." askTutor="I'm on Step 4 of Create a project skeleton from scratch. Help me compare my recursive listing to the expected tree and identify any file that ended up in the wrong place." />
 
 Now see everything you built in one view.
 
@@ -123,6 +132,8 @@ tests\test_main.py
 ```
 
 ### Step 5 — Confirm file contents
+
+<StepMeta purpose="Verify not just the file names but the text inside at least one important project file." action="Print src/main.py to the terminal and confirm it contains the expected hello world line." expectedResult="The file content matches the starter text you intended to write." whyItMatters="A correct tree with empty or wrong file contents is still a broken project, so content checks matter too." nextStep="After this check, you should have a trustworthy starter project tree ready for the next file-operation lesson." askTutor="I'm on Step 5 of Create a project skeleton from scratch. Help me check whether the contents of src/main.py match the project setup this lesson was trying to create." />
 
 Spot-check one of the files to make sure the content was written correctly.
 

@@ -31,7 +31,7 @@ export function LearningModeSelector({ currentMode, onChange }: LearningModeSele
               Guided
               {currentMode === "guided" && <CheckCircle2 className="size-4 text-[var(--color-accent-primary)]" />}
             </div>
-            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">Oversight and explicit instructions at every step.</p>
+            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">Shows the full step scaffold: purpose, action, expected result, why it matters, and next-step setup.</p>
           </div>
         </button>
 
@@ -52,7 +52,7 @@ export function LearningModeSelector({ currentMode, onChange }: LearningModeSele
               Hint-based
               {currentMode === "hint" && <CheckCircle2 className="size-4 text-[var(--color-accent-primary)]" />}
             </div>
-            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">Course correction when stuck, but you try first.</p>
+            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">Keeps the goal and expected result visible, but leaves more of the problem-solving to you.</p>
           </div>
         </button>
 
@@ -73,7 +73,7 @@ export function LearningModeSelector({ currentMode, onChange }: LearningModeSele
               Independent
               {currentMode === "independent" && <CheckCircle2 className="size-4 text-[var(--color-accent-primary)]" />}
             </div>
-            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">Verification only. You are completely on your own.</p>
+            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">Reduces scaffolding to outcome-focused checkpoints so you can run the lesson with lighter guidance.</p>
           </div>
         </button>
       </div>

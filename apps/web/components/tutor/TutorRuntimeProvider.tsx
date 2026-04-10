@@ -9,8 +9,17 @@ interface TutorRuntimeState {
   tutorPreload?: string;
 }
 
+interface TutorHelpRequest {
+  autoSend: boolean;
+  prompt: string;
+  title?: string;
+}
+
 interface TutorRuntimeContextValue extends TutorRuntimeState {
   clearLessonContext: () => void;
+  clearPendingHelpRequest: () => void;
+  pendingHelpRequest: TutorHelpRequest | null;
+  requestHelp: (request: TutorHelpRequest) => void;
   setLessonContext: (next: TutorRuntimeState) => void;
 }
 
@@ -18,8 +27,15 @@ const TutorRuntimeContext = createContext<TutorRuntimeContextValue | null>(null)
 
 export function TutorRuntimeProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<TutorRuntimeState>({});
+  const [pendingHelpRequest, setPendingHelpRequest] = useState<TutorHelpRequest | null>(null);
   const clearLessonContext = useCallback(() => {
     setState({});
+  }, []);
+  const clearPendingHelpRequest = useCallback(() => {
+    setPendingHelpRequest(null);
+  }, []);
+  const requestHelp = useCallback((request: TutorHelpRequest) => {
+    setPendingHelpRequest(request);
   }, []);
   const setLessonContext = useCallback((next: TutorRuntimeState) => {
     setState(next);
@@ -30,6 +46,9 @@ export function TutorRuntimeProvider({ children }: { children: React.ReactNode }
       value={{
         ...state,
         clearLessonContext,
+        clearPendingHelpRequest,
+        pendingHelpRequest,
+        requestHelp,
         setLessonContext,
       }}
     >
@@ -46,6 +65,10 @@ export function useTutorRuntime() {
   }
 
   return context;
+}
+
+export function useOptionalTutorRuntime() {
+  return useContext(TutorRuntimeContext);
 }
 
 export function TutorContextBridge({

@@ -92,7 +92,7 @@ export function LessonPlayer({
 
   useEffect(() => {
     function collectSections() {
-      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] > h2"));
+      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-section-heading]"));
       const titles = headings.map((heading) => heading.textContent?.trim()).filter((title): title is string => Boolean(title));
       setSectionTitles(titles);
       setActiveSectionIndex(0);
@@ -112,7 +112,7 @@ export function LessonPlayer({
     }
 
     function updateActiveSection() {
-      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] > h2"));
+      const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-section-heading]"));
       if (!headings.length) {
         return;
       }
@@ -297,7 +297,7 @@ export function LessonPlayer({
               <ChevronLeft className="size-4" />
               {pathTitle}
             </Link>
-            <h1 className="text-4xl font-semibold tracking-tight">{lessonTitle}</h1>
+            <h1 className="text-[clamp(2rem,3vw,3rem)] font-bold tracking-tight">{lessonTitle}</h1>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <span className="badge" data-tone={freshnessTone(freshnessState)}>
                 {freshnessLabel(freshnessState)}
@@ -330,8 +330,13 @@ export function LessonPlayer({
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="grid gap-6 h-fit">
               <LearningModeSelector currentMode={learningMode} onChange={setLearningMode} />
-              {modeBalance && <div className="text-sm font-mono text-[var(--color-fg-muted)]">Suggested: {modeBalance}</div>}
-              <div className="panel p-6">{children}</div>
+              {modeBalance ? (
+                <div className="panel p-4 text-sm leading-6 text-[var(--color-fg-muted)]">
+                  <span className="font-semibold text-[var(--color-fg-default)]">Suggested learning balance:</span>{" "}
+                  <span className="font-mono">{modeBalance}</span>
+                </div>
+              ) : null}
+              <div className="lesson-stage" data-learning-mode={learningMode}>{children}</div>
             </div>
             <aside className="grid h-fit gap-4">
               {sectionTitles.length ? (

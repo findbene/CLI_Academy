@@ -5,6 +5,7 @@ chapterNumber: "12.2"
 pathNumber: "12"
 tutorPreload: "Walk me through the anatomy of a Claude Code SKILL.md file."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Understand the skill file format
@@ -17,6 +18,8 @@ By the end of this lesson you will understand the exact structure of a Claude Co
 
 ### Step 1 — Understand what a skill is
 
+<StepMeta purpose="Build the right mental model before you start authoring files on disk." action="Read the definition of a skill and identify the three parts every useful skill needs: trigger description, instructions, and examples." expectedResult="You can explain that skills are on-demand instruction files and name the sections that make them work." whyItMatters="If you misunderstand what makes a skill trigger, you can write a perfectly detailed SKILL.md that Claude never loads." nextStep="Locate the actual skills directory on your machine so you can connect the concept to the file path." askTutor="Explain the difference between a skill description and the instructions section using this lesson's examples." />
+
 A Claude Code skill is a Markdown file named `SKILL.md` that lives in a named folder under `~/.claude/skills/`. When Claude Code starts a session, it reads the skill descriptions and decides which skills are relevant to your current request. Think of skills as specialized instruction manuals that Claude loads on demand.
 
 Each skill has three parts:
@@ -26,6 +29,8 @@ Each skill has three parts:
 3. **Examples** (optional) — sample inputs and outputs that show Claude what good results look like.
 
 ### Step 2 — Find your skills directory
+
+<StepMeta purpose="Verify the exact directory Claude scans for user-level skills instead of relying on memory or guesses." action="List ~/.claude/skills and create the directory if it does not exist yet." expectedResult="You either see your existing skill folders or create the base skills directory successfully." whyItMatters="Skills only work when they live at the correct path, so confirming the directory prevents path mistakes before you create a test skill." nextStep="Study the sample SKILL.md structure so you know what content belongs inside a skill folder." askTutor="Help me verify that my skills path is correct on this operating system and explain how to tell if the directory is missing." />
 
 **macOS / Linux**
 
@@ -54,6 +59,8 @@ New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills"
 ```
 
 ### Step 3 — Examine the anatomy of a SKILL.md file
+
+<StepMeta purpose="Map the abstract skill sections to real file syntax you can recognize or write later." action="Read through the sample SKILL.md and note how the description says when to trigger, while instructions and constraints say how to behave." expectedResult="You can point to each major section in the sample and describe what job it performs." whyItMatters="A good skill depends on both discovery and execution, so you need to separate trigger wording from operational guidance." nextStep="Create a minimal skill folder and file to prove Claude can discover a simple skill at the expected path." askTutor="Review the sample SKILL.md structure with me and show which lines are about triggering versus which lines are about execution rules." />
 
 Here is the standard structure of a skill file. Read through it — do not create this file yet; just understand the layout.
 
@@ -97,6 +104,8 @@ For example, a commit-message skill would live at:
 
 ### Step 4 — Create a skeleton skill to confirm the path works
 
+<StepMeta purpose="Run a low-risk discovery test before investing time in a more complex skill." action="Create the hello-test skill folder and save a minimal SKILL.md whose description matches the phrase 'hello test.'" expectedResult="A small but valid skill file exists at ~/.claude/skills/hello-test/SKILL.md." whyItMatters="A minimal trigger test separates path and loading problems from authoring problems, which makes later debugging much easier." nextStep="Start a fresh Claude Code session and use the trigger phrase to see whether the skill loads." askTutor="Check my hello-test SKILL.md and tell me whether the description is specific enough to trigger on the phrase I plan to type." />
+
 Create an empty skill folder with a minimal `SKILL.md` just to prove Claude Code can find it.
 
 **macOS / Linux**
@@ -134,6 +143,8 @@ Respond with: "Your skills directory is working. This is the hello-test skill."
 ```
 
 ### Step 5 — Verify Claude Code loads the skill
+
+<StepMeta purpose="Confirm end to end that Claude is discovering the skill from disk and applying its instructions in a new session." action="Restart Claude Code, type the trigger phrase, and compare Claude's reply to the text specified in hello-test/SKILL.md." expectedResult="Claude answers with the hello-test response, proving that the skill path, filename, and description all worked together." whyItMatters="The discovery loop is the core of skills: if this test fails, richer skills will fail too until you fix the trigger or file placement." nextStep="Delete the test skill if you do not need it and move on to creating a real skill for a practical workflow." askTutor="Help me diagnose why the hello-test skill did or did not trigger, using the file path, filename, and description as the checklist." />
 
 Start a new Claude Code session in any project:
 

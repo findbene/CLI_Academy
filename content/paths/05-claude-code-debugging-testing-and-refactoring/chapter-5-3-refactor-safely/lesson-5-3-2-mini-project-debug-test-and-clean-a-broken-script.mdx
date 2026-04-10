@@ -5,6 +5,7 @@ chapterNumber: "5.3"
 pathNumber: "5"
 tutorPreload: "Walk me through the full loop: find the bug, write a test, fix it, refactor, and commit."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Mini project: debug, test, and clean a broken script
@@ -16,6 +17,8 @@ Bring together everything from Path 05 in a single end-to-end exercise. You star
 ## Walkthrough
 
 ### Step 1 — Set up the project
+
+<StepMeta purpose="Prepare a clean sandbox where you can run the full debug-test-refactor workflow end to end." action="Create the mini-project directory, initialize version control, and set up the test runner for your stack." expectedResult="You have an isolated project ready for coding, testing, and committing without affecting any other practice work." whyItMatters="An explicit sandbox keeps the whole workflow reproducible and makes the final commit a meaningful record of the exercise." nextStep="Create the intentionally broken invoice calculator that you will debug and clean up." askTutor="I'm on Step 1 of Mini project: debug, test, and clean a broken script. Help me confirm this sandbox is set up correctly before I start adding the broken code." />
 
 **macOS / Linux**
 
@@ -48,6 +51,8 @@ Set the test script in `package.json`:
 For Python users, skip the npm steps and use `pip install pytest` instead. The rest of the workflow is identical.
 
 ### Step 2 — Create the broken, messy script
+
+<StepMeta purpose="Start from code that is both buggy and poorly structured so the full workflow has something real to improve." action="Write the invoice calculator exactly as shown, including the off-by-one loop bug and the incorrect total calculation." expectedResult="You have a small source file on disk with two distinct bugs and low-quality structure." whyItMatters="This exercise is realistic because production cleanup often requires both fixing behavior and improving readability, not just one or the other." nextStep="Add a tiny runner and execute the script so you can observe the first crash." askTutor="I'm on Step 2 of Mini project: debug, test, and clean a broken script. Help me understand the two intentional bugs and why this is a good candidate for the full workflow." />
 
 This script is a tiny invoice calculator. It has **two bugs** and is written in a messy, hard-to-read style on purpose.
 
@@ -95,6 +100,8 @@ def calc_invoice(items, tax_rate):
 
 ### Step 3 — Run the script and see the crash
 
+<StepMeta purpose="Generate the first real failure so you can start the debugging loop with concrete evidence." action="Create the runner, execute the script, and capture the crash that appears when the loop steps past the end of the items list." expectedResult="The script throws an error tied to reading an undefined item, giving you the first bug to fix." whyItMatters="Running the broken code first keeps the workflow honest: you are fixing observed failures, not preemptively editing based on guesses." nextStep="Paste the crash into Claude and apply the fix for the off-by-one loop bug." askTutor="I'm on Step 3 of Mini project: debug, test, and clean a broken script. Help me interpret this crash and confirm what the first bug appears to be before I ask Claude to fix it." />
+
 Create a small runner to call the function:
 
 **JavaScript — `run.js`**
@@ -133,6 +140,8 @@ The `while (i <= items.length)` goes one index past the end of the array.
 
 ### Step 4 — Paste the error into Claude Code and fix Bug 1
 
+<StepMeta purpose="Use the runtime error to repair the first bug with a focused, evidence-based Claude prompt." action="Paste the crash into Claude, let it identify the off-by-one loop condition, and accept the one-line fix." expectedResult="The script no longer crashes when run, but you may still discover logical errors in the output afterward." whyItMatters="Fixing the first blocking bug often exposes the next layer of issues, which is exactly what happens in real debugging work." nextStep="Rerun the script and inspect the totals to discover the second bug that survives after the crash is fixed." askTutor="I'm on Step 4 of Mini project: debug, test, and clean a broken script. Help me review Claude's first fix and confirm it addresses the off-by-one crash rather than hiding it." />
+
 ```
 I ran node run.js and got:
 TypeError: Cannot read properties of undefined (reading 'price')
@@ -157,6 +166,8 @@ No crash, but the total is wrong. Subtotal 45 + tax 3.60 should be 48.60, not 45
 
 ### Step 5 — Ask Claude to find Bug 2
 
+<StepMeta purpose="Diagnose the remaining logic bug after the obvious crash is gone." action="Compare the new subtotal, tax, and total values, then ask Claude why the total math is still wrong." expectedResult="Claude identifies that the code adds the tax rate instead of the computed tax amount." whyItMatters="Many real fixes are iterative: solving the first failure clears the way for subtler correctness bugs that tests should eventually lock down." nextStep="Once both bugs are fixed manually, ask Claude to write tests that lock in the correct invoice behavior." askTutor="I'm on Step 5 of Mini project: debug, test, and clean a broken script. Help me use these subtotal and tax numbers to prove exactly what the second bug is." />
+
 ```
 The script runs now but the total is wrong. Subtotal is 45 and tax is 3.6, so total should be 48.6 but it says 45.08. What is wrong?
 ```
@@ -172,6 +183,8 @@ Run again:
 Correct.
 
 ### Step 6 — Ask Claude to write tests
+
+<StepMeta purpose="Create an automated safety net now that the visible bugs are fixed." action="Ask Claude to generate tests for the main invoice scenarios, including multiple items, a single item, and an empty list." expectedResult="You get a test file that captures the intended invoice behavior and edge cases in executable form." whyItMatters="Tests keep the fixed behavior from regressing and give you confidence to refactor the messy implementation next." nextStep="Run the test suite and confirm the repaired logic is now protected by passing tests." askTutor="I'm on Step 6 of Mini project: debug, test, and clean a broken script. Help me judge whether these generated invoice tests cover the important behaviors before I rely on them." />
 
 ```
 Write a Jest test file for calcInvoice in invoice.js. Test: a normal invoice with multiple items, a single-item invoice, and an empty items array (should return zeros).
@@ -227,6 +240,8 @@ All 3 tests pass. Good — these tests lock in the correct behavior before we re
 
 ### Step 7 — Ask Claude to refactor
 
+<StepMeta purpose="Improve the structure of the now-correct code without altering the invoice results that the tests protect." action="Prompt Claude to replace the manual loop and vague variable names with descriptive names and clearer array-based logic." expectedResult="Claude produces a shorter, clearer implementation that still computes the same subtotal, tax, and total." whyItMatters="This is the full professional loop: debug to correctness first, then refactor to readability once tests are guarding behavior." nextStep="Run the test suite again to prove the refactor preserved the fixed behavior." askTutor="I'm on Step 7 of Mini project: debug, test, and clean a broken script. Help me review this refactor and confirm it improves clarity without changing any invoice math." />
+
 ```
 The calcInvoice function in invoice.js works but uses single-letter variable names and a manual while loop. Refactor it to use descriptive names and modern array methods. All tests must still pass.
 ```
@@ -251,6 +266,8 @@ Accept the refactoring.
 
 ### Step 8 — Run tests after refactoring
 
+<StepMeta purpose="Verify that the refactor kept the behavior exactly aligned with the tested invoice scenarios." action="Run the same suite after the cleanup and compare the result to the green baseline from before the refactor." expectedResult="All invoice tests remain green after the implementation becomes clearer." whyItMatters="The tests are what make the refactor safe; without them you would be guessing whether the cleaner code still works." nextStep="Commit the final cleaned project as one completed mini-project milestone." askTutor="I'm on Step 8 of Mini project: debug, test, and clean a broken script. Help me interpret this green run and confirm the refactor did not accidentally change any invoice outputs." />
+
 **macOS / Linux**
 
 ```bash
@@ -266,6 +283,8 @@ npm test
 All 3 tests pass. The refactored code behaves identically to the fixed version.
 
 ### Step 9 — Commit the final result
+
+<StepMeta purpose="Finish the full workflow by recording the repaired and refactored project in version control." action="Stage the source, tests, and config changes together and commit them with a message that captures the completed workflow." expectedResult="Git stores one clean commit containing the fixed invoice calculator, its test suite, and the clearer refactored implementation." whyItMatters="A final clean commit proves you completed the whole professional loop: reproduce, debug, test, refactor, verify, and record the result." nextStep="After this mini-project, Path 05 is complete and you can reuse the same debug-test-refactor sequence on real work." askTutor="I'm on Step 9 of Mini project: debug, test, and clean a broken script. Help me make sure I'm committing the full finished state and not missing any files from the workflow." />
 
 ```bash
 git add -A

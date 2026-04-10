@@ -5,6 +5,7 @@ chapterNumber: "5.2"
 pathNumber: "5"
 tutorPreload: "My test is failing. Read the failure output and help me fix the code."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Run tests and fix failures with Claude
@@ -16,6 +17,8 @@ Introduce a bug into the function you tested in the previous lesson, run the tes
 ## Walkthrough
 
 ### Step 1 — Start from the working state
+
+<StepMeta purpose="Establish a known-good baseline before you intentionally break the code and trigger a test failure." action="Return to the project from the previous lesson and rerun the tests to confirm everything is green first." expectedResult="The current suite passes, proving that any later failures come from the deliberate bug you are about to introduce." whyItMatters="A clean baseline makes debugging much easier because you know exactly when and why the failure appeared." nextStep="Introduce one intentional bug into the source code while leaving the tests untouched." askTutor="I'm on Step 1 of Run tests and fix failures with Claude. Help me confirm that this project is in a true green state before I start the red-green cycle." />
 
 Make sure you still have the project from lesson 5.2.1 with `math-utils.js` (or `math_utils.py`) and its passing test file.
 
@@ -47,6 +50,8 @@ All tests should pass.
 
 ### Step 2 — Introduce a deliberate bug
 
+<StepMeta purpose="Create a controlled failure so you can see how tests surface the exact behavior that broke." action="Edit the source file to replace the correct add logic with an obviously wrong subtraction bug, without touching the tests." expectedResult="The source code is now broken in one small, known way while the tests still describe the intended correct behavior." whyItMatters="Intentional bugs are a safe way to learn how the test runner reports failures and how Claude should respond to them." nextStep="Run the test suite again and inspect which assertions fail and which ones still pass." askTutor="I'm on Step 2 of Run tests and fix failures with Claude. Help me make sure I'm only changing the source file and not accidentally invalidating the test lesson." />
+
 Open the source file and break the `add` function on purpose. Change the `+` to `-`:
 
 **JavaScript — `math-utils.js`**
@@ -67,6 +72,8 @@ def add(a, b):
 Save the file. Do not change the test file.
 
 ### Step 3 — Run the tests and watch them fail
+
+<StepMeta purpose="See the red phase of the test cycle with a concrete failure message tied to the broken behavior." action="Run the test suite and read the failed assertions, expected values, and received values carefully." expectedResult="The output shows specific add-related tests failing while unrelated tests still pass." whyItMatters="Test failure output is high-quality debugging evidence because it names the expectation, the actual value, and often the exact assertion line." nextStep="Paste the failure output into Claude and explicitly tell it that the tests are correct and the source code is wrong." askTutor="I'm on Step 3 of Run tests and fix failures with Claude. Help me read this failure output and identify what it already tells me about the likely broken function." />
 
 **macOS / Linux (JavaScript)**
 
@@ -124,6 +131,8 @@ Notice `multiply` tests still pass — only `add` tests fail. This is exactly ho
 
 ### Step 4 — Paste the failure into Claude Code
 
+<StepMeta purpose="Use the failing test output as evidence to ask Claude for a source-code fix instead of a speculative rewrite." action="Paste the test failure into Claude and state clearly that the tests are correct and only the source code should change." expectedResult="Claude identifies the broken operator in the source and proposes a small fix without touching the test file." whyItMatters="The wording of the prompt matters here because otherwise Claude may 'fix' the problem by editing the expectations instead of the implementation." nextStep="Accept the fix and rerun the tests to confirm the suite returns to green." askTutor="I'm on Step 4 of Run tests and fix failures with Claude. Help me phrase this prompt so Claude fixes the implementation and leaves the tests alone." />
+
 Copy the test failure output and paste it into Claude Code:
 
 ```
@@ -144,6 +153,8 @@ Claude reads the test, reads `math-utils.js`, and immediately spots:
 Claude proposes the one-character fix. Accept it.
 
 ### Step 5 — Run the tests again to confirm green
+
+<StepMeta purpose="Close the red-green loop by proving the source-code fix restored the intended behavior." action="Rerun the same test suite immediately after accepting the patch and verify that every test now passes." expectedResult="The terminal shows a fully green suite, confirming that the failure was resolved without regressions." whyItMatters="A fix is only trustworthy once the same automated checks that caught the bug now pass against the updated code." nextStep="Reflect on why this red-green cycle is more reliable than manual checking alone." askTutor="I'm on Step 5 of Run tests and fix failures with Claude. Help me confirm that this green test run proves the fix and not just a change to the test expectations." />
 
 **macOS / Linux**
 
@@ -176,6 +187,8 @@ All green. The red-green cycle is complete:
 2. **Green** — Fix the code, run the tests, everything passes.
 
 ### Step 6 — Reflect on what just happened
+
+<StepMeta purpose="Turn the exercise into a reusable development habit instead of a one-off fix." action="Ask Claude to explain the red-green cycle and compare it to manual spot-checking of output." expectedResult="You can describe how failing tests, targeted fixes, and reruns work together as a fast debugging loop." whyItMatters="The lesson is not just 'Claude fixed a bug' but 'tests gave precise evidence and verified the repair in seconds.'" nextStep="After red-green debugging, learn how coverage reports reveal untested code paths and guide the next test you should add." askTutor="I'm on Step 6 of Run tests and fix failures with Claude. Help me connect this exercise to the real red-green workflow developers use every day." />
 
 Ask Claude Code:
 

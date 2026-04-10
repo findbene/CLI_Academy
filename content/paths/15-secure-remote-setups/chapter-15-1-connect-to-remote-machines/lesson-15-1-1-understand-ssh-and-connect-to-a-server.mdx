@@ -5,6 +5,7 @@ chapterNumber: "15.1"
 pathNumber: "15"
 tutorPreload: "Explain what happens during an SSH connection and how to verify the host fingerprint."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Understand SSH and connect to a server
@@ -18,6 +19,8 @@ By the end of this lesson you will be able to open a secure shell (SSH) connecti
 SSH (Secure Shell) is the standard way to control a remote computer from your terminal. Every cloud server, every VPS, and most CI/CD runners are managed through SSH. Understanding the connection flow — especially the host-key prompt — is critical before you automate anything.
 
 ### Step 1 — Verify that SSH is available locally
+
+<StepMeta purpose="Confirm the local machine already has the SSH client before you troubleshoot network or credential issues." action="Run `ssh -V` on your machine and verify that OpenSSH reports a version instead of a missing-command error." expectedResult="You know whether your machine is ready to initiate SSH connections or whether the client still needs to be installed or enabled." whyItMatters="The fastest connection troubleshooting step is making sure the SSH client exists locally before you blame the server." nextStep="Use that client to make a first connection attempt to a real remote server and inspect the host-key prompt carefully." askTutor="Help me interpret the `ssh -V` output and tell me whether my local SSH client is modern enough for the rest of this lesson." />
 
 **macOS / Linux:**
 
@@ -37,6 +40,8 @@ ssh -V
 Both platforms ship OpenSSH today. If the command fails on Windows, the optional feature needs to be enabled once.
 
 ### Step 2 — Connect to a remote server
+
+<StepMeta purpose="Practice the first real SSH connection and learn how to handle host identity verification safely." action="Run `ssh user@host`, inspect the fingerprint prompt, and compare it against the provider's published fingerprint before accepting it." expectedResult="You either connect successfully after verifying the fingerprint or stop the connection because the host identity cannot be trusted yet." whyItMatters="The fingerprint prompt is the main protection against man-in-the-middle attacks, so understanding it is part of secure remote access rather than a nuisance to click through." nextStep="Once connected, run a few simple commands to prove you are actually on the remote machine and not your local shell." askTutor="Walk me through the host-key prompt and tell me what evidence I should use before typing `yes` on a first SSH connection." />
 
 Replace `your-user` and `your-server.example.com` with real credentials from your VPS provider or lab environment.
 
@@ -60,6 +65,8 @@ After accepting, SSH saves the fingerprint in `~/.ssh/known_hosts` so it will no
 
 ### Step 3 — Run a command on the remote machine
 
+<StepMeta purpose="Verify that the SSH session really landed on the remote host and that you can execute commands there normally." action="Run `hostname`, `whoami`, and `pwd` after logging in, then compare the results to what you expect for that server." expectedResult="You can prove the session is remote, identify the logged-in user, and see the remote working directory." whyItMatters="Beginners often lose track of which terminal is local versus remote, and these three commands anchor you before you start making changes." nextStep="Exit the session cleanly so you understand the normal disconnect path before learning the one-off command pattern." askTutor="Help me interpret `hostname`, `whoami`, and `pwd` so I can tell with confidence whether I am on the correct remote machine." />
+
 Once connected your prompt changes (often to `user@hostname:~$`). Run a quick check:
 
 ```bash
@@ -72,6 +79,8 @@ These confirm you are actually on the remote machine, not your local terminal.
 
 ### Step 4 — Exit the session cleanly
 
+<StepMeta purpose="Learn the normal way to end a remote session and the escape sequence for a stuck connection." action="Type `exit` to return to your local shell, and note the `~.` escape sequence for a frozen SSH session." expectedResult="You can disconnect intentionally and know the fallback escape path if the network drops or the session hangs." whyItMatters="Safe remote work includes knowing how to leave a session cleanly so you do not confuse a dead connection with a still-running shell." nextStep="Try a one-off remote command next so you can see how SSH works even without opening an interactive shell." askTutor="Explain when I should use `exit` versus the `~.` escape sequence and how to tell whether the SSH session is actually stuck." />
+
 ```bash
 exit
 ```
@@ -79,6 +88,8 @@ exit
 Your prompt returns to your local machine. If the session is frozen (network dropped), press `Enter` then type `~.` (tilde-dot) — this is the SSH escape sequence that kills a stuck connection.
 
 ### Step 5 — Run a one-off command without opening a shell
+
+<StepMeta purpose="Show how SSH can be used for quick checks and automation, not just full interactive shells." action="Run `ssh user@host \"uptime\"` or the equivalent command against your server and observe the output return directly to your local terminal." expectedResult="You can execute a single remote command and immediately return to the local prompt without starting a full shell session." whyItMatters="One-off SSH commands are a common building block for scripts, health checks, and remote automation tasks you will use later." nextStep="Carry this SSH foundation into key-based authentication so the connection flow becomes safer and less dependent on passwords." askTutor="Help me decide when a one-off SSH command is better than opening a full shell session for a remote task." />
 
 You can execute a single command remotely and return to your local terminal immediately:
 

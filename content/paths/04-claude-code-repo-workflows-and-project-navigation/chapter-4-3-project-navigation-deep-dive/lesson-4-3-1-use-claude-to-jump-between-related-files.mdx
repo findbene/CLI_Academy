@@ -5,6 +5,7 @@ chapterNumber: "4.3"
 pathNumber: "4"
 tutorPreload: "Help me find every file connected to this module and understand the dependency chain."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Use Claude to jump between related files
@@ -16,6 +17,8 @@ Use Claude Code to navigate between related files in a project — finding every
 ## Walkthrough
 
 ### Step 1 — Find all importers of a module
+
+<StepMeta purpose="Use Claude to answer the common repo-navigation question of who depends on this module." action="Ask Claude for every importer of a chosen module, then compare the list against a manual search." expectedResult="You get a list of file paths and import lines that matches the actual search output on disk." whyItMatters="Knowing who imports a module is one of the fastest ways to understand blast radius before reading or changing code." nextStep="After validating module importers, use the same pattern to find where a specific function is defined." askTutor="I'm on Step 1 of Use Claude to jump between related files. Help me pick a good module for this query and compare Claude's importer list to my search results." />
 
 Pick a module that other files depend on. In json-server, the router module is a good choice. Ask Claude:
 
@@ -41,6 +44,8 @@ Compare Claude's list to the search output. Every file Claude named should appea
 
 ### Step 2 — Find where a function is defined
 
+<StepMeta purpose="Learn to jump from a function name to its implementation quickly instead of searching files manually one by one." action="Ask Claude where a chosen function is defined and verify that claim with a targeted search across the codebase." expectedResult="You identify the file and likely line region where the function is actually declared or exported." whyItMatters="Definition lookup is one of the most reusable navigation skills in any codebase, especially when filenames are not obvious." nextStep="Once you can locate a function definition, ask Claude to map a short dependency chain starting from a file." askTutor="I'm on Step 2 of Use Claude to jump between related files. Help me refine this search if the function is anonymous, re-exported, or defined under a different name." />
+
 Pick a function name you encountered during the feature trace in Lesson 4.1.3. Ask Claude:
 
 ```
@@ -65,6 +70,8 @@ If Claude and grep agree, you have confirmed the answer. If they differ, ask Cla
 
 ### Step 3 — Map a two-level dependency chain
 
+<StepMeta purpose="See how one file fans out into nearby collaborators without drowning in a whole-project graph." action="Ask Claude for a two-level import tree starting from one file and list the direct and second-level local dependencies." expectedResult="You get a small dependency tree that shows how the chosen file connects to nearby modules." whyItMatters="A bounded dependency chain helps you understand relationships around a file without opening dozens of tabs or reading the whole repo." nextStep="Pick one branch of Claude's tree and verify the imports at the top of the file yourself." askTutor="I'm on Step 3 of Use Claude to jump between related files. Help me keep this dependency tree small and readable instead of letting it explode into the whole repo." />
+
 Ask Claude to draw the dependency tree for a specific file:
 
 ```
@@ -85,6 +92,8 @@ src/server/router/index.js
 
 ### Step 4 — Verify one branch of the tree
 
+<StepMeta purpose="Prove that Claude's dependency map reflects real import lines in the code you are looking at." action="Open one branch file from the tree and inspect its top import or require lines." expectedResult="The imports at the top of the file match the dependency branch Claude described." whyItMatters="Checking one branch is a fast confidence test that Claude is mapping relationships from the live repo rather than inventing plausible structure." nextStep="After structural navigation, try a concept-based query where you do not know the filename in advance." askTutor="I'm on Step 4 of Use Claude to jump between related files. Help me read these import lines and decide whether they truly confirm Claude's dependency tree." />
+
 Open any file from the tree and check its import lines:
 
 **macOS / Linux**
@@ -102,6 +111,8 @@ Get-Content src\server\router\plural.js -TotalCount 15
 The import/require lines at the top of the file should match what Claude listed as its dependencies.
 
 ### Step 5 — Navigate by concept, not filename
+
+<StepMeta purpose="Practice the higher-value search pattern where you know the behavior you want but not the file name." action="Ask Claude to find code by concept, such as pagination or error handling, then verify the result with a broad search." expectedResult="Claude locates the relevant file or function even though you started from a behavior rather than a path." whyItMatters="Conceptual navigation is where Claude can outperform plain grep, because it can connect behavior across naming and implementation details." nextStep="Chain one more navigation query together by finding a handler and then its callers." askTutor="I'm on Step 5 of Use Claude to jump between related files. Help me turn this vague behavior question into a good prompt and verify the answer once Claude names a file." />
 
 This is the most powerful navigation pattern. Ask Claude something you could not easily grep for:
 
@@ -126,6 +137,8 @@ Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "paginate|_pag
 If your grep finds the same file Claude named, the conceptual navigation worked.
 
 ### Step 6 — Chain two jumps together
+
+<StepMeta purpose="Combine definition lookup and caller discovery into a multi-hop navigation move you can reuse in real debugging or refactoring." action="Ask Claude to find an error handler or similar function and then list every file that calls it." expectedResult="You end with both the definition location and a caller list that describes the local dependency surface around that function." whyItMatters="Chaining jumps is how you move from isolated facts to a real mental model of how code is connected." nextStep="Use the same navigation skills in a full mini-project where you explore a new repo and make one bounded improvement." askTutor="I'm on Step 6 of Use Claude to jump between related files. Help me verify this two-hop answer and decide whether Claude missed any callers or wrappers." />
 
 Combine the skills. Ask Claude:
 

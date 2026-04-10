@@ -5,6 +5,7 @@ chapterNumber: "12.3"
 pathNumber: "12"
 tutorPreload: "Help me organize my Claude Code memory into topic files that actually help."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Set up a useful memory system
@@ -16,6 +17,8 @@ By the end of this lesson you will have a structured memory system with topic-ba
 ## Walkthrough
 
 ### Step 1 — Create the user memory directory if it does not exist
+
+<StepMeta purpose="Make sure the base user-memory location exists before you start organizing files inside it." action="Create ~/.claude/memory if needed so you have a stable directory for topic-based memory files." expectedResult="The user memory directory exists and is ready to hold preferences, patterns, and debugging notes." whyItMatters="A structured memory system only works if all of the topic files live in the path Claude auto-loads at session start." nextStep="Create a preferences file that captures how you want Claude to work with you across projects." askTutor="Confirm the correct user-memory path for my OS and explain how to tell whether I am creating the directory in the wrong place." />
 
 **macOS / Linux**
 
@@ -30,6 +33,8 @@ New-Item -ItemType Directory -Force -Path "$HOME\.claude\memory"
 ```
 
 ### Step 2 — Create preferences.md
+
+<StepMeta purpose="Store your broad, cross-project working preferences in one file Claude can load automatically." action="Create preferences.md and add concise entries about answer style, language choices, git habits, editor, shell, and comment preferences." expectedResult="A user memory file exists that summarizes how you generally like Claude to behave across many projects." whyItMatters="Preferences belong in memory, not CLAUDE.md, because they are soft defaults that should travel with you from project to project." nextStep="Create a separate patterns file for conventions you want Claude to reuse consistently in implementation work." askTutor="Review my preferences.md entries and tell me whether any of them are too rigid and should probably move into CLAUDE.md instead." />
 
 This file captures how you like to work. Claude reads it at session start and adjusts its behavior.
 
@@ -65,6 +70,8 @@ EOF
 
 ### Step 3 — Create patterns.md
 
+<StepMeta purpose="Separate durable coding conventions from personal style preferences so Claude can apply both cleanly." action="Create patterns.md and record repeatable implementation patterns such as naming, validation, test placement, and control-flow preferences." expectedResult="You have a dedicated patterns file that captures conventions Claude can reuse during actual coding tasks." whyItMatters="Grouping patterns separately keeps memory easier to audit and stops style preferences from mixing with codebase-level habits." nextStep="Create a debugging notes file so recurring troubleshooting lessons are easy for Claude to recall later." askTutor="Help me rewrite any vague patterns into short, reusable rules that Claude can apply consistently during code changes." />
+
 This file records patterns and conventions you want Claude to follow consistently. Add entries as you discover them during real work.
 
 **macOS / Linux**
@@ -96,6 +103,8 @@ EOF
 ```
 
 ### Step 4 — Create debugging.md
+
+<StepMeta purpose="Preserve hard-won troubleshooting lessons so you do not re-discover the same fixes every session." action="Create debugging.md and add brief notes about known failure modes and first checks, such as BOM-damaged .gitignore files or stale Next.js caches." expectedResult="A debugging memory file exists with practical checks Claude can reuse when similar issues appear again." whyItMatters="Debugging notes are high-leverage memory because they turn prior mistakes into faster diagnosis the next time a similar problem happens." nextStep="List the memory directory contents to confirm all three topic files are present." askTutor="Suggest a few debugging notes from my recent work that are specific enough to be useful but short enough to keep memory focused." />
 
 This file captures lessons from past debugging sessions so Claude does not repeat the same investigation steps.
 
@@ -131,6 +140,8 @@ EOF
 
 ### Step 5 — Verify all three files exist
 
+<StepMeta purpose="Confirm the memory system is physically present before testing whether Claude uses it." action="List ~/.claude/memory and open at least one of the files so you can confirm preferences.md, patterns.md, and debugging.md were saved correctly." expectedResult="The three topic files appear in the directory listing and their contents look intact." whyItMatters="If Claude later ignores a memory entry, you need to know whether the problem is loading behavior or a file that never saved correctly." nextStep="Start a new Claude Code session and ask questions that should pull from multiple memory files." askTutor="Check my memory directory listing and tell me whether the file names and organization are set up for reliable auto-loading." />
+
 **macOS / Linux**
 
 ```bash
@@ -148,6 +159,8 @@ Get-Content "$HOME\.claude\memory\preferences.md"
 You should see `preferences.md`, `patterns.md`, and `debugging.md`.
 
 ### Step 6 — Test that Claude Code loads your memory
+
+<StepMeta purpose="Prove that the organized files are not just stored correctly but also influence Claude's reasoning in a fresh session." action="Restart Claude Code and ask one question that depends on preferences and patterns plus a second question that depends on debugging notes." expectedResult="Claude recommends my-component.ts based on your preferences and patterns, and mentions BOM encoding when asked about .gitignore on Windows." whyItMatters="A memory system is only useful if Claude can combine entries from different topic files into practical advice during new sessions." nextStep="Keep refining these files over time so the memory stays short, current, and genuinely helpful." askTutor="Evaluate Claude's answers against my memory files and tell me whether it actually used the stored preferences, patterns, and debugging notes." />
 
 Start a new Claude Code session:
 

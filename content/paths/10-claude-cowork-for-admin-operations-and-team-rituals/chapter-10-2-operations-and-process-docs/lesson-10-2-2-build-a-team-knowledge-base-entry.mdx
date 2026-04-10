@@ -5,6 +5,7 @@ chapterNumber: "10.2"
 pathNumber: "10"
 tutorPreload: "Help me document this team process so a new hire can follow it without asking questions."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Build a team knowledge base entry
@@ -16,6 +17,8 @@ By the end of this lesson you will create a knowledge base article that document
 ## Walkthrough
 
 ### Step 1 — Create the knowledge base directory
+
+<StepMeta purpose="Create the permanent docs location where team process articles can live under version control." action="Make the knowledge-base directory in the project docs tree and move into it before drafting the article inputs." expectedResult="You have a docs/knowledge-base folder ready to hold a reusable setup article for the team." whyItMatters="A knowledge base only helps if its articles live somewhere consistent and discoverable for new hires and existing teammates." nextStep="Write down the raw setup steps from your own experience so Claude has a truthful source to expand." askTutor="I'm on Step 1 of Build a team knowledge base entry. Help me place this article in the right docs location so new teammates will actually find it." />
 
 **macOS / Linux**
 
@@ -32,6 +35,8 @@ Set-Location "$HOME\my-project\docs\knowledge-base"
 ```
 
 ### Step 2 — Capture the raw setup steps from your own experience
+
+<StepMeta purpose="Create the source-of-truth notes that describe how the project is really set up today." action="Write raw-setup-notes.txt from your own lived setup experience, replacing the sample commands with the actual steps for your project." expectedResult="You have a raw notes file containing the real clone, install, env, migration, and startup steps the article should document." whyItMatters="Claude can polish and structure a process, but the human operator needs to supply the accurate procedural truth first." nextStep="Ask Claude to turn those raw notes into a polished article with prerequisites, numbered steps, verification, and troubleshooting." askTutor="I'm on Step 2 of Build a team knowledge base entry. Help me turn my actual setup experience into raw notes that are accurate enough for Claude to expand safely." />
 
 Before involving Claude, write down the steps you actually follow when setting up this project from scratch. This is your source of truth.
 
@@ -69,6 +74,8 @@ Replace these with your actual steps. Accuracy here is more important than polis
 
 ### Step 3 — Ask Claude to expand the notes into a knowledge base article
 
+<StepMeta purpose="Transform the raw setup notes into a beginner-friendly article without losing command accuracy." action="Open Claude in the knowledge-base directory and ask it to create dev-environment-setup.md with prerequisites, numbered steps, verification details, troubleshooting, and platform-specific commands." expectedResult="Claude produces a structured setup article aimed at someone who has never seen the project before." whyItMatters="The article becomes genuinely useful only when the steps are both beginner-readable and still anchored in the raw notes you supplied." nextStep="Open a fresh terminal and test the article's critical commands as if you were a new hire following it for the first time." askTutor="I'm on Step 3 of Build a team knowledge base entry. Help me phrase this prompt so Claude expands my notes into a clear article without inventing extra setup steps." />
+
 Open Claude Code in the knowledge-base directory:
 
 ```
@@ -83,6 +90,8 @@ Read raw-setup-notes.txt. Turn it into a polished knowledge base article called 
 ```
 
 ### Step 4 — Verify every command in the article
+
+<StepMeta purpose="Test whether the generated article actually works as onboarding documentation instead of just reading well." action="Run the critical commands from the article in a fresh terminal and compare the results to what the article promises." expectedResult="You know which setup instructions and verification steps are accurate and which ones need correction before the article is shared." whyItMatters="New-hire docs are high leverage, and every broken command compounds confusion and trust loss on day one." nextStep="Once the article is accurate, add verification metadata at the top so future readers know when and where it was last tested." askTutor="I'm on Step 4 of Build a team knowledge base entry. Help me test this article like a new hire and identify which commands or assumptions still need correction." />
 
 This is non-negotiable. Open a fresh terminal and follow the article step by step as if you were a new hire.
 
@@ -110,6 +119,8 @@ If any command fails or produces unexpected output, update the article. Do not c
 
 ### Step 5 — Add a metadata header to the article
 
+<StepMeta purpose="Mark the article with verification context so future readers know whether to trust it as-is or re-test it." action="Edit dev-environment-setup.md so it starts with the title plus Last verified, Verified on, and Author metadata." expectedResult="The final article clearly states when it was last tested and on which operating systems." whyItMatters="Operational docs decay quickly, and visible verification metadata is a simple signal that helps teams keep them fresh." nextStep="Stage the article from the project root and commit it so the knowledge base entry becomes part of the repo." askTutor="I'm on Step 5 of Build a team knowledge base entry. Help me choose the right metadata header so future readers know how fresh and trustworthy this article is." />
+
 Open the generated `dev-environment-setup.md` and ensure it starts with a clear header:
 
 ```markdown
@@ -125,6 +136,8 @@ Open the generated `dev-environment-setup.md` and ensure it starts with a clear 
 The "Last verified" date tells future readers whether to trust the instructions or re-test them.
 
 ### Step 6 — Commit to version control
+
+<StepMeta purpose="Turn the verified article into a shared team artifact by adding it to version control." action="Stage docs/knowledge-base/dev-environment-setup.md from the project root and commit the knowledge base entry." expectedResult="You create a repo commit containing a tested, metadata-stamped setup article for the team." whyItMatters="Once the article is committed, it becomes discoverable, reviewable, and maintainable as part of the team's operating documentation." nextStep="Apply the same reuse-first mindset in the next lesson by building a shared prompts library the whole team can start from." askTutor="I'm on Step 6 of Build a team knowledge base entry. Help me do a final review so I only commit setup instructions that are tested and newcomer-friendly." />
 
 **macOS / Linux**
 

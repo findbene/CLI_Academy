@@ -12,21 +12,23 @@ const CATEGORIES: Category[] = ["All", "Agentic Articles", "Tool Spotlights", "V
 
 export function FilterNav({ activeCategory, onSelect }: FilterNavProps) {
   return (
-    <div className="bg-[#14161F]/80 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full flex space-x-1 shadow-[0_8px_30px_rgb(0,0,0,0.5)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+    <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-[1.5rem] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel)] p-2 shadow-[var(--shadow-1)]">
       {CATEGORIES.map(category => {
         const isActive = activeCategory === category;
         return (
           <button
             key={category}
             onClick={() => onSelect(category)}
-            className={`relative px-5 py-2.5 rounded-full text-sm font-medium transition-colors duration-300 ${
-              isActive ? "text-[#0F1117]" : "text-gray-400 hover:text-white"
+            className={`relative whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-colors duration-300 ${
+              isActive
+                ? "text-[var(--color-fg-default)]"
+                : "text-[var(--color-fg-muted)] hover:text-[var(--color-fg-default)]"
             }`}
           >
             {isActive && (
               <motion.div
                 layoutId="activeFilterPill"
-                className="absolute inset-0 bg-[#00D4FF] rounded-full"
+                className="absolute inset-0 rounded-full border border-[rgba(22,176,168,0.22)] bg-[var(--color-accent-subtle-strong)]"
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
               />
             )}

@@ -5,6 +5,7 @@ chapterNumber: "6.2"
 pathNumber: "6"
 tutorPreload: "Explain this merge conflict and show me the minimal safe resolution."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Merge branches and resolve conflicts
@@ -16,6 +17,8 @@ By the end of this lesson you will merge a feature branch into `main`, deliberat
 ## Walkthrough
 
 ### Step 1 — Set up a repository with a clean main branch
+
+<StepMeta purpose="Create a simple repo where you can practice merging without risking any real work." action="Initialize the merge-lab repo, add config.txt, and commit the baseline welcome message on main." expectedResult="You have a stable main branch with one tracked config file ready for branch experiments." whyItMatters="Conflict practice is safest in a tiny sandbox where every branch and edit is easy to inspect." nextStep="Create a simple feature branch and perform a clean merge first so you can see the non-conflict case." askTutor="I'm on Step 1 of Merge branches and resolve conflicts. Help me understand why we start with a tiny config file instead of a more realistic project." />
 
 **macOS / Linux:**
 
@@ -38,6 +41,8 @@ git commit -m "Add config with welcome message"
 ```
 
 ### Step 2 — Do a clean merge first (no conflict)
+
+<StepMeta purpose="See the easy merge case before introducing conflicts, so you know what normal looks like." action="Create feature-footer, add a new file on that branch, switch back to main, and merge it cleanly." expectedResult="Git performs a fast-forward merge with no conflict markers or manual steps required." whyItMatters="Understanding a clean merge makes the later conflict case less mysterious because you know when Git can combine histories automatically." nextStep="Create two branches that edit the same line differently so Git can no longer merge by itself." askTutor="I'm on Step 2 of Merge branches and resolve conflicts. Help me understand why this first merge is a fast-forward and what conditions made it conflict-free." />
 
 Create a feature branch, add a new file, and merge it back.
 
@@ -77,6 +82,8 @@ git log --oneline --all --graph
 Both `main` and `feature-footer` point to the same commit.
 
 ### Step 3 — Create a deliberate conflict
+
+<StepMeta purpose="Set up the exact situation that causes a real content conflict: two branches editing the same line differently." action="Create feature-spanish, change config.txt there, then switch back to main and change the same line to a different value." expectedResult="Both branches now contain incompatible edits to the same line in config.txt." whyItMatters="Conflicts happen when Git cannot automatically decide which competing edit should win, and same-line edits are the clearest example." nextStep="Attempt the merge so Git can stop and show you the conflict state explicitly." askTutor="I'm on Step 3 of Merge branches and resolve conflicts. Help me see why these two edits are guaranteed to conflict and how Git detects that." />
 
 Now you will edit the **same line** in two different branches — the classic cause of a merge conflict.
 
@@ -126,6 +133,8 @@ git commit -m "Change welcome to French"
 
 ### Step 4 — Attempt the merge and see the conflict
 
+<StepMeta purpose="Observe the exact signals Git gives when it cannot merge automatically." action="Run git merge feature-spanish, then inspect git status to see the unmerged path state." expectedResult="Git reports a content conflict in config.txt and marks the repo as needing manual resolution." whyItMatters="Knowing the standard conflict messages helps you stay calm and methodical instead of panicking when a merge stops midway." nextStep="Open the conflicted file and read the conflict markers Git inserted." askTutor="I'm on Step 4 of Merge branches and resolve conflicts. Help me interpret this merge error output and explain what git status is telling me now." />
+
 ```bash
 git merge feature-spanish
 ```
@@ -147,6 +156,8 @@ git status
 `config.txt` appears under **Unmerged paths**. Git is waiting for you to resolve the conflict.
 
 ### Step 5 — Read the conflict markers
+
+<StepMeta purpose="Decode the special marker lines Git inserts so you can compare the competing changes correctly." action="Open config.txt and identify which side belongs to HEAD and which side belongs to feature-spanish." expectedResult="You can point to the current-branch version, the incoming version, and the separator lines with confidence." whyItMatters="Conflict resolution starts with understanding the marker format; otherwise you are editing a file full of symbols without context." nextStep="Choose the final content you want and replace the conflict-marked block with one clean resolved line." askTutor="I'm on Step 5 of Merge branches and resolve conflicts. Help me read these conflict markers and decide which side came from which branch." />
 
 Open the file:
 
@@ -180,6 +191,8 @@ Here is what each section means:
 
 ### Step 6 — Resolve the conflict manually
 
+<StepMeta purpose="Turn the conflicted file back into valid content by making an explicit human decision." action="Edit config.txt to the final desired line and remove every conflict marker from the file." expectedResult="The file contains one clean resolved value and no <<<<<<<, =======, or >>>>>>> lines remain." whyItMatters="Git can detect the conflict, but only a human can choose the correct final meaning for the file." nextStep="Stage the resolved file and complete the merge commit." askTutor="I'm on Step 6 of Merge branches and resolve conflicts. Help me check whether this resolution is minimal, correct, and completely free of leftover markers." />
+
 Edit `config.txt` to keep the version you want. Remove all three marker lines and leave one clean line.
 
 For example, to keep both languages:
@@ -202,6 +215,8 @@ There must be no `<<<<<<<`, `=======`, or `>>>>>>>` lines remaining.
 
 ### Step 7 — Complete the merge
 
+<StepMeta purpose="Record the manual resolution as the official merge result in history." action="Stage config.txt, create the merge commit, and inspect the graph to see the branches converge." expectedResult="Git history now shows a merge commit connecting main and feature-spanish with the resolved file content on main." whyItMatters="A conflict is not finished when the file looks fixed; it is finished when the merge commit captures that decision in history." nextStep="Learn how Claude can help explain or suggest resolutions when a real conflict is harder to reason about." askTutor="I'm on Step 7 of Merge branches and resolve conflicts. Help me read this merge commit in the graph and explain what it means for the two branch histories." />
+
 ```bash
 git add config.txt
 git commit -m "Merge feature-spanish: combine French and Spanish greetings"
@@ -216,6 +231,8 @@ git log --oneline --all --graph
 You will see both branches converging into a single merge commit on `main`.
 
 ### Step 8 — Ask Claude Code for help (when conflicts are complex)
+
+<StepMeta purpose="Practice using Claude as a conflict-reading assistant without giving up final human review." action="Prompt Claude to explain the conflict markers or propose a resolution strategy for the file, then review the result yourself." expectedResult="Claude can summarize each side's intent or generate a cleaned file, but you still understand the final choice before committing." whyItMatters="In real repos, conflict context can be larger than one line, so a second reader is helpful as long as you keep the final decision in human hands." nextStep="After local branching and conflict resolution feel solid, move on to pushing feature branches to GitHub and opening pull requests." askTutor="I'm on Step 8 of Merge branches and resolve conflicts. Help me use Claude to understand this conflict without blindly accepting a resolution I have not reviewed." />
 
 If you hit a conflict you do not understand, you can ask Claude Code:
 

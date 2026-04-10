@@ -5,6 +5,7 @@ chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Review my monitoring script and tell me if the alerting logic will actually catch real outages."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Build a monitoring script
@@ -18,6 +19,8 @@ By the end of this lesson you will have a working monitoring script that checks 
 Monitoring means checking something on a regular basis and getting notified when it breaks. Professional teams use tools like Uptime Robot, Datadog, or Prometheus — but the core idea is simple enough to build yourself in a few lines of shell script.
 
 ### Step 1 — Write the monitoring script
+
+<StepMeta purpose="Create a minimal but functional health-check script that distinguishes success from failure and logs every run." action="Write the monitoring script for your platform, review how it derives HTTP status or errors, and note where it records output in `monitor.log`." expectedResult="You have a script that checks one URL, prints UP or DOWN, and appends a timestamped record to a log file." whyItMatters="Monitoring is just automated verification with evidence, and the log file is what makes the check auditable over time." nextStep="Test the happy path first so you know the normal success output before investigating the alert branch." askTutor="Review this monitoring script and tell me whether the success and failure conditions are broad enough to catch real outages but narrow enough to avoid noise." />
 
 **macOS / Linux (`monitor.sh`):**
 
@@ -98,6 +101,8 @@ try {
 
 ### Step 2 — Test the happy path (service is up)
 
+<StepMeta purpose="Establish the baseline behavior of the monitor under a healthy response before you chase failure cases." action="Run the monitor against a URL that returns HTTP 200 and inspect both the terminal output and the `monitor.log` entry." expectedResult="The script reports the target as UP and appends a timestamped success line to the log." whyItMatters="Good monitoring design is easier to validate when you confirm the success path first, then compare later failure behavior against it." nextStep="Run the failure scenarios next so you verify the alert logic really changes when the target breaks or disappears." askTutor="Interpret this healthy monitor run for me and tell me whether the script is logging enough evidence for a later audit or incident review." />
+
 **macOS / Linux:**
 
 ```bash
@@ -115,6 +120,8 @@ Get-Content monitor.log
 You should see a `UP` line in the log and a green/check message in the terminal.
 
 ### Step 3 — Test the alert path (service is down)
+
+<StepMeta purpose="Prove that the monitor does more than print success when the target is healthy." action="Run the script against a URL returning 500 and then an unreachable domain, then inspect the DOWN entries and associated error details in the log." expectedResult="The monitor reports failures clearly for both application errors and outright connectivity or DNS failures." whyItMatters="A monitoring script is only useful if the failure path is as trustworthy and obvious as the happy path." nextStep="Scale the script to multiple URLs so the monitor becomes a reusable batch check rather than a one-off single-endpoint test." askTutor="Help me assess whether these DOWN cases prove the alert logic is working or whether some failure mode is still being masked or misclassified." />
 
 Point the script at a URL that returns an error:
 
@@ -151,6 +158,8 @@ Get-Content monitor.log
 You should see `DOWN` entries with the HTTP code or error message.
 
 ### Step 4 — Monitor multiple URLs in one pass
+
+<StepMeta purpose="Turn the single-endpoint monitor into a reusable batch workflow that can check several targets in one run." action="Create `urls.txt` plus the multi-URL wrapper script, then run it and observe the combined output across healthy and failing endpoints." expectedResult="One command now checks multiple URLs sequentially and records each result through the single-URL monitor logic." whyItMatters="Batch execution is the natural next step for real monitoring because most useful workflows watch a set of services, not just one URL." nextStep="Optionally schedule the monitor so it runs unattended at a fixed interval instead of only on demand." askTutor="Review this multi-URL monitor wrapper and tell me whether it reuses the single-URL script cleanly or if there is a better batching pattern." />
 
 Extend the script to check a list of URLs from a file.
 
@@ -207,6 +216,8 @@ Write-Host "=== Run complete ==="
 ```
 
 ### Step 5 — Schedule the monitor (optional)
+
+<StepMeta purpose="Connect monitoring to unattended execution so the checks keep happening even when you are not at the keyboard." action="Add the cron or Task Scheduler entry described in the lesson and note the logging redirection or repetition settings used for recurring runs." expectedResult="You know how to schedule the monitor to run every 15 minutes and where the resulting logs or scheduler output will land." whyItMatters="Monitoring only protects you when it runs regularly, so scheduling is what turns a useful script into a true background safety net." nextStep="Use the final mini-project to combine scripts, scheduling, and logging into a broader daily workflow automation package." askTutor="Help me decide whether this monitoring job is ready for unattended scheduling or whether I should tighten the logging or failure handling first." />
 
 Combine this with what you learned in Lesson 16.3.2:
 

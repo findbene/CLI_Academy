@@ -5,6 +5,7 @@ chapterNumber: "4.1"
 pathNumber: "4"
 tutorPreload: "Walk me through how one feature flows from the route handler to the data layer."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Trace a feature from route to database
@@ -19,6 +20,8 @@ Continue in the same cloned project. If you are using json-server, you will trac
 
 ### Step 1 — Ask Claude to trace the route
 
+<StepMeta purpose="Get an end-to-end hypothesis for how one request moves through the system before you inspect files manually." action="Ask Claude to trace a specific route from the incoming request through handlers, helpers, and the data layer in order." expectedResult="Claude returns an ordered list of files and functions involved in serving the request." whyItMatters="A full trace gives you a navigation plan for understanding behavior across multiple files instead of reading modules with no sense of sequence." nextStep="Open the first file in the trace and confirm that the routing setup is really there." askTutor="I'm on Step 1 of Trace a feature from route to database. Help me choose a good route to trace and tell me what makes a useful end-to-end answer from Claude." />
+
 ```
 How does a GET request to /posts work in this project? Trace the flow from the incoming HTTP request through every file and function it touches until the response is sent back. Name each file and function in order.
 ```
@@ -32,6 +35,8 @@ Claude walks through something like:
 The exact files depend on the project. The important thing is you get an ordered list of hops.
 
 ### Step 2 — Verify the first file in the trace
+
+<StepMeta purpose="Check that the trace begins in a real routing file instead of trusting Claude's first hop blindly." action="Open the first file Claude named and look for the routing setup or handoff it described." expectedResult="You see evidence that the request really enters this part of the code, such as route registration or router mounting." whyItMatters="Validating the first hop tells you whether the rest of the trace is likely grounded in the current repo or needs correction." nextStep="After the first hop checks out, inspect the next file in the chain and confirm the handler logic." askTutor="I'm on Step 2 of Trace a feature from route to database. Help me read this routing file and explain which line proves the request actually passes through here." />
 
 Open the first file Claude named and look for the routing setup:
 
@@ -51,6 +56,8 @@ Look for the line that maps GET requests to a handler function. You should see s
 
 ### Step 3 — Verify the next hop
 
+<StepMeta purpose="Confirm that the second file in Claude's route trace actually contains the handler or export it claimed." action="Open the next file, search for the handler definition, and match it to the route flow you are tracing." expectedResult="You find a function or export that receives the request and moves it closer to the data layer." whyItMatters="A trace only becomes trustworthy when each hop is independently supported by real code, not just by a plausible explanation." nextStep="Once the handler layer is verified, ask Claude to unpack the database or storage object it eventually calls." askTutor="I'm on Step 3 of Trace a feature from route to database. Help me identify whether this file is the real request handler or just a thin wrapper around another module." />
+
 Open the second file and find the handler:
 
 **macOS / Linux**
@@ -69,6 +76,8 @@ You should find a function that receives the request and calls the data layer. T
 
 ### Step 4 — Ask Claude to explain the data layer
 
+<StepMeta purpose="Clarify what object or service actually provides the data at the bottom of the route flow." action="Ask Claude where the database-like object comes from, how it is initialized, and how data gets loaded into it." expectedResult="You get a concrete explanation of the storage mechanism and the file or startup code that creates it." whyItMatters="Many beginner traces break at the data layer because they stop at a method call without understanding what object is behind it." nextStep="Search the repo yourself for the database initialization code Claude described." askTutor="I'm on Step 4 of Trace a feature from route to database. Help me understand what this db object is and how to distinguish data access code from routing code." />
+
 When you reach the bottom of the trace, ask Claude directly:
 
 ```
@@ -78,6 +87,8 @@ In src/server/router/plural.js, I see a call to db.get(name).value(). What is `d
 Claude explains that `db` is a lowdb (or similar) instance created during server startup and loaded from a JSON file. This is the "database" in json-server's case — a flat JSON file on disk.
 
 ### Step 5 — Confirm the data layer with a search
+
+<StepMeta purpose="Verify that Claude pointed you to the real storage setup instead of an approximate explanation." action="Search the repo for the library call or initialization pattern Claude mentioned and compare the results to its answer." expectedResult="You locate the actual file where the database or storage layer is created and can reconcile any mismatch." whyItMatters="Searching for initialization code is a repeatable way to validate claims about hidden app state and startup wiring." nextStep="After the data layer is confirmed, ask Claude to rewrite the whole route flow as a clean numbered trace." askTutor="I'm on Step 5 of Trace a feature from route to database. Help me interpret these search results and tell me which one is the real database initialization point." />
 
 Verify Claude's explanation by searching for where the database is initialized:
 
@@ -96,6 +107,8 @@ Get-ChildItem -Recurse -Filter *.js src\ | Select-String -Pattern "lowdb|new Low
 The results should point to the file Claude described. If you see a different file, ask Claude: "I found the database setup in [file]. Is this what you meant?"
 
 ### Step 6 — Produce the clean trace
+
+<StepMeta purpose="Turn your verified findings into a readable artifact you can reuse later or hand to someone else." action="Ask Claude to rewrite the feature flow as a numbered markdown trace with file paths, function names, and short explanations." expectedResult="You finish with a clean trace that names each hop in order and reflects the route you actually verified." whyItMatters="A polished trace is proof that you understand the system well enough to explain it, not just browse it." nextStep="With tracing skills in place, move on to practicing routine repo operations like safe updates and file renames." askTutor="I'm on Step 6 of Trace a feature from route to database. Help me turn my notes into a concise trace that is accurate and easy to reuse later." />
 
 Ask Claude to format the complete trace:
 

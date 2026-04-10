@@ -5,6 +5,7 @@ chapterNumber: "7.2"
 pathNumber: "7"
 tutorPreload: "Walk me through setting up a filesystem MCP server in Claude Desktop so it can read my project files directly."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Connect Claude Desktop to local files with MCP
@@ -16,6 +17,8 @@ By the end of this lesson you will configure a Model Context Protocol (MCP) file
 ## Walkthrough
 
 ### Step 1 — Understand what MCP does
+
+<StepMeta purpose="Build the right mental model before editing config so MCP feels like a controlled tool bridge, not magic." action="Read what MCP enables, focus on the filesystem server tools, and note that access is limited to paths you explicitly allow." expectedResult="You can explain that Claude Desktop talks to a local server which exposes specific file tools for approved folders only." whyItMatters="Good security decisions start with understanding the trust boundary, especially before you grant Desktop any local file access." nextStep="Verify Node.js and the filesystem server package are available so Claude Desktop can launch the server." askTutor="I'm on Step 1 of Connect Claude Desktop to local files with MCP. Help me understand what MCP changes compared with ordinary drag and drop file sharing." />
 
 In Lesson 7.2.1 you saw that Claude Desktop cannot browse your file system on its own — you must drag files in. MCP changes that.
 
@@ -31,6 +34,8 @@ The **filesystem MCP server** gives Claude Desktop these tools:
 > **Safety note:** The filesystem MCP server only allows access to directories you explicitly configure. It cannot read outside those paths. You choose exactly which folders Claude can see.
 
 ### Step 2 — Install the filesystem MCP server
+
+<StepMeta purpose="Confirm the local runtime dependency that Claude Desktop will rely on to start the filesystem server." action="Check that Node.js is installed, then run the npx help command for the filesystem MCP server package." expectedResult="Node prints a supported version and the npx command returns usage information for the filesystem server." whyItMatters="If Node or the package launch path is broken, Claude Desktop cannot start the MCP server later even if the config file looks correct." nextStep="Find the Claude Desktop config file location for your operating system so you know exactly where to wire the server in." askTutor="I'm on Step 2 of Connect Claude Desktop to local files with MCP. Help me verify whether Node is installed correctly and what the npx test result should look like." />
 
 The official filesystem server is an npm package. You need Node.js installed.
 
@@ -60,6 +65,8 @@ This should print usage information. If it downloads the package first, that is 
 
 ### Step 3 — Locate the Claude Desktop config file
 
+<StepMeta purpose="Identify the exact configuration file Claude Desktop reads for MCP servers on your operating system." action="Check the OS-specific Claude Desktop config path and note whether the file already exists or needs to be created." expectedResult="You know the precise path to claude_desktop_config.json and whether you are editing an existing file or making a new one." whyItMatters="Using the wrong config location is a common failure mode, so confirming the path now saves confusing restart attempts later." nextStep="Edit that config file and add a filesystem server entry pointing at the folder you want Claude to access." askTutor="I'm on Step 3 of Connect Claude Desktop to local files with MCP. Help me verify the correct config path on my OS and what to do if the file is missing." />
+
 Claude Desktop stores its MCP configuration in a JSON file. The location depends on your operating system.
 
 **macOS:**
@@ -83,6 +90,8 @@ ls ~/.config/Claude/claude_desktop_config.json
 If the file does not exist yet, you will create it in the next step.
 
 ### Step 4 — Add the filesystem MCP server to the config
+
+<StepMeta purpose="Authorize Claude Desktop to start the filesystem MCP server with access only to the folders you choose." action="Open or create claude_desktop_config.json, paste the filesystem server JSON, and replace the sample path with your real absolute folder path." expectedResult="The config file contains valid JSON with a filesystem server entry that points at your chosen project directory." whyItMatters="This is the step that defines both functionality and scope: the server command must launch correctly and the path list must match the folders you actually want to share." nextStep="Restart Claude Desktop and confirm the tools indicator appears, proving the server launched successfully." askTutor="I'm on Step 4 of Connect Claude Desktop to local files with MCP. Help me write the JSON correctly for my machine and avoid path escaping mistakes." />
 
 Open the config file in a text editor. If it does not exist, create it.
 
@@ -144,6 +153,8 @@ Save and close the file.
 
 ### Step 5 — Restart Claude Desktop and verify the connection
 
+<StepMeta purpose="Prove that Claude Desktop actually launched the MCP server instead of merely storing the config." action="Fully quit and relaunch Claude Desktop, then look for the tools indicator and inspect the available filesystem tools." expectedResult="Claude Desktop shows the hammer or tools indicator and lists filesystem tools such as read_file, write_file, list_directory, and search_files." whyItMatters="A valid-looking config file is not enough; you need evidence that Desktop started the server and attached the tools successfully." nextStep="Use one of the new tools to read a real local file through MCP." askTutor="I'm on Step 5 of Connect Claude Desktop to local files with MCP. Help me troubleshoot why the tools indicator is missing after I restarted Desktop." />
+
 Completely quit Claude Desktop (not just close the window), then relaunch it:
 
 - **macOS:** Right-click the dock icon → Quit, then reopen from Applications.
@@ -170,6 +181,8 @@ The log will tell you if the server failed to start (usually a Node.js path issu
 
 ### Step 6 — Use MCP to read a local file
 
+<StepMeta purpose="Verify that MCP turned Desktop into a tool-using client that can inspect approved local files on demand." action="Ask Claude to list a folder and then read a specific file such as README.md using the filesystem tools." expectedResult="Claude uses list_directory and read_file to return real data from your local disk without any drag and drop step." whyItMatters="Reading a real file is the first concrete proof that MCP is bridging Claude Desktop to your local project in a controlled way." nextStep="Use the complementary write tool to create a small verification file through the same MCP connection." askTutor="I'm on Step 6 of Connect Claude Desktop to local files with MCP. Help me tell whether Claude really used the filesystem tool or just answered from earlier context." />
+
 In the Claude Desktop chat, try:
 
 ```
@@ -185,6 +198,8 @@ Read the README.md file in my-app.
 Claude uses `read_file` and displays the contents. No drag-and-drop needed — Claude is reading directly from your disk through the MCP server.
 
 ### Step 7 — Use MCP to write a local file
+
+<StepMeta purpose="Confirm that the MCP connection is not read-only and can safely create files inside approved folders." action="Ask Claude to create mcp-test.txt through write_file, then verify the file contents from your terminal and remove it." expectedResult="The test file is created with the expected text, terminal verification succeeds, and cleanup removes it afterward." whyItMatters="Write access is what turns MCP from a passive reader into a practical workflow bridge for drafts, notes, and controlled file edits." nextStep="Optionally expand the config with more approved folders if you want Desktop to reach additional work areas." askTutor="I'm on Step 7 of Connect Claude Desktop to local files with MCP. Help me verify the file was really written by MCP and explain how to keep this access safe." />
 
 Ask Claude to create a file:
 
@@ -223,6 +238,8 @@ Remove-Item "$HOME\projects\mcp-test.txt"
 ```
 
 ### Step 8 — Add access to more folders (optional)
+
+<StepMeta purpose="Learn how to expand MCP access deliberately instead of granting broad filesystem visibility all at once." action="Add additional folder paths to the args array only for directories you truly want Desktop to access, then restart Claude Desktop." expectedResult="The config supports multiple approved directories and Desktop can use the filesystem tools within those extra paths after a restart." whyItMatters="Scoped expansion keeps the security model understandable: more power is fine, but only when you add access intentionally and minimally." nextStep="After basic MCP works, compare this Desktop plus MCP workflow with the browser and CLI surfaces you have already tried." askTutor="I'm on Step 8 of Connect Claude Desktop to local files with MCP. Help me decide which folders are reasonable to expose and which ones I should keep out of scope." />
 
 To give Claude access to additional directories, add more paths to the args array:
 

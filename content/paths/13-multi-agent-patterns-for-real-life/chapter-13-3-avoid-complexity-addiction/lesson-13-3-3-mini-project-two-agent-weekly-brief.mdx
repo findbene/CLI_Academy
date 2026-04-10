@@ -5,6 +5,7 @@ chapterNumber: "13.3"
 pathNumber: "13"
 tutorPreload: "Give me the quality checklist for a small two-agent weekly brief workflow."
 verifyType: "terminal_output"
+stepSchemaVersion: 1
 ---
 
 # Handle agent failures gracefully
@@ -18,6 +19,8 @@ By the end you will have a resilient pipeline script that can survive common age
 ## Walkthrough
 
 ### Step 1 — Set up the project
+
+<StepMeta purpose="Create the workspace for a fault-tolerant pipeline instead of a fragile demo script." action="Make the resilient-pipeline directory and add the same Researcher and Writer contracts you already know." expectedResult="You have a project folder containing both contracts and ready for a more defensive orchestration script." whyItMatters="Failure handling is easiest to understand when it is layered onto a familiar two-agent pattern rather than introduced in a brand-new workflow." nextStep="Write the Bash version of the resilient runner with retry, timeout, and empty-output checks." askTutor="Help me confirm that this resilient-pipeline workspace is using the same contract pattern as the earlier lessons before I add the extra safeguards." />
 
 **macOS / Linux:**
 ```bash
@@ -97,6 +100,8 @@ Stop after writing ``article-draft.md``.
 
 ### Step 2 — Write the resilient pipeline script (macOS / Linux)
 
+<StepMeta purpose="Encode retry, timeout, and fallback behavior directly into the orchestration layer." action="Create run-resilient.sh with the shared run_agent function, MAX_RETRIES cap, timeout wrapper, output checks, and fallback messaging." expectedResult="A Bash script exists that can retry failing agents, stop after repeated failure, and preserve useful upstream outputs for manual recovery." whyItMatters="Resilience belongs in the pipeline script, not in agent guesswork, because the orchestrator is where failure policy should live." nextStep="Mirror the same safeguards in the PowerShell version if you work on Windows." askTutor="Review this resilient Bash script and tell me whether the retry and fallback logic fail closed or whether any error path is still too loose." />
+
 ```bash
 cat > run-resilient.sh << 'SCRIPT'
 #!/usr/bin/env bash
@@ -158,6 +163,8 @@ chmod +x run-resilient.sh
 ```
 
 ### Step 3 — Write the resilient pipeline script (Windows PowerShell)
+
+<StepMeta purpose="Give Windows users the same failure handling guarantees instead of leaving resilience as a Unix-only pattern." action="Create run-resilient.ps1 with Start-Job timeout logic, retry limits, output validation, and fallback logging." expectedResult="The PowerShell script can detect timeouts, retry up to the configured cap, and stop with useful messages when an agent never succeeds." whyItMatters="Cross-platform reliability only counts if the safeguards survive translation across shells." nextStep="Study the four error-handling patterns so you understand why each one belongs in the script before you run it." askTutor="Compare this PowerShell version to the Bash one and tell me whether the timeout, retry, and fallback behavior are truly equivalent." />
 
 ```powershell
 @"
@@ -226,6 +233,8 @@ Get-ChildItem research-findings.md, article-draft.md | Format-Table Name, Length
 
 ### Step 4 — Understand the error-handling patterns
 
+<StepMeta purpose="Turn the script from copied plumbing into a reusable resilience pattern." action="Read the timeout, empty-output, retry-cap, and fallback explanations and map each one to the failure it is meant to catch." expectedResult="You can explain why each guard exists and what kind of agent failure it prevents from cascading." whyItMatters="Resilient pipelines stay cheap and predictable only when you understand which failures are being absorbed and which still abort the run." nextStep="Run the script and then deliberately break something so you can watch the safeguards fire in a controlled way." askTutor="Walk through these four resilience patterns with me and explain which one would catch each common pipeline failure." />
+
 The script uses four patterns:
 
 1. **Timeout** — If an agent hangs (infinite loop, stuck API call), the script kills it after `TIMEOUT_SECONDS`. Without this, a broken agent blocks your pipeline forever.
@@ -237,6 +246,8 @@ The script uses four patterns:
 4. **Fallback messaging** — When the Writer fails, the script tells you that `research-findings.md` still exists. You can finish the article manually instead of losing all progress.
 
 ### Step 5 — Run and test
+
+<StepMeta purpose="Validate that the resilience logic behaves correctly on both success and failure paths." action="Run the resilient pipeline script, then try a controlled failure such as renaming one contract file and confirm the script retries, logs, and exits cleanly." expectedResult="You see the pipeline complete on a healthy run and produce a clear abort plus fallback message on a broken run." whyItMatters="Resilience is only real when the bad path is as understandable as the good path." nextStep="Use the lessons from this path to decide when two agents are enough and when more structure would just create complexity addiction." askTutor="Help me interpret this failure test and tell me whether the retries, logs, and fallback message prove the pipeline is robust enough." />
 
 **macOS / Linux:**
 ```bash
