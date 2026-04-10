@@ -69,6 +69,12 @@ export default async function DownloadsPage() {
               <Link href="/asset-vault" className="button-secondary">
                 Public vault overview
               </Link>
+              <Link href="/prompt-doctor" className="button-secondary">
+                Prompt Doctor
+              </Link>
+              <Link href="/runtime-lab" className="button-ghost">
+                Runtime Lab
+              </Link>
               <Link href="/resources" className="button-ghost">
                 Ecosystem directory
               </Link>

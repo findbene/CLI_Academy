@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AcademyStandardsPanel } from "@/components/academy/AcademyStandardsPanel";
 import { FlagshipCourseCard } from "@/components/academy/FlagshipCourseCard";
 import { AssetVaultCard } from "@/components/assets/AssetVaultCard";
@@ -62,6 +63,11 @@ export default function PromptContextStudioPage() {
             <li>• call out missing constraints and quality gaps</li>
             <li>• prepare prompts for evaluation harnesses instead of one-off luck</li>
           </ul>
+          <div className="mt-5">
+            <Link href="/prompt-doctor" className="button-secondary">
+              Open Prompt Doctor
+            </Link>
+          </div>
         </article>
       </section>
 
@@ -84,6 +90,36 @@ export default function PromptContextStudioPage() {
             <li>• separate retrieval quality from final answer quality</li>
             <li>• prepare the bridge into RAG and Agentic RAG course tracks</li>
           </ul>
+        </article>
+      </section>
+
+      <section className="mt-8 grid gap-4 lg:grid-cols-2">
+        <article className="panel p-6">
+          <div className="eyebrow">Workflow Studio</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">Map orchestration before automation</h2>
+          <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
+            Build planner-worker-reviewer flows, approval checkpoints, retrieval steps, and exports in one place before
+            you wire them into a live runtime.
+          </p>
+          <div className="mt-5">
+            <Link href="/workflow-studio" className="button-secondary">
+              Open Workflow Studio
+            </Link>
+          </div>
+        </article>
+
+        <article className="panel p-6">
+          <div className="eyebrow">Live Labs</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">Practice with reset, hints, and compare-to-reference</h2>
+          <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
+            The studio concepts become real when learners can step through terminal and runtime labs without losing the
+            thread of the fast path.
+          </p>
+          <div className="mt-5">
+            <Link href="/labs" className="button-secondary">
+              Open Live Labs
+            </Link>
+          </div>
         </article>
       </section>
 

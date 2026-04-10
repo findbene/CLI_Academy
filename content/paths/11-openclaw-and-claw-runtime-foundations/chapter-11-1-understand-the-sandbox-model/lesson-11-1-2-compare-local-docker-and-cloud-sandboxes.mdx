@@ -3,6 +3,7 @@ title: "Compare local, Docker, and cloud sandboxes"
 lessonNumber: "11.1.2"
 chapterNumber: "11.1"
 pathNumber: "11"
+description: "Compare the real isolation tradeoffs between local execution, venvs, Docker, and cloud sandboxes, then keep the runtime decision sheet close."
 tutorPreload: "Help me decide which isolation approach fits my use case — local venv, Docker, or a cloud sandbox."
 verifyType: "terminal_output"
 stepSchemaVersion: 1
@@ -13,6 +14,8 @@ stepSchemaVersion: 1
 ## Objective
 
 By the end of this lesson you will understand four levels of code isolation — bare metal, language-level virtual environments, OS-level Docker containers, and cloud sandboxes — and be able to choose the right one for a given situation. You will generate a comparison snapshot from your own machine to anchor the theory.
+
+<DownloadCard slug="runtime-lab-decision-matrix" />
 
 ## Walkthrough
 
@@ -143,6 +146,8 @@ Docker: $(try { docker --version } catch { 'NOT INSTALLED' })
 $snapshot | Out-File "$HOME\sandbox-comparison.md"
 Get-Content "$HOME\sandbox-comparison.md"
 ```
+
+<DownloadCard slug="2026-runtime-and-deployment-update-brief" title="2026 runtime update brief" />
 
 ### What can go wrong
 

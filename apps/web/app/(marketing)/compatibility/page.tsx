@@ -24,10 +24,13 @@ export default function CompatibilityPage() {
           platform, and environment combinations are the safest defaults and which ones deserve stronger caution.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/runtime-lab" className="button-primary">
+            Open Runtime Lab
+          </Link>
           <Link href="/trust" className="button-secondary">
             Open trust center
           </Link>
-          <Link href="/troubleshooting" className="button-primary">
+          <Link href="/troubleshooting" className="button-secondary">
             Troubleshoot a problem
           </Link>
         </div>

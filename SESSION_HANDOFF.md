@@ -15,6 +15,14 @@
 
 ## Completed This Session
 
+- Implemented the next ordered follow-through after the 2026 academy polish pass:
+  - seeded flagship-course depth in the real lesson corpus by wiring asset-vault packs and richer lesson descriptions into key Setup Academy / fast-path lessons in Paths 03, 08, 11, and 19
+  - strengthened `apps/web/app/(app)/learn/[pathSlug]/page.tsx` so learner path pages now explain studio focus, milestone badge, chapter-support expectations, and direct academy links
+  - launched first-class academy shells for `/runtime-lab`, `/workflow-studio`, and `/prompt-doctor`, and replaced the old dark `labs` experiment with a CLI Academy-aligned Live Labs shell
+  - expanded discoverability for those surfaces through navbar, sidebar, footer, sitemap, Setup Academy, Prompt Studio, Compatibility, Downloads, and Asset Vault links
+  - deepened the Asset Vault positioning with install-ready and course-linked pack framing
+- Revalidated that follow-through with clean frontend `npm run lint`, clean `npm run typecheck`, and a clean production `npm run build` in `apps/web`.
+- Reran the authenticated Playwright tutor and learner-flow pack. The results still point to the same environment blocker rather than a product regression: outside-sandbox execution now reaches `apps/web/e2e/auth.ts`, but the current environment still does not provide usable `E2E_USER_EMAIL` / `E2E_USER_PASSWORD`, and the saved auth state alone is insufficient to bypass the login fallback.
 - Implemented the approved five-part 2026 academy polish pass without replacing the existing delivery infrastructure. The shared academy metadata in `apps/web/lib/academy.ts` now includes explicit 2026 update micro-modules, chapter media standards, the new Course 21 mastery layer for cost engineering and multi-provider agents, badge definitions, and optional showcase highlights. Updated the academy-facing pages and cards so those upgrades now appear consistently across `/`, `/learn`, `/setup-academy`, `/prompt-context-studio`, `/asset-vault`, and `/dashboard`.
 - Expanded the Asset Vault with real supporting downloads for that polish pass: `chapter-mini-notes-series`, `2026-runtime-and-deployment-update-brief`, `cost-engineering-multi-provider-playbook`, and `capstone-showcase-submission-kit`, plus the corresponding content files under `content/assets/`.
 - Continued the post-reframe cleanup after the first academy-shell commit landed on `main`: clarified route roles so `/learn` is now the main academy discovery front door, `/paths` is the detailed live execution catalog, `/asset-vault` and signed-in `/downloads` are the builder-asset surfaces, and `/resources` is explicitly the broader ecosystem directory. Updated the relevant page copy and cross-links across the marketing shell and signed-in downloads experience, then revalidated with clean frontend `npm run lint`, clean `npm run typecheck`, and another clean production `npm run build` in `apps/web`.
@@ -97,7 +105,7 @@
 
 ## Next Action
 
-Run the frontend validation loop for the new 2026 academy polish pass, then refresh the saved learner Playwright auth state or provide fresh `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` before attempting final authenticated tutor and learner-flow signoff again.
+Refresh the saved learner Playwright auth state or provide fresh `E2E_USER_EMAIL` / `E2E_USER_PASSWORD`, rerun the authenticated tutor and learner-flow pack for release-style signoff, then continue flagship-course seeding deeper across Week 1, Cowork, Runtime Lab, and Prompt Doctor lesson packs.
 
 ## Blockers
 
@@ -120,6 +128,7 @@ Run the frontend validation loop for the new 2026 academy polish pass, then refr
 - The floating tutor launcher should stay visible on learning/app surfaces, but it should not render on marketing routes where it blocks mobile hero and editorial content.
 - On lesson/app surfaces, the open tutor modal should also own the viewport cleanly on mobile: no duplicate floating launcher while open and no launcher-sized bottom gap that exposes the bottom nav behind the modal.
 - The approved 2026 academy upgrades should live as academy metadata, reusable cards, and real downloadable assets, not as isolated copy pasted into one or two pages.
+- New academy surfaces should be discoverable from the main learner shell and sitemap as soon as they exist; hidden routes make the academy feel incomplete even when the underlying pages are present.
 
 ## Risks To Watch
 

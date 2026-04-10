@@ -95,14 +95,14 @@ export const ACADEMY_SURFACES: AcademySurface[] = [
   },
   {
     title: "Runtime Lab",
-    href: "/setup-academy#runtime-lab",
+    href: "/runtime-lab",
     label: "comparison and decision layer",
     summary: "See what each runtime is best for, which one is stable enough for beginners, and when to stay local versus remote.",
     status: "seeded-now",
   },
   {
     title: "Workflow Studio",
-    href: "/prompt-context-studio#workflow-studio",
+    href: "/workflow-studio",
     label: "n8n-style orchestration",
     summary: "Map planner, worker, reviewer, retrieval, approval, and scheduling flows before you automate them.",
     status: "seeded-now",

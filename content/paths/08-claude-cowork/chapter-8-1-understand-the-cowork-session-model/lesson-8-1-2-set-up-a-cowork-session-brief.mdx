@@ -3,6 +3,7 @@ title: "Set up a Cowork session brief"
 lessonNumber: "8.1.2"
 chapterNumber: "8.1"
 pathNumber: "8"
+description: "Build the briefing artifact that keeps Cowork sessions focused, reviewable, and reusable instead of vague and drift-prone."
 tutorPreload: "Review my session brief and tell me what's missing before I start the Cowork session."
 verifyType: "terminal_output"
 stepSchemaVersion: 1
@@ -13,6 +14,8 @@ stepSchemaVersion: 1
 ## Objective
 
 By the end of this lesson you will have a written session brief — a short document that tells Claude exactly what you want to accomplish, what context it needs, and how you will judge success. A good brief is the single biggest factor in whether a Cowork session produces useful output or wanders off track.
+
+<DownloadCard slug="claude-cowork-session-brief-template" />
 
 ## Walkthrough
 
@@ -186,6 +189,8 @@ EOF
 [What should Claude NOT do?]
 "@ | Set-Content -Path cowork-brief-template.md -Encoding utf8
 ```
+
+<DownloadCard slug="prompt-context-studio-starter-pack" title="Prompt and context starter pack" />
 
 ### What can go wrong
 

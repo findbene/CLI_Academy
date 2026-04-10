@@ -35,6 +35,8 @@ export default async function MarketingLayout({ children }: { children: ReactNod
               <li><Link href="/learn" className="hover:text-[var(--color-accent-primary)] transition-colors">Learn</Link></li>
               <li><Link href="/setup-academy" className="hover:text-[var(--color-accent-primary)] transition-colors">Setup Academy</Link></li>
               <li><Link href="/prompt-context-studio" className="hover:text-[var(--color-accent-primary)] transition-colors">Prompt &amp; Context Studio</Link></li>
+              <li><Link href="/runtime-lab" className="hover:text-[var(--color-accent-primary)] transition-colors">Runtime Lab</Link></li>
+              <li><Link href="/workflow-studio" className="hover:text-[var(--color-accent-primary)] transition-colors">Workflow Studio</Link></li>
               <li><Link href="/asset-vault" className="hover:text-[var(--color-accent-primary)] transition-colors">Asset Vault</Link></li>
               <li><Link href="/pricing" className="hover:text-[var(--color-accent-primary)] transition-colors">Pricing</Link></li>
             </ul>
@@ -46,6 +48,8 @@ export default async function MarketingLayout({ children }: { children: ReactNod
             <ul className="mt-3 space-y-2 text-sm text-[var(--color-fg-muted)]">
               <li><Link href="/paths" className="hover:text-[var(--color-accent-primary)] transition-colors">Live Paths</Link></li>
               <li><Link href="/asset-vault" className="hover:text-[var(--color-accent-primary)] transition-colors">Asset Vault</Link></li>
+              <li><Link href="/labs" className="hover:text-[var(--color-accent-primary)] transition-colors">Live Labs</Link></li>
+              <li><Link href="/prompt-doctor" className="hover:text-[var(--color-accent-primary)] transition-colors">Prompt Doctor</Link></li>
               <li><Link href="/resources" className="hover:text-[var(--color-accent-primary)] transition-colors">Ecosystem Directory</Link></li>
               <li><Link href="/troubleshooting" className="hover:text-[var(--color-accent-primary)] transition-colors">Troubleshooting</Link></li>
               <li><Link href="/trust" className="hover:text-[var(--color-accent-primary)] transition-colors">Trust &amp; Safety</Link></li>

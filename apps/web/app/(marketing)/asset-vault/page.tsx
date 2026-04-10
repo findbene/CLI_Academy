@@ -6,6 +6,8 @@ export default function AssetVaultPage() {
   const assets = getAllLocalAssets();
   const freeCount = assets.filter((asset) => asset.tier === "free").length;
   const proCount = assets.filter((asset) => asset.tier === "pro").length;
+  const installReadyAssets = assets.filter((asset) => (asset.installSteps?.length ?? 0) > 0);
+  const courseLinkedAssets = assets.filter((asset) => asset.recommendedPaths.length > 0);
   const spotlightAssets = assets.filter((asset) =>
     [
       "chapter-mini-notes-series",
@@ -28,6 +30,9 @@ export default function AssetVaultPage() {
           <Link href="/downloads" className="button-primary">
             Open signed-in vault
           </Link>
+          <Link href="/prompt-doctor" className="button-secondary">
+            Open Prompt Doctor
+          </Link>
           <Link href="/resources" className="button-secondary">
             Browse ecosystem directory
           </Link>
@@ -38,6 +43,36 @@ export default function AssetVaultPage() {
           <span className="badge" data-tone="warning">{proCount} pro assets</span>
           <span className="badge">{assets.length} total vault entries</span>
         </div>
+      </section>
+
+      <section className="mt-8 grid gap-4 lg:grid-cols-2">
+        <article className="panel p-6">
+          <div className="eyebrow">Install-ready packs</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">Assets with setup steps and operational guidance</h2>
+          <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
+            These are the packs learners can use while a terminal, runtime, or workflow is actively open. They carry
+            install steps, compatibility notes, or practical usage guidance instead of just generic download labels.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {installReadyAssets.slice(0, 6).map((asset) => (
+              <span key={asset.slug} className="badge">{asset.title}</span>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel p-6">
+          <div className="eyebrow">Course-linked packs</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">Every serious pack should point back to a course or path</h2>
+          <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
+            The vault is part of the learning flow. Assets are now tied back to fast-path weeks, flagship courses, and
+            the live path catalog so learners know when and why to use each pack.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {courseLinkedAssets.slice(0, 6).map((asset) => (
+              <span key={asset.slug} className="badge">{asset.title}</span>
+            ))}
+          </div>
+        </article>
       </section>
 
       <section className="mt-8">
