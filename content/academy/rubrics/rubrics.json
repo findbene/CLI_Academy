@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "artifact-verification-core",
+    "title": "Artifact Verification Core Rubric",
+    "criteria": [
+      "The command or workflow ran successfully.",
+      "The output is specific and grounded in real evidence.",
+      "The learner followed the safety constraints.",
+      "The deliverable is complete enough to review."
+    ]
+  },
+  {
+    "slug": "capstone-evidence-rubric",
+    "title": "Capstone Evidence Rubric",
+    "criteria": [
+      "The project solves a real bounded problem.",
+      "The architecture is explained in plain English.",
+      "The demo evidence is credible and complete.",
+      "The safety and review choices are documented."
+    ]
+  },
+  {
+    "slug": "runtime-validation-rubric",
+    "title": "Runtime Validation Rubric",
+    "criteria": [
+      "The runtime choice is justified with support-tier and beginner-fit reasoning.",
+      "The validation steps are concrete and reproducible.",
+      "The learner captured evidence from startup or first-response checks.",
+      "The learner documented at least one safety or rollback consideration."
+    ]
+  }
+]

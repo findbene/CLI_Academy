@@ -13,10 +13,12 @@ import {
   Printer,
   Shield,
 } from "lucide-react";
+import { LessonResourceRail } from "@/components/academy/LessonResourceRail";
 import { AssetCard } from "@/components/assets/AssetCard";
 import { TutorContextBridge } from "@/components/tutor/TutorRuntimeProvider";
 import { LearningModeSelector, type LearningMode } from "@/components/lesson/LearningModeSelector";
 import type { DownloadSurfaceAsset } from "@/lib/assets";
+import type { AcademyAsset, AcademyLab, AcademyRuntime } from "@/lib/academy-content";
 import {
   isLessonCompletedLocally,
   markLessonCompletedLocally,
@@ -39,6 +41,9 @@ interface LessonPlayerProps {
   previousLessonHref?: string;
   nextLessonHref?: string;
   recommendedAssets?: DownloadSurfaceAsset[];
+  relatedAcademyAssets?: Array<AcademyAsset & { note?: string }>;
+  relatedAcademyLabs?: Array<AcademyLab & { note?: string }>;
+  relatedAcademyRuntimes?: Array<AcademyRuntime & { note?: string }>;
   supportGuideTitles?: string[];
   testedOnEnvironments?: string[];
   children: React.ReactNode;
@@ -76,6 +81,9 @@ export function LessonPlayer({
   previousLessonHref,
   nextLessonHref,
   recommendedAssets = [],
+  relatedAcademyAssets = [],
+  relatedAcademyLabs = [],
+  relatedAcademyRuntimes = [],
   supportGuideTitles = [],
   testedOnEnvironments = [],
   children,
@@ -458,6 +466,14 @@ export function LessonPlayer({
                   </Link>
                 </div>
               </div>
+
+              <LessonResourceRail
+                assets={relatedAcademyAssets}
+                labs={relatedAcademyLabs}
+                lessonSlug={lessonSlug}
+                pathSlug={pathSlug}
+                runtimes={relatedAcademyRuntimes}
+              />
             </aside>
           </div>
 

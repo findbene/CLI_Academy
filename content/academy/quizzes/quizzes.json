@@ -1,0 +1,68 @@
+[
+  {
+    "slug": "setup-surfaces-and-permissions",
+    "title": "Setup Surfaces and Permissions Check",
+    "summary": "Confirm the learner understands when to use each surface and how to stay safe.",
+    "questionCount": 5,
+    "passThreshold": 80,
+    "questions": [
+      {
+        "prompt": "Which surface is the best default starting point for repo-aware builder work?",
+        "options": ["Claude Code in the terminal", "A browser tab with no files", "A slide deck", "A blank text editor"],
+        "answerIndex": 0,
+        "explanation": "CLI Academy treats Claude Code in the terminal as the safest default place to learn repo-aware builder workflows."
+      },
+      {
+        "prompt": "What should a beginner do before approving a file-changing action?",
+        "options": ["Approve immediately to save time", "Review what will change and why", "Restart the machine", "Open a new browser tab"],
+        "answerIndex": 1,
+        "explanation": "The safe default is to inspect the requested action, scope, and expected output before approval."
+      }
+    ]
+  },
+  {
+    "slug": "prompt-anatomy-check",
+    "title": "Prompt Anatomy Check",
+    "summary": "Check clarity, constraints, examples, and output structure understanding.",
+    "questionCount": 5,
+    "passThreshold": 80,
+    "questions": [
+      {
+        "prompt": "Which prompt is usually stronger for a beginner workflow?",
+        "options": ["Do something smart with this repo", "Summarize this repo in 5 bullets and suggest one safe first improvement", "Fix everything", "Use your best judgment"],
+        "answerIndex": 1,
+        "explanation": "Specific outcome, format, and scope almost always outperform vague prompting."
+      }
+    ]
+  },
+  {
+    "slug": "cowork-task-framing-check",
+    "title": "Cowork Task Framing Check",
+    "summary": "Confirm that the learner can turn vague knowledge-work requests into structured deliverables.",
+    "questionCount": 5,
+    "passThreshold": 80,
+    "questions": [
+      {
+        "prompt": "Which instruction is better for Cowork?",
+        "options": ["Look through these files and do something useful", "Review this folder and produce a 1-page briefing with 3 risks, 3 actions, and a clean summary table", "Use your instincts", "Write a bunch of notes"],
+        "answerIndex": 1,
+        "explanation": "Cowork performs best when the deliverable, structure, and expected output are explicit."
+      }
+    ]
+  },
+  {
+    "slug": "runtime-basics-check",
+    "title": "Runtime Basics Check",
+    "summary": "Check support-tier judgment, setup burden awareness, and safer default runtime selection.",
+    "questionCount": 5,
+    "passThreshold": 80,
+    "questions": [
+      {
+        "prompt": "What is the safest default for a beginner's first runtime?",
+        "options": ["The most experimental runtime because it is exciting", "A runtime with stronger support tier and higher beginner fit", "Any runtime with the fewest configuration files", "Whichever runtime has the shortest setup guide"],
+        "answerIndex": 1,
+        "explanation": "CLI Academy teaches beginners to prefer stronger support and clearer debugging loops over novelty."
+      }
+    ]
+  }
+]

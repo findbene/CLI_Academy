@@ -1,0 +1,35 @@
+[
+  {
+    "slug": "claude-code-setup-checklist",
+    "title": "Claude Code Setup Checklist",
+    "type": "checklist",
+    "summary": "A printable beginner-safe checklist for installation, auth, and first-run validation.",
+    "skillLevel": "beginner",
+    "supportTier": "free",
+    "compatibility": ["macOS", "Windows", "Linux"],
+    "whoItsFor": "First-time learners setting up Claude Code on a real machine.",
+    "exampleUsage": "Run through the checklist before your first builder session and again whenever a setup issue appears."
+  },
+  {
+    "slug": "builder-extension-pack-starter",
+    "title": "Builder Extension Pack Starter",
+    "type": "starter-pack",
+    "summary": "A starter bundle for one skill, one slash command, one hook, and one subagent.",
+    "skillLevel": "intermediate",
+    "supportTier": "pro",
+    "compatibility": ["Claude Code", "Claude Cowork"],
+    "whoItsFor": "Learners who are ready to make their builder workflows reusable and repeatable.",
+    "exampleUsage": "Save the starter pack into a project and customize each item for your team or workflow."
+  },
+  {
+    "slug": "prompt-makeover-pack",
+    "title": "Prompt Makeover Pack",
+    "type": "prompt-pack",
+    "summary": "Weak-to-strong prompt rewrite examples for builder, research, and grounding tasks.",
+    "skillLevel": "beginner",
+    "supportTier": "pro",
+    "compatibility": ["Claude Code", "Claude Cowork", "RAG Workflows"],
+    "whoItsFor": "Learners building better prompting instincts for Claude-based workflows.",
+    "exampleUsage": "Compare the weak and strong versions, then adapt the strong variants to your own project."
+  }
+]

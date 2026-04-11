@@ -1,0 +1,37 @@
+[
+  {
+    "slug": "zero-to-run",
+    "title": "Zero-to-Run",
+    "summary": "Install, configure, troubleshoot, and safely run the core builder surfaces and runtimes.",
+    "goal": "I installed the stack, I can run it, and I can recover when something breaks.",
+    "sequence": 1
+  },
+  {
+    "slug": "zero-to-build",
+    "title": "Zero-to-Build",
+    "summary": "Use Claude tools, builder assets, and automation primitives to perform real work.",
+    "goal": "I can use these tools to get useful outputs on real projects.",
+    "sequence": 2
+  },
+  {
+    "slug": "zero-to-ground",
+    "title": "Zero-to-Ground",
+    "summary": "Ground assistants in files, retrieval, and evidence instead of guesses.",
+    "goal": "My system works from real knowledge, not only plausible language.",
+    "sequence": 3
+  },
+  {
+    "slug": "zero-to-orchestrate",
+    "title": "Zero-to-Orchestrate",
+    "summary": "Coordinate roles, workflows, runtimes, and review loops.",
+    "goal": "I can design workflows that are bigger than one prompt or one agent.",
+    "sequence": 4
+  },
+  {
+    "slug": "zero-to-ship",
+    "title": "Zero-to-Ship",
+    "summary": "Deploy, observe, secure, and package the system for real use.",
+    "goal": "I can ship what I built and defend it with evidence.",
+    "sequence": 5
+  }
+]

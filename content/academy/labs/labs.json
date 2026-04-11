@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "claude-code-cli-lab",
+    "title": "Claude Code CLI Lab",
+    "summary": "Practice safe setup, first-run checks, and a tiny builder task in a resettable environment.",
+    "labType": "cli",
+    "estimatedMinutes": 30,
+    "expectedOutput": "A verified local builder session with one reviewed file change."
+  },
+  {
+    "slug": "prompt-refinement-lab",
+    "title": "Prompt Refinement Lab",
+    "summary": "Rewrite weak prompts, compare outputs, and save the strongest variant.",
+    "labType": "prompt",
+    "estimatedMinutes": 25,
+    "expectedOutput": "A before-and-after prompt set with explanation notes."
+  },
+  {
+    "slug": "runtime-validation-lab",
+    "title": "Runtime Validation Lab",
+    "summary": "Bring up a runtime, run a health check, and verify a first response safely.",
+    "labType": "runtime",
+    "estimatedMinutes": 35,
+    "expectedOutput": "A health-check log and a documented first successful response."
+  }
+]

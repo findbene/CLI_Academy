@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "rewrite-a-vague-request",
+    "title": "Rewrite a Vague Request",
+    "summary": "Turn a weak request into a bounded, reusable prompt with an explicit output format.",
+    "expectedArtifact": "A rewritten prompt with a short explanation of changes.",
+    "steps": [
+      "Start with a vague request such as 'help me with this project'.",
+      "Add a clear task, scope limit, and output format.",
+      "State one explicit success condition.",
+      "Write one sentence explaining why the new prompt is safer and clearer."
+    ]
+  },
+  {
+    "slug": "runtime-choice-memo",
+    "title": "Runtime Choice Memo",
+    "summary": "Match a beginner use case to the most suitable runtime and explain the tradeoffs.",
+    "expectedArtifact": "A one-page runtime decision memo.",
+    "steps": [
+      "Pick one beginner use case.",
+      "Compare two runtime options.",
+      "Name one risk and one operational advantage for each.",
+      "Choose one runtime and justify the choice in plain English."
+    ]
+  },
+  {
+    "slug": "cowork-brief-template",
+    "title": "Cowork Brief Template Exercise",
+    "summary": "Turn a messy folder request into a structured Cowork task brief with a clear output shape.",
+    "expectedArtifact": "A task brief with source scope, deliverable structure, and review checklist.",
+    "steps": [
+      "Choose a folder-based task such as summarizing notes or extracting action items.",
+      "Define what files Cowork should use and what should be ignored.",
+      "Describe the exact deliverable structure you want returned.",
+      "Add one explicit review step before you accept the result."
+    ]
+  },
+  {
+    "slug": "runtime-sanity-check",
+    "title": "Runtime Sanity Check Exercise",
+    "summary": "Write a simple runtime validation plan before trusting a fresh install.",
+    "expectedArtifact": "A short validation checklist with startup, health-check, and first-response evidence.",
+    "steps": [
+      "Define the first startup signal you expect to see.",
+      "List one health check and one first real task to run.",
+      "Note one failure mode you want to watch for.",
+      "Explain how you will record evidence that the runtime is actually working."
+    ]
+  }
+]

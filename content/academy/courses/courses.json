@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "setup-claude-code",
+    "pillarSlug": "zero-to-run",
+    "title": "Setup Claude Code, Configure, Troubleshoot, Test, and Evaluate",
+    "summary": "Install Claude Code, understand its surfaces, and complete your first safe builder workflow.",
+    "difficulty": "beginner",
+    "tier": "free",
+    "estimatedHours": "4-6 hours",
+    "mainProjectTitle": "First Working Claude Code Builder Session"
+  },
+  {
+    "slug": "prompting-fundamentals-for-beginners",
+    "pillarSlug": "zero-to-build",
+    "title": "Prompting Fundamentals for Beginners",
+    "summary": "Turn weak instructions into clear, testable prompts that are easy to reuse.",
+    "difficulty": "beginner",
+    "tier": "free",
+    "estimatedHours": "3-4 hours",
+    "mainProjectTitle": "Prompt Makeover Pack"
+  },
+  {
+    "slug": "mcp-skills-hooks-and-subagents",
+    "pillarSlug": "zero-to-build",
+    "title": "MCP, Skills, Slash Commands, Hooks, and Subagents",
+    "summary": "Use the main extension surfaces that make Claude-based systems reusable and more powerful.",
+    "difficulty": "intermediate",
+    "tier": "pro",
+    "estimatedHours": "5-6 hours",
+    "mainProjectTitle": "Builder Extension Pack"
+  },
+  {
+    "slug": "rag-foundations",
+    "pillarSlug": "zero-to-ground",
+    "title": "RAG Foundations",
+    "summary": "Build your first grounded assistant over a real document set with retrieval, citations, and quality checks.",
+    "difficulty": "intermediate",
+    "tier": "pro",
+    "estimatedHours": "5-6 hours",
+    "mainProjectTitle": "Courseware Q&A Assistant"
+  },
+  {
+    "slug": "deployment-observability-and-safety",
+    "pillarSlug": "zero-to-ship",
+    "title": "Deployment Paths, Runtime Operations, Observability, and Safety",
+    "summary": "Take the system from local prototype to observable, recoverable, and presentable deployment.",
+    "difficulty": "advanced",
+    "tier": "pro",
+    "estimatedHours": "6-8 hours",
+    "mainProjectTitle": "Shippable Agent System"
+  }
+]

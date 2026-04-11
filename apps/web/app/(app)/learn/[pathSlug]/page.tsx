@@ -2,6 +2,8 @@ import { AssetCard } from "@/components/assets/AssetCard";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
+import { getAcademyRelationships, getAcademyRuntimes } from "@/lib/academy-content";
+import { getPathRuntimeLinks } from "@/lib/academy-recommendations";
 import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
 import { getLessonsForPath } from "@/lib/mdx";
@@ -104,10 +106,19 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
     );
   }
 
-  const lessons = await getLessonsForPath(pathSlug);
+  const [lessons, academyRuntimes, academyRelationships] = await Promise.all([
+    getLessonsForPath(pathSlug),
+    getAcademyRuntimes(),
+    getAcademyRelationships(),
+  ]);
   const recommendedAssets = getRecommendedAssetsForPath(pathSlug)
     .slice(0, 3)
     .map((asset) => toDownloadSurfaceAsset(asset, viewer.profile?.tier ?? "free"));
+  const relatedRuntimes = getPathRuntimeLinks({
+    pathSlug,
+    relationships: academyRelationships,
+    runtimes: academyRuntimes,
+  });
   const completedLessonSlugs = new Set<string>();
 
   if (viewer.supabaseConfigured && viewer.user && viewer.supabaseContext) {
@@ -156,6 +167,54 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
           {path.lastReviewedAt ? <span>Reviewed {path.lastReviewedAt}</span> : null}
         </div>
       </section>
+
+      {relatedRuntimes.length ? (
+        <section className="mt-8 grid gap-4">
+          <div>
+            <div className="eyebrow">Runtime Guidance</div>
+            <h2 className="mt-3 text-2xl font-semibold">This path connects directly to Runtime Lab</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--color-fg-muted)]">
+              If you want help choosing the right runtime before or during this path, start with these related runtime profiles and compare them inside Runtime Lab.
+            </p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {relatedRuntimes.map((runtime) => {
+              const compareTarget = runtime.slug === "openclaw" ? "hermes-agent" : "openclaw";
+
+              return (
+                <article key={runtime.slug} className="panel p-5">
+                  <div className="flex flex-wrap gap-2">
+                    <span
+                      className="badge"
+                      data-tone={
+                        runtime.supportTier === "stable"
+                          ? "accent"
+                          : runtime.supportTier === "emerging"
+                            ? "warning"
+                            : "danger"
+                      }
+                    >
+                      {runtime.supportTier}
+                    </span>
+                    <span className="badge">Setup: {runtime.setupComplexity}</span>
+                  </div>
+                  <h3 className="mt-4 text-xl font-semibold">{runtime.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">{runtime.summary}</p>
+                  {runtime.note ? <p className="mt-3 text-sm leading-6">{runtime.note}</p> : null}
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Link href={`/runtime-lab/${runtime.slug}`} className="button-secondary">
+                      View runtime
+                    </Link>
+                    <Link href={`/runtime-lab/compare?runtimes=${runtime.slug},${compareTarget}`} className="button-ghost">
+                      Compare
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       {recommendedAssets.length ? (
         <section className="mt-8 grid gap-4">

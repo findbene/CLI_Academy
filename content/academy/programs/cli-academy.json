@@ -1,0 +1,8 @@
+{
+  "slug": "cli-academy",
+  "title": "CLI Academy",
+  "summary": "The beginner-first install-to-production academy for Claude Code, Claude Cowork, OpenClaw, the Claw-verse, and practical autonomous AI systems.",
+  "goal": "Help beginners go from first install to real, portfolio-ready autonomous AI systems with guided setup, practical labs, reusable assets, and capstone evidence.",
+  "estimatedWeeks": 8,
+  "audience": ["beginners", "career-switchers", "freelancers", "operators", "junior developers"]
+}

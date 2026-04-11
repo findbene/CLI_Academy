@@ -1,0 +1,181 @@
+[
+  {
+    "entityType": "quiz",
+    "entitySlug": "setup-surfaces-and-permissions",
+    "pathSlug": "01-start-here",
+    "note": "Use this quiz to reinforce safe surface selection and approval habits."
+  },
+  {
+    "entityType": "exercise",
+    "entitySlug": "rewrite-a-vague-request",
+    "pathSlug": "01-start-here",
+    "note": "A first practice rep for turning vague requests into safe, bounded asks."
+  },
+  {
+    "entityType": "rubric",
+    "entitySlug": "artifact-verification-core",
+    "pathSlug": "01-start-here",
+    "note": "Apply this rubric to first-win artifacts and basic setup outputs."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "claude-code-setup-checklist",
+    "pathSlug": "01-start-here",
+    "note": "Best used during first setup and first-run checks."
+  },
+  {
+    "entityType": "quiz",
+    "entitySlug": "setup-surfaces-and-permissions",
+    "pathSlug": "03-claude-code",
+    "note": "Use this quiz after the learner has seen the main Claude Code surfaces and safety loop."
+  },
+  {
+    "entityType": "exercise",
+    "entitySlug": "rewrite-a-vague-request",
+    "pathSlug": "03-claude-code",
+    "note": "Strengthens request framing before the learner asks for a real repo change."
+  },
+  {
+    "entityType": "rubric",
+    "entitySlug": "artifact-verification-core",
+    "pathSlug": "03-claude-code",
+    "note": "Use this rubric to review first builder outputs and safe implementation evidence."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "claude-code-setup-checklist",
+    "pathSlug": "03-claude-code",
+    "note": "Useful again when learners install Claude Code and validate a first real builder session."
+  },
+  {
+    "entityType": "quiz",
+    "entitySlug": "prompt-anatomy-check",
+    "pathSlug": "03-claude-code",
+    "lessonSlug": "lesson-3-3-3-mini-project-first-real-improvement",
+    "note": "Use this lesson-level quiz when the learner improves a first implementation request."
+  },
+  {
+    "entityType": "exercise",
+    "entitySlug": "rewrite-a-vague-request",
+    "pathSlug": "03-claude-code",
+    "lessonSlug": "lesson-3-3-3-mini-project-first-real-improvement",
+    "note": "Lesson-specific prompt rewrite practice before the first real improvement task."
+  },
+  {
+    "entityType": "rubric",
+    "entitySlug": "artifact-verification-core",
+    "pathSlug": "03-claude-code",
+    "lessonSlug": "lesson-3-3-3-mini-project-first-real-improvement",
+    "note": "Lesson-level review rubric for the first repo improvement deliverable."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "prompt-makeover-pack",
+    "pathSlug": "03-claude-code",
+    "lessonSlug": "lesson-3-3-3-mini-project-first-real-improvement",
+    "note": "Useful when learners start rewriting prompts for implementation work."
+  },
+  {
+    "entityType": "lab",
+    "entitySlug": "claude-code-cli-lab",
+    "pathSlug": "03-claude-code",
+    "note": "Good companion lab for first real Claude Code builder sessions."
+  },
+  {
+    "entityType": "lab",
+    "entitySlug": "prompt-refinement-lab",
+    "pathSlug": "03-claude-code",
+    "lessonSlug": "lesson-3-3-3-mini-project-first-real-improvement",
+    "note": "Pairs well with first prompt rewrites and safer implementation requests."
+  },
+  {
+    "entityType": "quiz",
+    "entitySlug": "cowork-task-framing-check",
+    "pathSlug": "08-claude-cowork",
+    "note": "Reinforces clear deliverable design before learners run broader folder tasks."
+  },
+  {
+    "entityType": "exercise",
+    "entitySlug": "cowork-brief-template",
+    "pathSlug": "08-claude-cowork",
+    "note": "Good first exercise for turning a messy folder request into a bounded task brief."
+  },
+  {
+    "entityType": "rubric",
+    "entitySlug": "artifact-verification-core",
+    "pathSlug": "08-claude-cowork",
+    "note": "Use the core rubric to evaluate early Cowork output quality and review discipline."
+  },
+  {
+    "entityType": "quiz",
+    "entitySlug": "runtime-basics-check",
+    "pathSlug": "11-openclaw-and-claw-runtime-foundations",
+    "note": "Use after runtime selection and support-tier concepts are introduced."
+  },
+  {
+    "entityType": "exercise",
+    "entitySlug": "runtime-choice-memo",
+    "pathSlug": "11-openclaw-and-claw-runtime-foundations",
+    "note": "Core runtime decision exercise for the first setup track."
+  },
+  {
+    "entityType": "rubric",
+    "entitySlug": "runtime-validation-rubric",
+    "pathSlug": "11-openclaw-and-claw-runtime-foundations",
+    "note": "Use when reviewing runtime setup evidence and health-check results."
+  },
+  {
+    "entityType": "runtime",
+    "entitySlug": "openclaw",
+    "pathSlug": "11-openclaw-and-claw-runtime-foundations",
+    "note": "Default beginner runtime recommendation for the first runtime track."
+  },
+  {
+    "entityType": "runtime",
+    "entitySlug": "nanoclaw",
+    "pathSlug": "11-openclaw-and-claw-runtime-foundations",
+    "note": "Use as a comparison runtime to teach tradeoffs, not as the default install recommendation."
+  },
+  {
+    "entityType": "lab",
+    "entitySlug": "runtime-validation-lab",
+    "pathSlug": "11-openclaw-and-claw-runtime-foundations",
+    "note": "Best used alongside runtime health checks and first-response validation."
+  },
+  {
+    "entityType": "quiz",
+    "entitySlug": "runtime-basics-check",
+    "pathSlug": "12-skills-memory-heartbeats-and-scheduled-work",
+    "note": "Use to compare persistence-oriented runtime tradeoffs after the foundations are in place."
+  },
+  {
+    "entityType": "exercise",
+    "entitySlug": "runtime-sanity-check",
+    "pathSlug": "12-skills-memory-heartbeats-and-scheduled-work",
+    "note": "Good practice for validating a memory-aware runtime before trusting it for longer-lived work."
+  },
+  {
+    "entityType": "rubric",
+    "entitySlug": "capstone-evidence-rubric",
+    "pathSlug": "12-skills-memory-heartbeats-and-scheduled-work",
+    "note": "Use a stronger evidence rubric once learners start validating persistence and memory behavior."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "builder-extension-pack-starter",
+    "pathSlug": "12-skills-memory-heartbeats-and-scheduled-work",
+    "note": "Use this starter pack when learners turn one-off instructions into reusable builder assets."
+  },
+  {
+    "entityType": "runtime",
+    "entitySlug": "hermes-agent",
+    "pathSlug": "12-skills-memory-heartbeats-and-scheduled-work",
+    "note": "Most relevant when persistence and memory patterns become important."
+  },
+  {
+    "entityType": "lab",
+    "entitySlug": "runtime-validation-lab",
+    "pathSlug": "12-skills-memory-heartbeats-and-scheduled-work",
+    "note": "Reuse the validation lab when learners compare persistent runtime behavior and sanity checks."
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "slug": "week-1-setup-and-first-win",
+    "title": "Week 1 — Setup and First Win",
+    "summary": "Claude Code setup, first session confidence, and your first working assistant.",
+    "artifactGoal": "Personal AI Starter Assistant",
+    "sequence": 1
+  },
+  {
+    "slug": "week-2-claude-code-and-prompting",
+    "title": "Week 2 — Claude Code Foundations + Prompting Fundamentals",
+    "summary": "Use Claude Code more safely and improve how you ask for work.",
+    "artifactGoal": "Tiny Useful Builder App + Starter Prompt Pack",
+    "sequence": 2
+  },
+  {
+    "slug": "week-3-cowork-and-templates",
+    "title": "Week 3 — Claude Cowork + Prompt Templates",
+    "summary": "Turn messy folders into structured work and build reusable task prompts.",
+    "artifactGoal": "Folder-to-Briefing Workflow + Reusable Prompt Kit",
+    "sequence": 3
+  },
+  {
+    "slug": "week-4-runtime-mini-capstone",
+    "title": "Week 4 — OpenClaw Runtime + Mini Capstone",
+    "summary": "Stand up a runtime, connect one interface, and validate a real assistant loop.",
+    "artifactGoal": "Message-to-Action Assistant",
+    "sequence": 4
+  },
+  {
+    "slug": "week-5-builder-extensions-and-context",
+    "title": "Week 5 — MCP, Skills, Hooks, Subagents, and Context Engineering",
+    "summary": "Add reusable builder assets and improve the context quality of the spine project.",
+    "artifactGoal": "Builder Extension Pack",
+    "sequence": 5
+  },
+  {
+    "slug": "week-6-rag-and-agentic-rag",
+    "title": "Week 6 — RAG and Agentic RAG",
+    "summary": "Ground the system in documents and add a more agentic research flow.",
+    "artifactGoal": "Grounded Knowledge Assistant",
+    "sequence": 6
+  },
+  {
+    "slug": "week-7-orchestration-and-evaluation",
+    "title": "Week 7 — Orchestration, Harnesses, Workflow Studio, Evaluation, and Safety",
+    "summary": "Move from one workflow to coordinated reviewable agent work.",
+    "artifactGoal": "Operations Agent Team",
+    "sequence": 7
+  },
+  {
+    "slug": "week-8-deployment-and-capstone",
+    "title": "Week 8 — Deployment, Docs, and Final Capstone",
+    "summary": "Deploy, document, observe, and package the full system.",
+    "artifactGoal": "Autonomous AI Workforce Capstone",
+    "sequence": 8
+  }
+]

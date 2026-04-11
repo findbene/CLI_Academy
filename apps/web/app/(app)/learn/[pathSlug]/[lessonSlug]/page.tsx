@@ -1,8 +1,20 @@
+import { LessonCompanionBlocks } from "@/components/academy/LessonCompanionBlocks";
+import { LessonRelatedResources } from "@/components/academy/LessonRelatedResources";
 import { LessonContent } from "@/components/lesson/LessonContent";
 import { LessonPlayer } from "@/components/lesson/LessonPlayer";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
+import {
+  getAcademyAssets,
+  getAcademyExercises,
+  getAcademyLabs,
+  getAcademyQuizzes,
+  getAcademyRelationships,
+  getAcademyRuntimes,
+  getAcademyRubrics,
+} from "@/lib/academy-content";
+import { getLessonCompanionBlocks, getLessonResourceLinks } from "@/lib/academy-recommendations";
 import { getRecommendedAssetsForLesson, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
 import { getLessonsForPath } from "@/lib/mdx";
@@ -37,7 +49,16 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 export default async function LessonPage({ params }: LessonPageProps) {
   const { pathSlug, lessonSlug } = await params;
   const [path, viewer] = await Promise.all([getCatalogPathBySlug(pathSlug), getServerViewer()]);
-  const lessons = await getLessonsForPath(pathSlug);
+  const [lessons, quizzes, exercises, rubrics, relationships, academyAssets, academyLabs, academyRuntimes] = await Promise.all([
+    getLessonsForPath(pathSlug),
+    getAcademyQuizzes(),
+    getAcademyExercises(),
+    getAcademyRubrics(),
+    getAcademyRelationships(),
+    getAcademyAssets(),
+    getAcademyLabs(),
+    getAcademyRuntimes(),
+  ]);
   const lesson = lessons.find((item) => item.slug === lessonSlug) ?? null;
 
   if (!path || !lesson) {
@@ -80,6 +101,22 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const recommendedAssets = getRecommendedAssetsForLesson(path.slug, lesson.slug)
     .slice(0, 3)
     .map((asset) => toDownloadSurfaceAsset(asset, viewer.profile?.tier ?? "free"));
+  const companionBlocks = getLessonCompanionBlocks({
+    pathSlug: path.slug,
+    lessonSlug: lesson.slug,
+    quizzes,
+    exercises,
+    rubrics,
+    relationships,
+  });
+  const relatedResources = getLessonResourceLinks({
+    pathSlug: path.slug,
+    lessonSlug: lesson.slug,
+    relationships,
+    assets: academyAssets,
+    labs: academyLabs,
+    runtimes: academyRuntimes,
+  });
 
   return (
     <LessonPlayer
@@ -96,12 +133,25 @@ export default async function LessonPage({ params }: LessonPageProps) {
       previousLessonHref={previousLesson ? `/learn/${path.slug}/${previousLesson.slug}` : undefined}
       nextLessonHref={nextLesson ? `/learn/${path.slug}/${nextLesson.slug}` : undefined}
       recommendedAssets={recommendedAssets}
+      relatedAcademyAssets={relatedResources.assets}
+      relatedAcademyLabs={relatedResources.labs}
+      relatedAcademyRuntimes={relatedResources.runtimes}
       supportGuideTitles={support.guides.slice(0, 2).map((guide) => guide.title)}
       testedOnEnvironments={support.compatibility.slice(0, 2).map((entry) => entry.environment)}
       tutorPreload={lesson.tutorPreload}
       modeBalance={lesson.modeBalance}
     >
       <LessonContent pathSlug={pathSlug} lessonSlug={lessonSlug} />
+      <LessonCompanionBlocks
+        quiz={companionBlocks.quiz}
+        exercise={companionBlocks.exercise}
+        rubric={companionBlocks.rubric}
+      />
+      <LessonRelatedResources
+        assets={relatedResources.assets}
+        labs={relatedResources.labs}
+        runtimes={relatedResources.runtimes}
+      />
     </LessonPlayer>
   );
 }
