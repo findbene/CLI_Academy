@@ -329,6 +329,7 @@ export default async function DashboardPage() {
     recommendedSlugs,
   });
   const masteryGap = buildMasteryGapSummary({
+    catalogPaths,
     currentFocus: typeof answers.primary_goal === "string" ? answers.primary_goal : undefined,
     masteryByPath,
   });

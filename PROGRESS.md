@@ -2,7 +2,37 @@
 
 ## Current phase
 
-Zero-To-Mastery (ZTM) Infrastructure & Pedagogy Implementation.
+Deployment hardening — all critical and high-priority audit issues resolved.
+
+## Deployment audit fixes (2026-04-13)
+
+- **UX-01 fixed:** Mastery gap label on dashboard now shows the path title (e.g. "Start Here") instead of the raw slug (`"01-start-here"`). Fixed in `lib/roadmap.ts` `buildMasteryGapSummary`.
+- **BUG-01 fixed:** Race condition in daily tutor limit replaced with atomic PostgreSQL RPC (`infra/migrations/02_atomic_tutor_limit.sql`). `services/daily_limit.py` updated to call `increment_tutor_usage` RPC instead of read-then-write.
+- **GAMIF-01 fixed:** Backend `gamification.py` now writes `clearance_level` to `alumni_status` based on streak milestones (Initiate → Operative → Agent → Commander). Never demotes — only promotes.
+- **GAMIF-02 fixed:** Lesson completion in `LessonPlayer.tsx` now fires a fire-and-forget `POST /api/gamification/streak` after each successful hosted save. New Next.js route at `app/api/gamification/streak/route.ts`.
+- **UX-03 fixed:** Path overview lesson list now merges browser-local fallback completions via `PathLessonListHydration` client component so learners see correct "Completed" badges even before server sync.
+- **ARCH-01 fixed:** Python tutor router removed from `main.py` includes. All LLM calls go through the Next.js `/api/tutor` route. Python tutor files retained for reference.
+- **OPS-01 added:** Sentry SDK (`@sentry/nextjs`) installed and configured in `sentry.client.config.ts`, `sentry.server.config.ts`, `instrumentation.ts`. Activates only when `NEXT_PUBLIC_SENTRY_DSN` is set.
+- **OPS-02 added:** PostHog SDK (`posthog-js`) installed and wired via `PostHogProvider` in the root layout. Activates only when `NEXT_PUBLIC_POSTHOG_KEY` is set. Auto-captures pageviews.
+- **TEST-02 fixed:** Playwright e2e tests added to CI pipeline (`e2e` job in `.github/workflows/ci.yml`). Reports artifact on failure.
+- **INFRA-01 fixed:** Dockerfile hardened — non-root `apiuser`, `HEALTHCHECK`, `.dockerignore`, proper `exec` CMD for graceful shutdown.
+- **INFRA-02 added:** `apps/web/vercel.json` deployment config added.
+- **INFRA-03 added:** `docs/deployment-runbook.md` written — env vars, schema deploy, Cloud Run steps, smoke tests, incident response, secret rotation.
+- **SEC-01 partially fixed:** `.env.example` rewritten with full documentation, rotation warnings, and all required variables. Note: actual key rotation must be done manually at provider dashboards.
+- **PERF-01 fixed:** Three.js lazy-loaded in `AuthCard.tsx` via `next/dynamic` with `ssr: false`.
+- **Lint fixed:** Pre-existing ESLint errors in `SavedResourcesClient.tsx`, `VerificationBlock.tsx`, `QuizBlock.tsx` resolved. Build is clean.
+
+## In progress
+
+- Course content improvements (CONTENT-01, CONTENT-02, CONTENT-03) — deferred by user.
+
+## Next
+
+1. Rotate exposed API keys (Anthropic, Supabase, Google) — must be done manually at each provider.
+2. Deploy `infra/migrations/02_atomic_tutor_limit.sql` to production Supabase.
+3. Configure Sentry DSN and PostHog key in deployment environment.
+4. Run load test against tutor endpoint before public launch.
+5. Course and lesson content improvements (user requested reminder).
 
 ## Completed
 

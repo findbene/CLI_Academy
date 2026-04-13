@@ -6,8 +6,15 @@ import { useRouter } from "next/navigation";
 import { getPublicSupabaseConfigMessage } from "@/lib/env";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
+import dynamic from "next/dynamic";
 import { Spotlight } from "@/components/ui/spotlight";
-import { GenerativeArtScene } from "@/components/ui/anomalous-matter-hero";
+
+// Three.js is ~150KB gzipped — lazy-load it so it does not block the auth page
+// initial paint. The visual is decorative and appears beside the form.
+const GenerativeArtScene = dynamic(
+  () => import("@/components/ui/anomalous-matter-hero").then((m) => ({ default: m.GenerativeArtScene })),
+  { ssr: false, loading: () => <div className="h-full w-full bg-[var(--color-bg-panel)]" /> },
+);
 
 type AuthMode = "login" | "signup";
 

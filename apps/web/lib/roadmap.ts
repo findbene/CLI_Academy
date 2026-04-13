@@ -142,6 +142,7 @@ export function buildMasteryAwareRecommendations(input: {
 }
 
 export function buildMasteryGapSummary(input: {
+  catalogPaths: Array<Pick<CatalogPath, "slug" | "title">>;
   currentFocus?: string;
   masteryByPath: Map<string, { averageScore: number; verifiedLessons: number }>;
 }) {
@@ -158,6 +159,9 @@ export function buildMasteryGapSummary(input: {
   }
 
   const [lowestSlug, lowest] = entries[0];
+  const catalogPath = input.catalogPaths.find((p) => p.slug === lowestSlug);
+  const label = catalogPath?.title ?? lowestSlug;
+
   const focusReason =
     input.currentFocus === "automation"
       ? "Automation work needs stronger verification discipline before moving faster."
@@ -167,7 +171,7 @@ export function buildMasteryGapSummary(input: {
 
   return {
     averageScore: lowest.averageScore,
-    label: lowestSlug,
+    label,
     reason: focusReason,
   } satisfies MasteryGap;
 }

@@ -8,7 +8,7 @@ interface QuizBlockProps {
 }
 
 export function QuizBlock({ quiz }: QuizBlockProps) {
-  const questions = quiz.questions ?? [];
+  const questions = useMemo(() => quiz.questions ?? [], [quiz.questions]);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
 

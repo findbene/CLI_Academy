@@ -4,40 +4,41 @@
 
 | Component | State | Notes |
 |-----------|-------|-------|
-| Hosted lesson progress | LIVE | Supabase-backed `GET`/`POST /api/progress` now resolves against the live curriculum catalog after self-heal sync. |
-| Local fallback + backfill | LIVE | Browser-local progress is user-scoped, legacy anonymous entries can still backfill when safe, and authenticated app surfaces now promote old local completions into hosted rows. |
-| Lesson rendering | LIVE | Code-fence-aware lesson body splitting fixed duplicate headings/React keys caused by fenced markdown samples. |
-| Tutor runtime | LIVE | Floating tutor now runs through a shared runtime provider with mode-aware gating and `/api/tutor` usage/capability responses. |
-| Auth recovery | LIVE | `/forgot-password` and `/reset-password` are wired and smoke-covered. |
+| Dashboard mastery gap label | FIXED | Now shows path title, not raw slug |
+| Daily tutor limit (race condition) | FIXED | Atomic PostgreSQL RPC; migration in `infra/migrations/02_atomic_tutor_limit.sql` — deploy to Supabase |
+| Gamification streak trigger | FIXED | LessonPlayer fires POST /api/gamification/streak on every hosted save |
+| Clearance level progression | FIXED | Backend awards Initiate → Operative (7d) → Agent (14d) → Commander (30d); never demotes |
+| Path overview local fallback | FIXED | PathLessonListHydration merges local completions into lesson list |
+| Python tutor duplicate | FIXED | Removed from main.py includes; Next.js /api/tutor is the single LLM route |
+| Sentry error tracking | WIRED | Activates when NEXT_PUBLIC_SENTRY_DSN is set |
+| PostHog analytics | WIRED | Activates when NEXT_PUBLIC_POSTHOG_KEY is set |
+| Playwright in CI | FIXED | e2e job added to .github/workflows/ci.yml |
+| Dockerfile | FIXED | Non-root user, HEALTHCHECK, graceful shutdown |
+| Vercel config | ADDED | apps/web/vercel.json |
+| Deployment runbook | ADDED | docs/deployment-runbook.md |
+| Three.js bundle | OPTIMISED | Lazy-loaded in AuthCard via next/dynamic |
+| ESLint errors | FIXED | SavedResourcesClient, VerificationBlock, QuizBlock all clean |
 
 ## Completed This Session
 
-- Added automatic local-to-hosted backfill for legacy browser-only lesson completions via `apps/web/components/progress/LocalProgressBackfill.tsx`.
-- Scoped browser-local lesson progress per authenticated user in `apps/web/lib/local-lesson-progress.ts` and threaded that scope through lesson, dashboard, and backfill consumers.
-- Fixed the reported hydration mismatch and duplicate key warnings by adding `suppressHydrationWarning` on the root `<html>`, preserving fenced code blocks in `LessonContent.tsx`, and stabilizing `LessonPlayer.tsx` section harvesting and keys.
-- Ran authenticated browser QA against the real signed-in learner session and explicitly verified that a seeded legacy local completion backfilled into hosted progress and disappeared from local storage afterward.
-- Finished the pre-commit review pass, fixed the cross-account local-progress leak and overly broad local-fallback success path, and revalidated with clean frontend `typecheck` and clean production `build`.
+Full deployment-readiness audit + fix pass. See PROGRESS.md for the complete list of 15 issues resolved.
 
-## In Progress
+## Manual Actions Still Required (cannot be automated)
 
-- Editorial QA of rewritten live curriculum remains active, but the current blocking product regressions around hosted progress, local fallback, and learner-facing console noise are closed.
+1. **Rotate secrets** — `ANTHROPIC_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_API_KEY` were previously committed to git. Rotate at each provider's dashboard. If repo was ever public, scrub git history with BFG.
+2. **Deploy migration** — Run `infra/migrations/02_atomic_tutor_limit.sql` on the production Supabase instance (SQL editor or Supabase CLI).
+3. **Configure Sentry** — Set `NEXT_PUBLIC_SENTRY_DSN` in Vercel env vars.
+4. **Configure PostHog** — Set `NEXT_PUBLIC_POSTHOG_KEY` in Vercel env vars.
+5. **Stripe configuration** — Set price IDs and webhook secret when billing is ready to launch.
 
 ## Next Action
 
-Add focused regression coverage for local-progress fallback/backfill, dashboard hydration reconciliation, lesson rendering edge cases, and tutor mode gating before the next learner-flow change lands.
-
-## Blockers
-
-- No active blocking defects remain in the hosted-progress diff.
-
-## Decisions Made This Session
-
-- Hosted learner progress continues to self-heal by syncing the live curriculum catalog into Supabase instead of trusting stale seed rows.
-- Browser-local learner progress is now treated as user-scoped state, not machine-global state, and only legacy anonymous entries are merged for backfill when no competing signed-in scopes exist.
-- Local fallback success is now limited to recoverable sync failures (`401`, published-lesson mapping gaps, and transport failures) instead of masking all server-side save errors as successful completion.
+Course and content improvements — user deferred these and asked to be reminded:
+- CONTENT-01: Populate lesson companions for paths 01, 02, 03
+- CONTENT-02: Add variety to verifyType across lessons  
+- CONTENT-03: Add paths_old/README.md explaining the 2026-04 rewrite
 
 ## Risks To Watch
 
-- Path overview completion on `/learn/[pathSlug]` still reflects hosted state only, so it can briefly lag behind lesson/dashboard UI after a purely local fallback save.
-- Shared browsers can still hold legacy anonymous progress that is intentionally not auto-merged once multiple signed-in user scopes exist; that isolation is safer, but it can leave old anonymous progress stranded until manually resolved.
-- Password recovery still depends on Supabase email templates and redirect configuration in the active environment.
+- `alumni_status` table schema assumed to have a `clearance_level` column — verify this matches `infra/schema.sql` / `infra/migrations/01_gamification_dashboard.sql` before enabling streak endpoint in production.
+- Playwright e2e job in CI requires `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as placeholder env vars — already set in ci.yml but verify they don't cause build failures.

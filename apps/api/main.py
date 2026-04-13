@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 # Load environment variables from .env before anything else reads them.
 load_dotenv()
 
-from routers import gamification, health, tutor
+from routers import gamification, health
 
 # ---------------------------------------------------------------------------
 # Structured Observability / Logging
@@ -78,8 +78,12 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 app.include_router(health.router)
-app.include_router(tutor.router)
 app.include_router(gamification.router)
+# NOTE: The Python tutor service (routers/tutor.py, services/tutor_service.py) is
+# intentionally not registered here. All LLM tutor calls go through the Next.js
+# /api/tutor route which calls Anthropic directly and enforces daily limits via
+# Supabase. The Python files are kept for reference only and can be deleted in a
+# future cleanup once this comment is no longer needed.
 
 
 # ---------------------------------------------------------------------------

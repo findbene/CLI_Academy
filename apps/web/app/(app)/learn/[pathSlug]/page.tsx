@@ -1,4 +1,5 @@
 import { AssetCard } from "@/components/assets/AssetCard";
+import { PathLessonListHydration } from "@/components/path/PathLessonListHydration";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
@@ -187,9 +188,6 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
   }
 
   const firstIncompleteLesson = lessons.find((lesson) => !completedLessonSlugs.has(lesson.slug)) ?? lessons[0] ?? null;
-  const firstIncompleteIndex = firstIncompleteLesson
-    ? lessons.findIndex((lesson) => lesson.slug === firstIncompleteLesson.slug)
-    : -1;
 
   return (
     <main className="page-shell">
@@ -322,42 +320,19 @@ export default async function LearnPathPage({ params }: LearnPathPageProps) {
         </section>
       ) : null}
 
-      <section className="mt-8 grid gap-4">
-        {lessons.map((lesson) => (
-          <article key={lesson.slug} className="panel flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="text-sm text-[var(--color-fg-muted)]">
-                Lesson {lesson.lessonNumber} · {lesson.estimatedMinutes} min
-              </div>
-              <h2 className="mt-1 text-xl font-semibold">{lesson.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">{lesson.description}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {completedLessonSlugs.has(lesson.slug) ? (
-                  <span className="badge" data-tone="accent">
-                    Completed
-                  </span>
-                ) : firstIncompleteLesson?.slug === lesson.slug ? (
-                  <span className="badge" data-tone="accent">
-                    Continue here
-                  </span>
-                ) : firstIncompleteIndex !== -1 && lessons.findIndex((entry) => entry.slug === lesson.slug) > firstIncompleteIndex ? (
-                  <span className="badge">
-                    Coming up
-                  </span>
-                ) : (
-                  <span className="badge">Next up</span>
-                )}
-              </div>
-            </div>
-            <Link href={`/learn/${path.slug}/${lesson.slug}`} className="button-primary">
-              {completedLessonSlugs.has(lesson.slug)
-                ? "Review lesson"
-                : firstIncompleteLesson?.slug === lesson.slug
-                  ? "Continue lesson"
-                  : "Open lesson"}
-            </Link>
-          </article>
-        ))}
+      <section className="mt-8">
+        <PathLessonListHydration
+          lessons={lessons.map((lesson) => ({
+            description: lesson.description,
+            estimatedMinutes: lesson.estimatedMinutes,
+            lessonNumber: lesson.lessonNumber,
+            slug: lesson.slug,
+            title: lesson.title,
+          }))}
+          pathSlug={path.slug}
+          serverCompletedSlugs={Array.from(completedLessonSlugs)}
+          userId={viewer.user?.id ?? null}
+        />
       </section>
     </main>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, ChevronRight, Terminal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getLessonMastery, saveLessonMastery } from "@/lib/local-lesson-mastery";
 
 interface VerificationBlockProps {
@@ -21,34 +21,34 @@ export function VerificationBlock({
   rubricCriteria = [],
   verifyCheck,
 }: VerificationBlockProps) {
-  const [status, setStatus] = useState<"idle" | "verifying" | "success" | "fail">("idle");
-  const [output, setOutput] = useState("");
-  const [feedback, setFeedback] = useState<string | null>(null);
-  const [masteryScore, setMasteryScore] = useState<number | null>(null);
-  const [matchedCriteria, setMatchedCriteria] = useState<string[]>([]);
-
-  useEffect(() => {
+  // Resolve initial mastery from server prop or browser-local storage once.
+  const resolvedInitial = (() => {
     if (initialMastery) {
-      setMasteryScore(initialMastery.score);
-      setMatchedCriteria(initialMastery.matchedCriteria);
-      setStatus("success");
-      setFeedback("Previously verified.");
+      return { feedback: "Previously verified.", mastery: initialMastery };
     }
-
-    if (!pathSlug || !lessonSlug) {
-      return;
+    if (pathSlug && lessonSlug) {
+      const local = getLessonMastery(pathSlug, lessonSlug);
+      if (local) {
+        return { feedback: "Previously verified on this device.", mastery: local };
+      }
     }
+    return null;
+  })();
 
-    const mastery = getLessonMastery(pathSlug, lessonSlug);
-    if (!mastery) {
-      return;
-    }
+  const [status, setStatus] = useState<"idle" | "verifying" | "success" | "fail">(
+    resolvedInitial ? "success" : "idle",
+  );
+  const [output, setOutput] = useState("");
+  const [feedback, setFeedback] = useState<string | null>(resolvedInitial?.feedback ?? null);
+  const [masteryScore, setMasteryScore] = useState<number | null>(
+    resolvedInitial?.mastery.score ?? null,
+  );
+  const [matchedCriteria, setMatchedCriteria] = useState<string[]>(
+    resolvedInitial?.mastery.matchedCriteria ?? [],
+  );
 
-    setMasteryScore(mastery.score);
-    setMatchedCriteria(mastery.matchedCriteria);
-    setStatus("success");
-    setFeedback("Previously verified on this device.");
-  }, [initialMastery, lessonSlug, pathSlug]);
+  // No synchronisation effect needed — the component remounts when the lesson
+  // route changes and resolvedInitial re-computes from fresh storage on mount.
 
   async function handleVerify() {
     setStatus("verifying");

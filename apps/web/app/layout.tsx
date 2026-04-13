@@ -3,6 +3,7 @@ import { Sora, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { SearchDialog } from "@/components/ui/search-dialog";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import { TutorRuntimeProvider } from "@/components/tutor/TutorRuntimeProvider";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
 import "./globals.css";
 
 const sora = Sora({
@@ -70,12 +71,14 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <ThemeProvider>
-          <TutorRuntimeProvider>
-            <SearchDialog />
-            {children}
-          </TutorRuntimeProvider>
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider>
+            <TutorRuntimeProvider>
+              <SearchDialog />
+              {children}
+            </TutorRuntimeProvider>
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

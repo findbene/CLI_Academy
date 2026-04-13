@@ -43,20 +43,18 @@ export function SavedResourcesClient({
   const [savedEntries, setSavedEntries] = useState<Awaited<ReturnType<typeof getMergedSavedAcademyResources>>>([]);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
 
     async function loadSavedEntries() {
       const merged = await getMergedSavedAcademyResources();
       if (!cancelled) {
+        setMounted(true);
         setSavedEntries(merged);
       }
     }
 
-    if (mounted) {
+    // Always true — deferred to avoid running during SSR
+    if (typeof window !== "undefined") {
       loadSavedEntries();
     }
 

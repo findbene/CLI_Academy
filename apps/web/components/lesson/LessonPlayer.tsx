@@ -294,6 +294,8 @@ export function LessonPlayer({
         setProgressMessage(data.message ?? "Progress saved.");
         setShowCelebration(true);
         shouldAdvance = true;
+        // Fire-and-forget streak increment — failure is non-critical
+        fetch("/api/gamification/streak", { method: "POST" }).catch(() => undefined);
       }
 
       // Auto-advance to next lesson after a brief pause
