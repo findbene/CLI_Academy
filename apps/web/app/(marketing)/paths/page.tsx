@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PATH_SECTIONS, getCatalogPathsBySection, getPathCta } from "@/lib/catalog";
+import { getDifficultyLabel, getFormatLabel, getPathExperienceMeta } from "@/lib/learning-experience";
 
 export const metadata: Metadata = {
   title: "Learning Paths",
@@ -41,8 +42,10 @@ export default async function PathsCatalogPage() {
                 </p>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {paths.map((path) => (
-                  <article key={path.slug} className="panel p-5">
+                {paths.map((path) => {
+                  const experience = getPathExperienceMeta(path);
+                  return (
+                    <article key={path.slug} className="panel p-5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="badge" data-tone={path.tier === "free" ? "accent" : "warning"}>
                         {path.tier.toUpperCase()}
@@ -53,9 +56,14 @@ export default async function PathsCatalogPage() {
                       >
                         {path.status === "available" ? "Available" : "Coming soon"}
                       </span>
+                      <span className="badge">{getDifficultyLabel(experience.difficulty)}</span>
+                      <span className="badge">{getFormatLabel(experience.format)}</span>
                     </div>
                     <h3 className="mt-4 text-xl font-semibold">{path.title}</h3>
                     <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">{path.summary}</p>
+                    <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
+                      Best for: {experience.audience}
+                    </p>
                     <div className="metadata-bar mt-4">
                       <span>{path.availableLessonCount} lessons</span>
                       <span>{path.estimatedHours}</span>
@@ -69,8 +77,9 @@ export default async function PathsCatalogPage() {
                     <div className="mt-3 text-xs text-[var(--color-fg-muted)]">
                       {getPathCta(path, { signedIn: Boolean(viewer.user), tier: viewer.profile?.tier ?? null }).label}
                     </div>
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             </section>
           );

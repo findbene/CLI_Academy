@@ -400,6 +400,101 @@ export function buildTutorSupportContext(question: string, lessonTitle?: string)
 
 export function getPathSupportBundle(pathSlug: string): PathSupportBundle {
   const bundles: Record<string, PathSupportBundle> = {
+    "01-start-here": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew"],
+      guideTags: ["claude-command-not-found", "windows-path-permission-weirdness"],
+      issueTags: ["windows-shell-mixing"],
+    }),
+    "02-terminal-and-file-system-foundations-for-normal-people": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew"],
+      guideTags: ["windows-path-permission-weirdness", "claude-command-not-found"],
+      issueTags: ["windows-shell-mixing"],
+    }),
+    "03-claude-code": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew"],
+      guideTags: ["claude-command-not-found", "authentication-failed", "windows-path-permission-weirdness"],
+      issueTags: ["windows-shell-mixing"],
+    }),
+    "04-claude-code-repo-workflows-and-project-navigation": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew"],
+      guideTags: ["claude-command-not-found", "authentication-failed"],
+      issueTags: ["windows-shell-mixing"],
+    }),
+    "05-claude-code-debugging-testing-and-refactoring": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew"],
+      guideTags: ["claude-command-not-found", "authentication-failed"],
+      issueTags: [],
+    }),
+    "06-git-and-github-for-ai-assisted-builders": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew"],
+      guideTags: ["authentication-failed", "windows-path-permission-weirdness"],
+      issueTags: ["windows-shell-mixing"],
+    }),
+    "07-claude-code-across-terminal-ide-desktop-and-browser": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew", "claude-cowork-browser"],
+      guideTags: ["authentication-failed", "windows-path-permission-weirdness", "cowork-not-visible"],
+      issueTags: ["windows-shell-mixing", "cowork-rollout-visibility"],
+    }),
+    "08-claude-cowork": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-cowork-browser"],
+      guideTags: ["cowork-not-visible", "authentication-failed"],
+      issueTags: ["cowork-rollout-visibility"],
+    }),
+    "09-claude-cowork-for-documents-research-and-data-extraction": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-cowork-browser"],
+      guideTags: ["cowork-not-visible", "authentication-failed"],
+      issueTags: ["cowork-rollout-visibility"],
+    }),
+    "10-claude-cowork-for-admin-operations-and-team-rituals": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-cowork-browser"],
+      guideTags: ["cowork-not-visible", "authentication-failed"],
+      issueTags: ["cowork-rollout-visibility"],
+    }),
+    "11-openclaw-and-claw-runtime-foundations": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["openclaw-linux-self-hosted"],
+      guideTags: ["mcp-server-config-broken"],
+      issueTags: ["openclaw-runtime-hardening"],
+    }),
+    "12-skills-memory-heartbeats-and-scheduled-work": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-macos-homebrew", "claude-code-windows-wsl2"],
+      guideTags: ["mcp-server-config-broken", "authentication-failed"],
+      issueTags: [],
+    }),
+    "13-multi-agent-patterns-for-real-life": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-macos-homebrew", "claude-code-windows-wsl2"],
+      guideTags: ["mcp-server-config-broken", "authentication-failed"],
+      issueTags: [],
+    }),
+    "14-secure-local-machines-and-safe-defaults": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-windows-wsl2", "claude-code-windows-powershell", "claude-code-macos-homebrew"],
+      guideTags: ["authentication-failed", "windows-path-permission-weirdness"],
+      issueTags: ["windows-shell-mixing"],
+    }),
+    "15-secure-remote-setups": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["openclaw-linux-self-hosted", "claude-code-macos-homebrew", "claude-code-windows-wsl2"],
+      guideTags: ["authentication-failed", "mcp-server-config-broken"],
+      issueTags: ["openclaw-runtime-hardening"],
+    }),
+    "16-computer-use-sandboxes-and-browser-automation": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-macos-homebrew", "claude-code-windows-wsl2", "claude-cowork-browser"],
+      guideTags: ["authentication-failed", "cowork-not-visible"],
+      issueTags: ["cowork-rollout-visibility"],
+    }),
+    "17-secure-integrations": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-macos-homebrew", "claude-code-windows-wsl2", "claude-cowork-browser"],
+      guideTags: ["authentication-failed", "mcp-server-config-broken"],
+      issueTags: [],
+    }),
+    "18-real-world-agent-builds-for-everyday-productivity": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-macos-homebrew", "claude-code-windows-wsl2", "claude-cowork-browser"],
+      guideTags: ["authentication-failed", "cowork-not-visible", "mcp-server-config-broken"],
+      issueTags: ["cowork-rollout-visibility"],
+    }),
+    "19-capstones-portfolio-proof-and-job-ready-evidence": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
+      compatTags: ["claude-code-macos-homebrew", "claude-code-windows-wsl2", "claude-cowork-browser"],
+      guideTags: ["authentication-failed", "mcp-server-config-broken"],
+      issueTags: ["cowork-rollout-visibility"],
+    }),
     "claude-code-beginners": filterSupportEntries(compatibilityEntries, troubleshootingGuides, knownIssues, {
       compatTags: ["claude-code-windows-wsl2", "claude-code-macos-homebrew"],
       guideTags: ["claude-command-not-found", "authentication-failed"],

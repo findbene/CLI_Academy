@@ -225,9 +225,23 @@ export async function POST(request: Request) {
     { onConflict: "user_id,path_id" },
   );
 
+  const { data: existingProgress } = await auth.supabaseContext.supabase
+    .from("lesson_progress")
+    .select("completion_data")
+    .eq("user_id", auth.user.id)
+    .eq("lesson_id", resolved.lesson.id)
+    .maybeSingle();
+
+  const mergedCompletionData = {
+    ...(existingProgress?.completion_data && typeof existingProgress.completion_data === "object"
+      ? (existingProgress.completion_data as Record<string, unknown>)
+      : {}),
+    ...(body.completionData ?? {}),
+  };
+
   const { error } = await auth.supabaseContext.supabase.from("lesson_progress").upsert(
     {
-      completion_data: body.completionData ?? {},
+      completion_data: mergedCompletionData,
       lesson_id: resolved.lesson.id,
       user_id: auth.user.id,
     },
@@ -250,11 +264,28 @@ export async function POST(request: Request) {
   await auth.supabaseContext.supabase.from("app_events").insert({
     event_data: {
       lesson_slug: body.lessonSlug,
+      mastery_score:
+        typeof mergedCompletionData.masteryScore === "number" ? mergedCompletionData.masteryScore : null,
       path_slug: body.pathSlug,
     },
     event_type: "lesson_completed",
     user_id: auth.user.id,
   });
+
+  if (typeof mergedCompletionData.masteryScore === "number") {
+    await auth.supabaseContext.supabase.from("app_events").insert({
+      event_data: {
+        lesson_slug: body.lessonSlug,
+        mastery_score: mergedCompletionData.masteryScore,
+        matched_criteria: Array.isArray(mergedCompletionData.matchedCriteria)
+          ? mergedCompletionData.matchedCriteria
+          : [],
+        path_slug: body.pathSlug,
+      },
+      event_type: "lesson_mastery_verified",
+      user_id: auth.user.id,
+    });
+  }
 
   return applySupabaseHeaders(
     NextResponse.json({

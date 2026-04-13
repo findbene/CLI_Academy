@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 type VerificationBody = {
   deliverable?: string;
   output?: string;
+  rubricCriteria?: string[];
   verifyCheck?: string;
 };
 
@@ -46,12 +47,17 @@ function tokenize(text: string) {
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as VerificationBody;
   const output = body.output?.trim() ?? "";
+  const rubricCriteria = Array.isArray(body.rubricCriteria)
+    ? body.rubricCriteria.filter((criterion): criterion is string => typeof criterion === "string" && criterion.trim().length > 0)
+    : [];
 
   if (output.length < 20) {
     return NextResponse.json(
       {
         message: "Add more concrete evidence. Paste at least one real command result, diff, or explanation.",
+        matchedCriteria: [] as string[],
         ok: false,
+        score: 0,
       },
       { status: 200 },
     );
@@ -63,6 +69,19 @@ export async function POST(request: NextRequest) {
   const matchedKeywords = expectedKeywords.filter((keyword) => normalizedOutput.includes(keyword));
   const hasStructure = /\n/.test(output) || /[:\\/._-]/.test(output);
   const hasEnoughDetail = output.split(/\s+/).filter(Boolean).length >= 8;
+  const matchedCriteria = rubricCriteria.filter((criterion) => {
+    const criterionKeywords = tokenize(criterion);
+    if (!criterionKeywords.length) {
+      return false;
+    }
+
+    const criterionMatches = criterionKeywords.filter((keyword) => normalizedOutput.includes(keyword));
+    return criterionMatches.length >= Math.min(2, criterionKeywords.length);
+  });
+  const totalChecks = Math.max(rubricCriteria.length || 0, 3);
+  const evidenceScore = Math.min(40, matchedKeywords.length * 12 + (hasStructure ? 10 : 0) + (hasEnoughDetail ? 10 : 0));
+  const rubricScore = rubricCriteria.length ? Math.round((matchedCriteria.length / rubricCriteria.length) * 60) : 35;
+  const score = Math.min(100, evidenceScore + rubricScore);
   const passed = hasEnoughDetail && (matchedKeywords.length >= Math.min(2, expectedKeywords.length || 2) || hasStructure);
 
   if (passed) {
@@ -71,8 +90,11 @@ export async function POST(request: NextRequest) {
       : "The submission includes structured evidence instead of a placeholder.";
 
     return NextResponse.json({
-      message: `${detail} This looks specific enough to count as a real attempt.`,
+      matchedCriteria,
+      message: `${detail} This looks specific enough to count as a real attempt.${rubricCriteria.length ? ` Mastery score: ${score}/${100}.` : ""}`,
       ok: true,
+      score,
+      totalChecks,
     });
   }
 
@@ -81,7 +103,10 @@ export async function POST(request: NextRequest) {
     : "Include a command result, file path, diff summary, or short explanation of what changed.";
 
   return NextResponse.json({
-    message: `${hint} Right now this looks too generic to verify confidently.`,
+    matchedCriteria,
+    message: `${hint} Right now this looks too generic to verify confidently.${rubricCriteria.length ? ` Current score: ${score}/${100}.` : ""}`,
     ok: false,
+    score,
+    totalChecks,
   });
 }

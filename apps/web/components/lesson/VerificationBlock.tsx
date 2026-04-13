@@ -1,17 +1,54 @@
 "use client";
 
 import { CheckCircle2, ChevronRight, Terminal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getLessonMastery, saveLessonMastery } from "@/lib/local-lesson-mastery";
 
 interface VerificationBlockProps {
   deliverable?: string;
+  initialMastery?: { matchedCriteria: string[]; score: number } | null;
+  lessonSlug?: string;
+  pathSlug?: string;
+  rubricCriteria?: string[];
   verifyCheck?: string;
 }
 
-export function VerificationBlock({ deliverable, verifyCheck }: VerificationBlockProps) {
+export function VerificationBlock({
+  deliverable,
+  initialMastery = null,
+  lessonSlug,
+  pathSlug,
+  rubricCriteria = [],
+  verifyCheck,
+}: VerificationBlockProps) {
   const [status, setStatus] = useState<"idle" | "verifying" | "success" | "fail">("idle");
   const [output, setOutput] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [masteryScore, setMasteryScore] = useState<number | null>(null);
+  const [matchedCriteria, setMatchedCriteria] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (initialMastery) {
+      setMasteryScore(initialMastery.score);
+      setMatchedCriteria(initialMastery.matchedCriteria);
+      setStatus("success");
+      setFeedback("Previously verified.");
+    }
+
+    if (!pathSlug || !lessonSlug) {
+      return;
+    }
+
+    const mastery = getLessonMastery(pathSlug, lessonSlug);
+    if (!mastery) {
+      return;
+    }
+
+    setMasteryScore(mastery.score);
+    setMatchedCriteria(mastery.matchedCriteria);
+    setStatus("success");
+    setFeedback("Previously verified on this device.");
+  }, [initialMastery, lessonSlug, pathSlug]);
 
   async function handleVerify() {
     setStatus("verifying");
@@ -21,12 +58,47 @@ export function VerificationBlock({ deliverable, verifyCheck }: VerificationBloc
       const response = await fetch("/api/lesson-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deliverable, output, verifyCheck }),
+        body: JSON.stringify({ deliverable, output, rubricCriteria, verifyCheck }),
       });
 
-      const data = (await response.json().catch(() => ({}))) as { message?: string; ok?: boolean };
+      const data = (await response.json().catch(() => ({}))) as {
+        matchedCriteria?: string[];
+        message?: string;
+        ok?: boolean;
+        score?: number;
+      };
       setFeedback(data.message ?? null);
       setStatus(data.ok ? "success" : "fail");
+      setMatchedCriteria(data.matchedCriteria ?? []);
+      setMasteryScore(typeof data.score === "number" ? data.score : null);
+
+      if (data.ok && pathSlug && lessonSlug && typeof data.score === "number") {
+        saveLessonMastery({
+          lessonSlug,
+          matchedCriteria: data.matchedCriteria ?? [],
+          pathSlug,
+          score: data.score,
+        });
+
+        try {
+          await fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              completionData: {
+                masteryScore: data.score,
+                matchedCriteria: data.matchedCriteria ?? [],
+                verificationSource: "lesson-verification",
+                verifiedAt: new Date().toISOString(),
+              },
+              lessonSlug,
+              pathSlug,
+            }),
+          });
+        } catch {
+          // Local mastery is already saved; server sync can catch up later.
+        }
+      }
     } catch {
       setStatus("fail");
       setFeedback("Verification service is temporarily unavailable. Keep your output and try again.");
@@ -50,6 +122,34 @@ export function VerificationBlock({ deliverable, verifyCheck }: VerificationBloc
           <div className="text-sm font-medium text-[var(--color-fg-muted)] uppercase tracking-wider">Verification Task</div>
           <div className="text-[var(--color-fg-default)]">{verifyCheck || "Tutor Agent will review your progress."}</div>
         </div>
+
+        {rubricCriteria.length ? (
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm font-medium text-[var(--color-fg-muted)] uppercase tracking-wider">Mastery rubric</div>
+              {masteryScore !== null ? (
+                <div className="text-sm font-semibold text-[var(--color-accent-primary)]">{masteryScore}/100</div>
+              ) : null}
+            </div>
+            <div className="grid gap-2">
+              {rubricCriteria.map((criterion) => {
+                const matched = matchedCriteria.includes(criterion);
+                return (
+                  <div
+                    key={criterion}
+                    className={`rounded-[var(--radius-md)] border px-3 py-2 text-sm ${
+                      matched
+                        ? "border-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)] text-[var(--color-fg-default)]"
+                        : "border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-muted)]"
+                    }`}
+                  >
+                    {matched ? "✓ " : ""}{criterion}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
 
         <div className="bg-[#1e1e1e] rounded-[var(--radius-md)] border border-[#333] shadow-inner mt-2">
           <div className="flex items-center gap-2 px-3 py-2 border-b border-[#333] bg-[#2d2d2d] rounded-t-[var(--radius-md)]">

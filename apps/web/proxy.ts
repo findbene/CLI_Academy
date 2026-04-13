@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPublicSupabaseEnv } from "@/lib/env";
 
 /** Routes that require authentication + onboarding checks */
-const PROTECTED_PREFIXES = ["/dashboard", "/downloads", "/settings", "/learn", "/onboarding"];
+const PROTECTED_PREFIXES = ["/dashboard", "/downloads", "/settings", "/onboarding"];
 
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));

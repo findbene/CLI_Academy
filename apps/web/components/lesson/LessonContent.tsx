@@ -6,8 +6,17 @@ import { VerificationBlock } from "@/components/lesson/VerificationBlock";
 import { getLesson } from "@/lib/mdx";
 
 interface LessonContentProps {
+  initialMastery?: { matchedCriteria: string[]; score: number } | null;
   pathSlug: string;
   lessonSlug: string;
+  rubricCriteria?: string[];
+}
+
+function slugifyHeading(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function renderInlineContent(text: string) {
@@ -86,7 +95,16 @@ function splitLessonBlocks(body: string) {
   return blocks.filter(Boolean);
 }
 
-function renderBlock(block: string, index: number) {
+function renderBlock(
+  block: string,
+  index: number,
+  context?: {
+    initialMastery?: { matchedCriteria: string[]; score: number } | null;
+    lessonSlug: string;
+    pathSlug: string;
+    rubricCriteria?: string[];
+  },
+) {
   const warnMatch = block.match(/^<WarnBlock title="([^"]+)">\s*([\s\S]*?)\s*<\/WarnBlock>$/);
   if (warnMatch) {
     return (
@@ -148,7 +166,17 @@ function renderBlock(block: string, index: number) {
 
   const verifyMatch = block.match(/<VerificationBlock[\s\S]*?deliverable="([^"]*)"[\s\S]*?verifyCheck="([^"]*)"[\s\S]*?\/>/);
   if (verifyMatch) {
-    return <VerificationBlock key={index} deliverable={verifyMatch[1]} verifyCheck={verifyMatch[2]} />;
+    return (
+      <VerificationBlock
+        key={index}
+        deliverable={verifyMatch[1]}
+        initialMastery={context?.initialMastery}
+        lessonSlug={context?.lessonSlug}
+        pathSlug={context?.pathSlug}
+        rubricCriteria={context?.rubricCriteria}
+        verifyCheck={verifyMatch[2]}
+      />
+    );
   }
 
   if (block.startsWith("```")) {
@@ -164,11 +192,13 @@ function renderBlock(block: string, index: number) {
   }
 
   if (block.startsWith("## ")) {
-    return <h2 key={index}>{block.slice(3).trim()}</h2>;
+    const heading = block.slice(3).trim();
+    return <h2 key={index} id={slugifyHeading(heading)}>{heading}</h2>;
   }
 
   if (block.startsWith("### ")) {
-    return <h3 key={index}>{block.slice(4).trim()}</h3>;
+    const heading = block.slice(4).trim();
+    return <h3 key={index} id={slugifyHeading(heading)}>{heading}</h3>;
   }
 
   if (block.split("\n").every((line) => line.trim().startsWith("- "))) {
@@ -246,7 +276,7 @@ function renderBlock(block: string, index: number) {
   return <p key={index}>{renderInlineContent(block)}</p>;
 }
 
-export async function LessonContent({ pathSlug, lessonSlug }: LessonContentProps) {
+export async function LessonContent({ initialMastery = null, pathSlug, lessonSlug, rubricCriteria }: LessonContentProps) {
   const lesson = await getLesson(pathSlug, lessonSlug);
 
   if (!lesson) {
@@ -265,7 +295,9 @@ export async function LessonContent({ pathSlug, lessonSlug }: LessonContentProps
   return (
     <article className="lesson-prose" data-lesson-body>
       {lesson.description ? <p>{lesson.description}</p> : null}
-      {blocks.map((block, index) => renderBlock(block, index))}
+      {blocks.map((block, index) =>
+        renderBlock(block, index, { initialMastery, lessonSlug, pathSlug, rubricCriteria }),
+      )}
     </article>
   );
 }

@@ -17,6 +17,7 @@ import {
 import { getLessonCompanionBlocks, getLessonResourceLinks } from "@/lib/academy-recommendations";
 import { getRecommendedAssetsForLesson, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
+import { buildLessonGuidance, getPathAccessState } from "@/lib/learning-experience";
 import { getLessonsForPath } from "@/lib/mdx";
 import { getFreshnessState, getPathSupportBundle } from "@/lib/support";
 import { getServerViewer } from "@/lib/viewer";
@@ -74,7 +75,27 @@ export default async function LessonPage({ params }: LessonPageProps) {
     );
   }
 
-  if (path.tier === "pro" && viewer.profile?.tier !== "pro") {
+  const accessState = getPathAccessState(path, viewer);
+
+  if (accessState.isComingSoon) {
+    return (
+      <main className="page-shell">
+        <div className="panel p-6">
+          <h1 className="text-3xl font-semibold">{path.title}</h1>
+          <p className="mt-3 text-[var(--color-fg-muted)]">
+            This path is not learner-ready yet, so the lesson route is still held back while quality checks finish.
+          </p>
+          <div className="mt-6">
+            <Link href={`/paths/${path.slug}`} className="button-secondary">
+              Back to path detail
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (accessState.requiresUpgrade) {
     return (
       <main className="page-shell">
         <div className="panel p-6">
@@ -117,11 +138,60 @@ export default async function LessonPage({ params }: LessonPageProps) {
     labs: academyLabs,
     runtimes: academyRuntimes,
   });
+  const lessonGuidance = buildLessonGuidance({
+    lesson,
+    nextLessonTitle: nextLesson?.title,
+    previousLessonTitle: previousLesson?.title,
+    primaryEnvironment: support.compatibility[0]?.environment,
+    supportSteps: support.guides.map((guide) => `${guide.title}: ${guide.nextStep}`),
+  });
+  let initialMastery: { matchedCriteria: string[]; score: number } | null = null;
+
+  if (viewer.user && viewer.supabaseContext) {
+    const { data: dbPath } = await viewer.supabaseContext.supabase
+      .from("paths")
+      .select("id")
+      .eq("slug", path.slug)
+      .maybeSingle();
+
+    if (dbPath) {
+      const { data: dbLesson } = await viewer.supabaseContext.supabase
+        .from("lessons")
+        .select("id")
+        .eq("path_id", dbPath.id)
+        .eq("slug", lesson.slug)
+        .maybeSingle();
+
+      if (dbLesson) {
+        const { data: progress } = await viewer.supabaseContext.supabase
+          .from("lesson_progress")
+          .select("completion_data")
+          .eq("user_id", viewer.user.id)
+          .eq("lesson_id", dbLesson.id)
+          .maybeSingle();
+
+        const completionData =
+          progress?.completion_data && typeof progress.completion_data === "object"
+            ? (progress.completion_data as Record<string, unknown>)
+            : null;
+
+        if (completionData && typeof completionData.masteryScore === "number") {
+          initialMastery = {
+            matchedCriteria: Array.isArray(completionData.matchedCriteria)
+              ? completionData.matchedCriteria.filter((value): value is string => typeof value === "string")
+              : [],
+            score: completionData.masteryScore,
+          };
+        }
+      }
+    }
+  }
 
   return (
     <LessonPlayer
       lessonTitle={lesson.title}
       lessonSlug={lesson.slug}
+      initialMastery={initialMastery}
       userId={viewer.user?.id}
       pathTitle={path.title}
       pathSlug={path.slug}
@@ -136,12 +206,22 @@ export default async function LessonPage({ params }: LessonPageProps) {
       relatedAcademyAssets={relatedResources.assets}
       relatedAcademyLabs={relatedResources.labs}
       relatedAcademyRuntimes={relatedResources.runtimes}
+      rubricCriteria={companionBlocks.rubric?.criteria}
       supportGuideTitles={support.guides.slice(0, 2).map((guide) => guide.title)}
       testedOnEnvironments={support.compatibility.slice(0, 2).map((entry) => entry.environment)}
+      beforeYouStart={lessonGuidance.beforeYouStart}
+      missionOutcome={lessonGuidance.missionOutcome}
+      nextMilestone={lessonGuidance.nextMilestone}
+      stuckSteps={lessonGuidance.stuckSteps}
       tutorPreload={lesson.tutorPreload}
       modeBalance={lesson.modeBalance}
     >
-      <LessonContent pathSlug={pathSlug} lessonSlug={lessonSlug} />
+      <LessonContent
+        initialMastery={initialMastery}
+        pathSlug={pathSlug}
+        lessonSlug={lessonSlug}
+        rubricCriteria={companionBlocks.rubric?.criteria}
+      />
       <LessonCompanionBlocks
         quiz={companionBlocks.quiz}
         exercise={companionBlocks.exercise}

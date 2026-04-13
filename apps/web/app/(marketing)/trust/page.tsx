@@ -16,6 +16,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { getPublishedCatalogPaths } from "@/lib/catalog";
+import { getDifficultyLabel, getPathExperienceMeta } from "@/lib/learning-experience";
+import { getFreshnessSummary } from "@/lib/roadmap";
 import {
   compatibilityEntries,
   getFreshnessState,
@@ -48,6 +50,7 @@ export default async function TrustPage() {
       ...path,
       freshness: getFreshnessState(path.lastReviewedAt),
     }));
+  const freshnessSummary = getFreshnessSummary(catalogPaths);
 
   return (
     <main className="page-shell">
@@ -79,6 +82,10 @@ export default async function TrustPage() {
             <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(201,134,18,0.10)] px-3 py-1.5 text-sm text-[var(--color-accent-warning)]">
               <Radio className="size-3.5" />
               {releaseRadar.length} release radar
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-bg-panel-subtle)] px-3 py-1.5 text-sm text-[var(--color-fg-muted)]">
+              <Clock className="size-3.5" />
+              {freshnessSummary.fresh} fresh · {freshnessSummary.reviewDue} review due · {freshnessSummary.stale} stale
             </div>
           </div>
         </div>
@@ -120,6 +127,7 @@ export default async function TrustPage() {
               <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">{path.summary}</p>
               <div className="mt-4 flex items-center gap-3 text-sm text-[var(--color-fg-muted)]">
                 <span>{path.availableLessonCount} lessons</span>
+                <span>{getDifficultyLabel(getPathExperienceMeta(path).difficulty)}</span>
                 <span className="inline-flex items-center gap-1">
                   <Clock className="size-3" />
                   {path.lastReviewedAt ?? "No review date"}

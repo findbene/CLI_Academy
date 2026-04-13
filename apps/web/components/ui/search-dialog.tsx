@@ -17,14 +17,32 @@ function fuzzyMatch(query: string, text: string): boolean {
   return qi === q.length;
 }
 
+function buildSearchableText(entry: SearchEntry) {
+  return [
+    entry.title,
+    entry.description,
+    entry.pathTitle,
+    entry.section,
+    entry.difficulty,
+    entry.format,
+    entry.audience,
+    ...(entry.metadata ?? []),
+    ...(entry.keywords ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
 function scoreMatch(query: string, entry: SearchEntry): number {
   const q = query.toLowerCase();
   const title = entry.title.toLowerCase();
   const desc = entry.description.toLowerCase();
+  const searchText = buildSearchableText(entry).toLowerCase();
 
   if (title === q) return 100;
   if (title.startsWith(q)) return 90;
   if (title.includes(q)) return 70;
+  if (searchText.includes(q)) return 55;
   if (desc.includes(q)) return 40;
   // Fuzzy matched but not a substring
   return 20;
@@ -93,7 +111,7 @@ export function SearchDialog() {
   const filtered = query.length < 1
     ? entries.slice(0, 12)
     : entries
-        .filter((e) => fuzzyMatch(query, e.title) || fuzzyMatch(query, e.description))
+        .filter((e) => fuzzyMatch(query, buildSearchableText(e)))
         .sort((a, b) => scoreMatch(query, b) - scoreMatch(query, a))
         .slice(0, 20);
 
@@ -199,7 +217,17 @@ export function SearchDialog() {
                     )}
                   </span>
                   <span
-                    className={`line-clamp-1 text-xs ${
+                    className={`mt-1 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.12em] ${
+                      i === selectedIndex ? "text-white/70" : "text-[var(--color-fg-muted)]"
+                    }`}
+                  >
+                    {entry.section ? <span>{entry.section}</span> : null}
+                    {entry.difficulty ? <span>{entry.difficulty}</span> : null}
+                    {entry.lessonNumber ? <span>Lesson {entry.lessonNumber}</span> : null}
+                    {entry.estimatedHours ? <span>{entry.estimatedHours}</span> : null}
+                  </span>
+                  <span
+                    className={`mt-1 line-clamp-2 text-xs ${
                       i === selectedIndex ? "text-white/70" : "text-[var(--color-fg-muted)]"
                     }`}
                   >
@@ -207,6 +235,15 @@ export function SearchDialog() {
                       ? `${entry.pathTitle} · ${entry.description}`
                       : entry.description}
                   </span>
+                  {entry.type === "path" && entry.audience ? (
+                    <span
+                      className={`mt-1 line-clamp-1 text-xs ${
+                        i === selectedIndex ? "text-white/60" : "text-[var(--color-fg-muted)]"
+                      }`}
+                    >
+                      Best for: {entry.audience}
+                    </span>
+                  ) : null}
                 </span>
               </button>
             ))

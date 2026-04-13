@@ -9,6 +9,9 @@ test.describe("Public pages", () => {
   const publicRoutes = [
     { path: "/", title: "CLI Academy" },
     { path: "/paths", title: "Learning Paths" },
+    { path: "/paths/01-start-here", title: "Start Here: Safety, Confidence, and First Success" },
+    { path: "/learn/01-start-here", title: "Start Here: Safety, Confidence, and First Success" },
+    { path: "/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace", title: "Create the CLI Academy workspace" },
     { path: "/pricing", title: "Pricing" },
     { path: "/login", title: "Log in" },
     { path: "/signup", title: "Sign up" },
@@ -26,6 +29,66 @@ test.describe("Public pages", () => {
       await expect(page).toHaveTitle(new RegExp(route.title, "i"));
     });
   }
+});
+
+test.describe("Learning discovery", () => {
+  test("search surfaces richer path context", async ({ page }) => {
+    await page.goto("/paths");
+    await page.waitForFunction(() => {
+      window.dispatchEvent(new Event("open-search"));
+      return Boolean(document.querySelector('input[aria-label="Search"]'));
+    });
+
+    const searchInput = page.locator('input[aria-label="Search"]');
+    await expect(searchInput).toBeVisible();
+
+    await searchInput.fill("start here");
+
+    await expect(page.locator("body")).toContainText(/Foundations/i);
+    await expect(page.locator("body")).toContainText(/Starter/i);
+    await expect(page.locator("body")).toContainText(/Best for:/i);
+  });
+
+  test("lesson route exposes guided-learning controls", async ({ page }) => {
+    await page.goto("/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace");
+
+    await expect(page.getByText("Mission outcome")).toBeVisible();
+    await expect(page.getByText("Guided checklist")).toBeVisible();
+    await expect(page.getByText("Mastery checkpoint")).toBeVisible();
+    await expect(page.getByRole("button", { name: /mark complete/i })).toBeVisible();
+  });
+
+  test("path detail page exposes freshness and outcomes", async ({ page }) => {
+    await page.goto("/paths/01-start-here");
+
+    await expect(page.getByText("Path guidance")).toBeVisible();
+    await expect(page.getByText("Freshness:")).toBeVisible();
+    await expect(page.getByText("You will leave with")).toBeVisible();
+  });
+
+  test("path learner page exposes path mastery", async ({ page }) => {
+    await page.goto("/learn/01-start-here");
+
+    await expect(page.getByText("Path mastery")).toBeVisible();
+  });
+
+  test("dashboard page renders mastery-aware sections when available", async ({ page }) => {
+    await page.goto("/dashboard");
+
+    if (page.url().includes("/login")) {
+      await expect(page).toHaveURL(/\/login/);
+      return;
+    }
+
+    await expect(page.getByText("Mastery-based next paths")).toBeVisible();
+    await expect(page.getByText("Mastery signals")).toBeVisible();
+  });
+
+  test("trust page exposes freshness summary", async ({ page }) => {
+    await page.goto("/trust");
+
+    await expect(page.getByText(/fresh .* review due .* stale/i)).toBeVisible();
+  });
 });
 
 test.describe("Security headers", () => {

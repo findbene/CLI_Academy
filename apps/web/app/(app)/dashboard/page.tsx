@@ -10,6 +10,13 @@ import {
 import { getPublishedCatalogPaths, type CatalogPath } from "@/lib/catalog";
 import { getLessonsForPath } from "@/lib/mdx";
 import { getRecommendedPathSlugs } from "@/lib/learning";
+import { getDifficultyLabel, getPathExperienceMeta } from "@/lib/learning-experience";
+import {
+  buildLearnerRoadmap,
+  buildMasteryAwareRecommendations,
+  buildMasteryGapSummary,
+  getFreshnessSummary,
+} from "@/lib/roadmap";
 import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
 import { getServerViewer } from "@/lib/viewer";
 import {
@@ -112,6 +119,17 @@ export default async function DashboardPage() {
     hostOs: typeof answers.host_os === "string" ? answers.host_os : undefined,
     tier: viewer.profile.tier,
   });
+  const recommendedSlugs = getRecommendedPathSlugs({
+    goal: typeof answers.primary_goal === "string" ? answers.primary_goal : undefined,
+    hostOs: typeof answers.host_os === "string" ? answers.host_os : undefined,
+    tier: viewer.profile.tier,
+  });
+  const roadmap = buildLearnerRoadmap({
+    catalogPaths,
+    currentFocus: typeof answers.primary_goal === "string" ? answers.primary_goal : undefined,
+    recommendedSlugs,
+  });
+  const freshnessSummary = getFreshnessSummary(catalogPaths);
 
   const [{ count: completedLessonsCount }, { data: enrollments }, { data: usage }, { data: streakProgress }, { data: alumni }, { data: achievements }, { data: lessonProgressRows }] = await Promise.all([
     viewer.supabaseContext.supabase
@@ -145,7 +163,7 @@ export default async function DashboardPage() {
       .eq("user_id", viewer.user.id),
     viewer.supabaseContext.supabase
       .from("lesson_progress")
-      .select("lesson_id")
+      .select("lesson_id, completion_data")
       .eq("user_id", viewer.user.id),
   ]);
 
@@ -181,7 +199,10 @@ export default async function DashboardPage() {
     [...(enrolledPathRows ?? []), ...(completedLessonPathRows ?? [])].map((path) => [path.id, path]),
   );
   const completedLessonSlugsByPath = new Map<string, Set<string>>();
+  const masteryByPath = new Map<string, { averageScore: number; verifiedLessons: number }>();
   const serverCompletedLessonKeys: string[] = [];
+
+  const progressByLessonId = new Map((lessonProgressRows ?? []).map((entry) => [entry.lesson_id, entry]));
 
   for (const lesson of completedLessons ?? []) {
     const path = pathRowsById.get(lesson.path_id);
@@ -193,6 +214,24 @@ export default async function DashboardPage() {
     const current = completedLessonSlugsByPath.get(path.slug) ?? new Set<string>();
     current.add(lesson.slug);
     completedLessonSlugsByPath.set(path.slug, current);
+
+    const progress = progressByLessonId.get(lesson.id);
+    const masteryScore =
+      progress?.completion_data &&
+      typeof progress.completion_data === "object" &&
+      typeof (progress.completion_data as Record<string, unknown>).masteryScore === "number"
+        ? ((progress.completion_data as Record<string, unknown>).masteryScore as number)
+        : null;
+
+    if (typeof masteryScore === "number") {
+      const currentMastery = masteryByPath.get(path.slug) ?? { averageScore: 0, verifiedLessons: 0 };
+      const totalScore = currentMastery.averageScore * currentMastery.verifiedLessons + masteryScore;
+      const verifiedLessons = currentMastery.verifiedLessons + 1;
+      masteryByPath.set(path.slug, {
+        averageScore: Math.round(totalScore / verifiedLessons),
+        verifiedLessons,
+      });
+    }
   }
 
   const enrolledCards = (enrollments ?? [])
@@ -271,12 +310,28 @@ export default async function DashboardPage() {
 
   const tutorUsedCount = usage?.message_count ?? 0;
   const tutorLimit = viewer.profile.tier === "pro" ? 100 : 10;
+  const verifiedLessonCount = (lessonProgressRows ?? []).filter((row) => {
+    if (!row.completion_data || typeof row.completion_data !== "object") {
+      return false;
+    }
+
+    return typeof (row.completion_data as Record<string, unknown>).masteryScore === "number";
+  }).length;
   const currentFocus =
     typeof answers.primary_goal === "string"
       ? answers.primary_goal.replaceAll("-", " ")
       : "setup and first success";
   const environment =
     typeof answers.target_env === "string" ? answers.target_env.replaceAll("-", " ") : "local laptop";
+  const masteryRecommendations = buildMasteryAwareRecommendations({
+    catalogPaths,
+    masteryByPath,
+    recommendedSlugs,
+  });
+  const masteryGap = buildMasteryGapSummary({
+    currentFocus: typeof answers.primary_goal === "string" ? answers.primary_goal : undefined,
+    masteryByPath,
+  });
 
   const isFreeTier = viewer.profile.tier === "free";
 
@@ -294,7 +349,7 @@ export default async function DashboardPage() {
           />
         )}
 
-        <section className="grid gap-5 md:grid-cols-3">
+        <section className="grid gap-5 md:grid-cols-4">
           <article className="panel panel-lift group p-5">
             <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
               <Sparkles className="size-5 text-[var(--color-accent-primary)]" />
@@ -316,6 +371,14 @@ export default async function DashboardPage() {
               />
             </div>
             <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Tracked across all enrolled paths.</p>
+          </article>
+          <article className="panel panel-lift group p-5">
+            <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-[rgba(22,176,168,0.12)]">
+              <GraduationCap className="size-5 text-[var(--color-accent-primary)]" />
+            </div>
+            <div className="text-sm font-medium text-[var(--color-fg-muted)]">Verified mastery</div>
+            <div className="mt-2 text-4xl font-bold tracking-tight">{verifiedLessonCount}</div>
+            <p className="mt-2 text-sm text-[var(--color-fg-muted)]">Lessons with rubric-backed evidence saved.</p>
           </article>
           <article className="panel panel-lift group p-5">
             <div className="mb-3 flex items-center gap-3">
@@ -340,6 +403,113 @@ export default async function DashboardPage() {
           </article>
         </section>
 
+        <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <article className="panel p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-2xl font-semibold">Your roadmap</h2>
+              <Link href="/trust" className="button-secondary">
+                Freshness view
+              </Link>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {roadmap.cards.map((card, index) => (
+                <div
+                  key={card.slug}
+                  className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4"
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.14em] text-[var(--color-accent-primary)]">
+                    <span>Stage {index + 1}</span>
+                    <span>{card.stageLabel}</span>
+                  </div>
+                  <div className="mt-2 text-lg font-semibold">{card.title}</div>
+                  <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{card.reason}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="panel p-5">
+            <h2 className="text-2xl font-semibold">Mastery checkpoint</h2>
+            <div className="mt-4 grid gap-4">
+              <div>
+                <div className="text-xs uppercase tracking-[0.14em] text-[var(--color-fg-muted)]">Focus</div>
+                <div className="mt-1 text-lg font-semibold">{roadmap.snapshot.focusLabel}</div>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-[0.14em] text-[var(--color-fg-muted)]">What mastery looks like</div>
+                <p className="mt-1 text-sm leading-6 text-[var(--color-fg-muted)]">{roadmap.snapshot.masteryCheckpoint}</p>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-[0.14em] text-[var(--color-fg-muted)]">Next phase</div>
+                <div className="mt-1 text-sm font-medium">{roadmap.snapshot.nextPhaseLabel}</div>
+              </div>
+              <div className="rounded-[var(--radius-xl)] bg-[var(--color-bg-panel-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
+                Catalog freshness right now: {freshnessSummary.fresh} fresh, {freshnessSummary.reviewDue} review due, {freshnessSummary.stale} stale.
+              </div>
+              <div className="rounded-[var(--radius-xl)] bg-[var(--color-bg-panel-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
+                Weakest verified area: <span className="font-medium text-[var(--color-fg-default)]">{masteryGap.label}</span>
+                {" · "}
+                {masteryGap.reason}
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+          <article className="panel p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-2xl font-semibold">Mastery-based next paths</h2>
+              <Link href="/paths" className="button-secondary">
+                Explore paths
+              </Link>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {masteryRecommendations.map((recommendation) => (
+                <div
+                  key={recommendation.slug}
+                  className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4"
+                >
+                  <div className="text-base font-semibold">{recommendation.title}</div>
+                  <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{recommendation.reason}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="panel p-5">
+            <h2 className="text-2xl font-semibold">Mastery signals</h2>
+            <div className="mt-4 grid gap-3">
+              {Array.from(masteryByPath.entries()).length ? (
+                Array.from(masteryByPath.entries())
+                  .sort((left, right) => right[1].averageScore - left[1].averageScore)
+                  .slice(0, 3)
+                  .map(([slug, mastery]) => {
+                    const path = catalogPaths.find((entry) => entry.slug === slug);
+                    if (!path) {
+                      return null;
+                    }
+
+                    return (
+                      <div key={slug} className="rounded-[var(--radius-xl)] bg-[var(--color-bg-panel-subtle)] px-4 py-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-sm font-semibold">{path.title}</div>
+                          <div className="text-sm font-semibold text-[var(--color-accent-primary)]">{mastery.averageScore}/100</div>
+                        </div>
+                        <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                          {mastery.verifiedLessons} verified lesson{mastery.verifiedLessons === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                    );
+                  })
+              ) : (
+                <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
+                  No verified mastery signals yet. Verify one lesson and the dashboard will start adapting.
+                </div>
+              )}
+            </div>
+          </article>
+        </section>
+
         <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           <article className="panel p-5">
             <div className="flex items-center justify-between gap-3">
@@ -359,8 +529,9 @@ export default async function DashboardPage() {
                     </div>
                     <GraduationCap className="mt-1 size-5 shrink-0 text-[var(--color-fg-muted)] group-hover:text-[var(--color-accent-primary)] transition-colors" />
                   </div>
-                  <div className="mt-3 flex items-center gap-3 text-xs text-[var(--color-fg-muted)]">
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[var(--color-fg-muted)]">
                     <span>{path.availableLessonCount} lessons</span>
+                    <span>{getDifficultyLabel(getPathExperienceMeta(path).difficulty)}</span>
                     {path.lastReviewedAt ? <span>Reviewed {path.lastReviewedAt}</span> : null}
                   </div>
                 </Link>

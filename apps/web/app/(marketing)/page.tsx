@@ -17,7 +17,6 @@ export const metadata: Metadata = {
 
 import { getServerViewer } from "@/lib/viewer";
 import { ALL_RESOURCES, RESOURCE_CATEGORIES } from "@/lib/data/resources";
-import ShaderBackground from "@/components/ui/shader-background";
 import {
   BookOpen,
   MessageCircle,
@@ -47,7 +46,23 @@ export default async function HomePage() {
     <>
       {/* ── Aurora Hero Section ─────────────────────────── */}
       <section className="hero-aurora-wrapper">
-        <ShaderBackground />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 18%, rgba(22,176,168,0.22), transparent 22%), radial-gradient(circle at 18% 82%, rgba(37,99,235,0.12), transparent 26%), linear-gradient(180deg, #000a04 0%, #06111f 100%)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-40"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(22,176,168,0.28) 0%, rgba(22,176,168,0.1) 28%, transparent 68%)",
+            filter: "blur(28px)",
+          }}
+        />
         <div className="hero-content">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-400/50 bg-teal-400/10 shadow-[0_0_20px_rgba(45,212,191,0.4)] px-4 py-1.5 text-sm text-[rgba(255,255,255,0.85)]">
             <Zap className="h-3.5 w-3.5 text-teal-400" />

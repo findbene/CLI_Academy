@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { LessonResourceRail } from "@/components/academy/LessonResourceRail";
 import { AssetCard } from "@/components/assets/AssetCard";
+import { MasteryMeter } from "@/components/lesson/MasteryMeter";
 import { TutorContextBridge } from "@/components/tutor/TutorRuntimeProvider";
 import { LearningModeSelector, type LearningMode } from "@/components/lesson/LearningModeSelector";
 import type { DownloadSurfaceAsset } from "@/lib/assets";
@@ -26,8 +27,12 @@ import {
 } from "@/lib/local-lesson-progress";
 
 interface LessonPlayerProps {
+  beforeYouStart?: string[];
   lessonTitle: string;
   lessonSlug: string;
+  missionOutcome?: string;
+  nextMilestone?: string;
+  initialMastery?: { matchedCriteria: string[]; score: number } | null;
   userId?: string | null;
   pathTitle: string;
   pathSlug: string;
@@ -44,7 +49,9 @@ interface LessonPlayerProps {
   relatedAcademyAssets?: Array<AcademyAsset & { note?: string }>;
   relatedAcademyLabs?: Array<AcademyLab & { note?: string }>;
   relatedAcademyRuntimes?: Array<AcademyRuntime & { note?: string }>;
+  rubricCriteria?: string[];
   supportGuideTitles?: string[];
+  stuckSteps?: string[];
   testedOnEnvironments?: string[];
   children: React.ReactNode;
 }
@@ -66,8 +73,12 @@ function freshnessTone(state: "fresh" | "review-due" | "stale") {
 }
 
 export function LessonPlayer({
+  beforeYouStart = [],
   lessonTitle,
   lessonSlug,
+  missionOutcome,
+  nextMilestone,
+  initialMastery = null,
   userId,
   pathTitle,
   pathSlug,
@@ -84,7 +95,9 @@ export function LessonPlayer({
   relatedAcademyAssets = [],
   relatedAcademyLabs = [],
   relatedAcademyRuntimes = [],
+  rubricCriteria = [],
   supportGuideTitles = [],
+  stuckSteps = [],
   testedOnEnvironments = [],
   children,
 }: LessonPlayerProps) {
@@ -94,14 +107,19 @@ export function LessonPlayer({
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [learningMode, setLearningMode] = useState<LearningMode>("guided");
-  const [sectionTitles, setSectionTitles] = useState<string[]>([]);
+  const [sectionTitles, setSectionTitles] = useState<Array<{ id: string; title: string }>>([]);
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
     function collectSections() {
       const headings = Array.from(document.querySelectorAll<HTMLElement>("[data-lesson-body] > h2"));
-      const titles = headings.map((heading) => heading.textContent?.trim()).filter((title): title is string => Boolean(title));
+      const titles = headings
+        .map((heading, index) => ({
+          id: heading.id || `lesson-section-${index + 1}`,
+          title: heading.textContent?.trim() ?? "",
+        }))
+        .filter((heading) => Boolean(heading.title));
       setSectionTitles(titles);
       setActiveSectionIndex(0);
     }
@@ -146,6 +164,15 @@ export function LessonPlayer({
   const sectionProgressPercent = sectionTitles.length
     ? Math.round(((activeSectionIndex + 1) / sectionTitles.length) * 100)
     : 0;
+
+  function jumpToSection(id: string) {
+    const heading = document.getElementById(id);
+    if (!heading) {
+      return;
+    }
+
+    heading.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -333,6 +360,12 @@ export function LessonPlayer({
                 </div>
               </div>
             ) : null}
+            {missionOutcome ? (
+              <div className="callout mt-4" data-tone="tip">
+                <h3 className="font-semibold">Mission outcome</h3>
+                <p className="mt-2 text-sm leading-6">{missionOutcome}</p>
+              </div>
+            ) : null}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -355,19 +388,44 @@ export function LessonPlayer({
                     />
                   </div>
                   <div className="mt-4 grid gap-2">
-                    {sectionTitles.map((title, index) => (
-                      <div
+                    {sectionTitles.map((section, index) => (
+                      <button
+                        type="button"
                         key={`${lessonSlug}-section-${index}`}
+                        onClick={() => jumpToSection(section.id)}
                         className={`rounded-[var(--radius-lg)] px-3 py-2 text-sm ${
                           index === activeSectionIndex
                             ? "bg-[var(--color-accent-subtle)] text-[var(--color-fg-default)]"
-                            : "bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-muted)]"
+                            : "bg-[var(--color-bg-panel-subtle)] text-[var(--color-fg-muted)] hover:text-[var(--color-fg-default)]"
                         }`}
                       >
-                        {index + 1}. {title}
-                      </div>
+                        {index + 1}. {section.title}
+                      </button>
                     ))}
                   </div>
+                </div>
+              ) : null}
+
+              {(beforeYouStart.length || nextMilestone) ? (
+                <div className="panel p-5">
+                  <div className="text-sm font-semibold">Guided checklist</div>
+                  {beforeYouStart.length ? (
+                    <div className="mt-4">
+                      <div className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--color-fg-muted)]">
+                        Before you start
+                      </div>
+                      <div className="mt-2 grid gap-2 text-sm text-[var(--color-fg-muted)]">
+                        {beforeYouStart.map((item) => (
+                          <div key={item}>• {item}</div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {nextMilestone ? (
+                    <div className="mt-4 rounded-[var(--radius-lg)] bg-[var(--color-bg-panel-subtle)] px-3 py-3 text-sm text-[var(--color-fg-muted)]">
+                      <span className="font-medium text-[var(--color-fg-default)]">Next milestone:</span> {nextMilestone}
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -436,6 +494,18 @@ export function LessonPlayer({
                     </div>
                   </div>
                 ) : null}
+                {stuckSteps.length ? (
+                  <div className="mt-4">
+                    <div className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--color-fg-muted)]">
+                      If you get stuck
+                    </div>
+                    <div className="mt-2 grid gap-2 text-sm text-[var(--color-fg-muted)]">
+                      {stuckSteps.map((step) => (
+                        <div key={step}>• {step}</div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="mt-4 grid gap-3">
                   <Link href="/troubleshooting" className="button-secondary">
                     Troubleshooting center
@@ -466,6 +536,13 @@ export function LessonPlayer({
                   </Link>
                 </div>
               </div>
+
+              <MasteryMeter
+                initialMastery={initialMastery}
+                lessonSlug={lessonSlug}
+                pathSlug={pathSlug}
+                rubricCriteria={rubricCriteria}
+              />
 
               <LessonResourceRail
                 assets={relatedAcademyAssets}

@@ -3,7 +3,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug, getPathCta } from "@/lib/catalog";
+import { getDifficultyLabel, getFormatLabel, getPathExperienceMeta } from "@/lib/learning-experience";
 import { getLessonsForPath } from "@/lib/mdx";
+import { getFreshnessState } from "@/lib/support";
 import { getServerViewer } from "@/lib/viewer";
 
 interface PathDetailPageProps {
@@ -51,6 +53,8 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
   const recommendedAssets = getRecommendedAssetsForPath(path.slug)
     .slice(0, 2)
     .map((asset) => toDownloadSurfaceAsset(asset, viewer.profile?.tier ?? "free"));
+  const experience = getPathExperienceMeta(path);
+  const freshness = getFreshnessState(path.lastReviewedAt);
 
   return (
     <main className="page-shell">
@@ -63,6 +67,8 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
             <span className="badge" data-tone={path.status === "available" ? "accent" : "warning"}>
               {path.status === "available" ? "Available" : "Coming soon"}
             </span>
+            <span className="badge">{getDifficultyLabel(experience.difficulty)}</span>
+            <span className="badge">{getFormatLabel(experience.format)}</span>
           </div>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">{path.title}</h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-fg-muted)]">{path.summary}</p>
@@ -84,15 +90,29 @@ export default async function PathDetailPage({ params }: PathDetailPageProps) {
         </div>
 
         <aside className="panel p-6">
-          <div className="text-sm font-semibold">Status note</div>
+          <div className="text-sm font-semibold">Path guidance</div>
+          <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
+            Best for: {experience.audience}
+          </p>
           <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
             Paths marked coming soon may already have draft content, but they stay gated until the lessons meet our quality and trust standards.
           </p>
+          <div className="mt-4 rounded-[var(--radius-xl)] bg-[var(--color-bg-panel-subtle)] px-4 py-4 text-sm text-[var(--color-fg-muted)]">
+            Freshness: <span className="font-medium text-[var(--color-fg-default)]">{freshness === "fresh" ? "Fresh" : freshness === "review-due" ? "Review due" : "Stale"}</span>
+          </div>
           {path.tier === "pro" ? (
             <p className="mt-3 text-sm leading-6 text-[var(--color-fg-muted)]">
               This is a Pro path. Free learners can browse the overview, then upgrade when they are ready for deeper material.
             </p>
           ) : null}
+          <div className="mt-4">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--color-fg-muted)]">You will leave with</div>
+            <div className="mt-2 grid gap-2 text-sm text-[var(--color-fg-muted)]">
+              {experience.outcomes.map((outcome) => (
+                <div key={outcome}>• {outcome}</div>
+              ))}
+            </div>
+          </div>
         </aside>
       </section>
 
