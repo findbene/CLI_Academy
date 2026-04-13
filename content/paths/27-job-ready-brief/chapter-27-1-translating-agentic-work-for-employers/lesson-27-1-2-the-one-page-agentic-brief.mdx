@@ -1,0 +1,228 @@
+---
+title: "The One-Page Agentic Developer Brief"
+lessonNumber: "27.1.2"
+chapterNumber: "27.1"
+pathNumber: "27"
+groupId: "6.2"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 30
+verifyType: "code_submission"
+tutorPreload: "I'm about to write a one-page document that explains my agentic development skills to a non-technical hiring manager. Help me understand what a hiring manager actually reads in a cover document before I write my first draft."
+---
+
+# The One-Page Agentic Developer Brief
+
+## What you will build
+
+A complete `AGENTIC_BRIEF.md` — a 1–2 page document tailored to a real job posting you find today. The brief has five sections: a plain-English explanation of what agentic development is, three examples of what you built from your CLI Academy work, measurable outcomes for each example, and a section describing what you would build for the employer's specific team. You will draft it with Claude's help and refine it until it reads clearly to a non-technical reader.
+
+## Why this matters
+
+A resume shows credentials. A portfolio shows code. The one-page brief fills the gap between them: it tells a story that a non-technical hiring manager can follow from first sentence to last.
+
+Most technical candidates never write one. They assume the recruiter or hiring manager will connect the dots between their GitHub links and the job requirements. Hiring managers do not connect dots — they look for signals that a candidate has thought about their specific situation. The brief is that signal.
+
+The brief is not a cover letter (too formal, too long) and not a portfolio README (too technical). It is a persuasion document: it makes the case that agentic development is relevant to the employer's problem, that you can do it, and that you have already done something similar.
+
+## Before you start
+
+- Complete lesson 27.1.1 — you will reuse the LinkedIn paragraph as a starting point
+- Have 2–3 CLI Academy projects to reference as examples
+- Find a real job posting now: search LinkedIn Jobs or Indeed for any of: "AI developer", "ML engineer", "automation engineer", "AI ops", "developer tools engineer", "AI product manager"
+- Copy the job title, company name, and one bullet point from the job requirements — you will use these in step 4
+
+## The walkthrough
+
+### Step 1 — Understand the five sections of the brief
+
+| Section | Length | Purpose |
+|---------|--------|---------|
+| **What agentic development is** | 2–3 sentences | Explains the term to someone who has never heard it, in plain English |
+| **Three examples of what you built** | 3 short bullets | Concrete proof of skill — each bullet names the project and the problem it solved |
+| **Measurable outcomes** | 3 short bullets | One number or estimate per project — what did the work produce? |
+| **What you would build for their team** | 1 paragraph | Shows you read the job posting and have a specific idea for their context |
+| **How to reach you** | 1 line | GitHub URL, email, LinkedIn URL |
+
+The brief lives as a single Markdown file. When submitting to an employer, export it to PDF (`pandoc AGENTIC_BRIEF.md -o AGENTIC_BRIEF.pdf` or paste into a Google Doc).
+
+### Step 2 — Create your working file and collect your raw materials
+
+**macOS / Linux:**
+```bash
+cd ~/projects/job-ready
+
+cat > AGENTIC_BRIEF_NOTES.md << 'EOF'
+# Raw Materials for the Agentic Brief
+
+## The job I am targeting
+
+**Job title:** [Paste here]
+**Company:** [Paste here]
+**One key requirement from the posting:** [Paste one bullet point from the job description]
+
+## My three project examples
+
+### Project 1
+**Name:** [Project name]
+**Problem it solved:** [One sentence]
+**Measurable outcome:** [One number or estimate]
+
+### Project 2
+**Name:** [Project name]
+**Problem it solved:** [One sentence]
+**Measurable outcome:** [One number or estimate]
+
+### Project 3
+**Name:** [Project name]
+**Problem it solved:** [One sentence]
+**Measurable outcome:** [One number or estimate]
+
+## My plain-English definition of agentic development
+
+[Write your own 2-sentence definition before asking Claude. A definition in your own words is more natural than one written by AI.]
+EOF
+echo "Open AGENTIC_BRIEF_NOTES.md and fill in your raw materials"
+```
+
+**Windows PowerShell:**
+```powershell
+$notes = @'
+# Raw Materials for the Agentic Brief
+
+## The job I am targeting
+
+**Job title:** [Paste here]
+**Company:** [Paste here]
+**One key requirement from the posting:** [Paste one bullet]
+
+## My three project examples
+
+### Project 1
+**Name:** [Project name]
+**Problem it solved:** [One sentence]
+**Measurable outcome:** [One number or estimate]
+
+### Project 2
+**Name:** [Project name]
+**Problem it solved:** [One sentence]
+**Measurable outcome:** [One number or estimate]
+
+### Project 3
+**Name:** [Project name]
+**Problem it solved:** [One sentence]
+**Measurable outcome:** [One number or estimate]
+
+## My plain-English definition
+
+[Your own 2-sentence definition]
+'@
+$notes | Out-File "AGENTIC_BRIEF_NOTES.md" -Encoding utf8
+Write-Host "Fill in AGENTIC_BRIEF_NOTES.md before continuing"
+```
+
+Fill in all the fields in `AGENTIC_BRIEF_NOTES.md` before running any Claude commands. The brief is only as good as the raw material you provide.
+
+### Step 3 — Draft the brief with Claude
+
+Once your notes file is filled in, run this Claude command:
+
+**macOS / Linux:**
+```bash
+claude "Read AGENTIC_BRIEF_NOTES.md. Write a one-page AGENTIC_BRIEF.md for me using this structure:
+
+Section 1 — 'What agentic development is': 2-3 sentences using my plain-English definition. No jargon.
+
+Section 2 — 'What I have built': Three bullet points, one per project. Each bullet: [project name] — [problem solved in plain English].
+
+Section 3 — 'What my work produced': Three bullet points with the measurable outcome for each project. Use the numbers I provided.
+
+Section 4 — 'What I would build for your team': One paragraph specifically about the job posting I included. Reference the key requirement I quoted. Propose one concrete idea for how agentic development could address it. Do not be generic.
+
+Section 5 — 'How to reach me': Placeholder line for GitHub, email, LinkedIn.
+
+Tone: direct, plain English, no buzzwords, confident but not arrogant. Length: 300-450 words total."
+```
+
+**Windows PowerShell:**
+```powershell
+claude "Read AGENTIC_BRIEF_NOTES.md. Write a one-page AGENTIC_BRIEF.md with these sections: (1) What agentic development is (2-3 sentences, no jargon). (2) What I have built (3 bullets, project + problem solved). (3) What my work produced (3 bullets with numbers). (4) What I would build for your team (1 paragraph referencing the job posting I included, with a concrete idea). (5) How to reach me. Tone: direct, plain English. 300-450 words total."
+```
+
+Claude will create `AGENTIC_BRIEF.md` in your current directory.
+
+### Step 4 — Run the non-technical reader test
+
+Read the brief aloud. For each sentence, ask: "Would my least technical friend understand this without asking a follow-up question?" If the answer is no, mark that sentence for revision.
+
+Common revisions needed:
+
+- Replace "multi-agent orchestration" with "a system where several AI tasks run in parallel"
+- Replace "tool-calling loop" with "a process where the AI checks its own work and corrects it"
+- Replace "context window management" with "controlling how much information the AI sees at once"
+
+Ask Claude to revise any unclear sentences:
+
+```bash
+claude "Read AGENTIC_BRIEF.md. The sentence '[paste the sentence]' is unclear to a non-technical reader. Rewrite it in plain English without any technical jargon."
+```
+
+### Step 5 — Add the contact information and finalize
+
+**macOS / Linux:**
+```bash
+# Check that the brief was created and has the five sections
+grep -c "^##" AGENTIC_BRIEF.md     # should be 5
+wc -w AGENTIC_BRIEF.md             # should be 300-450 words
+
+# Open the file and add your real contact information to section 5
+echo "Open AGENTIC_BRIEF.md and replace the contact placeholders with your real GitHub, email, and LinkedIn URLs"
+```
+
+**Windows PowerShell:**
+```powershell
+(Select-String -Path "AGENTIC_BRIEF.md" -Pattern "^##").Count
+(Get-Content AGENTIC_BRIEF.md -Raw).Split(' ').Count
+Write-Host "Open AGENTIC_BRIEF.md and replace contact placeholders"
+```
+
+### Step 6 — Export to PDF (optional but recommended)
+
+If you have `pandoc` installed, export the brief to PDF for attaching to job applications:
+
+**macOS / Linux:**
+```bash
+# Install pandoc if needed
+# macOS: brew install pandoc
+# Ubuntu/Debian: sudo apt install pandoc
+
+pandoc AGENTIC_BRIEF.md -o AGENTIC_BRIEF.pdf
+echo "PDF created: AGENTIC_BRIEF.pdf"
+```
+
+**Windows PowerShell:**
+```powershell
+# Install pandoc if needed: winget install JohnMacFarlane.Pandoc
+pandoc AGENTIC_BRIEF.md -o AGENTIC_BRIEF.pdf
+Write-Host "PDF created: AGENTIC_BRIEF.pdf"
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| The "What I would build for your team" section is generic ("I would help automate workflows") | You did not include a specific job requirement in your notes file | Go back to the job posting and copy one concrete bullet point, then re-run the Claude command with that specific requirement |
+| Claude generates more than 2 pages | The raw notes had too many project examples or long descriptions | Ask Claude to cut to 300–400 words: "Rewrite AGENTIC_BRIEF.md to 350 words maximum. Keep the structure but compress each section." |
+| The measurable outcomes section has no numbers | You left outcomes vague ("made it faster") in your notes file | Estimate: "approximately X hours saved per week" or "roughly X items processed per day" — be honest but specific |
+| `pandoc` fails with "pdflatex not found" | Pandoc needs a LaTeX installation for PDF output | Use `pandoc AGENTIC_BRIEF.md -o AGENTIC_BRIEF.docx` to produce a Word file instead, then export to PDF from Word or Google Docs |
+
+<VerificationBlock
+  deliverable="A complete AGENTIC_BRIEF.md tailored to a real job posting, with all five sections filled in and no placeholder text."
+  verifyCheck="Paste the full contents of your AGENTIC_BRIEF.md. The tutor will check that it is tailored to a specific role, contains measurable outcomes, and is readable to a non-technical audience."
+  rubricCriteria={[
+    "All five sections are present and complete: definition, three examples, three outcomes, team-specific proposal, contact information",
+    "The 'What I would build for your team' section references a specific requirement from a real job posting, not a generic description",
+    "All three project examples have a measurable outcome — a number, count, or specific time estimate",
+    "The document reads clearly without technical jargon — every sentence would be understandable to a non-developer hiring manager"
+  ]}
+/>

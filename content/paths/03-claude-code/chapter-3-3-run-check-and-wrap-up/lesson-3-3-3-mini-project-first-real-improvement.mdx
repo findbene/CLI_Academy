@@ -4,14 +4,24 @@ lessonNumber: "3.3.3"
 chapterNumber: "3.3"
 pathNumber: "3"
 tutorPreload: "Coach me through the ask-plan-edit-run-verify loop one step at a time without doing the thinking for me."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "1.2"
+clawClassification: "core"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Mini project: first real improvement
 
-## Objective
+## What you will build
+One real improvement shipped through the full ask-plan-edit-run-commit loop.
 
+## Why this matters
+Claude Code is the primary interface for agentic development. Understanding how it reads context, executes tools, and takes action is the difference between a developer who directs Claude precisely and one who gets unpredictable results. Every advanced agentic pattern builds on this foundation.
+
+## Before you start
 Put the full Claude Code loop together: open a repo, ask Claude Code to identify an improvement, review its plan, let it make the edit, run the project to check the result, and commit. This is the workflow you will use on every real project going forward.
+
 
 ## Walkthrough
 
@@ -145,4 +155,9 @@ This is the loop you will use in every lesson from here on.
 <VerificationBlock
   deliverable="One real improvement shipped through the full ask-plan-edit-run-commit loop."
   verifyCheck="Learner shares git log --oneline showing the improvement commit and the updated CHANGELOG."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

@@ -4,14 +4,24 @@ lessonNumber: "12.1.1"
 chapterNumber: "12.1"
 pathNumber: "12"
 tutorPreload: "Help me write a CLAUDE.md that actually changes how Claude Code behaves in my project."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Create your first project CLAUDE.md
 
-## Objective
+## What you will build
+A CLAUDE.md at the project root with mission, read order, hard rules, and context loading sections.
 
+## Why this matters
+Persistent skills and memory are what distinguish a one-shot agent from a long-running one. Heartbeats and scheduled work enable agents that operate independently over time. These patterns underpin every production agentic system that handles real business workflows.
+
+## Before you start
 By the end of this lesson you will create a working `CLAUDE.md` file at the root of a project and confirm that Claude Code reads it automatically when you start a session. You will understand the four core sections every project `CLAUDE.md` needs — mission, read order, hard rules, and context loading — and prove that Claude follows the instructions you write.
+
 
 ## Walkthrough
 
@@ -145,4 +155,9 @@ Claude should either refuse or ask for confirmation, because your hard rule says
 <VerificationBlock
   deliverable="A CLAUDE.md at the project root with mission, read order, hard rules, and context loading sections."
   verifyCheck="Claude Code responds to 'What are my project rules?' with the rules from your CLAUDE.md file."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

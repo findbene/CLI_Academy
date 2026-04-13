@@ -4,16 +4,26 @@ lessonNumber: "17.3.2"
 chapterNumber: "17.3"
 pathNumber: "17"
 tutorPreload: "Review this integrated workflow for the most important risks."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Audit integrated workflow risk
 
-## Objective
+## What you will build
+A workflow-risk-audit.md containing at least five risk findings with ratings (Critical/High/Medium/Low), mitigations, and a list of actions required before production use.
 
+## Why this matters
+Integrating Claude with external APIs and services is where most production security incidents happen. A misconfigured webhook, an exposed key, or an over-permissioned OAuth scope can expose entire systems. This path teaches the integration patterns that hold up under a security review.
+
+## Before you start
 Every integration has a **risk profile** — the combination of what it can access, what happens if that access is misused, and how likely each failure mode is. Risk audits are not abstract exercises: they produce a prioritized list of things to fix, track, or accept before your integration goes into regular use.
 
 In this lesson you will inspect your live GitHub integration's current permissions and access log, identify over-permissioned tokens, rate your risk per finding, and produce a `workflow-risk-audit.md` that serves as an ongoing document you can update each time the integration changes.
+
 
 ## Walkthrough
 
@@ -194,4 +204,9 @@ Get-Content workflow-risk-audit.md
 <VerificationBlock 
     deliverable="A workflow-risk-audit.md containing at least five risk findings with ratings (Critical/High/Medium/Low), mitigations, and a list of actions required before production use."
     verifyCheck="Audit file exists, shows gh auth status scopes, rates at least one finding as High or Critical, and includes concrete mitigations."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

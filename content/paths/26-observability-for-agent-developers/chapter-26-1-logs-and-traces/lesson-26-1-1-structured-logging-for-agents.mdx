@@ -1,0 +1,444 @@
+---
+title: "Structured Logging: What to Log and Why"
+lessonNumber: "26.1.1"
+chapterNumber: "26.1"
+pathNumber: "26"
+groupId: "5.3"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 25
+verifyType: "code_submission"
+tutorPreload: "I'm about to learn how to add structured logging to an agentic system. Help me understand why print() statements are not enough in production before I write my first JSON logger."
+---
+
+# Structured Logging: What to Log and Why
+
+## What you will build
+
+A `logger.py` module that produces JSON-structured log lines for every Anthropic API call your agent makes. Each log line includes the timestamp, model used, input and output token counts, request duration in milliseconds, the user tier (free/pro), and any error. You will verify it by running a test call and piping the output through `jq` to confirm the structure.
+
+## Why this matters
+
+`print("Calling Claude...")` tells you something happened. It does not tell you when it happened, how long it took, which user triggered it, how many tokens were used, or whether it succeeded. When your agent runs hundreds of calls per day across multiple users, unstructured print statements become useless noise.
+
+Structured logs are the opposite: every field is named, typed, and machine-readable. A structured log line can be:
+
+- Queried in a log aggregator (Datadog, Loki, CloudWatch) with a filter like `model="claude-3-haiku" AND duration_ms>5000`
+- Alerted on with a rule like `count(level="error") > 10 in 5 minutes`
+- Aggregated into a dashboard showing token spend per user tier per day
+- Used to replay a failed request by extracting the exact input that caused the error
+
+The specific fields you log for an agentic system are slightly different from a typical web app. You need model identity, token counts, and session context — not just HTTP status codes.
+
+## Before you start
+
+- Python 3.9 or later installed
+- `anthropic` and `python-json-logger` packages installed:
+
+```bash
+pip install anthropic python-json-logger
+```
+
+- `ANTHROPIC_API_KEY` set in your environment
+- Basic familiarity with Python's `logging` module
+
+If `jq` is not installed (used in the verification step):
+- **macOS:** `brew install jq`
+- **Linux:** `sudo apt install jq` or `sudo dnf install jq`
+- **Windows:** `winget install jqlang.jq` or download from [stedolan.github.io/jq](https://stedolan.github.io/jq/)
+
+## The walkthrough
+
+### Step 1 — Understand what to log for agentic calls
+
+Every Anthropic API call your agent makes should produce one structured log line with these fields:
+
+| Field | Type | Why it matters |
+|-------|------|---------------|
+| `timestamp` | ISO 8601 string | When did this happen? Required for time-range queries |
+| `level` | string | `INFO` for success, `ERROR` for failures |
+| `event` | string | What kind of log line is this? (`api_call`, `rate_limit`, `loop_guard`) |
+| `model` | string | Which model was used? Costs differ by model |
+| `input_tokens` | int | Largest driver of cost for long-context calls |
+| `output_tokens` | int | Secondary cost driver; also indicates response verbosity |
+| `duration_ms` | int | How long did the API call take? High values indicate latency issues |
+| `user_id` | string | Which user triggered this call? Required for per-user billing analysis |
+| `session_id` | string | Which session? Lets you reconstruct a multi-call conversation |
+| `user_tier` | string | `free` or `pro`? Used for quota enforcement and cost allocation |
+| `error` | string or null | Error message if the call failed; null otherwise |
+
+### Step 2 — Create your project directory
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/projects/observability/logging
+cd ~/projects/observability/logging
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\projects\observability\logging" | Out-Null
+Set-Location "$HOME\projects\observability\logging"
+```
+
+### Step 3 — Write the logger module
+
+**macOS / Linux:**
+```bash
+cat > logger.py << 'PYEOF'
+"""
+logger.py — Structured JSON logging for Anthropic API calls.
+
+Usage:
+    from logger import get_agent_logger, log_api_call
+
+    logger = get_agent_logger("my_agent", log_file="agent.log")
+
+    # Wrap your API call:
+    import time
+    start = time.monotonic()
+    response = client.messages.create(...)
+    duration_ms = int((time.monotonic() - start) * 1000)
+
+    log_api_call(
+        logger=logger,
+        model=response.model,
+        input_tokens=response.usage.input_tokens,
+        output_tokens=response.usage.output_tokens,
+        duration_ms=duration_ms,
+        user_id="user_123",
+        session_id="sess_abc",
+        user_tier="pro",
+        error=None,
+    )
+"""
+
+import logging
+import sys
+import time
+import uuid
+from pathlib import Path
+from typing import Optional
+
+# python-json-logger provides a JSON formatter for Python's standard logging module
+from pythonjsonlogger import jsonlogger
+
+
+def get_agent_logger(
+    name: str,
+    log_file: Optional[str] = None,
+    level: int = logging.INFO,
+) -> logging.Logger:
+    """
+    Create and return a logger that emits JSON-structured lines.
+
+    Args:
+        name: Logger name — use your agent or service name.
+        log_file: Optional file path. If provided, logs go to the file
+                  AND to stdout. If None, logs go to stdout only.
+        level: Logging level. Defaults to INFO.
+
+    Returns:
+        A configured logging.Logger instance.
+    """
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+
+    # Avoid adding duplicate handlers if called multiple times
+    if logger.handlers:
+        return logger
+
+    # JSON formatter — includes timestamp, level, and all extra fields
+    formatter = jsonlogger.JsonFormatter(
+        fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+        rename_fields={"asctime": "timestamp", "levelname": "level", "name": "service"},
+    )
+
+    # stdout handler — always on
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(formatter)
+    logger.addHandler(stdout_handler)
+
+    # file handler — optional
+    if log_file:
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger
+
+
+def log_api_call(
+    logger: logging.Logger,
+    model: str,
+    input_tokens: int,
+    output_tokens: int,
+    duration_ms: int,
+    user_id: str,
+    session_id: str,
+    user_tier: str = "free",
+    error: Optional[str] = None,
+) -> None:
+    """
+    Emit one structured log line for a completed (or failed) API call.
+
+    Args:
+        logger: The logger returned by get_agent_logger().
+        model: The Anthropic model string, e.g. "claude-3-haiku-20240307".
+        input_tokens: Number of input tokens from response.usage.input_tokens.
+        output_tokens: Number of output tokens from response.usage.output_tokens.
+        duration_ms: Wall-clock time for the API call in milliseconds.
+        user_id: Identifier for the user who triggered this call.
+        session_id: Identifier for the current conversation session.
+        user_tier: "free" or "pro" (or any tier string your system uses).
+        error: Error message string if the call failed, or None for success.
+    """
+    total_tokens = input_tokens + output_tokens
+    level = logging.ERROR if error else logging.INFO
+
+    extra = {
+        "event": "api_call",
+        "model": model,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": total_tokens,
+        "duration_ms": duration_ms,
+        "user_id": user_id,
+        "session_id": session_id,
+        "user_tier": user_tier,
+        "error": error,
+        "success": error is None,
+    }
+
+    message = f"api_call model={model} tokens={total_tokens} duration={duration_ms}ms"
+    if error:
+        message += f" error={error}"
+
+    logger.log(level, message, extra=extra)
+
+
+def make_session_id() -> str:
+    """Generate a short unique session ID for use in log_api_call()."""
+    return uuid.uuid4().hex[:12]
+PYEOF
+echo "logger.py written"
+```
+
+**Windows PowerShell:**
+```powershell
+# Install dependency first
+pip install python-json-logger
+
+$loggerCode = @'
+import logging, sys, time, uuid
+from pathlib import Path
+from typing import Optional
+from pythonjsonlogger import jsonlogger
+
+def get_agent_logger(name: str, log_file: Optional[str] = None, level: int = logging.INFO) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    if logger.handlers:
+        return logger
+    formatter = jsonlogger.JsonFormatter(
+        fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+        rename_fields={"asctime": "timestamp", "levelname": "level", "name": "service"},
+    )
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(formatter)
+    logger.addHandler(stdout_handler)
+    if log_file:
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    return logger
+
+def log_api_call(logger, model, input_tokens, output_tokens, duration_ms, user_id, session_id, user_tier="free", error=None):
+    total_tokens = input_tokens + output_tokens
+    level = logging.ERROR if error else logging.INFO
+    extra = {
+        "event": "api_call", "model": model,
+        "input_tokens": input_tokens, "output_tokens": output_tokens,
+        "total_tokens": total_tokens, "duration_ms": duration_ms,
+        "user_id": user_id, "session_id": session_id,
+        "user_tier": user_tier, "error": error, "success": error is None,
+    }
+    message = f"api_call model={model} tokens={total_tokens} duration={duration_ms}ms"
+    if error:
+        message += f" error={error}"
+    logger.log(level, message, extra=extra)
+
+def make_session_id() -> str:
+    return uuid.uuid4().hex[:12]
+'@
+$loggerCode | Out-File -FilePath "logger.py" -Encoding utf8
+Write-Host "logger.py written"
+```
+
+### Step 4 — Write a live test that calls the Anthropic API
+
+**macOS / Linux:**
+```bash
+cat > test_logger_live.py << 'PYEOF'
+"""
+test_logger_live.py — Makes one real API call and logs it using logger.py.
+Run with: python3 test_logger_live.py
+"""
+import time
+import anthropic
+from logger import get_agent_logger, log_api_call, make_session_id
+
+LOG_FILE = "agent.log"
+logger = get_agent_logger("tutor_api", log_file=LOG_FILE)
+client = anthropic.Anthropic()
+
+session_id = make_session_id()
+user_id = "test_user_001"
+user_tier = "pro"
+
+print(f"Session: {session_id}")
+print("Making API call...")
+
+start = time.monotonic()
+error_msg = None
+
+try:
+    response = client.messages.create(
+        model="claude-3-haiku-20240307",
+        max_tokens=64,
+        messages=[{"role": "user", "content": "Reply with exactly: 'Logging test successful.'"}],
+    )
+    duration_ms = int((time.monotonic() - start) * 1000)
+    model = response.model
+    input_tokens = response.usage.input_tokens
+    output_tokens = response.usage.output_tokens
+
+    print(f"Response: {response.content[0].text}")
+
+except Exception as e:
+    duration_ms = int((time.monotonic() - start) * 1000)
+    model = "claude-3-haiku-20240307"
+    input_tokens = 0
+    output_tokens = 0
+    error_msg = str(e)
+    print(f"Error: {e}")
+
+log_api_call(
+    logger=logger,
+    model=model,
+    input_tokens=input_tokens,
+    output_tokens=output_tokens,
+    duration_ms=duration_ms,
+    user_id=user_id,
+    session_id=session_id,
+    user_tier=user_tier,
+    error=error_msg,
+)
+
+print(f"\nLog written to {LOG_FILE}")
+PYEOF
+python3 test_logger_live.py
+```
+
+**Windows PowerShell:**
+```powershell
+$testCode = @'
+import time, anthropic
+from logger import get_agent_logger, log_api_call, make_session_id
+
+LOG_FILE = "agent.log"
+logger = get_agent_logger("tutor_api", log_file=LOG_FILE)
+client = anthropic.Anthropic()
+session_id = make_session_id()
+
+start = time.monotonic()
+error_msg = None
+try:
+    response = client.messages.create(
+        model="claude-3-haiku-20240307", max_tokens=64,
+        messages=[{"role": "user", "content": "Reply with exactly: Logging test successful."}],
+    )
+    duration_ms = int((time.monotonic() - start) * 1000)
+    model = response.model
+    input_tokens = response.usage.input_tokens
+    output_tokens = response.usage.output_tokens
+    print(f"Response: {response.content[0].text}")
+except Exception as e:
+    duration_ms = int((time.monotonic() - start) * 1000)
+    model = "claude-3-haiku-20240307"
+    input_tokens = 0; output_tokens = 0
+    error_msg = str(e)
+    print(f"Error: {e}")
+
+log_api_call(logger=logger, model=model, input_tokens=input_tokens,
+    output_tokens=output_tokens, duration_ms=duration_ms,
+    user_id="test_user_001", session_id=session_id, user_tier="pro", error=error_msg)
+print(f"\nLog written to {LOG_FILE}")
+'@
+$testCode | Out-File "test_logger_live.py" -Encoding utf8
+python test_logger_live.py
+```
+
+### Step 5 — Inspect the JSON log structure
+
+**macOS / Linux:**
+```bash
+# Pretty-print the last log line with jq
+tail -1 agent.log | jq .
+
+# Confirm all required fields are present
+tail -1 agent.log | jq 'keys'
+```
+
+**Windows PowerShell:**
+```powershell
+# Pretty-print the last log line with jq
+Get-Content agent.log | Select-Object -Last 1 | jq .
+
+# Confirm keys
+Get-Content agent.log | Select-Object -Last 1 | jq 'keys'
+```
+
+Expected output from `jq .`:
+```json
+{
+  "timestamp": "2026-04-13T14:32:07",
+  "level": "INFO",
+  "service": "tutor_api",
+  "message": "api_call model=claude-3-haiku-20240307 tokens=42 duration=847ms",
+  "event": "api_call",
+  "model": "claude-3-haiku-20240307",
+  "input_tokens": 28,
+  "output_tokens": 14,
+  "total_tokens": 42,
+  "duration_ms": 847,
+  "user_id": "test_user_001",
+  "session_id": "a3f7c2d10e4b",
+  "user_tier": "pro",
+  "error": null,
+  "success": true
+}
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `ModuleNotFoundError: No module named 'pythonjsonlogger'` | Package not installed | Run `pip install python-json-logger` (note the hyphen in the package name; the import uses underscore) |
+| Log file is created but empty | The logger wrote to stdout only; file path is relative to a different cwd | Use an absolute path: `log_file=str(Path.home() / "agent.log")` |
+| `jq: command not found` | jq not installed | See installation instructions in the Before you start section |
+| Log lines appear twice (once to file, once to terminal) | Both stdout and file handlers are active — this is correct behavior | If you want file-only output, remove the stdout handler from `get_agent_logger()` |
+| `duration_ms` is always 0 | `time.monotonic()` called before the API call returns | Ensure `start = time.monotonic()` is before the `client.messages.create()` call and `duration_ms` is calculated after |
+
+<VerificationBlock
+  deliverable="A logger.py module and the JSON output of one live API call logged to agent.log."
+  verifyCheck="Paste the output of: tail -1 agent.log | jq . (macOS/Linux) or Get-Content agent.log | Select-Object -Last 1 | jq . (Windows). All required fields must be present with non-null values."
+  rubricCriteria={[
+    "The log line is valid JSON parseable by jq without error",
+    "All required fields are present: timestamp, level, model, input_tokens, output_tokens, duration_ms, user_id, session_id, user_tier",
+    "duration_ms is a positive integer (not 0)",
+    "The success field is true for a successful call and the error field is null"
+  ]}
+/>

@@ -4,14 +4,24 @@ lessonNumber: "7.1.2"
 chapterNumber: "7.1"
 pathNumber: "7"
 tutorPreload: "Explain the difference between running Claude Code in a standalone terminal versus the VS Code integrated terminal."
-verifyType: "terminal_output"
+verifyType: "screenshot"
+groupId: "3.3"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Use Claude Code inside VS Code terminal
 
-## Objective
-
+## What you will build
 By the end of this lesson you will launch Claude Code from inside the VS Code integrated terminal, prove it can read and edit files in the open workspace, and understand the practical differences between using Claude Code here versus in a standalone terminal window.
+
+## Why this matters
+Real-world agentic work spans surfaces — you start in the terminal, switch to the IDE, check GitHub, and come back to the terminal. Learners who can only use Claude in one surface leave efficiency on the table. Cross-surface fluency is what makes Claude Code genuinely useful for full development cycles.
+
+## Before you start
+By the end of this lesson you will launch Claude Code from inside the VS Code integrated terminal, prove it can read and edit files in the open workspace, and understand the practical differences between using Claude Code here versus in a standalone terminal window.
+
 
 ## Walkthrough
 
@@ -160,7 +170,11 @@ Remove-Item claude-test.txt
 | PowerShell execution policy blocks profile | Policy is set to Restricted | Run `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` once |
 | `cc` alias not recognized | Profile was not loaded in this VS Code terminal instance | Run `. $PROFILE` (PowerShell) or `source ~/.bashrc` (Bash) |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The command or workflow step completed on the specified surface (IDE/terminal/browser)",
+    "Output or result matches what the lesson describes as expected",
+    "The cross-surface handoff was completed without losing context from the previous step",
+]}>
 Inside the VS Code integrated terminal, run:
 
 ```bash

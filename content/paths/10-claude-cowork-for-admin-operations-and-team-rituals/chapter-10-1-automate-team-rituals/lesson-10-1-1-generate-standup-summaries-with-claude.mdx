@@ -5,13 +5,23 @@ chapterNumber: "10.1"
 pathNumber: "10"
 tutorPreload: "Help me turn yesterday's git log into a clean standup summary."
 verifyType: "terminal_output"
+groupId: "4.1"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Generate standup summaries with Claude
 
-## Objective
+## What you will build
+A dated standup summary markdown file whose every bullet traces back to a real git commit.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 By the end of this lesson you will generate a formatted daily standup summary from real git history using Claude. Instead of trying to remember what you worked on, you will pull yesterday's commits, feed them to Claude, and get back a concise What I did / What I'm doing next / Blockers update ready to paste into Slack, Teams, or an email.
+
 
 ## Walkthrough
 
@@ -143,4 +153,9 @@ Read the generated summary and cross-check every bullet against the original `ra
 <VerificationBlock
   deliverable="A dated standup summary markdown file whose every bullet traces back to a real git commit."
   verifyCheck="Each bullet in the summary matches a commit visible in raw-log.txt, and the file is saved with today's date."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

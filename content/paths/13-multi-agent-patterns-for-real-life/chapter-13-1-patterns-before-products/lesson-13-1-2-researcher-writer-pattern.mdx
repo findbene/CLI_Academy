@@ -4,16 +4,26 @@ lessonNumber: "13.1.2"
 chapterNumber: "13.1"
 pathNumber: "13"
 tutorPreload: "Design a researcher-writer split for this task and define the handoff contract."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.7"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # When to use subagents vs a single session
 
-## Objective
+## What you will build
+A `decision-record.md` with at least four scenarios evaluated using the size/independence/specialization framework.
 
+## Why this matters
+Multi-agent workflows are the current frontier of production AI systems. Understanding how to wire agents together, manage handoffs, and avoid complexity spirals is the knowledge gap between hobby projects and production deployments. This path gives you the vocabulary and the architecture patterns used at scale.
+
+## Before you start
 Not every task needs multiple agents. In this lesson you will learn a practical decision framework for choosing between one long Claude Code session and a multi-agent split. You will apply the framework to three realistic scenarios and write a one-page decision record explaining your reasoning.
 
 By the end you will be able to look at any task and say confidently: "One session is enough" or "This needs separate agents, and here is how I would split it."
+
 
 ## Walkthrough
 
@@ -151,4 +161,9 @@ Fill in the blanks with honest assessments. The goal is to internalize the frame
 <VerificationBlock
   deliverable="A `decision-record.md` with at least four scenarios evaluated using the size/independence/specialization framework."
   verifyCheck="Each scenario names all three criteria, gives a clear decision, and the reasoning is consistent."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

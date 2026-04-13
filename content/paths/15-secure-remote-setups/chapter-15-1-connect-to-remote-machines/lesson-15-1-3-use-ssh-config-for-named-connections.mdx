@@ -4,14 +4,24 @@ lessonNumber: "15.1.3"
 chapterNumber: "15.1"
 pathNumber: "15"
 tutorPreload: "Show me how to set up SSH config aliases and a ProxyJump through a bastion host."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Use SSH config for named connections
 
-## Objective
+## What you will build
+By the end of this lesson you will be able to create an SSH config file that lets you connect to servers by short nicknames instead of typing full addresses.
 
+## Why this matters
+Remote systems are higher-stakes than local ones — they're shared, persistent, and often connected to production data. Secure remote setup is the first thing any security review will check when an organization adopts agentic tooling. Getting this right prevents incidents that are expensive and embarrassing.
+
+## Before you start
 By the end of this lesson you will be able to create an SSH config file that lets you connect to servers by short nicknames instead of typing full addresses. You will also know how to use `ProxyJump` to reach servers behind a bastion host.
+
 
 ## Walkthrough
 
@@ -129,6 +139,10 @@ scp .\report.csv staging:/home/deploy/reports/
 | Config works on Mac but not Windows | Windows OpenSSH does not support `UseKeychain` | Remove `UseKeychain yes` — it is macOS-only |
 | Keepalive not preventing disconnects | Corporate proxy or firewall strips keepalive packets | Lower `ServerAliveInterval` to `15` |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The remote setup step completed without authentication errors",
+    "Connection or access test passes with the correct credentials or token",
+    "The configuration persists after closing and reopening the terminal session",
+]}>
 Add a host alias to `~/.ssh/config`, then run `ssh -G alias-name` (which prints the resolved configuration without connecting). Confirm that `hostname`, `user`, and `port` match what you defined. Then connect with `ssh alias-name` and verify you reach the remote shell.
 </VerificationBlock>

@@ -1,0 +1,308 @@
+---
+title: ".env Files and the .env.example Pattern"
+lessonNumber: "22.1.2"
+chapterNumber: "22.1"
+pathNumber: "22"
+groupId: "2.3"
+clawClassification: "core"
+prerequisiteLesson: "22.1.1"
+estimatedMinutes: 20
+verifyType: "code_submission"
+tutorPreload: "I'm about to learn the .env and .env.example pattern for managing environment variables. Help me understand what belongs in each file and how Claude Code reads environment variables."
+---
+
+# .env Files and the .env.example Pattern
+
+## What you will build
+
+A `.env.example` file with at least five documented placeholder variables for a realistic workspace — the kind of file you would commit to a repo so that any collaborator (or future you) knows exactly what environment variables to fill in. You will also create the companion `.env` file with realistic-looking values that stays off Git.
+
+## Why this matters
+
+A `.env` file is a promise to yourself: "these values are real, they are secret, they live only on my machine." A `.env.example` file is a promise to your collaborators: "here is the shape of what you need — fill it in yourself." Without the example file, every new developer on a project has to reverse-engineer what variables are required by reading the source code. That takes hours and causes subtle bugs when a variable is missing.
+
+Claude Code reads environment variables from your `.env` file automatically when you launch it in a directory that contains one. This means you can configure Claude's behavior — API keys, model selection, tool permissions — through your `.env` without touching code. Understanding this pattern is foundational for agentic workflows.
+
+## Before you start
+
+- Lesson 22.1.1 completed: your project has a `.gitignore` that blocks `.env`.
+- A text editor or the ability to create files from the terminal.
+- No special tools required.
+
+## The walkthrough
+
+### Step 1 — Understand the two-file pattern
+
+The pattern has two files with a clear division of responsibility:
+
+| File | Committed? | Contains |
+|------|-----------|---------|
+| `.env` | No | Real values — your actual API keys, passwords, and tokens |
+| `.env.example` | Yes | Documented placeholders — the shape of every variable with a description |
+
+The `.env.example` is a template. Collaborators copy it to `.env` and fill in their own real values. CI systems do the same with secrets injected by the pipeline.
+
+### Step 2 — Create the project structure
+
+If you are continuing from Lesson 22.1.1, use that directory. Otherwise:
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/env-pattern-lab && cd ~/cli-academy/projects/env-pattern-lab
+git init
+echo ".env" >> .gitignore
+echo ".env.*" >> .gitignore
+git add .gitignore
+git commit -m "chore: initialize project with .gitignore"
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\env-pattern-lab" -Force
+Set-Location "$HOME\cli-academy\projects\env-pattern-lab"
+git init
+".env", ".env.*" | Add-Content .gitignore
+git add .gitignore
+git commit -m "chore: initialize project with .gitignore"
+```
+
+### Step 3 — Create .env.example
+
+This is the file you will commit. Every variable must have a comment that explains:
+- What the variable is used for
+- Where to get the real value
+- Whether it is required or optional
+
+**macOS / Linux:**
+```bash
+cat > .env.example << 'EOF'
+# ============================================================
+# .env.example — copy this file to .env and fill in real values
+# DO NOT put real secrets in this file — it is committed to Git
+# ============================================================
+
+# Anthropic API key for Claude Code and the Claude API
+# Get yours at: https://console.anthropic.com/settings/keys
+# Required for all AI features
+ANTHROPIC_API_KEY=sk-ant-api03-REPLACE_WITH_YOUR_KEY
+
+# Application environment — controls logging, error detail, and feature flags
+# Values: development | staging | production
+# Default: development
+NODE_ENV=development
+
+# Database connection string
+# Format: postgres://USER:PASSWORD@HOST:PORT/DATABASE_NAME
+# For local dev use: postgres://postgres:postgres@localhost:5432/myapp_dev
+# Required for all database operations
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE_NAME
+
+# GitHub personal access token for repository operations
+# Required scopes: repo, read:org
+# Get yours at: https://github.com/settings/tokens
+# Optional — only required if using GitHub integration features
+GITHUB_TOKEN=ghp_REPLACE_WITH_YOUR_GITHUB_TOKEN
+
+# Webhook signing secret for verifying incoming payloads
+# Generate with: openssl rand -hex 32
+# Required for the /webhooks endpoint to accept events
+WEBHOOK_SECRET=REPLACE_WITH_32_CHAR_HEX_STRING
+
+# Port for the local development server
+# Change this if 3000 is already in use on your machine
+# Optional — defaults to 3000
+PORT=3000
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# ============================================================
+# .env.example — copy this file to .env and fill in real values
+# DO NOT put real secrets in this file — it is committed to Git
+# ============================================================
+
+# Anthropic API key for Claude Code and the Claude API
+# Get yours at: https://console.anthropic.com/settings/keys
+# Required for all AI features
+ANTHROPIC_API_KEY=sk-ant-api03-REPLACE_WITH_YOUR_KEY
+
+# Application environment — controls logging, error detail, and feature flags
+# Values: development | staging | production
+# Default: development
+NODE_ENV=development
+
+# Database connection string
+# Format: postgres://USER:PASSWORD@HOST:PORT/DATABASE_NAME
+# For local dev use: postgres://postgres:postgres@localhost:5432/myapp_dev
+# Required for all database operations
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE_NAME
+
+# GitHub personal access token for repository operations
+# Required scopes: repo, read:org
+# Get yours at: https://github.com/settings/tokens
+# Optional — only required if using GitHub integration features
+GITHUB_TOKEN=ghp_REPLACE_WITH_YOUR_GITHUB_TOKEN
+
+# Webhook signing secret for verifying incoming payloads
+# Generate with: openssl rand -hex 32
+# Required for the /webhooks endpoint to accept events
+WEBHOOK_SECRET=REPLACE_WITH_32_CHAR_HEX_STRING
+
+# Port for the local development server
+# Change this if 3000 is already in use on your machine
+# Optional — defaults to 3000
+PORT=3000
+"@ | Set-Content .env.example
+```
+
+### Step 4 — Create .env with filled-in values
+
+Now copy the example and fill in realistic (but fake) values. In a real project these would be your actual credentials.
+
+**macOS / Linux:**
+```bash
+cp .env.example .env
+```
+
+**Windows PowerShell:**
+```powershell
+Copy-Item .env.example .env
+```
+
+Then open `.env` and edit the placeholder values to realistic-looking fake ones. You can also do it inline:
+
+**macOS / Linux:**
+```bash
+cat > .env << 'EOF'
+ANTHROPIC_API_KEY=sk-ant-api03-abc123def456ghi789jkl012mno345pqr678stu901
+NODE_ENV=development
+DATABASE_URL=postgres://admin:localpassword@localhost:5432/myapp_dev
+GITHUB_TOKEN=ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
+WEBHOOK_SECRET=a8f3c2e1d9b7654321fedcba0987654321abcdef98765432
+PORT=3000
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+ANTHROPIC_API_KEY=sk-ant-api03-abc123def456ghi789jkl012mno345pqr678stu901
+NODE_ENV=development
+DATABASE_URL=postgres://admin:localpassword@localhost:5432/myapp_dev
+GITHUB_TOKEN=ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
+WEBHOOK_SECRET=a8f3c2e1d9b7654321fedcba0987654321abcdef98765432
+PORT=3000
+"@ | Set-Content .env
+```
+
+### Step 5 — Verify the split: example commits, .env does not
+
+**macOS / Linux:**
+```bash
+git status
+```
+
+**Windows PowerShell:**
+```powershell
+git status
+```
+
+Expected output:
+```
+On branch main
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .env.example
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+`.env` does not appear. `.env.example` does appear and is safe to commit.
+
+**macOS / Linux:**
+```bash
+git add .env.example
+git commit -m "chore: add .env.example with documented variable placeholders"
+```
+
+**Windows PowerShell:**
+```powershell
+git add .env.example
+git commit -m "chore: add .env.example with documented variable placeholders"
+```
+
+### Step 6 — How Claude Code reads your .env
+
+When you launch `claude` in a directory, it automatically loads any `.env` file present. Variables defined there become available to Claude's runtime just like variables exported in your shell.
+
+To confirm Claude Code sees your `ANTHROPIC_API_KEY`:
+
+**macOS / Linux:**
+```bash
+claude "What is the first 10 characters of the value of my ANTHROPIC_API_KEY environment variable?"
+```
+
+**Windows PowerShell:**
+```powershell
+claude "What is the first 10 characters of the value of my ANTHROPIC_API_KEY environment variable?"
+```
+
+Claude will respond with the first 10 characters of the key from your `.env`. This confirms the loading mechanism works.
+
+> If you are using a fake key value, Claude will attempt to use it for API calls and fail. That is expected — the point here is confirming the env loading, not making a real API call.
+
+### Step 7 — Validate your .env.example has all required fields
+
+A good `.env.example` passes this checklist:
+
+- Every variable has a comment above it explaining its purpose.
+- Every required variable is marked "Required".
+- Every optional variable has a documented default.
+- Every variable shows the correct format or prefix for its real value.
+- No real secrets appear anywhere — all values are clearly fake placeholder text.
+
+Check yours:
+
+**macOS / Linux:**
+```bash
+cat .env.example | grep -c "^#"
+```
+
+**Windows PowerShell:**
+```powershell
+(Get-Content .env.example | Where-Object { $_ -match "^#" }).Count
+```
+
+You should see at least 10 comment lines (more is better — good documentation is thorough).
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `.env` shows up in `git status` | The `.gitignore` was not set up, or `.env` was already tracked by a previous commit | Run `git rm --cached .env` to stop tracking it; verify `.gitignore` contains `.env` on its own line |
+| `.env.example` contains real values | Copied values from `.env` without replacing them | Open `.env.example` and replace every real value with a descriptive placeholder before committing |
+| Claude Code does not pick up `.env` changes | Claude was started before `.env` was created, or in a different directory | Restart `claude` from the directory containing `.env` |
+| Collaborator cannot figure out which values to fill in | Comments in `.env.example` are unclear | Rewrite comments to include: what the variable does, where to obtain the value, and whether it is required |
+| `cp .env.example .env` overwrites an existing .env | You ran the copy command on a machine where `.env` already existed | Use `cp -n .env.example .env` (macOS/Linux) to skip if target already exists; on Windows check with `Test-Path .env` first |
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `.env` shows in `git add -A` staging | `.gitignore` pattern doesn't cover the exact filename | Run `git check-ignore -v .env` to see which rule is (or isn't) matching |
+| Team member's `.env` variables differ from what code expects | `.env.example` was never updated when new variables were added | Treat `.env.example` as a changelog — update it every time you add a new env variable to the codebase |
+| Application crashes on startup with "missing env var" | Copied `.env.example` but forgot to fill in a required value | Read the error message, find the variable name, fill it in `.env` |
+
+<VerificationBlock
+  deliverable="A committed .env.example file with 5+ documented placeholder variables, and a local .env file with filled-in values that does not appear in git status."
+  verifyCheck="Run `git show HEAD` to see your last commit — it must contain .env.example. Run `git status` — .env must not appear."
+  rubricCriteria={[
+    "git show HEAD contains .env.example with 5 or more variables",
+    "Every variable in .env.example has an explanatory comment",
+    "git status does not show .env",
+    ".env file exists locally with non-placeholder values",
+    "Required vs optional status is documented in comments"
+  ]}
+/>

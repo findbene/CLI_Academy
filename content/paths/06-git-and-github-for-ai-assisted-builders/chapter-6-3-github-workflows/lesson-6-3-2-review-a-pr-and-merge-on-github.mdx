@@ -4,14 +4,24 @@ lessonNumber: "6.3.2"
 chapterNumber: "6.3"
 pathNumber: "6"
 tutorPreload: "Summarize what this PR changes and whether it is safe to merge."
-verifyType: "terminal_output"
+verifyType: "screenshot"
+groupId: "3.4"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Review a PR and merge on GitHub
 
-## Objective
+## What you will build
+By the end of this lesson you will review a pull request — read the diff, leave a comment, approve, and merge it — using both the GitHub web interface and the GitHub CLI.
 
+## Why this matters
+Git is non-negotiable in any professional development context. AI-assisted builders who cannot use Git correctly are blocked from collaborating, reviewing, or shipping. This path makes Git operations fast and reliable using Claude Code so you can focus on building instead of remembering commands.
+
+## Before you start
 By the end of this lesson you will review a pull request — read the diff, leave a comment, approve, and merge it — using both the GitHub web interface and the GitHub CLI. You will also delete the merged feature branch to keep your repo clean.
+
 
 ## Walkthrough
 
@@ -121,7 +131,11 @@ You should see the merge commit and the "Add homepage" commit in the history.
 | PR shows "This branch has no conflicts with the base branch" but merge button is grey | Branch protection rules require a review | Approve the PR first (or adjust repo settings) |
 | Deleted branch on GitHub but it still shows locally | Remote deletion is not synced | Run `git fetch --prune` to remove stale remote branches |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The git command completed without errors and output matches the expected format",
+    "Running git log --oneline or git status shows the correct state described in the lesson",
+    "The commit message or branch name follows the naming convention from the walkthrough",
+]}>
 Run these commands and confirm:
 
 ```bash

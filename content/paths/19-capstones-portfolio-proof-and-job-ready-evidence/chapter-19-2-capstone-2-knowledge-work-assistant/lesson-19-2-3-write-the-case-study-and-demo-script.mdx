@@ -4,13 +4,24 @@ lessonNumber: "19.2.3"
 chapterNumber: "19.2"
 pathNumber: "19"
 tutorPreload: "Turn this capstone into a short demo story that sounds credible."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "6.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Write the case study and demo script
 
-## Objective
+## What you will build
+A presentation-ready package containing CASE-STUDY.md, demo-script.md, todo-report.md, and the supporting evidence files.
+
+## Why this matters
+The portfolio capstone is the artifact that converts learning into professional evidence. Employers and clients cannot assess what they cannot see. A concrete, documented portfolio project answers the question 'show me something you built' — the question that closes every technical hiring conversation.
+
+## Before you start
 Package the knowledge workflow so another person can understand the problem, see the evidence, and watch a short demo without extra explanation from you. In this lesson, you will create a case study and a 3-minute demo script based on the real TODO report you generated.
+
 
 ## Walkthrough
 
@@ -167,4 +178,9 @@ Get-Content todo-report.md
 <VerificationBlock 
   deliverable="A presentation-ready package containing CASE-STUDY.md, demo-script.md, todo-report.md, and the supporting evidence files."
   verifyCheck="Someone else can read the case study, deliver the 3-minute script, and point to the raw dataset, final report, and edge-case log without needing extra explanation from you."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

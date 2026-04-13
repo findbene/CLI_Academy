@@ -5,13 +5,23 @@ chapterNumber: "2.1"
 pathNumber: "2"
 tutorPreload: "I pasted my terminal output. Tell me where I am and whether it is safe to continue."
 verifyType: "terminal_output"
+groupId: "1.1"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Where am I and what is here?
 
-## Objective
+## What you will build
+Terminal output showing your current directory path and a detailed file listing of that directory.
 
+## Why this matters
+The terminal is the lingua franca of every professional development environment. Navigating confidently from the command line is what separates a developer who can work anywhere from one who is helpless without a GUI. These skills transfer directly to remote servers, CI runners, and containerized environments.
+
+## Before you start
 Open your terminal and answer two questions without changing anything: **what folder am I in**, and **what is inside it**. By the end you will be able to read a path, list files with useful detail, and spot hidden items.
+
 
 ## Walkthrough
 
@@ -126,4 +136,9 @@ ls | wc -l
 <VerificationBlock
   deliverable="Terminal output showing your current directory path and a detailed file listing of that directory."
   verifyCheck="Output includes a valid absolute path from pwd or Get-Location and a file listing with at least three items visible."
+  rubricCriteria={[
+    "The Terminal output showing your current directory path and a detailed file listing of that directory. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

@@ -4,14 +4,24 @@ lessonNumber: "4.2.3"
 chapterNumber: "4.2"
 pathNumber: "4"
 tutorPreload: "Help me add a new feature to this project that integrates with the existing code."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Add a new feature file to an existing project
 
-## Objective
+## What you will build
+A new feature file added to the project, imported by existing code, and verified working.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Use Claude Code to add a new feature file — such as a middleware module or utility — to the project you have been working in. Then verify it integrates correctly by importing it, running the project, and confirming the existing tests still pass. By the end you will have a new working file wired into the existing codebase with a clean commit.
+
 
 ## Walkthrough
 
@@ -151,4 +161,9 @@ git commit -m "feat: add request logger middleware"
 <VerificationBlock
   deliverable="A new feature file added to the project, imported by existing code, and verified working."
   verifyCheck="New file exists, is imported by at least one existing file, server runs with the feature active, and tests pass."
+  rubricCriteria={[
+    "The installation or setup completed without fatal errors",
+    "Running the verification command shows the tool is accessible and version-correct",
+    "A basic test action (as described in the lesson) succeeds end to end",
+  ]}
 />

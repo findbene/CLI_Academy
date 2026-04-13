@@ -1,0 +1,248 @@
+---
+title: "Register and Test Your Custom MCP Server"
+lessonNumber: "21.2.2"
+chapterNumber: "21.2"
+pathNumber: "21"
+tutorPreload: "I just built a hello-mcp server and I need to register it in Claude Code's settings.json so it shows up in /mcp. Help me get the configuration right."
+verifyType: "terminal_output"
+estimatedMinutes: 25
+---
+
+# Register and Test Your Custom MCP Server
+
+## Objective
+
+By the end of this lesson your `hello-mcp` server will be listed in `/mcp` as a connected server and Claude will successfully call the `say_hello` tool via MCP. You will have end-to-end evidence that a server you wrote responds to a real tool call from Claude.
+
+## Walkthrough
+
+### Step 1 — Find the paths you need for the config
+
+The `settings.json` entry needs two absolute paths:
+1. The full path to the `node` binary
+2. The full path to your `hello-mcp/index.js` file
+
+**macOS / Linux**
+
+```bash
+# Path to node
+which node
+
+# Full path to your server
+echo "$HOME/cli-academy/projects/hello-mcp/index.js"
+```
+
+**Windows PowerShell**
+
+```powershell
+# Path to node
+(Get-Command node).Source
+
+# Full path to your server
+Write-Host "$HOME\cli-academy\projects\hello-mcp\index.js"
+```
+
+Write both paths down. On macOS/Linux they will look like:
+- `/usr/local/bin/node`
+- `/Users/you/cli-academy/projects/hello-mcp/index.js`
+
+On Windows:
+- `C:\Program Files\nodejs\node.exe`
+- `C:\Users\you\cli-academy\projects\hello-mcp\index.js`
+
+### Step 2 — Open settings.json and add the hello-mcp entry
+
+**macOS / Linux**
+
+```bash
+cat ~/.claude/settings.json
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content "$HOME\.claude\settings.json"
+```
+
+You already have a `filesystem` entry from Lesson 21.1.2. You need to add `hello-mcp` to the `mcpServers` object alongside it. Edit the file carefully — invalid JSON will prevent Claude Code from loading any MCP servers.
+
+**macOS / Linux** (replace placeholder paths with your actual paths):
+
+```bash
+node << 'EOF'
+const fs = require('fs');
+const path = require('path');
+const settingsPath = path.join(process.env.HOME, '.claude', 'settings.json');
+const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+
+settings.mcpServers = settings.mcpServers || {};
+settings.mcpServers['hello-mcp'] = {
+  command: '/usr/local/bin/node',
+  args: [process.env.HOME + '/cli-academy/projects/hello-mcp/index.js']
+};
+
+fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+console.log('Updated settings.json:');
+console.log(JSON.stringify(settings.mcpServers, null, 2));
+EOF
+```
+
+**Windows PowerShell** (replace paths with your actual values):
+
+```powershell
+$settingsPath = "$HOME\.claude\settings.json"
+$settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
+
+if (-not $settings.mcpServers) {
+    $settings | Add-Member -NotePropertyName mcpServers -NotePropertyValue ([PSCustomObject]@{})
+}
+
+$helloMcp = [PSCustomObject]@{
+    command = "C:\Program Files\nodejs\node.exe"
+    args    = @("$HOME\cli-academy\projects\hello-mcp\index.js")
+}
+$settings.mcpServers | Add-Member -NotePropertyName "hello-mcp" -NotePropertyValue $helloMcp -Force
+
+$settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
+Write-Host "Updated. Verify:"
+Get-Content $settingsPath
+```
+
+### Step 3 — Verify the settings.json is valid JSON
+
+Always check the file after editing. A syntax error here breaks all MCP servers.
+
+**macOS / Linux**
+
+```bash
+node -e "JSON.parse(require('fs').readFileSync('$HOME/.claude/settings.json', 'utf8')); console.log('Valid JSON')"
+```
+
+**Windows PowerShell**
+
+```powershell
+try {
+    Get-Content "$HOME\.claude\settings.json" -Raw | ConvertFrom-Json | Out-Null
+    Write-Host "Valid JSON"
+} catch {
+    Write-Host "JSON error: $_"
+}
+```
+
+You must see `Valid JSON` before continuing. If you see an error, open the file in a text editor, find the syntax problem (often a missing comma or extra bracket), and fix it.
+
+### Step 4 — Open Claude Code and check /mcp
+
+Open a fresh Claude Code session. Claude Code reads `settings.json` at startup and starts each configured MCP server as a subprocess.
+
+**macOS / Linux**
+
+```bash
+claude
+```
+
+**Windows PowerShell**
+
+```powershell
+claude
+```
+
+Once the session opens, type:
+
+```
+/mcp
+```
+
+You should see both servers listed:
+
+```
+Connected MCP servers:
+
+filesystem
+  Tools: read_file, read_multiple_files, write_file, list_directory, ...
+  Status: connected
+
+hello-mcp
+  Tools: say_hello
+  Status: connected
+```
+
+If `hello-mcp` shows `error` or `disconnected`, proceed to the troubleshooting table below.
+
+### Step 5 — Call the say_hello tool from Claude
+
+With `hello-mcp` connected, ask Claude to use it:
+
+```
+Use the say_hello tool from my hello-mcp server to greet "Ada Lovelace".
+```
+
+Claude should make a tool call and return:
+
+```
+Hello, Ada Lovelace! This greeting was generated by your hello-mcp server.
+```
+
+If Claude says "I don't have a say_hello tool", the server is not connected. Check `/mcp` status and the troubleshooting steps below.
+
+### Step 6 — Run a verbose session to see the raw tool call
+
+Confirm the MCP call is real by using `--verbose`:
+
+**macOS / Linux**
+
+```bash
+claude --verbose --print "Use the say_hello MCP tool to greet 'Grace Hopper'."
+```
+
+**Windows PowerShell**
+
+```powershell
+claude --verbose --print "Use the say_hello MCP tool to greet 'Grace Hopper'."
+```
+
+Look for the MCP tool call block:
+
+```
+[MCP Tool: hello-mcp.say_hello]
+Input: { "name": "Grace Hopper" }
+Result: Hello, Grace Hopper! This greeting was generated by your hello-mcp server.
+```
+
+This is your server responding. The request traveled from Claude Code through the MCP protocol into your `index.js` request handler, and the result came back the same way.
+
+### Step 7 — Document what you built
+
+In your `LEARNING_LOG.md`, write a short entry:
+
+```
+## Lesson 21.2.2 — Custom MCP Server Running
+
+**Server name:** hello-mcp
+**Tool:** say_hello
+**Location:** ~/cli-academy/projects/hello-mcp/index.js
+
+**Verbose output I captured:**
+[paste the [MCP Tool: hello-mcp.say_hello] block here]
+```
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| hello-mcp shows as `error` in /mcp | The path to `index.js` in settings.json is wrong | Print the exact path: `echo $HOME/cli-academy/projects/hello-mcp/index.js` (macOS/Linux) or `Write-Host $HOME\cli-academy\projects\hello-mcp\index.js` (PowerShell), then copy it exactly into settings.json |
+| hello-mcp shows as `error` with "Cannot find module" | The `@modelcontextprotocol/sdk` package is not installed in the hello-mcp directory | Run `cd ~/cli-academy/projects/hello-mcp && npm install @modelcontextprotocol/sdk` |
+| settings.json fails the JSON validation check | The PowerShell script added the entry with formatting Claude Code cannot parse | Open the file in VS Code or Notepad, manually verify the JSON structure, then save |
+| Claude calls say_hello but returns wrong output | The request handler matched the wrong tool name | Check the `if (request.params.name === "say_hello")` condition in index.js — the string must match exactly |
+| Both MCP servers disappear from /mcp after editing settings.json | You accidentally deleted the `filesystem` entry while adding `hello-mcp` | Restore both entries to `mcpServers`; the Node.js script approach in Step 2 is safer than manual editing |
+
+<VerificationBlock
+  deliverable="Your custom hello-mcp server listed as connected in /mcp, responding to a say_hello tool call from Claude."
+  verifyCheck="Share the output of /mcp showing hello-mcp as connected, and the verbose output of Claude calling hello-mcp.say_hello."
+  rubricCriteria={[
+    "/mcp output lists hello-mcp with status: connected",
+    "The say_hello tool appears in hello-mcp's tools list",
+    "Verbose output shows an [MCP Tool: hello-mcp.say_hello] block",
+    "The tool call result contains the greeting string from your index.js handler"
+  ]}
+/>

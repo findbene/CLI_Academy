@@ -5,15 +5,25 @@ chapterNumber: "17.2"
 pathNumber: "17"
 tutorPreload: "Give me a safe read-only validation plan for this integration."
 verifyType: "terminal_output"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Validate read-only first
 
-## Objective
+## What you will build
+A read-only-validation.md file showing successful GET calls to /user, /user/repos, and /repos/OWNER/REPO/issues, with HTTP 200 status confirmed for each.
 
+## Why this matters
+Integrating Claude with external APIs and services is where most production security incidents happen. A misconfigured webhook, an exposed key, or an over-permissioned OAuth scope can expose entire systems. This path teaches the integration patterns that hold up under a security review.
+
+## Before you start
 The safest order when connecting to any API is: **read first, write never until proven safe**. Reading from a live API confirms your credentials work, shows you the data shape you will work with, and builds confidence — all without any risk of creating, modifying, or deleting anything. Write access is a privilege you earn after the read-only baseline is solid.
 
 In this lesson you will make three real read-only API calls against GitHub using the `gh` CLI, inspect the responses, and confirm that your integration cannot accidentally mutate data at this stage.
+
 
 ## Walkthrough
 
@@ -159,4 +169,9 @@ Get-Content read-only-validation.md
 <VerificationBlock 
     deliverable="A read-only-validation.md file showing successful GET calls to /user, /user/repos, and /repos/OWNER/REPO/issues, with HTTP 200 status confirmed for each."
     verifyCheck="All three read-only API calls return 200 and gh --verbose shows GET method (no POST or PATCH)."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

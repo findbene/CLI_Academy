@@ -4,14 +4,24 @@ lessonNumber: "7.1.1"
 chapterNumber: "7.1"
 pathNumber: "7"
 tutorPreload: "Show me how to set up my terminal prompt so I can see my git branch and Node version at a glance."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.3"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Customize your terminal for Claude Code
 
-## Objective
+## What you will build
+By the end of this lesson you will have a terminal prompt that shows your current Git branch and Node.
 
+## Why this matters
+Real-world agentic work spans surfaces — you start in the terminal, switch to the IDE, check GitHub, and come back to the terminal. Learners who can only use Claude in one surface leave efficiency on the table. Cross-surface fluency is what makes Claude Code genuinely useful for full development cycles.
+
+## Before you start
 By the end of this lesson you will have a terminal prompt that shows your current Git branch and Node.js version, custom tab colors or profiles for different tasks, and a short alias so you can launch Claude Code by typing `cc` instead of the full command. These small changes remove friction every time you start a session.
+
 
 ## Walkthrough
 
@@ -210,7 +220,11 @@ If the prompt looks plain (no colors, no branch), the most common cause is that 
 | Colors do not appear | Terminal emulator does not support ANSI escape codes | Use Windows Terminal, iTerm2, or any modern terminal instead of legacy `cmd.exe` |
 | `$PROFILE` path does not exist | PowerShell has never created a profile file | Run `New-Item -Path $PROFILE -ItemType File -Force` to create it |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The command or workflow step completed on the specified surface (IDE/terminal/browser)",
+    "Output or result matches what the lesson describes as expected",
+    "The cross-surface handoff was completed without losing context from the previous step",
+]}>
 Open a **new** terminal window and navigate into any Git repository, then run:
 
 ```bash

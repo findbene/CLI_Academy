@@ -4,16 +4,26 @@ lessonNumber: "13.3.3"
 chapterNumber: "13.3"
 pathNumber: "13"
 tutorPreload: "Give me the quality checklist for a small two-agent weekly brief workflow."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.7"
+clawClassification: "advanced"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Handle agent failures gracefully
 
-## Objective
+## What you will build
+A `resilient-pipeline/` directory containing agent contracts and a `run-resilient.sh` (or `.ps1`) script with timeout, retry, empty-output detection, and fallback messaging.
 
+## Why this matters
+Multi-agent workflows are the current frontier of production AI systems. Understanding how to wire agents together, manage handoffs, and avoid complexity spirals is the knowledge gap between hobby projects and production deployments. This path gives you the vocabulary and the architecture patterns used at scale.
+
+## Before you start
 Agents fail. They produce empty files, ignore their contracts, time out, or return garbled output. A robust pipeline does not crash when this happens — it detects the failure, reports what went wrong, and either retries or exits cleanly. In this lesson you will add error handling to your multi-agent pipeline: timeout detection, empty-output checks, retry logic with a cap, and a fallback strategy.
 
 By the end you will have a resilient pipeline script that can survive common agent failures without human intervention.
+
 
 ## Walkthrough
 
@@ -265,4 +275,9 @@ To test failure handling, try renaming `researcher-CLAUDE.md` to something else 
 <VerificationBlock
   deliverable="A `resilient-pipeline/` directory containing agent contracts and a `run-resilient.sh` (or `.ps1`) script with timeout, retry, empty-output detection, and fallback messaging."
   verifyCheck="The script retries failed agents up to MAX_RETRIES times, enforces a timeout, and exits with a useful error message when all retries are exhausted."
+  rubricCriteria={[
+    "The ` directory containing agent contracts and a `run-resilient.sh` folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

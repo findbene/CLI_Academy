@@ -1,0 +1,454 @@
+---
+title: "PostHog: Product Analytics for Agent Developers"
+lessonNumber: "26.1.3"
+chapterNumber: "26.1"
+pathNumber: "26"
+groupId: "5.3"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 25
+verifyType: "code_submission"
+tutorPreload: "I'm about to add product analytics to an agentic learning platform using PostHog. Help me understand the difference between product analytics and error monitoring before I write my first event."
+---
+
+# PostHog: Product Analytics for Agent Developers
+
+## What you will build
+
+An `analytics.py` (or `analytics.ts`) module that sends four key PostHog events for learner-flow moments in an agentic learning product: `lesson_started`, `lesson_completed`, `tutor_used`, and `verification_passed`. Each event carries the correct properties so PostHog can answer questions like "Which lessons have the highest drop-off rate?" and "How often do learners use the tutor before passing verification?"
+
+## Why this matters
+
+Structured logs tell you what your system did. Error monitoring tells you when it broke. Product analytics tells you whether it is actually working — which is a different question.
+
+You can have zero errors in Sentry and still be failing your learners. If 80% of users who start a lesson abandon it halfway through the walkthrough, your logs will not tell you that. PostHog will.
+
+For an agentic learning product, the events that matter most are the transitions in the learner flow: did they start the lesson? Did they reach the verification step? Did they use the tutor before or after attempting verification? Did they pass? The answers to these questions drive curriculum improvements, pacing decisions, and tutor UX changes that structured logs cannot surface.
+
+The four events in this lesson are the minimum viable analytics implementation for a learning platform. Everything else — funnels, retention analysis, cohort analysis — builds on these foundations.
+
+## Before you start
+
+- A PostHog account (free tier supports up to 1 million events/month) — sign up at posthog.com
+- Your PostHog project API key (found in Project Settings → Project API Key)
+- Python 3.9+ or Node.js 18+ (this lesson provides implementations for both)
+- For Python: `pip install posthog`
+- For TypeScript/Node: `npm install posthog-node`
+
+## The walkthrough
+
+### Step 1 — Understand the four core events
+
+Before writing code, design the events. A well-designed event has a meaningful name, a required distinct_id (the user identifier), and consistent properties that make filtering and aggregation useful.
+
+| Event | Trigger | Required properties | Optional properties |
+|-------|---------|---------------------|---------------------|
+| `lesson_started` | User opens a lesson page | `lesson_id`, `path_number`, `chapter_number` | `user_tier`, `referrer` |
+| `lesson_completed` | User reaches end of walkthrough | `lesson_id`, `path_number`, `time_on_lesson_seconds` | `used_tutor` |
+| `tutor_used` | User sends a message to the AI tutor | `lesson_id`, `message_length_chars`, `session_id` | `user_tier`, `tutor_type` |
+| `verification_passed` | User submits work and verification succeeds | `lesson_id`, `verify_type`, `attempts_count` | `time_to_pass_seconds` |
+
+The `distinct_id` is your user identifier — it must be the same across all four events for a single user so PostHog can reconstruct their journey. Use a stable user ID from your auth system. For anonymous users, generate a UUID and persist it in localStorage or a cookie.
+
+### Step 2 — Create your project directory
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/projects/observability/analytics
+cd ~/projects/observability/analytics
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\projects\observability\analytics" | Out-Null
+Set-Location "$HOME\projects\observability\analytics"
+```
+
+### Step 3 — Write the analytics module (Python)
+
+**macOS / Linux:**
+```bash
+pip install posthog
+
+cat > analytics.py << 'PYEOF'
+"""
+analytics.py — PostHog product analytics for an agentic learning platform.
+
+Usage:
+    from analytics import track_lesson_started, track_lesson_completed
+                         track_tutor_used, track_verification_passed
+
+    track_lesson_started(
+        distinct_id="user_123",
+        lesson_id="25.1.1",
+        path_number=25,
+        chapter_number="25.1",
+        user_tier="pro",
+    )
+
+Set POSTHOG_API_KEY in your environment before importing this module.
+"""
+
+import os
+import time
+from typing import Optional
+import posthog
+
+# PostHog host — use "https://us.i.posthog.com" for US cloud,
+# "https://eu.i.posthog.com" for EU cloud, or your self-hosted URL.
+POSTHOG_HOST = os.environ.get("POSTHOG_HOST", "https://us.i.posthog.com")
+POSTHOG_API_KEY = os.environ.get("POSTHOG_API_KEY", "")
+
+if not POSTHOG_API_KEY:
+    raise EnvironmentError(
+        "POSTHOG_API_KEY environment variable is not set. "
+        "Find your project API key in PostHog → Project Settings → Project API Key."
+    )
+
+# Initialize the PostHog client once at module load
+posthog.project_api_key = POSTHOG_API_KEY
+posthog.host = POSTHOG_HOST
+
+# Disable PostHog's own exception capturing — we handle errors ourselves
+posthog.on_error = lambda error, items: None
+
+
+def track_lesson_started(
+    distinct_id: str,
+    lesson_id: str,
+    path_number: int,
+    chapter_number: str,
+    user_tier: str = "free",
+    referrer: Optional[str] = None,
+) -> None:
+    """
+    Fire when a learner opens a lesson.
+
+    Args:
+        distinct_id: Stable user identifier (user ID from auth, or anonymous UUID).
+        lesson_id: Lesson identifier string, e.g. "25.1.1".
+        path_number: Integer path number, e.g. 25.
+        chapter_number: Chapter string, e.g. "25.1".
+        user_tier: "free" or "pro".
+        referrer: Optional — where did the user come from? (e.g. "dashboard", "search")
+    """
+    properties = {
+        "lesson_id": lesson_id,
+        "path_number": path_number,
+        "chapter_number": chapter_number,
+        "user_tier": user_tier,
+    }
+    if referrer:
+        properties["referrer"] = referrer
+
+    posthog.capture(distinct_id=distinct_id, event="lesson_started", properties=properties)
+
+
+def track_lesson_completed(
+    distinct_id: str,
+    lesson_id: str,
+    path_number: int,
+    time_on_lesson_seconds: int,
+    used_tutor: bool = False,
+) -> None:
+    """
+    Fire when a learner reaches the end of the walkthrough section.
+    Note: 'completed' means read through, not necessarily passed verification.
+
+    Args:
+        distinct_id: Stable user identifier.
+        lesson_id: Lesson identifier string.
+        path_number: Integer path number.
+        time_on_lesson_seconds: Seconds from lesson_started to this event.
+        used_tutor: True if the learner opened the AI tutor during this lesson.
+    """
+    posthog.capture(
+        distinct_id=distinct_id,
+        event="lesson_completed",
+        properties={
+            "lesson_id": lesson_id,
+            "path_number": path_number,
+            "time_on_lesson_seconds": time_on_lesson_seconds,
+            "used_tutor": used_tutor,
+        },
+    )
+
+
+def track_tutor_used(
+    distinct_id: str,
+    lesson_id: str,
+    message_length_chars: int,
+    session_id: str,
+    user_tier: str = "free",
+    tutor_type: str = "inline",
+) -> None:
+    """
+    Fire each time a learner sends a message to the AI tutor within a lesson.
+
+    Args:
+        distinct_id: Stable user identifier.
+        lesson_id: Lesson identifier string.
+        message_length_chars: Length of the learner's message in characters.
+        session_id: The tutor session ID — ties multiple messages in one session together.
+        user_tier: "free" or "pro".
+        tutor_type: "inline" (embedded in lesson) or "floating" (side panel).
+    """
+    posthog.capture(
+        distinct_id=distinct_id,
+        event="tutor_used",
+        properties={
+            "lesson_id": lesson_id,
+            "message_length_chars": message_length_chars,
+            "session_id": session_id,
+            "user_tier": user_tier,
+            "tutor_type": tutor_type,
+        },
+    )
+
+
+def track_verification_passed(
+    distinct_id: str,
+    lesson_id: str,
+    verify_type: str,
+    attempts_count: int,
+    time_to_pass_seconds: Optional[int] = None,
+) -> None:
+    """
+    Fire when a learner's verification submission is accepted.
+
+    Args:
+        distinct_id: Stable user identifier.
+        lesson_id: Lesson identifier string.
+        verify_type: The verification type, e.g. "terminal_output", "code_submission",
+                     "screenshot", "quiz".
+        attempts_count: How many submissions did it take to pass? (1 = first try)
+        time_to_pass_seconds: Optional — seconds from lesson_started to this event.
+    """
+    properties = {
+        "lesson_id": lesson_id,
+        "verify_type": verify_type,
+        "attempts_count": attempts_count,
+    }
+    if time_to_pass_seconds is not None:
+        properties["time_to_pass_seconds"] = time_to_pass_seconds
+
+    posthog.capture(
+        distinct_id=distinct_id,
+        event="verification_passed",
+        properties=properties,
+    )
+
+
+def flush() -> None:
+    """
+    Force-flush the PostHog event queue.
+    Call this at the end of a script or request handler to ensure all events are sent.
+    Not needed in long-running web servers — PostHog flushes automatically.
+    """
+    posthog.flush()
+PYEOF
+echo "analytics.py written"
+```
+
+**Windows PowerShell:**
+```powershell
+pip install posthog
+
+$analyticsCode = @'
+import os
+from typing import Optional
+import posthog
+
+POSTHOG_HOST = os.environ.get("POSTHOG_HOST", "https://us.i.posthog.com")
+POSTHOG_API_KEY = os.environ.get("POSTHOG_API_KEY", "")
+
+if not POSTHOG_API_KEY:
+    raise EnvironmentError("POSTHOG_API_KEY environment variable is not set.")
+
+posthog.project_api_key = POSTHOG_API_KEY
+posthog.host = POSTHOG_HOST
+posthog.on_error = lambda error, items: None
+
+def track_lesson_started(distinct_id, lesson_id, path_number, chapter_number, user_tier="free", referrer=None):
+    properties = {"lesson_id": lesson_id, "path_number": path_number, "chapter_number": chapter_number, "user_tier": user_tier}
+    if referrer:
+        properties["referrer"] = referrer
+    posthog.capture(distinct_id=distinct_id, event="lesson_started", properties=properties)
+
+def track_lesson_completed(distinct_id, lesson_id, path_number, time_on_lesson_seconds, used_tutor=False):
+    posthog.capture(distinct_id=distinct_id, event="lesson_completed", properties={
+        "lesson_id": lesson_id, "path_number": path_number,
+        "time_on_lesson_seconds": time_on_lesson_seconds, "used_tutor": used_tutor,
+    })
+
+def track_tutor_used(distinct_id, lesson_id, message_length_chars, session_id, user_tier="free", tutor_type="inline"):
+    posthog.capture(distinct_id=distinct_id, event="tutor_used", properties={
+        "lesson_id": lesson_id, "message_length_chars": message_length_chars,
+        "session_id": session_id, "user_tier": user_tier, "tutor_type": tutor_type,
+    })
+
+def track_verification_passed(distinct_id, lesson_id, verify_type, attempts_count, time_to_pass_seconds=None):
+    properties = {"lesson_id": lesson_id, "verify_type": verify_type, "attempts_count": attempts_count}
+    if time_to_pass_seconds is not None:
+        properties["time_to_pass_seconds"] = time_to_pass_seconds
+    posthog.capture(distinct_id=distinct_id, event="verification_passed", properties=properties)
+
+def flush():
+    posthog.flush()
+'@
+$analyticsCode | Out-File "analytics.py" -Encoding utf8
+Write-Host "analytics.py written"
+```
+
+### Step 4 — Write a test that fires all four events
+
+Replace `phc_YOUR_KEY_HERE` with your actual PostHog project API key, or set the `POSTHOG_API_KEY` environment variable first.
+
+**macOS / Linux:**
+```bash
+export POSTHOG_API_KEY="phc_YOUR_KEY_HERE"
+
+cat > test_analytics.py << 'PYEOF'
+"""
+test_analytics.py — Fires all four events and verifies they were accepted.
+"""
+import time
+import uuid
+from analytics import (
+    track_lesson_started,
+    track_lesson_completed,
+    track_tutor_used,
+    track_verification_passed,
+    flush,
+)
+
+# Simulate a single learner's journey through lesson 25.1.1
+DISTINCT_ID = f"test_learner_{uuid.uuid4().hex[:8]}"
+LESSON_ID = "25.1.1"
+SESSION_ID = uuid.uuid4().hex[:12]
+
+print(f"Firing events for learner: {DISTINCT_ID}")
+lesson_start = time.time()
+
+# 1. Learner opens the lesson
+track_lesson_started(
+    distinct_id=DISTINCT_ID,
+    lesson_id=LESSON_ID,
+    path_number=25,
+    chapter_number="25.1",
+    user_tier="pro",
+    referrer="dashboard",
+)
+print("Fired: lesson_started")
+
+# 2. Learner uses the tutor mid-lesson
+track_tutor_used(
+    distinct_id=DISTINCT_ID,
+    lesson_id=LESSON_ID,
+    message_length_chars=87,
+    session_id=SESSION_ID,
+    user_tier="pro",
+    tutor_type="inline",
+)
+print("Fired: tutor_used")
+
+# 3. Learner completes the walkthrough
+time_on_lesson = int(time.time() - lesson_start)
+track_lesson_completed(
+    distinct_id=DISTINCT_ID,
+    lesson_id=LESSON_ID,
+    path_number=25,
+    time_on_lesson_seconds=time_on_lesson,
+    used_tutor=True,
+)
+print("Fired: lesson_completed")
+
+# 4. Learner passes verification
+track_verification_passed(
+    distinct_id=DISTINCT_ID,
+    lesson_id=LESSON_ID,
+    verify_type="code_submission",
+    attempts_count=2,
+    time_to_pass_seconds=int(time.time() - lesson_start),
+)
+print("Fired: verification_passed")
+
+# Ensure all events are sent before the script exits
+flush()
+print(f"\nAll 4 events sent for distinct_id={DISTINCT_ID}")
+print("Check your PostHog Live Events feed — they should appear within a few seconds.")
+print(f"Filter by distinct_id: {DISTINCT_ID}")
+PYEOF
+python3 test_analytics.py
+```
+
+**Windows PowerShell:**
+```powershell
+$env:POSTHOG_API_KEY = "phc_YOUR_KEY_HERE"
+
+$testCode = @'
+import time, uuid
+from analytics import track_lesson_started, track_lesson_completed, track_tutor_used, track_verification_passed, flush
+
+DISTINCT_ID = f"test_learner_{uuid.uuid4().hex[:8]}"
+LESSON_ID = "25.1.1"
+SESSION_ID = uuid.uuid4().hex[:12]
+print(f"Firing events for: {DISTINCT_ID}")
+lesson_start = time.time()
+
+track_lesson_started(DISTINCT_ID, LESSON_ID, 25, "25.1", user_tier="pro", referrer="dashboard")
+print("Fired: lesson_started")
+track_tutor_used(DISTINCT_ID, LESSON_ID, 87, SESSION_ID, user_tier="pro")
+print("Fired: tutor_used")
+track_lesson_completed(DISTINCT_ID, LESSON_ID, 25, int(time.time()-lesson_start), used_tutor=True)
+print("Fired: lesson_completed")
+track_verification_passed(DISTINCT_ID, LESSON_ID, "code_submission", 2, int(time.time()-lesson_start))
+print("Fired: verification_passed")
+flush()
+print(f"\nAll 4 events sent for {DISTINCT_ID}")
+print("Check PostHog Live Events and filter by distinct_id: " + DISTINCT_ID)
+'@
+$testCode | Out-File "test_analytics.py" -Encoding utf8
+python test_analytics.py
+```
+
+### Step 5 — Verify events appear in PostHog
+
+1. Go to your PostHog project.
+2. Navigate to **Live Events** (left sidebar).
+3. Filter by the `distinct_id` printed by your test script.
+4. Confirm all four events appear: `lesson_started`, `tutor_used`, `lesson_completed`, `verification_passed`.
+5. Click any event to expand it and verify the properties are correct.
+
+Expected terminal output:
+```
+Firing events for learner: test_learner_a3f7c2d1
+Fired: lesson_started
+Fired: tutor_used
+Fired: lesson_completed
+Fired: verification_passed
+
+All 4 events sent for distinct_id=test_learner_a3f7c2d1
+Check your PostHog Live Events feed — they should appear within a few seconds.
+Filter by distinct_id: test_learner_a3f7c2d1
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `EnvironmentError: POSTHOG_API_KEY environment variable is not set` | Environment variable not exported before running the script | Run `export POSTHOG_API_KEY="phc_..."` (macOS/Linux) or `$env:POSTHOG_API_KEY = "phc_..."` (Windows) in the same terminal session |
+| Events fire without error locally but never appear in PostHog | Using the wrong API key type — PostHog has separate keys for client-side and server-side | Use the **Project API Key** (starts with `phc_`) for server-side Python, not the Personal API Key |
+| All four events fire but only three appear in PostHog | The script exited before the PostHog client flushed its queue | `flush()` at the end of the script is mandatory for short-lived scripts; add it before any `sys.exit()` call |
+| Events appear with no properties | Properties dict was empty or not passed | Print `properties` before calling `posthog.capture()` to debug; verify the dict is populated |
+
+<VerificationBlock
+  deliverable="An analytics.py module with all four event functions implemented, plus terminal output showing all four events fired successfully."
+  verifyCheck="Paste the terminal output from test_analytics.py. The tutor will check that all four FIRED lines appear and ask you to confirm the events appeared in your PostHog Live Events feed."
+  rubricCriteria={[
+    "All four functions are implemented: track_lesson_started, track_lesson_completed, track_tutor_used, track_verification_passed",
+    "Each function passes the correct required properties to posthog.capture()",
+    "Terminal output shows all four 'Fired:' lines without Python exceptions",
+    "The flush() call is present at the end of the test script"
+  ]}
+/>

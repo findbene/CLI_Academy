@@ -1,0 +1,263 @@
+---
+title: "The Agent Safety Audit Checklist"
+lessonNumber: "25.2.1"
+chapterNumber: "25.2"
+pathNumber: "25"
+groupId: "5.2"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 20
+verifyType: "code_submission"
+tutorPreload: "I'm about to conduct a safety audit of one of my agentic projects. Help me understand what each audit criterion is looking for before I evaluate my own system."
+---
+
+# The Agent Safety Audit Checklist
+
+## What you will build
+
+A `SAFETY_AUDIT.md` for one of your existing projects from Group 4 (paths 18–19). You will score the project against eight production-safety criteria, mark each as Pass / Fail / N-A with a one-sentence justification, and write a concrete remediation plan for every Fail item — including the specific file to edit, the change to make, and a target date.
+
+## Why this matters
+
+Most agentic projects start as experiments. They ship as experiments too, with no spending limits, no permission scoping, no logging, and no runaway protection. The audit is the checkpoint between "it works on my machine" and "I would run this unattended in production."
+
+An audit does two things. First, it surfaces concrete gaps — the things you know are missing but have not fixed because they are not exciting to build. Second, it creates a paper trail. When something goes wrong (and in production, something always goes wrong), the audit document tells you whether the failure was in a known gap or a blind spot.
+
+The eight criteria in this lesson cover the most common causes of agentic production incidents, drawn from real post-mortems on deployed AI systems.
+
+## Before you start
+
+- Complete at least one project from paths 18 or 19 (or use any personal agent project you have running)
+- Have the project directory open or accessible
+- Have the outputs from lessons 25.1.1 and 25.1.2 available for reference
+- Estimated time: 20 minutes if your project is already open; 30 minutes if you need to recall context
+
+## The walkthrough
+
+### Step 1 — Identify the project you will audit
+
+Choose a project that is complete enough to audit meaningfully. Good candidates:
+
+- A CLI automation script that calls the Anthropic API
+- A web app backend that uses Claude as a summarization step
+- Any capstone project from path 18 or 19
+
+If you do not have a prior project, create a minimal stand-in:
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/projects/agent-safety/audit-target
+cd ~/projects/agent-safety/audit-target
+echo "# Minimal audit target" > README.md
+echo "ANTHROPIC_API_KEY=your_key_here" > .env.example
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\projects\agent-safety\audit-target" | Out-Null
+Set-Location "$HOME\projects\agent-safety\audit-target"
+"# Minimal audit target" | Out-File README.md -Encoding utf8
+"ANTHROPIC_API_KEY=your_key_here" | Out-File .env.example -Encoding utf8
+```
+
+### Step 2 — Understand the eight criteria
+
+Before scoring your project, read each criterion and what a Pass looks like.
+
+| # | Criterion | Pass looks like | Common Fail |
+|---|-----------|----------------|-------------|
+| 1 | **API key security** | Key is in an environment variable or secret manager; never in source code; `.env` is in `.gitignore` | Key hardcoded in a Python file or committed to git |
+| 2 | **Daily rate limit** | `check_and_increment()` or equivalent guards every API call; limit is set and documented | No limit; calls go directly to `client.messages.create()` with no counter |
+| 3 | **Permission scope** | CLAUDE.md has an explicit tool allowlist; denied tools are named | Default permissions; no CLAUDE.md or a CLAUDE.md that says nothing about tools |
+| 4 | **Log coverage** | Every API call logs model, tokens, duration, and user/session ID | No logging; or only `print()` statements with no timestamps |
+| 5 | **Runaway loop protection** | `MAX_ITERATIONS` guard or equivalent stops the loop at a documented ceiling | No iteration ceiling; loop runs until it completes or the process is killed manually |
+| 6 | **Secret handling in outputs** | Agent outputs and log files do not include raw API keys, tokens, or passwords | Log lines include `os.environ` dumps; agent outputs include credential values |
+| 7 | **Third-party tool trust** | MCP servers are explicitly listed and their tools are reviewed before use | MCP servers connected without reviewing what tools they expose |
+| 8 | **Remediation process** | Fail items have a named owner, a specific fix, and a target date | Fail items are acknowledged but have no action plan |
+
+### Step 3 — Audit your project
+
+Navigate to your project directory and run these checks to gather evidence before scoring:
+
+**macOS / Linux:**
+```bash
+# Check 1: API key in source code?
+grep -rn "sk-ant-" . --include="*.py" --include="*.ts" --include="*.js" 2>/dev/null | grep -v ".env"
+# Expected: no output. Any output means a hardcoded key.
+
+# Check 1b: Is .env in .gitignore?
+cat .gitignore 2>/dev/null | grep -i "\.env" || echo "WARNING: .env not in .gitignore"
+
+# Check 2: Rate limiter present?
+find . -name "rate_limiter.py" -o -name "*.py" -exec grep -l "check_and_increment\|DAILY_LIMIT\|rate_limit" {} \; 2>/dev/null
+
+# Check 4: Any structured logging?
+find . -name "*.py" -exec grep -l "logging\.\|json.*log\|structlog" {} \; 2>/dev/null
+
+# Check 5: Any iteration guard?
+find . -name "*.py" -exec grep -l "MAX_ITERATIONS\|max_iter\|iteration_count" {} \; 2>/dev/null
+```
+
+**Windows PowerShell:**
+```powershell
+# Check 1: API key in source code?
+Get-ChildItem -Recurse -Include "*.py","*.ts","*.js" | Select-String -Pattern "sk-ant-" | Where-Object { $_.Path -notmatch "\.env" }
+
+# Check 1b: .env in .gitignore?
+if (Test-Path .gitignore) { Select-String -Path .gitignore -Pattern "\.env" } else { Write-Host "WARNING: No .gitignore found" }
+
+# Check 2: Rate limiter present?
+Get-ChildItem -Recurse -Include "*.py" | Select-String -Pattern "check_and_increment|DAILY_LIMIT|rate_limit" | Select-Object -ExpandProperty Path | Sort-Object -Unique
+
+# Check 4: Structured logging?
+Get-ChildItem -Recurse -Include "*.py" | Select-String -Pattern "import logging|json.*log|structlog" | Select-Object -ExpandProperty Path | Sort-Object -Unique
+
+# Check 5: Iteration guard?
+Get-ChildItem -Recurse -Include "*.py" | Select-String -Pattern "MAX_ITERATIONS|max_iter|iteration_count" | Select-Object -ExpandProperty Path | Sort-Object -Unique
+```
+
+### Step 4 — Write the SAFETY_AUDIT.md
+
+Use your check results to score each criterion. Be honest — a FAIL with a good remediation plan is more valuable than a dishonest PASS.
+
+**macOS / Linux:**
+```bash
+cat > SAFETY_AUDIT.md << 'EOF'
+# Safety Audit
+
+**Project:** [Your project name]
+**Date:** [Today's date]
+**Auditor:** [Your name]
+**Project path:** [Absolute path to the project directory]
+
+## Audit results
+
+| # | Criterion | Status | Evidence | Notes |
+|---|-----------|--------|----------|-------|
+| 1 | API key security | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 2 | Daily rate limit | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 3 | Permission scope | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 4 | Log coverage | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 5 | Runaway loop protection | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 6 | Secret handling in outputs | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 7 | Third-party tool trust | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 8 | Remediation process | N/A | This is the process | Built in this document |
+
+## Summary
+
+- Total criteria: 8
+- PASS: [count]
+- FAIL: [count]
+- N/A: [count]
+
+## Remediation plan
+
+### [Criterion number] — [Criterion name] (FAIL)
+
+**Risk:** [What could go wrong if this is not fixed]
+**Fix:** [Specific change: file to edit, line to add, command to run]
+**Owner:** [Your name]
+**Target date:** [Realistic date — within 2 weeks for FAIL items]
+
+### [Repeat for each FAIL item]
+
+## Post-audit actions
+
+- [ ] All FAIL items have remediation tasks created in the project task tracker
+- [ ] API key rotation scheduled if key was found in source code (criterion 1 FAIL)
+- [ ] Follow-up audit scheduled for [date 30 days from now]
+EOF
+
+echo "SAFETY_AUDIT.md created — open it and fill in your scores"
+```
+
+**Windows PowerShell:**
+```powershell
+$template = @'
+# Safety Audit
+
+**Project:** [Your project name]
+**Date:** [Today's date]
+**Auditor:** [Your name]
+
+## Audit results
+
+| # | Criterion | Status | Evidence | Notes |
+|---|-----------|--------|----------|-------|
+| 1 | API key security | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 2 | Daily rate limit | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 3 | Permission scope | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 4 | Log coverage | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 5 | Runaway loop protection | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 6 | Secret handling in outputs | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 7 | Third-party tool trust | [PASS/FAIL/N-A] | [What you found] | [One sentence] |
+| 8 | Remediation process | N/A | This is the process | Built in this document |
+
+## Summary
+
+- Total criteria: 8
+- PASS: [count]
+- FAIL: [count]
+- N/A: [count]
+
+## Remediation plan
+
+### [Criterion number] — [Criterion name] (FAIL)
+
+**Risk:** [What could go wrong]
+**Fix:** [Specific change to make]
+**Owner:** [Your name]
+**Target date:** [Within 2 weeks]
+
+## Post-audit actions
+
+- [ ] All FAIL items have tasks created
+- [ ] API key rotation scheduled if applicable
+- [ ] Follow-up audit scheduled for 30 days from now
+'@
+$template | Out-File -FilePath "SAFETY_AUDIT.md" -Encoding utf8
+Write-Host "SAFETY_AUDIT.md created — open it and fill in your scores"
+```
+
+### Step 5 — Fill in the audit and verify it is complete
+
+Open `SAFETY_AUDIT.md` in your editor. Replace every `[placeholder]` with your real findings from step 3. Then verify the document is complete:
+
+**macOS / Linux:**
+```bash
+# Confirm all placeholders are replaced
+grep "\[" SAFETY_AUDIT.md | grep -v "^\-" && echo "WARNING: unfilled placeholders remain" || echo "No placeholders found"
+
+# Confirm at least one row has a status
+grep -E "PASS|FAIL|N-A" SAFETY_AUDIT.md | grep -v "Criterion"
+
+# Confirm FAIL items have remediation sections
+grep "FAIL" SAFETY_AUDIT.md
+```
+
+**Windows PowerShell:**
+```powershell
+$unfilled = Select-String -Path "SAFETY_AUDIT.md" -Pattern "\[" | Where-Object { $_.Line -notmatch "^\s*-" }
+if ($unfilled) { Write-Host "WARNING: unfilled placeholders remain:" ; $unfilled } else { Write-Host "No placeholders found" }
+Select-String -Path "SAFETY_AUDIT.md" -Pattern "PASS|FAIL|N-A" | Where-Object { $_.Line -notmatch "Criterion" }
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `grep` for `sk-ant-` finds no results but you know a key is hardcoded | The key uses a different prefix (e.g., a test key or environment-substituted variable) | Also search for `ANTHROPIC_API_KEY\s*=\s*"` and `os.environ\["ANTHROPIC` in source files |
+| The audit scores all PASS but the project has no rate limiter | You scored "I plan to add one" as PASS | A criterion passes only when the protection exists and is active in the current codebase, not when it is planned |
+| FAIL items accumulate with no remediation plan | The audit was rushed or the developer felt defensive about gaps | Treat each FAIL as a task, not a judgment — write the smallest concrete fix that moves it to PASS |
+| The audit file itself ends up committed with a hardcoded key in the Evidence column | You pasted actual key values into the evidence column while auditing | Record only the presence/absence of a key, never the value itself; rotate any key you accidentally committed |
+
+<VerificationBlock
+  deliverable="A completed SAFETY_AUDIT.md for a real project, with all 8 criteria scored and a remediation plan for every FAIL item."
+  verifyCheck="Paste your completed SAFETY_AUDIT.md. The tutor will check that all criteria have a status, evidence is described, and each FAIL item has an owner, specific fix, and target date."
+  rubricCriteria={[
+    "All 8 criteria have a status of PASS, FAIL, or N/A — no placeholders remain",
+    "Each FAIL item has a remediation entry with a specific fix (not just 'fix it') and a target date",
+    "The summary section shows accurate counts of PASS, FAIL, and N/A",
+    "No actual API key values appear anywhere in the document — only descriptions of where keys are stored"
+  ]}
+/>

@@ -1,0 +1,381 @@
+---
+title: "Preventing Runaway Agent Loops"
+lessonNumber: "25.1.3"
+chapterNumber: "25.1"
+pathNumber: "25"
+groupId: "5.2"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 30
+verifyType: "terminal_output"
+tutorPreload: "I'm about to learn how to detect and stop runaway agent loops. Help me understand what a runaway loop looks like in practice before I build a guard for one."
+---
+
+# Preventing Runaway Agent Loops
+
+## What you will build
+
+A Python agent wrapper script (`guarded_agent.py`) that imposes a hard `MAX_ITERATIONS` ceiling on any agentic task. When the guard fires, the script stops the loop, prints a summary of every step taken, and writes a `loop_guard_report.txt` explaining what happened. You will verify it works by deliberately running a prompt designed to loop, confirming the guard fires before the budget runs out.
+
+## Why this matters
+
+A runaway loop is what happens when an agent gets stuck and keeps trying. Common causes:
+
+- **Infinite retry on error:** The agent sees a tool error, retries the same call, gets the same error, retries again.
+- **Recursive file writes:** The agent writes a file, observes the file exists, decides something is wrong, and rewrites it — forever.
+- **Context-free re-prompting:** Each iteration produces output that, when fed back as input, triggers another iteration of the same task.
+- **Contradictory instructions:** Two instructions in CLAUDE.md conflict; the agent oscillates between satisfying one and the other.
+
+The cost of a typical runaway loop before your card is charged: roughly $0.50–$5 depending on the model and token rate. The cost after a full day undetected: potentially hundreds of dollars.
+
+You cannot fully prevent runaway loops by writing better prompts. You need a code-level guard that enforces a maximum iteration count, regardless of what the model decides to do.
+
+## Before you start
+
+- Python 3.9 or later installed
+- `anthropic` Python package installed (`pip install anthropic`)
+- `ANTHROPIC_API_KEY` set in your environment
+- `rate_limiter.py` from lesson 25.1.1 available (or place both files in the same directory)
+- Basic comfort reading Python with `try/except` blocks
+
+## The walkthrough
+
+### Step 1 — Understand what an iteration boundary is
+
+An "iteration" in an agentic loop is one round of: model produces response → tool calls execute → tool results feed back into the next prompt. The guard fires when this count exceeds `MAX_ITERATIONS`.
+
+The guard is not about the number of tokens or API calls within a single iteration — it is about how many times the outer loop has cycled. For most real tasks:
+
+- A simple file read-and-summarize: 3–5 iterations
+- A multi-file refactor: 10–20 iterations
+- A full feature implementation: 20–50 iterations
+- More than 100 iterations without completing: almost certainly stuck
+
+Set `MAX_ITERATIONS` conservatively for your specific task type. A log summarizer should not need more than 20. A code review pipeline should not need more than 50.
+
+### Step 2 — Create your working directory
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/projects/agent-safety/loop-guard
+cd ~/projects/agent-safety/loop-guard
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\projects\agent-safety\loop-guard" | Out-Null
+Set-Location "$HOME\projects\agent-safety\loop-guard"
+```
+
+### Step 3 — Write the guarded agent wrapper
+
+**macOS / Linux:**
+```bash
+cat > guarded_agent.py << 'PYEOF'
+"""
+guarded_agent.py — Agent wrapper with a hard MAX_ITERATIONS guard.
+
+Run with:
+    python3 guarded_agent.py "Your task prompt here"
+
+The script runs the Anthropic API in a manual agentic loop, counting each
+iteration. When MAX_ITERATIONS is reached, it stops, prints a report, and
+exits with code 1 so CI/CD pipelines detect the failure.
+"""
+
+import sys
+import os
+import json
+import time
+from datetime import datetime
+from pathlib import Path
+import anthropic
+
+# -----------------------------------------------------------------------
+# Configuration — adjust for your task type
+# -----------------------------------------------------------------------
+MAX_ITERATIONS = int(os.environ.get("MAX_ITERATIONS", "10"))
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-haiku-20240307")
+REPORT_PATH = Path("loop_guard_report.txt")
+
+# -----------------------------------------------------------------------
+# Optional: wire in rate_limiter.py if it exists in the same directory
+# -----------------------------------------------------------------------
+try:
+    sys.path.insert(0, str(Path(__file__).parent))
+    from rate_limiter import check_and_increment, RateLimitExceeded
+    RATE_LIMITING = True
+except ImportError:
+    RATE_LIMITING = False
+
+
+def write_report(iterations: int, history: list[dict], reason: str) -> None:
+    """Write a plain-text report of what the loop did before stopping."""
+    lines = [
+        f"Loop Guard Report",
+        f"=================",
+        f"Timestamp:  {datetime.now().isoformat()}",
+        f"Model:      {MODEL}",
+        f"Stop reason: {reason}",
+        f"Iterations completed: {iterations} / {MAX_ITERATIONS}",
+        f"",
+        f"Step-by-step history:",
+        f"---------------------",
+    ]
+    for i, step in enumerate(history, 1):
+        lines.append(f"\nIteration {i}:")
+        lines.append(f"  Role:    {step.get('role', 'unknown')}")
+        content = step.get("content", "")
+        if isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict):
+                    if block.get("type") == "text":
+                        snippet = block.get("text", "")[:200].replace("\n", " ")
+                        lines.append(f"  Text:    {snippet}...")
+                    elif block.get("type") == "tool_use":
+                        lines.append(f"  Tool:    {block.get('name')} (id={block.get('id', '')[:8]}...)")
+                    elif block.get("type") == "tool_result":
+                        snippet = str(block.get("content", ""))[:200].replace("\n", " ")
+                        lines.append(f"  Result:  {snippet}...")
+        elif isinstance(content, str):
+            lines.append(f"  Content: {content[:200].replace(chr(10), ' ')}...")
+
+    REPORT_PATH.write_text("\n".join(lines), encoding="utf-8")
+    print(f"\n[GUARD] Report written to {REPORT_PATH}")
+
+
+def run_guarded(prompt: str) -> None:
+    """
+    Run the agent loop with a hard iteration ceiling.
+    Raises SystemExit(1) if the guard fires or rate limit is hit.
+    """
+    client = anthropic.Anthropic()
+    messages: list[dict] = [{"role": "user", "content": prompt}]
+    history: list[dict] = []
+    iteration = 0
+
+    print(f"[GUARD] Starting agent loop. MAX_ITERATIONS={MAX_ITERATIONS}, model={MODEL}")
+    print(f"[GUARD] Prompt: {prompt[:100]}{'...' if len(prompt) > 100 else ''}")
+    print()
+
+    while iteration < MAX_ITERATIONS:
+        iteration += 1
+        print(f"[GUARD] --- Iteration {iteration}/{MAX_ITERATIONS} ---")
+
+        # Rate limit check
+        if RATE_LIMITING:
+            try:
+                call_count = check_and_increment()
+                print(f"[GUARD] Rate limiter: call {call_count} today")
+            except RateLimitExceeded as e:
+                write_report(iteration - 1, history, f"Rate limit exceeded: {e}")
+                print(f"[GUARD] STOPPED: {e}")
+                sys.exit(1)
+
+        # Call the API
+        try:
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=1024,
+                messages=messages,
+            )
+        except anthropic.RateLimitError as e:
+            write_report(iteration, history, f"Anthropic rate limit: {e}")
+            print(f"[GUARD] STOPPED: Anthropic rate limit hit: {e}")
+            sys.exit(1)
+        except anthropic.APIError as e:
+            write_report(iteration, history, f"API error: {e}")
+            print(f"[GUARD] STOPPED: API error: {e}")
+            sys.exit(1)
+
+        # Record the response
+        assistant_message = {"role": "assistant", "content": response.content}
+        messages.append(assistant_message)
+        history.append(assistant_message)
+
+        # Check stop reason
+        if response.stop_reason == "end_turn":
+            print(f"[GUARD] Task complete (end_turn) after {iteration} iteration(s).")
+            write_report(iteration, history, "Completed normally (end_turn)")
+            return
+
+        # If not end_turn, the model wants to continue — count it as another iteration
+        # For this demonstration we treat any non-end_turn response as a loop signal
+        print(f"[GUARD] Stop reason: {response.stop_reason} — loop continues")
+
+        # Print the text content for visibility
+        for block in response.content:
+            if hasattr(block, "text"):
+                print(f"[MODEL] {block.text[:300]}")
+
+        # Simulate a simple re-prompt to keep the loop going (replace with real tool handling)
+        messages.append({
+            "role": "user",
+            "content": "Continue."
+        })
+
+    # Guard fires here
+    print(f"\n[GUARD] MAX_ITERATIONS ({MAX_ITERATIONS}) reached. Stopping loop.")
+    write_report(iteration, history, f"MAX_ITERATIONS={MAX_ITERATIONS} reached — loop stopped by guard")
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python3 guarded_agent.py 'Your prompt here'")
+        sys.exit(1)
+    prompt = " ".join(sys.argv[1:])
+    run_guarded(prompt)
+PYEOF
+echo "guarded_agent.py written"
+```
+
+**Windows PowerShell:**
+```powershell
+# The Python file is identical on Windows — only the shell command differs
+$pythonCode = Get-Content -Raw "$HOME\projects\agent-safety\loop-guard\guarded_agent.py" 2>$null
+if (-not $pythonCode) {
+    # Write a minimal version for PowerShell demonstration
+    @'
+import sys, os, anthropic
+from pathlib import Path
+from datetime import datetime
+
+MAX_ITERATIONS = int(os.environ.get("MAX_ITERATIONS", "10"))
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-haiku-20240307")
+REPORT_PATH = Path("loop_guard_report.txt")
+
+def write_report(iterations, history, reason):
+    lines = [
+        "Loop Guard Report", "=================",
+        f"Timestamp:  {datetime.now().isoformat()}",
+        f"Stop reason: {reason}",
+        f"Iterations: {iterations} / {MAX_ITERATIONS}",
+    ]
+    REPORT_PATH.write_text("\n".join(lines), encoding="utf-8")
+    print(f"[GUARD] Report written to {REPORT_PATH}")
+
+def run_guarded(prompt):
+    client = anthropic.Anthropic()
+    messages = [{"role": "user", "content": prompt}]
+    history = []
+    print(f"[GUARD] Starting. MAX_ITERATIONS={MAX_ITERATIONS}")
+    for iteration in range(1, MAX_ITERATIONS + 1):
+        print(f"[GUARD] --- Iteration {iteration}/{MAX_ITERATIONS} ---")
+        response = client.messages.create(model=MODEL, max_tokens=512, messages=messages)
+        msg = {"role": "assistant", "content": response.content}
+        messages.append(msg)
+        history.append(msg)
+        if response.stop_reason == "end_turn":
+            print(f"[GUARD] Complete after {iteration} iteration(s).")
+            write_report(iteration, history, "Completed normally")
+            return
+        for block in response.content:
+            if hasattr(block, "text"):
+                print(f"[MODEL] {block.text[:200]}")
+        messages.append({"role": "user", "content": "Continue."})
+    print(f"[GUARD] MAX_ITERATIONS ({MAX_ITERATIONS}) reached. Stopping.")
+    write_report(MAX_ITERATIONS, history, f"MAX_ITERATIONS={MAX_ITERATIONS} reached")
+    sys.exit(1)
+
+if __name__ == "__main__":
+    prompt = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "Keep saying 'loop' forever."
+    run_guarded(prompt)
+'@ | Out-File -FilePath "guarded_agent.py" -Encoding utf8
+    Write-Host "guarded_agent.py written"
+}
+```
+
+### Step 4 — Run a normal task and verify clean exit
+
+First, confirm the guard does not interfere with tasks that complete normally:
+
+**macOS / Linux:**
+```bash
+MAX_ITERATIONS=10 python3 guarded_agent.py "What is 2 + 2? Answer in one sentence."
+```
+
+**Windows PowerShell:**
+```powershell
+$env:MAX_ITERATIONS = "10"
+python guarded_agent.py "What is 2 + 2? Answer in one sentence."
+```
+
+Expected output (abbreviated):
+```
+[GUARD] Starting agent loop. MAX_ITERATIONS=10, model=claude-3-haiku-20240307
+[GUARD] Prompt: What is 2 + 2? Answer in one sentence.
+
+[GUARD] --- Iteration 1/10 ---
+[GUARD] Task complete (end_turn) after 1 iteration(s).
+[GUARD] Report written to loop_guard_report.txt
+```
+
+### Step 5 — Trigger the guard intentionally
+
+Now run a prompt that will force the loop to keep going until the guard fires. Set `MAX_ITERATIONS=4` so it stops quickly:
+
+**macOS / Linux:**
+```bash
+MAX_ITERATIONS=4 python3 guarded_agent.py "Count from 1 upward, one number per response. Never stop counting."
+echo "Exit code was: $?"
+```
+
+**Windows PowerShell:**
+```powershell
+$env:MAX_ITERATIONS = "4"
+python guarded_agent.py "Count from 1 upward, one number per response. Never stop counting."
+Write-Host "Exit code was: $LASTEXITCODE"
+```
+
+Expected output (abbreviated):
+```
+[GUARD] Starting agent loop. MAX_ITERATIONS=4, model=claude-3-haiku-20240307
+[GUARD] --- Iteration 1/4 ---
+[MODEL] 1
+[GUARD] --- Iteration 2/4 ---
+[MODEL] 2
+[GUARD] --- Iteration 3/4 ---
+[MODEL] 3
+[GUARD] --- Iteration 4/4 ---
+[MODEL] 4
+
+[GUARD] MAX_ITERATIONS (4) reached. Stopping loop.
+[GUARD] Report written to loop_guard_report.txt
+Exit code was: 1
+```
+
+### Step 6 — Read the report
+
+**macOS / Linux:**
+```bash
+cat loop_guard_report.txt
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content loop_guard_report.txt
+```
+
+Confirm it contains: the timestamp, the stop reason `MAX_ITERATIONS=4 reached`, and the iteration count.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Script exits with `ModuleNotFoundError: anthropic` | The `anthropic` package is not installed in the current Python environment | Run `pip install anthropic` (or `pip3 install anthropic`) in the same terminal/virtualenv |
+| Guard fires on the first iteration for a simple task | `MAX_ITERATIONS` env var was set to 1 in a previous test and persisted | Run `unset MAX_ITERATIONS` (macOS/Linux) or `Remove-Item Env:\MAX_ITERATIONS` (Windows), then re-run |
+| `loop_guard_report.txt` is empty after the guard fires | A crash inside `write_report()` silently swallowed the write error | Check for a `PermissionError` by adding `print(e)` inside the `except` block in `write_report()` |
+| The loop never fires the guard — it just keeps running | `sys.exit(1)` is caught by an outer `try/except Exception` in the calling code | Use `SystemExit` explicitly (`raise SystemExit(1)`) which is not caught by bare `except Exception` |
+| API calls succeed but no text appears between iterations | The model returned `tool_use` blocks instead of `text` blocks | Your model supports tool use — the script only prints `text` blocks; add a handler for `tool_use` blocks |
+
+<VerificationBlock
+  deliverable="Terminal output showing the guard firing at MAX_ITERATIONS=4 and a loop_guard_report.txt confirming the stop reason."
+  verifyCheck="Paste the full terminal output from step 5 (the counting prompt) and the contents of loop_guard_report.txt. The guard must fire at exactly iteration 4, and the exit code must be 1."
+  rubricCriteria={[
+    "The output shows exactly 4 iterations before the guard message appears",
+    "The exit code printed after the script is 1 (not 0)",
+    "loop_guard_report.txt exists and contains the stop reason 'MAX_ITERATIONS=4 reached'",
+    "A normal task (step 4) completes cleanly with exit code 0 and the 'Task complete (end_turn)' message"
+  ]}
+/>

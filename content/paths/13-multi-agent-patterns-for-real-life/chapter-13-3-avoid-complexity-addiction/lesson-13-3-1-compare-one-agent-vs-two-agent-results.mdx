@@ -4,16 +4,26 @@ lessonNumber: "13.3.1"
 chapterNumber: "13.3"
 pathNumber: "13"
 tutorPreload: "Tell me whether this workflow truly needs multiple agents."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.7"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Run agents in sequence and check handoffs
 
-## Objective
+## What you will build
+A `sequential-pipeline/` directory containing `run-pipeline.sh` (or `.ps1`), both agent contracts, `research-findings.md`, and `article-draft.md`.
 
+## Why this matters
+Multi-agent workflows are the current frontier of production AI systems. Understanding how to wire agents together, manage handoffs, and avoid complexity spirals is the knowledge gap between hobby projects and production deployments. This path gives you the vocabulary and the architecture patterns used at scale.
+
+## Before you start
 Running agents is only half the job. You also need to verify that each agent finished, that the handoff file is valid, and that the next agent can actually use what the previous one produced. In this lesson you will build a lightweight orchestration script that runs a Researcher and a Writer in sequence, checks the handoff between them, and stops early if something is wrong.
 
 By the end you will have a reusable `run-pipeline.sh` (or `.ps1`) script that coordinates two agents with explicit verification between steps.
+
 
 ## Walkthrough
 
@@ -215,4 +225,9 @@ Without this check, the Writer would start, see no input file, and either error 
 <VerificationBlock
   deliverable="A `sequential-pipeline/` directory containing `run-pipeline.sh` (or `.ps1`), both agent contracts, `research-findings.md`, and `article-draft.md`."
   verifyCheck="The pipeline script includes a handoff verification step between Researcher and Writer. If findings are missing, the Writer never runs."
+  rubricCriteria={[
+    "The ` directory containing `run-pipeline.sh` folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

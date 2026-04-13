@@ -1,0 +1,178 @@
+---
+title: "What Claude Can and Cannot See"
+lessonNumber: "20.1.2"
+chapterNumber: "20.1"
+pathNumber: "20"
+tutorPreload: "I'm about to learn what Claude Code can and cannot see in my project. Help me understand the context window and how to give Claude more useful information to work with."
+verifyType: "terminal_output"
+estimatedMinutes: 20
+---
+
+# What Claude Can and Cannot See
+
+## Objective
+
+By the end of this lesson you will have run a `claude --print` command in a test directory and seen exactly which files Claude reports. You will understand the difference between files Claude reads automatically, files it reads on request, and information it cannot access at all. This distinction prevents a whole class of bugs where Claude confidently gives wrong answers because it was guessing, not reading.
+
+## Walkthrough
+
+### Step 1 — Understand the context window
+
+Every Claude Code session has a context window — the total amount of text Claude can hold in memory at once. As of 2025, this is roughly 200,000 tokens (about 150,000 words).
+
+When you start a Claude Code session in a directory, Claude does **not** automatically read every file. It reads:
+
+- `CLAUDE.md` files (starting from the current directory, up to the repo root)
+- Files you explicitly ask it to read
+- Files it decides to read during the Plan phase
+
+Everything else is invisible unless Claude actively opens it with a tool call.
+
+This means Claude can be wrong about your codebase for a completely innocent reason: it has not read the file yet. It is not hallucinating maliciously — it is reasoning from incomplete context.
+
+### Step 2 — Create a test directory
+
+We will create a small directory with a few files, then ask Claude what it can see.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/claude-visibility-test
+cd ~/claude-visibility-test
+
+echo "# Config file" > config.md
+echo "SECRET_KEY=do-not-commit" > .env
+echo '{"name": "test-project", "version": "1.0.0"}' > package.json
+mkdir -p src
+echo "function greet() { return 'hello'; }" > src/index.js
+echo "function helper() { return 'help'; }" > src/utils.js
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\claude-visibility-test"
+Set-Location "$HOME\claude-visibility-test"
+
+"# Config file" | Set-Content config.md
+"SECRET_KEY=do-not-commit" | Set-Content .env
+'{"name": "test-project", "version": "1.0.0"}' | Set-Content package.json
+New-Item -ItemType Directory -Force -Path src
+"function greet() { return 'hello'; }" | Set-Content src\index.js
+"function helper() { return 'help'; }" | Set-Content src\utils.js
+```
+
+You now have: `config.md`, `.env`, `package.json`, `src/index.js`, `src/utils.js`.
+
+### Step 3 — Ask Claude what it can see using --print
+
+The `--print` flag runs Claude non-interactively and prints the response. This is useful for quick, scriptable questions.
+
+**macOS / Linux**
+
+```bash
+claude --print "List every file you can currently see in this directory. Be specific about what you have read versus what you know exists but have not read yet."
+```
+
+**Windows PowerShell**
+
+```powershell
+claude --print "List every file you can currently see in this directory. Be specific about what you have read versus what you know exists but have not read yet."
+```
+
+Run this from inside `~/claude-visibility-test` (or `$HOME\claude-visibility-test` on Windows).
+
+**Expected output (approximate):**
+
+```
+I can see the following files in the current directory:
+
+Files I have not yet read (visible from directory listing):
+- config.md
+- .env
+- package.json
+- src/index.js
+- src/utils.js
+
+I have not read the contents of any of these files yet. I can list them
+because I ran a directory scan, but their contents are unknown to me until
+I open them with a Read tool call.
+
+Would you like me to read any of these files?
+```
+
+Claude may vary in exactly how it phrases this, but the key is that it distinguishes between "I see the filename" and "I have read the contents."
+
+### Step 4 — Test what happens when a file is missing
+
+Now ask Claude about a file that does not exist:
+
+**macOS / Linux**
+
+```bash
+claude --print "What does the file database.js contain?"
+```
+
+**Windows PowerShell**
+
+```powershell
+claude --print "What does the file database.js contain?"
+```
+
+Claude should say something like: "I don't see a `database.js` file in this directory. Would you like me to search for it or create it?"
+
+If Claude instead invents contents for `database.js`, that is a hallucination — Claude is reasoning without reading. This is why you should always ask Claude to read files before asking about them.
+
+### Step 5 — Show Claude the .env file limitation
+
+Ask Claude directly:
+
+**macOS / Linux**
+
+```bash
+claude --print "Read the .env file and tell me what is in it."
+```
+
+**Windows PowerShell**
+
+```powershell
+claude --print "Read the .env file and tell me what is in it."
+```
+
+Claude will read `.env` and report `SECRET_KEY=do-not-commit`. This demonstrates an important point: Claude **can** read `.env` files. It has no built-in rule that prevents it. The protection against committing secrets comes from `.gitignore`, not from Claude refusing to read the file.
+
+This is why explicit rules in `CLAUDE.md` matter: "Do not read or output the contents of `.env` files" is a rule you must write. It is not automatic.
+
+### Step 6 — Understand what Claude genuinely cannot see
+
+Some things are outside Claude's reach regardless of what you ask:
+
+- Files on a different machine (Claude reads your local filesystem only)
+- Files in directories above the project root when running in restricted mode
+- The contents of binary files (images, compiled binaries, SQLite databases) — Claude sees the path but cannot interpret the bytes
+- Environment variables that have not been printed to a file or passed as context
+- The history of previous Claude sessions (each session starts fresh unless you use memory files)
+- Real-time data: the current time, live API responses, current git diff unless Claude runs `git diff`
+
+The practical takeaway: if Claude gives you an answer that feels invented, ask "Did you read that from a file, or are you reasoning from your training data?" A well-calibrated Claude will tell you.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `claude --print` hangs without output | Session is waiting for authentication | Run `claude auth login` first, then retry |
+| Claude reports zero files in the directory | You ran the command from the wrong directory | Run `pwd` (macOS/Linux) or `Get-Location` (PowerShell) to confirm you are inside `claude-visibility-test` |
+| Claude invents contents for `database.js` | Model is reasoning from training data instead of reading | Follow up with "Did you read that from a file?" and note the response — this is an example of the hallucination risk |
+| `.env` file does not appear in Claude's listing | `.env` files start with a dot and `ls` hides them by default, but Claude's directory scan should still list them | Ask explicitly: "List all files including hidden files (those starting with a dot)" |
+| `--print` flag is not recognized | Older version of Claude Code | Run `claude --version` and update if below the current release: `npm install -g @anthropic-ai/claude-code` |
+
+<VerificationBlock
+  deliverable="Terminal output showing Claude listing files in the test directory and distinguishing between filenames it can see and file contents it has not read."
+  verifyCheck="Share the output of your `claude --print` command run from inside the test directory. It should list the five files created in Step 2."
+  rubricCriteria={[
+    "The claude --print command ran successfully from inside the test directory",
+    "Claude's output lists at least config.md, package.json, and files in src/",
+    "Claude distinguishes between knowing a filename and having read its contents",
+    "Learner can explain in one sentence why Claude reading .env is not automatically protected"
+  ]}
+/>

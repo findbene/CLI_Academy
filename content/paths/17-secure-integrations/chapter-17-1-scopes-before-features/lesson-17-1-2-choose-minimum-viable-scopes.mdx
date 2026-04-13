@@ -4,16 +4,26 @@ lessonNumber: "17.1.2"
 chapterNumber: "17.1"
 pathNumber: "17"
 tutorPreload: "Shrink these scopes to the minimum needed for my workflow."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Choose minimum viable scopes
 
-## Objective
+## What you will build
+A scope-decisions.md file containing your current token
 
+## Why this matters
+Integrating Claude with external APIs and services is where most production security incidents happen. A misconfigured webhook, an exposed key, or an over-permissioned OAuth scope can expose entire systems. This path teaches the integration patterns that hold up under a security review.
+
+## Before you start
 Granting an integration the `repo` scope when it only needs to read issues is like giving someone your car keys when they asked to borrow a pen. The **principle of least privilege** means every token or OAuth grant covers only what the workflow actually needs — nothing more.
 
 In this lesson you will inspect the scopes on a real GitHub token using the `gh` CLI, identify over-permissioned scopes on your current auth, and create a `scope-decisions.md` file that maps each required action to its true minimum scope.
+
 
 ## Walkthrough
 
@@ -151,4 +161,9 @@ Select-String -Path scope-decisions.md -Pattern "Minimum scope"
 <VerificationBlock 
     deliverable="A scope-decisions.md file containing your current token's scopes from gh auth status, the minimum scopes required per action, and over-permissioned scopes flagged for removal."
     verifyCheck="gh auth status output is documented, minimum scopes are listed per action, and at least one over-permissioned scope is identified."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

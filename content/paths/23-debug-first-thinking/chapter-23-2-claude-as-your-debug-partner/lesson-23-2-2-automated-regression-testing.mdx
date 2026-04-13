@@ -1,0 +1,450 @@
+---
+title: "Automated Regression Testing: Never Break the Same Thing Twice"
+lessonNumber: "23.2.2"
+chapterNumber: "23.2"
+pathNumber: "23"
+groupId: "3.7"
+clawClassification: "elective"
+prerequisiteLesson: "23.2.1"
+estimatedMinutes: 25
+verifyType: "code_submission"
+tutorPreload: "I'm about to learn how to write regression tests after fixing a bug, using Claude to help write the test. Help me understand why every bug fix should leave a test behind and how pytest makes this easy."
+---
+
+# Automated Regression Testing: Never Break the Same Thing Twice
+
+## What you will build
+
+A `test_repro.py` file with at least one regression test that specifically tests the bug from Lesson 23.1.1 (the missing `discount` key in `calculate_total`). The test must run green with `pytest` — confirming the fix holds. You will also have Claude write a second regression test for the CSV column name bug from Lesson 23.2.1.
+
+## Why this matters
+
+A bug you fixed once can come back. This happens more often than you think — a refactor touches the same function, a new developer who doesn't know the history makes an innocent change, or you copy a pattern from a buggy version of the code.
+
+The rule is simple: **every bug fix must leave a test behind**. The test captures the exact scenario that caused the bug and asserts that it now works correctly. From that point on, every time you run your test suite, that regression is checked automatically. If the bug ever comes back, the test catches it within seconds — not after a user reports it.
+
+Claude is fast at writing pytest tests once you describe the bug. The workflow is:
+
+1. Fix the bug.
+2. Describe the bug to Claude.
+3. Ask Claude to write a pytest test that would have caught it.
+4. Run the test — it should pass green.
+5. Commit both the fix and the test together.
+
+## Before you start
+
+- Python 3 installed.
+- `pytest` installed — check with `pytest --version`. If not installed:
+
+**macOS / Linux:**
+```bash
+pip3 install pytest
+```
+
+**Windows PowerShell:**
+```powershell
+pip install pytest
+```
+
+- The project from Lesson 23.1.1 present (the `calculate_total` function in `repro.py` / `stats_bug.py`), or you will recreate it here.
+
+## The walkthrough
+
+### Step 1 — Set up the project with the fixed functions
+
+We need two fixed functions to write regression tests against. If you have been following the course, these already exist. If starting fresh:
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/debug-protocol && cd ~/cli-academy/projects/debug-protocol
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\cli-academy\projects\debug-protocol"
+```
+
+Create the fixed versions of both functions in a single testable module:
+
+**macOS / Linux:**
+```bash
+cat > order_utils.py << 'EOF'
+"""
+order_utils.py — utility functions for order processing.
+Bug-fixed versions from the debug protocol lessons.
+"""
+
+
+def calculate_total(orders):
+    """
+    Sum order totals after applying discounts.
+    Each order: {"price": float, "discount": float (0.0-1.0), ...}
+    Missing 'discount' key defaults to 0 (no discount).
+    
+    Fix: Use .get('discount', 0) to handle missing discount keys.
+    Original bug: KeyError when 'discount' key absent.
+    """
+    total = 0
+    for order in orders:
+        discounted_price = order['price'] * (1 - order.get('discount', 0))
+        total += discounted_price
+    return round(total, 2)
+
+
+def calculate_stats(records):
+    """
+    Calculate mean, min, max from a list of score records.
+    Each record: {"score": int, "extra_credit": int (optional)}
+    
+    Fix: extra_credit is added once to score, not twice.
+    Original bug: extra_credit was double-added, inflating averages.
+    """
+    scores = []
+    for record in records:
+        adjusted_score = record["score"] + record.get("extra_credit", 0)
+        scores.append(adjusted_score)  # fixed: was appending adjusted + extra_credit again
+
+    mean = sum(scores) / len(scores)
+    return {
+        "mean": round(mean, 1),
+        "min": min(scores),
+        "max": max(scores),
+        "count": len(scores),
+    }
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+"""
+order_utils.py — utility functions for order processing.
+Bug-fixed versions from the debug protocol lessons.
+"""
+
+
+def calculate_total(orders):
+    """
+    Sum order totals after applying discounts.
+    Fix: Use .get('discount', 0) to handle missing discount keys.
+    Original bug: KeyError when 'discount' key absent.
+    """
+    total = 0
+    for order in orders:
+        discounted_price = order['price'] * (1 - order.get('discount', 0))
+        total += discounted_price
+    return round(total, 2)
+
+
+def calculate_stats(records):
+    """
+    Calculate mean, min, max from score records.
+    Fix: extra_credit added once, not twice.
+    Original bug: double-adding inflated averages.
+    """
+    scores = []
+    for record in records:
+        adjusted_score = record["score"] + record.get("extra_credit", 0)
+        scores.append(adjusted_score)
+
+    mean = sum(scores) / len(scores)
+    return {
+        "mean": round(mean, 1),
+        "min": min(scores),
+        "max": max(scores),
+        "count": len(scores),
+    }
+"@ | Set-Content order_utils.py
+```
+
+### Step 2 — Ask Claude to write the regression tests
+
+Open Claude Code and send this prompt:
+
+```
+I fixed two bugs in order_utils.py. Write pytest regression tests for both.
+
+Bug 1 — calculate_total KeyError:
+Before the fix, calling calculate_total([{"price": 15.00}]) 
+(missing the 'discount' key) raised KeyError: 'discount'.
+After the fix, it should treat missing discount as 0 and return 15.00.
+
+Bug 2 — calculate_stats double extra_credit:
+Before the fix, calculate_stats([{"score": 75, "extra_credit": 10}, 
+{"score": 80, "extra_credit": 5}, {"score": 85, "extra_credit": 0}]) 
+returned mean=88.3 (wrong). After the fix it should return mean=85.0.
+
+Write tests named test_calculate_total_handles_missing_discount and
+test_calculate_stats_no_double_extra_credit. Use pytest.
+```
+
+Claude will write something like:
+
+```python
+from order_utils import calculate_total, calculate_stats
+
+
+def test_calculate_total_handles_missing_discount():
+    """Regression: calculate_total crashed with KeyError when discount key absent."""
+    orders = [
+        {"price": 15.00},                    # no discount key — was causing KeyError
+        {"price": 25.00, "discount": 0.10},  # normal order with discount
+    ]
+    result = calculate_total(orders)
+    assert result == 38.50  # 15.00 + 22.50
+
+
+def test_calculate_stats_no_double_extra_credit():
+    """Regression: calculate_stats was double-adding extra_credit, inflating averages."""
+    records = [
+        {"student": "Alice", "score": 85, "extra_credit": 0},
+        {"student": "Bob", "score": 75, "extra_credit": 10},
+        {"student": "Carol", "score": 80, "extra_credit": 5},
+    ]
+    stats = calculate_stats(records)
+    # Correct: Alice=85, Bob=85, Carol=85 → mean=85.0
+    # Buggy behavior: Alice=85, Bob=95, Carol=90 → mean=90.0
+    assert stats["mean"] == 85.0
+    assert stats["min"] == 85
+    assert stats["max"] == 85
+```
+
+### Step 3 — Save the tests to test_repro.py
+
+**macOS / Linux:**
+```bash
+cat > test_repro.py << 'EOF'
+"""
+test_repro.py — regression tests for bugs fixed in the debug protocol lessons.
+
+These tests capture the exact scenarios that caused bugs. If a future change
+reintroduces either bug, these tests will fail and alert you immediately.
+"""
+
+import pytest
+from order_utils import calculate_total, calculate_stats
+
+
+# ──────────────────────────────────────────────────────────────
+# Regression: calculate_total KeyError on missing 'discount' key
+# Original bug: order dict without 'discount' key caused KeyError
+# Fix: use .get('discount', 0) to default missing discount to zero
+# ──────────────────────────────────────────────────────────────
+
+def test_calculate_total_handles_missing_discount():
+    """A single order with no discount key must not raise KeyError."""
+    orders = [{"price": 15.00}]
+    result = calculate_total(orders)
+    assert result == 15.00
+
+
+def test_calculate_total_mixed_discount_and_no_discount():
+    """Mix of orders with and without discount key must all process correctly."""
+    orders = [
+        {"id": 1, "price": 25.00, "discount": 0.10},  # 22.50
+        {"id": 2, "price": 40.00, "discount": 0.05},  # 38.00
+        {"id": 3, "price": 15.00},                    # 15.00 (no discount)
+        {"id": 4, "price": 60.00, "discount": 0.20},  # 48.00
+    ]
+    result = calculate_total(orders)
+    assert result == 123.50  # 22.50 + 38.00 + 15.00 + 48.00
+
+
+def test_calculate_total_all_have_discounts():
+    """Control case: all orders have discounts — should behave as before the fix."""
+    orders = [
+        {"price": 100.00, "discount": 0.10},  # 90.00
+        {"price": 200.00, "discount": 0.25},  # 150.00
+    ]
+    result = calculate_total(orders)
+    assert result == 240.00
+
+
+# ──────────────────────────────────────────────────────────────
+# Regression: calculate_stats double extra_credit
+# Original bug: extra_credit was added twice per record, inflating averages
+# Fix: append adjusted_score directly, not adjusted_score + extra_credit again
+# ──────────────────────────────────────────────────────────────
+
+def test_calculate_stats_no_double_extra_credit():
+    """With non-zero extra_credit, mean must reflect one application, not two."""
+    records = [
+        {"student": "Alice", "score": 85, "extra_credit": 0},
+        {"student": "Bob",   "score": 75, "extra_credit": 10},
+        {"student": "Carol", "score": 80, "extra_credit": 5},
+    ]
+    stats = calculate_stats(records)
+    # Correct: 85 + 85 + 85 = 255 / 3 = 85.0
+    # Buggy:   85 + 95 + 90 = 270 / 3 = 90.0
+    assert stats["mean"] == 85.0
+
+
+def test_calculate_stats_zero_extra_credit_unchanged():
+    """When all extra_credit values are 0, behavior must be identical to no extra_credit."""
+    records = [
+        {"student": "Alice", "score": 85, "extra_credit": 0},
+        {"student": "Bob",   "score": 90, "extra_credit": 0},
+        {"student": "Carol", "score": 78, "extra_credit": 0},
+    ]
+    stats = calculate_stats(records)
+    expected_mean = round((85 + 90 + 78) / 3, 1)
+    assert stats["mean"] == expected_mean
+    assert stats["min"] == 78
+    assert stats["max"] == 90
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+"""
+test_repro.py — regression tests for bugs fixed in the debug protocol lessons.
+"""
+
+import pytest
+from order_utils import calculate_total, calculate_stats
+
+
+def test_calculate_total_handles_missing_discount():
+    orders = [{"price": 15.00}]
+    result = calculate_total(orders)
+    assert result == 15.00
+
+
+def test_calculate_total_mixed_discount_and_no_discount():
+    orders = [
+        {"id": 1, "price": 25.00, "discount": 0.10},
+        {"id": 2, "price": 40.00, "discount": 0.05},
+        {"id": 3, "price": 15.00},
+        {"id": 4, "price": 60.00, "discount": 0.20},
+    ]
+    result = calculate_total(orders)
+    assert result == 123.50
+
+
+def test_calculate_total_all_have_discounts():
+    orders = [
+        {"price": 100.00, "discount": 0.10},
+        {"price": 200.00, "discount": 0.25},
+    ]
+    result = calculate_total(orders)
+    assert result == 240.00
+
+
+def test_calculate_stats_no_double_extra_credit():
+    records = [
+        {"student": "Alice", "score": 85, "extra_credit": 0},
+        {"student": "Bob",   "score": 75, "extra_credit": 10},
+        {"student": "Carol", "score": 80, "extra_credit": 5},
+    ]
+    stats = calculate_stats(records)
+    assert stats["mean"] == 85.0
+
+
+def test_calculate_stats_zero_extra_credit_unchanged():
+    records = [
+        {"student": "Alice", "score": 85, "extra_credit": 0},
+        {"student": "Bob",   "score": 90, "extra_credit": 0},
+        {"student": "Carol", "score": 78, "extra_credit": 0},
+    ]
+    stats = calculate_stats(records)
+    assert stats["mean"] == round((85 + 90 + 78) / 3, 1)
+    assert stats["min"] == 78
+    assert stats["max"] == 90
+"@ | Set-Content test_repro.py
+```
+
+### Step 4 — Run the tests
+
+**macOS / Linux:**
+```bash
+pytest test_repro.py -v
+```
+
+**Windows PowerShell:**
+```powershell
+pytest test_repro.py -v
+```
+
+Expected output — all green:
+```
+======================== test session starts =========================
+platform linux -- Python 3.11.x, pytest-7.x.x
+collected 5 items
+
+test_repro.py::test_calculate_total_handles_missing_discount      PASSED
+test_repro.py::test_calculate_total_mixed_discount_and_no_discount PASSED
+test_repro.py::test_calculate_total_all_have_discounts            PASSED
+test_repro.py::test_calculate_stats_no_double_extra_credit        PASSED
+test_repro.py::test_calculate_stats_zero_extra_credit_unchanged   PASSED
+
+========================= 5 passed in 0.xx s =========================
+```
+
+5 passed, 0 failed. The regressions are locked in.
+
+### Step 5 — Verify the tests actually catch the original bugs
+
+The real value of a regression test is that it fails when the bug is reintroduced. Temporarily re-introduce one bug to confirm:
+
+**macOS / Linux:**
+```bash
+# Temporarily break calculate_total by removing .get() fallback
+python3 -c "
+def calculate_total_broken(orders):
+    total = 0
+    for order in orders:
+        discounted_price = order['price'] * (1 - order['discount'])  # bug back
+        total += discounted_price
+    return round(total, 2)
+
+try:
+    result = calculate_total_broken([{'price': 15.00}])
+    print(f'Result: {result} — BUG NOT DETECTED')
+except KeyError as e:
+    print(f'KeyError {e} — regression test would catch this')
+"
+```
+
+**Windows PowerShell:**
+```powershell
+python -c "
+def calculate_total_broken(orders):
+    total = 0
+    for order in orders:
+        discounted_price = order['price'] * (1 - order['discount'])
+        total += discounted_price
+    return round(total, 2)
+try:
+    result = calculate_total_broken([{'price': 15.00}])
+    print(f'Result: {result} — BUG NOT DETECTED')
+except KeyError as e:
+    print(f'KeyError {e} — regression test would catch this')
+"
+```
+
+Output confirms: `KeyError 'discount' — regression test would catch this`
+
+Your test would turn red the instant this bug came back.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `ModuleNotFoundError: No module named 'order_utils'` | Test file is in a different directory from `order_utils.py` | Run `pytest` from the same directory as both files, or add an empty `__init__.py` |
+| `pytest` command not found | pytest not installed in the active Python environment | Run `pip3 install pytest` (macOS/Linux) or `pip install pytest` (Windows) |
+| One test fails with wrong expected value | The function logic differs slightly from the example | Print the actual output first: `python3 -c "from order_utils import calculate_total; print(calculate_total([...]))"` and adjust the assertion |
+| All tests pass but the bug is still present | The test is not testing the right input — it does not exercise the bug path | Make sure the test includes the exact input that triggered the original bug (e.g., an order with no `discount` key) |
+| Claude writes a test that imports a function that doesn't exist | Claude invented a function name | Edit the test to import from the actual module name; confirm with `grep "def " order_utils.py` |
+
+<VerificationBlock
+  deliverable="A test_repro.py with at least 5 pytest tests covering both regression scenarios, all passing green."
+  verifyCheck="Submit the output of `pytest test_repro.py -v`. All tests must show PASSED. Zero failures."
+  rubricCriteria={[
+    "pytest test_repro.py -v shows 0 failed",
+    "test_calculate_total_handles_missing_discount is present and passes",
+    "test_calculate_stats_no_double_extra_credit is present and passes",
+    "Tests import from order_utils (or equivalent fixed module)",
+    "At least 5 test functions total"
+  ]}
+/>

@@ -4,8 +4,14 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { LearningMode } from "@/components/lesson/LearningModeSelector";
 
 interface TutorRuntimeState {
+  clawClassification?: string;
+  deliverable?: string;
+  groupId?: string;
   learningMode?: LearningMode;
   lessonTitle?: string;
+  pathSlug?: string;
+  lessonSlug?: string;
+  rubricCriteria?: string[];
   tutorPreload?: string;
 }
 
@@ -49,19 +55,47 @@ export function useTutorRuntime() {
 }
 
 export function TutorContextBridge({
+  clawClassification,
+  deliverable,
+  groupId,
   learningMode,
+  lessonSlug,
   lessonTitle,
+  pathSlug,
+  rubricCriteria,
   tutorPreload,
 }: TutorRuntimeState) {
   const { clearLessonContext, setLessonContext } = useTutorRuntime();
 
   useEffect(() => {
-    setLessonContext({ learningMode, lessonTitle, tutorPreload });
+    setLessonContext({
+      clawClassification,
+      deliverable,
+      groupId,
+      learningMode,
+      lessonSlug,
+      lessonTitle,
+      pathSlug,
+      rubricCriteria,
+      tutorPreload,
+    });
 
     return () => {
       clearLessonContext();
     };
-  }, [clearLessonContext, learningMode, lessonTitle, setLessonContext, tutorPreload]);
+  }, [
+    clawClassification,
+    clearLessonContext,
+    deliverable,
+    groupId,
+    learningMode,
+    lessonSlug,
+    lessonTitle,
+    pathSlug,
+    rubricCriteria,
+    setLessonContext,
+    tutorPreload,
+  ]);
 
   return null;
 }

@@ -5,13 +5,23 @@ chapterNumber: "4.2"
 pathNumber: "4"
 tutorPreload: "Help me rename this file and update every import that references it."
 verifyType: "terminal_output"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Rename files and update imports
 
-## Objective
+## What you will build
+A renamed file with all imports updated and zero stale references.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Use Claude Code to rename a source file in a real project, update every import or require statement that references the old name, and verify with a search that zero stale references remain. By the end you will have a cleanly renamed file with no broken imports and passing tests.
+
 
 ## Walkthrough
 
@@ -131,4 +141,9 @@ git commit -m "refactor: rename utils.js to helpers.js and update all imports"
 <VerificationBlock
   deliverable="A renamed file with all imports updated and zero stale references."
   verifyCheck="grep for the old filename returns zero results, grep for the new filename matches the original count, and tests pass."
+  rubricCriteria={[
+    "A renamed file with all imports updated and zero stale references exists as described and is accessible",
+    "All required elements mentioned in the deliverable are present and correctly formed",
+    "The artifact was produced by following the walkthrough steps, not by copying an existing file",
+  ]}
 />

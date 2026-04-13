@@ -5,13 +5,23 @@ chapterNumber: "10.1"
 pathNumber: "10"
 tutorPreload: "Help me compile a week of git activity into a Progress / Plans / Problems report."
 verifyType: "terminal_output"
+groupId: "4.1"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Create a weekly status report
 
-## Objective
+## What you will build
+A dated Progress / Plans / Problems markdown report where Progress traces to real commits and Plans/Problems come from your own context file.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 By the end of this lesson you will produce a structured weekly status report in Progress / Plans / Problems format by combining real git history with your own context. The report will be saved as a markdown file you can share with a manager, a team channel, or your own records.
+
 
 ## Walkthrough
 
@@ -174,4 +184,9 @@ Read every line. Confirm:
 <VerificationBlock
   deliverable="A dated Progress / Plans / Problems markdown report where Progress traces to real commits and Plans/Problems come from your own context file."
   verifyCheck="Every Progress bullet matches a line in week-shortlog.txt, and every Plan and Problem matches a line in context.txt."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

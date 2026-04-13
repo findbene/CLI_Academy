@@ -1,0 +1,153 @@
+---
+title: "What Is MCP and Why Does It Matter"
+lessonNumber: "21.1.1"
+chapterNumber: "21.1"
+pathNumber: "21"
+tutorPreload: "I'm about to learn what the Model Context Protocol is and why it matters. Help me understand how MCP extends Claude's abilities beyond just reading files."
+verifyType: "quiz"
+estimatedMinutes: 15
+---
+
+# What Is MCP and Why Does It Matter
+
+## Objective
+
+By the end of this lesson you will be able to explain what the Model Context Protocol is, why it was created, and how it changes what Claude can do. You will also run one command to confirm your Claude setup can list MCP servers. This is mostly conceptual — the hands-on MCP installation is in the next lesson.
+
+## Walkthrough
+
+### Step 1 — The problem MCP solves
+
+Out of the box, Claude Code can read and write files, run shell commands, and search your local filesystem. That covers a lot of ground. But it cannot:
+
+- Query a Postgres database and return live records
+- Read your calendar events
+- Browse a website and extract structured data
+- Search a company knowledge base
+- Call a proprietary internal API
+
+Every one of those requires connecting Claude to an external system. Before MCP, each team or product built a different one-off integration. The prompts, auth patterns, and tool shapes were all different. There was no standard.
+
+MCP — the Model Context Protocol — is a standard for that connection layer. It defines:
+
+1. How a "server" exposes tools to Claude
+2. How Claude discovers what tools are available
+3. How Claude calls those tools and receives results
+4. How Claude connects to resources (files, database rows, API responses) through the server
+
+With MCP, if someone builds a Postgres MCP server, any MCP-compatible client (Claude Desktop, Claude Code, or any other tool that speaks MCP) can use it without custom integration work.
+
+### Step 2 — What an MCP server actually is
+
+An MCP server is a running process on your machine (or reachable over a network) that:
+
+1. Declares a list of **tools** with names, descriptions, and input schemas
+2. Listens for tool-call requests from Claude
+3. Executes the requested operation (query a database, call an API, read a file via a custom path strategy)
+4. Returns the result back to Claude in a structured format
+
+The server can be written in any language. The official SDKs are in TypeScript and Python. Community servers exist in Go, Rust, and others.
+
+From Claude's perspective, an MCP tool looks identical to a built-in tool like Read or Bash — it has a name, parameters, and returns a result. The difference is that the MCP tool's logic runs in your server code, not in the Claude Code runtime.
+
+### Step 3 — Three things MCP enables that built-in tools cannot do
+
+**1. Live data access**
+
+A filesystem Read tool reads a static file. An MCP tool can query a database and return the current state of a table — data that changes every minute.
+
+Example: `query_database` tool that takes a SQL string and returns rows as JSON.
+
+**2. Authenticated external services**
+
+Built-in Claude Code tools have no concept of OAuth tokens or API keys. An MCP server handles auth for you — the server stores and uses credentials, Claude just calls the tool.
+
+Example: `search_calendar` tool that reads your Google Calendar via OAuth, returning events for the next week without Claude ever seeing your token.
+
+**3. Custom data shapes**
+
+Built-in tools return raw text (file contents, command output). MCP tools can return structured, typed data — arrays of objects, nested JSON, binary blobs encoded as base64 — and Claude can reason over the structure.
+
+Example: `list_issues` tool that returns GitHub issues as structured objects with fields for title, assignee, and labels.
+
+### Step 4 — The MCP client-server model
+
+MCP uses a client-server architecture:
+
+```
+Claude Code (client)
+    |
+    | speaks MCP over stdio or HTTP
+    |
+MCP Server (server)
+    |
+    | speaks native protocol
+    |
+External system (Postgres, Google Calendar, GitHub, etc.)
+```
+
+Claude Code is always the client. Your MCP server is the bridge. The external system speaks whatever protocol it natively speaks — MCP does not touch that part.
+
+When Claude Code starts, it reads a configuration file (`~/.claude/settings.json` or Claude Desktop's `claude_desktop_config.json`) to discover which MCP servers to connect to. It starts each server as a subprocess or connects to a running process, then queries it for its list of available tools.
+
+### Step 5 — Check that your Claude Code can list MCP servers
+
+Even if you have no MCP servers installed yet, verify the `/mcp` command works.
+
+Launch an interactive Claude Code session in any directory:
+
+**macOS / Linux**
+
+```bash
+claude
+```
+
+**Windows PowerShell**
+
+```powershell
+claude
+```
+
+Once the session is open, type:
+
+```
+/mcp
+```
+
+Claude Code will either list configured MCP servers, or print something like:
+
+```
+No MCP servers configured.
+```
+
+Either result is correct at this stage. The important thing is that the `/mcp` command runs without an error. If you see an error like `Unknown command: /mcp`, your Claude Code version is older than the MCP release — update with `npm install -g @anthropic-ai/claude-code`.
+
+Type `/exit` to leave the session.
+
+### Step 6 — Quiz yourself
+
+Answer these questions in your notes before continuing:
+
+1. What is the difference between a built-in Claude Code tool (like Read) and an MCP tool?
+2. Why does the MCP architecture store auth credentials in the server rather than giving them directly to Claude?
+3. Name one real task that an MCP server enables that you could not do with the built-in filesystem tools.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `/mcp` says "Unknown command" | Claude Code version predates MCP support | Run `npm install -g @anthropic-ai/claude-code` to update, then relaunch |
+| `/mcp` lists servers you did not configure | Claude Desktop and Claude Code share the same config file | These are servers from another app — they are harmless, but review `~/.claude/settings.json` to understand what is there |
+| The session hangs after typing `/mcp` | A previously configured MCP server is crashing on start | Check `~/.claude/settings.json` and remove any broken server entries |
+| `claude` command is not found | Claude Code is not installed or PATH is not set | Run `npm install -g @anthropic-ai/claude-code` and restart your terminal |
+
+<VerificationBlock
+  deliverable="A written answer to the three quiz questions, plus confirmation that /mcp runs without an error in your Claude Code session."
+  verifyCheck="Paste your three answers and the output of /mcp from your Claude Code session."
+  rubricCriteria={[
+    "Answer 1 correctly distinguishes built-in tools (run in Claude Code runtime) from MCP tools (run in a separate server process)",
+    "Answer 2 explains that storing auth in the server prevents Claude from ever seeing raw credentials",
+    "Answer 3 names a concrete real-world task an MCP server enables (database query, calendar read, API call, etc.)",
+    "/mcp command ran without an error in a live Claude Code session"
+  ]}
+/>

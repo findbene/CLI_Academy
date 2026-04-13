@@ -4,14 +4,24 @@ lessonNumber: "11.1.1"
 chapterNumber: "11.1"
 pathNumber: "11"
 tutorPreload: "Explain process isolation and why running untrusted code directly on my machine is dangerous."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # What a sandbox is and why it matters
 
-## Objective
+## What you will build
+Terminal output showing the container returned an empty /root listing and BLOCKED when network was disabled.
 
+## Why this matters
+Custom runtimes are how agentic developers move from using Claude to building with Claude. Understanding the sandbox model and runtime foundations is the prerequisite for everything in the advanced Claw ecosystem. This knowledge is increasingly sought after in AI engineering roles.
+
+## Before you start
 By the end of this lesson you will understand what a sandbox is in practical terms — process isolation, restricted file access, and network limits — and you will prove the concept by running a command inside a Docker container that cannot touch your real files.
+
 
 ## Walkthrough
 
@@ -125,4 +135,9 @@ The `--rm` flag deletes the container and its entire file system as soon as the 
 <VerificationBlock
   deliverable="Terminal output showing the container returned an empty /root listing and BLOCKED when network was disabled."
   verifyCheck="The Docker container could not list host files and could not reach the internet, confirming both file and network isolation."
+  rubricCriteria={[
+    "The command ran without errors and produced visible output",
+    "The output matches the expected format or values described in the lesson",
+    "The command was run from the correct working directory",
+  ]}
 />

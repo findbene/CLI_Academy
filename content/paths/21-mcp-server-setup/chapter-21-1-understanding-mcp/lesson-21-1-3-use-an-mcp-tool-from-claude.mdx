@@ -1,0 +1,213 @@
+---
+title: "Use an MCP Tool from Claude"
+lessonNumber: "21.1.3"
+chapterNumber: "21.1"
+pathNumber: "21"
+tutorPreload: "I just installed the filesystem MCP server and I want to understand the difference between Claude using MCP tools versus its built-in tools. Help me interpret the verbose output."
+verifyType: "terminal_output"
+estimatedMinutes: 20
+---
+
+# Use an MCP Tool from Claude
+
+## Objective
+
+By the end of this lesson you will have run a Claude Code session with `--verbose` and observed an MCP tool call in the output — specifically `filesystem.list_directory` or `filesystem.read_file`. You will compare the MCP tool call against a built-in tool call and note the structural differences. This confirms your MCP setup is working and gives you a concrete frame for reasoning about when Claude is using native tools versus MCP tools.
+
+## Walkthrough
+
+### Step 1 — Understand the difference you are looking for
+
+When Claude uses a built-in tool, the verbose output shows something like:
+
+```
+[Tool: Read]
+Input: { "file_path": "/Users/you/notes.md" }
+Result: # Notes...
+```
+
+When Claude uses an MCP tool, the verbose output shows:
+
+```
+[MCP Tool: filesystem.read_file]
+Input: { "path": "/Users/you/notes.md" }
+Result: # Notes...
+```
+
+The differences are:
+1. The label says `MCP Tool` instead of `Tool`
+2. The tool name is prefixed with the server name (`filesystem.`)
+3. The parameter names may differ from the built-in tool (the MCP `read_file` uses `path`, not `file_path`)
+
+The result is the same — file contents — but the execution path is different. The request went out of Claude Code, through the MCP protocol, into your running server process, and the result came back the same way.
+
+### Step 2 — Create a small set of test files
+
+Make sure the filesystem MCP server has files to work with inside its allowed directory.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/cli-academy/mcp-test
+echo "# Project Alpha\nStatus: active\nOwner: you" > ~/cli-academy/mcp-test/project-alpha.md
+echo "# Project Beta\nStatus: paused\nOwner: team" > ~/cli-academy/mcp-test/project-beta.md
+echo "# Meeting Notes\nDate: today\nAction items: review MCP setup" > ~/cli-academy/mcp-test/meeting-notes.md
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy\mcp-test"
+"# Project Alpha`nStatus: active`nOwner: you" | Set-Content "$HOME\cli-academy\mcp-test\project-alpha.md" -Encoding UTF8
+"# Project Beta`nStatus: paused`nOwner: team" | Set-Content "$HOME\cli-academy\mcp-test\project-beta.md" -Encoding UTF8
+"# Meeting Notes`nDate: today`nAction items: review MCP setup" | Set-Content "$HOME\cli-academy\mcp-test\meeting-notes.md" -Encoding UTF8
+```
+
+### Step 3 — Force Claude to use the MCP tool, not the built-in Read
+
+If you ask Claude to "read project-alpha.md" while inside the `~/cli-academy/mcp-test` directory, it will likely use the built-in Read tool because that is the path of least resistance. To force MCP tool usage, either:
+
+1. Run Claude from a directory that is NOT inside the MCP server's allowed path, then ask it to access files inside the allowed path via MCP.
+2. Explicitly tell Claude to use the MCP server.
+
+The simplest approach is to be explicit. Run Claude from your home directory with `--verbose`:
+
+**macOS / Linux**
+
+```bash
+cd ~
+claude --verbose --print "Use the filesystem MCP server to list the contents of the cli-academy/mcp-test directory and then read project-alpha.md."
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location $HOME
+claude --verbose --print "Use the filesystem MCP server to list the contents of the cli-academy/mcp-test directory and then read project-alpha.md."
+```
+
+### Step 4 — Read the verbose output
+
+Look for the MCP tool call blocks in the output. You should see something like:
+
+```
+[MCP Tool: filesystem.list_directory]
+Input: {
+  "path": "/Users/you/cli-academy/mcp-test"
+}
+Result: [
+  "meeting-notes.md",
+  "project-alpha.md",
+  "project-beta.md"
+]
+
+[MCP Tool: filesystem.read_file]
+Input: {
+  "path": "/Users/you/cli-academy/mcp-test/project-alpha.md"
+}
+Result: # Project Alpha
+Status: active
+Owner: you
+```
+
+The key things to confirm:
+- The tool label includes `MCP Tool:` and the server name prefix (`filesystem.`)
+- The call to `list_directory` returned the three files you created
+- The call to `read_file` returned the contents of `project-alpha.md`
+
+If you see these blocks, your MCP server is serving live requests from Claude.
+
+### Step 5 — Compare with the built-in tool
+
+Now run the same request without telling Claude to use MCP, from inside the test directory:
+
+**macOS / Linux**
+
+```bash
+cd ~/cli-academy/mcp-test
+claude --verbose --print "List the files here and read project-alpha.md."
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\cli-academy\mcp-test"
+claude --verbose --print "List the files here and read project-alpha.md."
+```
+
+This time you should see built-in tool calls:
+
+```
+[Tool: Bash]
+Input: { "command": "ls" }
+Result: meeting-notes.md  project-alpha.md  project-beta.md
+
+[Tool: Read]
+Input: { "file_path": "/Users/you/cli-academy/mcp-test/project-alpha.md" }
+Result: # Project Alpha...
+```
+
+Compare the two outputs side by side. Both accomplish the same task. The differences:
+- **MCP path:** tool name includes server prefix, parameters match the MCP server's schema
+- **Built-in path:** tool names are native (Bash, Read), parameters match Claude Code's built-in schema
+
+### Step 6 — Note your observations
+
+Add a note to your `LEARNING_LOG.md`:
+
+**macOS / Linux**
+
+```bash
+cat >> ~/cli-academy/notes/LEARNING_LOG.md << 'EOF'
+
+## Lesson 21.1.3 — MCP Tool Calls vs Built-in Tool Calls
+
+**MCP tool call I observed:**
+[paste the filesystem.list_directory or filesystem.read_file block here]
+
+**Built-in tool call for the same task:**
+[paste the Bash or Read block here]
+
+**Key difference I noticed:**
+[one or two sentences]
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+
+## Lesson 21.1.3 — MCP Tool Calls vs Built-in Tool Calls
+
+**MCP tool call I observed:**
+[paste the filesystem.list_directory or filesystem.read_file block here]
+
+**Built-in tool call for the same task:**
+[paste the Bash or Read block here]
+
+**Key difference I noticed:**
+[one or two sentences]
+"@ | Add-Content -Path "$HOME\cli-academy\notes\LEARNING_LOG.md" -Encoding UTF8
+```
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Claude only uses built-in tools even when explicitly asked to use MCP | MCP server is not connected (check `/mcp` status) or the instruction was not explicit enough | Restart the session, run `/mcp` to confirm the server is connected, then rephrase: "Use only the filesystem MCP server, not built-in Read or Bash tools" |
+| MCP tool call appears but result shows "access denied" | The path you asked Claude to read is outside the server's allowed directory | Check `settings.json` — the allowed directory must be a parent of the files you are trying to access |
+| Verbose output shows no MCP or Tool blocks at all | `--verbose` flag is not recognized by your Claude Code version | Update Claude Code: `npm install -g @anthropic-ai/claude-code` |
+| The MCP server appears as connected but times out during the tool call | Server process crashed after start | Close the session, run the server manually to see its error: `node /path/to/server-filesystem/dist/index.js ~/cli-academy` |
+| Built-in Read tool shows up even when running from outside the test directory | Claude found a shortcut path to the file via the native Read tool | Be more explicit: "Do not use the built-in Read tool. Use only the filesystem MCP server." |
+
+<VerificationBlock
+  deliverable="Verbose output from two Claude Code sessions: one showing an MCP tool call to filesystem.read_file, one showing the equivalent built-in Read tool call."
+  verifyCheck="Share the verbose output showing the MCP tool call block. The tool name should include 'filesystem.' as a prefix."
+  rubricCriteria={[
+    "Verbose output includes an MCP tool call block with the filesystem server prefix",
+    "The MCP list_directory or read_file call returned the expected files/contents",
+    "Learner ran the same request with built-in tools for comparison",
+    "LEARNING_LOG.md has been updated with both tool call blocks and a personal observation"
+  ]}
+/>

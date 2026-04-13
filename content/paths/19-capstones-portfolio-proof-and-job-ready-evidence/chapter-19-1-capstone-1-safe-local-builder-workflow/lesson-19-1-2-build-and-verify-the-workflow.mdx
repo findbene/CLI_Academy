@@ -4,13 +4,24 @@ lessonNumber: "19.1.2"
 chapterNumber: "19.1"
 pathNumber: "19"
 tutorPreload: "Help me define the exact acceptance test for this capstone."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "6.1"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Build and verify the workflow
 
-## Objective
+## What you will build
+A working capstone run containing output/daily-git-digest.md, logs/run-001.md, raw git evidence files in logs/, and a passing output check script.
+
+## Why this matters
+The portfolio capstone is the artifact that converts learning into professional evidence. Employers and clients cannot assess what they cannot see. A concrete, documented portfolio project answers the question 'show me something you built' — the question that closes every technical hiring conversation.
+
+## Before you start
 Build the bounded automation workflow for real, run it against a real repository, capture evidence, and verify that it produces the promised deliverable. By the end of this lesson, you will have a working daily git digest, a run log, and a test that proves the expected output file exists and contains the sections you scoped.
+
 
 ## Walkthrough
 
@@ -128,4 +139,9 @@ Then do one human check: make sure the digest includes facts, not invented expla
 <VerificationBlock 
   deliverable="A working capstone run containing output/daily-git-digest.md, logs/run-001.md, raw git evidence files in logs/, and a passing output check script."
   verifyCheck="You can show the raw git inputs, the generated digest, and a test run that proves the file exists with the required sections promised in SCOPE.md."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

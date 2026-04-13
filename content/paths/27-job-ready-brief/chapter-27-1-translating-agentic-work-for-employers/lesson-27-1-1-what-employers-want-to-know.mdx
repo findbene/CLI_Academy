@@ -1,0 +1,201 @@
+---
+title: "What Employers Want to Know About Your Agentic Work"
+lessonNumber: "27.1.1"
+chapterNumber: "27.1"
+pathNumber: "27"
+groupId: "6.2"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 20
+verifyType: "code_submission"
+tutorPreload: "I'm about to write a professional introduction for my LinkedIn About section describing my agentic development work. Help me understand what a hiring manager actually cares about before I write the first draft."
+---
+
+# What Employers Want to Know About Your Agentic Work
+
+## What you will build
+
+A polished 1-paragraph "agentic developer introduction" for your LinkedIn About section. The paragraph follows the problem-build-produce-scale framework: what problem you solved, what you built to solve it, what it produced (a measurable outcome), and how you would scale it. You will draft it, refine it with Claude's help, and finalize it in a `LINKEDIN_ABOUT.md` file.
+
+## Why this matters
+
+Most hiring managers — even at technology companies — do not know what "agentic development" means. Saying "I built agents using Claude Code" communicates nothing to someone who has never used Claude Code. Saying "I built a system that automatically summarizes 200 support tickets per day, reducing triage time from 4 hours to 20 minutes" communicates immediate business value to anyone.
+
+The gap between "I built agents" and "I built a system that saved 200 hours per month" is not a gap of skill — it is a gap of translation. Your job as a job seeker is to translate your technical work into language that answers the question every hiring manager is actually asking: "What will this person do for my team?"
+
+The problem-build-produce-scale framework gives you a structure that forces that translation every time.
+
+## Before you start
+
+- Complete at least one project from paths 18 or 19 (you need a concrete thing to describe)
+- Have Claude Code running in your terminal (`claude --version`)
+- A LinkedIn profile you can edit, or the intention to create one
+- 20 minutes of uninterrupted writing time — this is a thinking exercise, not a coding exercise
+
+## The walkthrough
+
+### Step 1 — Learn the problem-build-produce-scale framework
+
+Every strong agentic developer introduction answers four questions in sequence:
+
+| Question | Purpose | Example |
+|----------|---------|---------|
+| **What problem did you solve?** | Grounds the reader in a real-world need | "Support teams spend hours manually triaging tickets" |
+| **What did you build?** | Names the technical solution in plain English | "I built an automated classifier using the Anthropic API" |
+| **What did it produce?** | States a measurable outcome | "It processes 200 tickets per day with 94% accuracy" |
+| **How would you scale it?** | Shows systems thinking | "Adding a human review queue for low-confidence classifications would make it production-ready" |
+
+The framework works because it moves from pain (the reader recognizes the problem) to proof (the number is specific) to potential (you are already thinking about what comes next). It is the same structure as a good case study, a good investor pitch, and a good job interview answer.
+
+### Step 2 — Choose the project you will describe
+
+Pick one project from your CLI Academy work or your own personal projects. The best candidate:
+- Solves a real problem (even a small personal one)
+- Has a concrete, describable output
+- Uses the Anthropic API or Claude Code in a non-trivial way
+
+If you have multiple projects, pick the one where you can state a number. "Saves me 2 hours per week" is a number. "Makes it faster" is not.
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/projects/job-ready
+cd ~/projects/job-ready
+echo "Project I'm describing: [Write your project name here]" > LINKEDIN_ABOUT.md
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\projects\job-ready" | Out-Null
+Set-Location "$HOME\projects\job-ready"
+"Project I'm describing: [Write your project name here]" | Out-File LINKEDIN_ABOUT.md -Encoding utf8
+```
+
+### Step 3 — Answer the four framework questions in notes
+
+Before writing the paragraph, answer each question directly. This forces clarity before elegance.
+
+**macOS / Linux:**
+```bash
+cat >> LINKEDIN_ABOUT.md << 'EOF'
+
+## Framework answers (rough notes — not the final paragraph)
+
+**What problem did I solve?**
+[Write 1–2 sentences describing the real-world pain point. Be specific: whose problem? How often does it occur? How painful is it?]
+
+**What did I build?**
+[Write 1–2 sentences describing the technical solution in plain English. Avoid jargon: "an automated workflow" is better than "a multi-agent orchestration system with tool-calling capabilities".]
+
+**What did it produce?**
+[Write the measurable outcome. If you have a real number, use it. If not, estimate: "saves approximately X hours per week", "processes about X items per day". Do not invent numbers — estimate honestly.]
+
+**How would you scale it?**
+[Write 1–2 sentences about the next step. This shows you think beyond "it works on my machine".]
+EOF
+echo "Open LINKEDIN_ABOUT.md and fill in your four answers"
+```
+
+**Windows PowerShell:**
+```powershell
+Add-Content LINKEDIN_ABOUT.md @'
+
+## Framework answers
+
+**What problem did I solve?**
+[1-2 sentences: whose problem, how often, how painful]
+
+**What did I build?**
+[1-2 sentences: plain English description, no jargon]
+
+**What did it produce?**
+[The measurable outcome — a real or estimated number]
+
+**How would you scale it?**
+[1-2 sentences: the next production step]
+'@
+Write-Host "Open LINKEDIN_ABOUT.md and fill in your four answers"
+```
+
+Fill in all four answers before continuing. Do not move to step 4 with empty placeholders.
+
+### Step 4 — Draft the paragraph with Claude's help
+
+Once your four answers are filled in, use Claude to combine them into a polished paragraph. Open a Claude Code session in your `job-ready` directory and run:
+
+**macOS / Linux:**
+```bash
+claude "Read my LINKEDIN_ABOUT.md file. Using the four framework answers I wrote, write one 3–4 sentence LinkedIn About paragraph that introduces me as an agentic developer. The paragraph must: start with the problem, name what I built in plain English, state the measurable outcome, and end with the scaling step. Do not use buzzwords like 'cutting-edge', 'leverage', or 'revolutionize'. Write for a non-technical hiring manager."
+```
+
+**Windows PowerShell:**
+```powershell
+claude "Read my LINKEDIN_ABOUT.md file. Using the four framework answers I wrote, write one 3-4 sentence LinkedIn About paragraph that introduces me as an agentic developer. Start with the problem, name what I built in plain English, state the measurable outcome, end with the scaling step. No buzzwords. Write for a non-technical hiring manager."
+```
+
+### Step 5 — Refine and finalize
+
+Review the draft Claude produces. Ask yourself:
+
+1. Does a non-technical reader understand what I built without any clarification?
+2. Is the measurable outcome specific enough to be credible?
+3. Would I be comfortable reading this aloud in an interview?
+
+If any answer is no, tell Claude what to change:
+
+```
+"The second sentence is too technical — replace 'API orchestration' with a plain-English description of what the system does."
+```
+
+When satisfied, append the final paragraph to `LINKEDIN_ABOUT.md`:
+
+**macOS / Linux:**
+```bash
+cat >> LINKEDIN_ABOUT.md << 'EOF'
+
+## Final LinkedIn paragraph
+
+[Paste the final version of your paragraph here]
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+Add-Content LINKEDIN_ABOUT.md "`n## Final LinkedIn paragraph`n`n[Paste the final version here]"
+```
+
+### Step 6 — Verify the file is complete
+
+**macOS / Linux:**
+```bash
+# Confirm the file has all four sections and the final paragraph
+grep -c "##" LINKEDIN_ABOUT.md    # should be at least 3 (framework answers + final paragraph)
+wc -w LINKEDIN_ABOUT.md           # final paragraph should be 60-100 words
+grep "problem\|built\|produce\|scale" LINKEDIN_ABOUT.md -i
+```
+
+**Windows PowerShell:**
+```powershell
+(Select-String -Path LINKEDIN_ABOUT.md -Pattern "^##").Count
+(Get-Content LINKEDIN_ABOUT.md -Raw).Split(' ').Count
+Select-String -Path LINKEDIN_ABOUT.md -Pattern "problem|built|produce|scale" -CaseSensitive:$false
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| The paragraph Claude writes sounds like marketing copy ("passionate about leveraging AI solutions") | The four framework answers were vague, so Claude filled in with filler | Rewrite your framework answers to be specific and concrete; specific inputs produce specific outputs |
+| The measurable outcome section is empty because you do not have real numbers | You have not used any of your projects long enough to measure them | Estimate honestly: "I estimate it saves me about 30 minutes per day based on my typical workflow" — an honest estimate is better than no number |
+| Claude keeps using technical jargon even after you ask it not to | The system prompt in CLAUDE.md for your project is adding technical context | Add "Do not use technical jargon" to your Claude instruction in this session |
+| The paragraph is over 150 words | Too many ideas crammed into one paragraph | Ask Claude to cut it to 4 sentences maximum, keeping only the strongest point for each framework step |
+
+<VerificationBlock
+  deliverable="A LINKEDIN_ABOUT.md file containing four filled-in framework answers and a final 3–4 sentence LinkedIn paragraph."
+  verifyCheck="Paste the contents of your LINKEDIN_ABOUT.md file. The tutor will check that all four framework questions are answered with specific, non-placeholder content, and that the final paragraph follows the problem-build-produce-scale structure."
+  rubricCriteria={[
+    "All four framework questions have specific answers — no bracketed placeholders remain",
+    "The final paragraph starts with a problem statement that a non-technical reader can understand",
+    "The paragraph contains a measurable outcome (a number or a specific estimate)",
+    "The paragraph ends with a scaling or next-step statement showing systems thinking"
+  ]}
+/>

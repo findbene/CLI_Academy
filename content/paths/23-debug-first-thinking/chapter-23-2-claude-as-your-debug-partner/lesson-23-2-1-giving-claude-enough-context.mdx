@@ -1,0 +1,368 @@
+---
+title: "Giving Claude Enough Context to Debug"
+lessonNumber: "23.2.1"
+chapterNumber: "23.2"
+pathNumber: "23"
+groupId: "3.7"
+clawClassification: "elective"
+prerequisiteLesson: "23.1.3"
+estimatedMinutes: 20
+verifyType: "terminal_output"
+tutorPreload: "I'm about to learn how to give Claude enough context to debug effectively. Help me understand what a good debug request looks like versus a bad one, and how to assemble a minimal context bundle."
+---
+
+# Giving Claude Enough Context to Debug
+
+## What you will build
+
+A standardized debug request template saved in `LEARNING_LOG.md`, plus one real debug session using that template — where you assembled the full context bundle (error message, file contents, expected vs. actual behavior) and submitted it to Claude as a single coherent request.
+
+## Why this matters
+
+The quality of Claude's debugging help is directly proportional to the quality of the context you provide. A vague request gets a generic answer. A complete, structured request gets a targeted, actionable diagnosis.
+
+Here is the difference:
+
+**Bad request:**
+```
+my script doesn't work
+```
+
+**Good request:**
+```
+I ran `python3 process_csv.py data/sales.csv` and expected it to print 
+a summary of rows with sales > 1000. Instead it crashes on line 34 with:
+
+  KeyError: 'amount'
+
+Here is the full file content:
+[paste of process_csv.py]
+
+Here is the first 5 lines of data/sales.csv:
+[paste of file]
+
+What is causing the KeyError on line 34, and what is the minimal fix?
+```
+
+The second request gives Claude: the command that was run, the expected behavior, the actual behavior, the exact error with line number, the full source, and the data. Claude can now give you the exact fix on the first try instead of asking follow-up questions.
+
+## Before you start
+
+- Python 3 installed.
+- `cat` (macOS/Linux) or `Get-Content` (Windows) available — used to pipe file contents into a request.
+- The project from earlier lessons, or a fresh directory.
+
+## The walkthrough
+
+### Step 1 — The minimal context bundle
+
+A good debug request always includes these five elements:
+
+1. **The command** — exactly what you ran to trigger the bug
+2. **The error** — the full error message and traceback
+3. **Expected behavior** — what should have happened
+4. **Actual behavior** — what actually happened
+5. **Relevant file contents** — the source file(s) involved
+
+Optional but helpful:
+- The first few lines of any input data files
+- Your Python/Node/language version
+- What you already tried
+
+### Step 2 — Create a buggy script with multiple context layers
+
+This script has a bug that requires seeing the file contents and the error together to diagnose — you cannot fix it from the error message alone.
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/debug-context-lab && cd ~/cli-academy/projects/debug-context-lab
+
+cat > process_csv.py << 'EOF'
+"""
+process_csv.py — reads a CSV file of sales records and prints a summary.
+Usage: python3 process_csv.py <csv_file>
+"""
+
+import sys
+import csv
+
+def process_sales(filepath):
+    results = []
+    with open(filepath, newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # BUG: column header is 'sale_amount' in the CSV but code reads 'amount'
+            if float(row['amount']) > 1000:
+                results.append({
+                    "region": row['region'],
+                    "amount": float(row['amount']),
+                })
+    return results
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python3 process_csv.py <csv_file>")
+        sys.exit(1)
+
+    records = process_sales(sys.argv[1])
+    print(f"Found {len(records)} high-value sales")
+    for r in records:
+        print(f"  {r['region']}: ${r['amount']:,.2f}")
+EOF
+
+# Create the data file
+mkdir -p data
+cat > data/sales.csv << 'EOF'
+region,sale_amount,rep
+North,1250.00,Alice
+South,875.50,Bob
+East,2100.00,Carol
+West,450.00,Dave
+North,1800.00,Eve
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\debug-context-lab" -Force
+Set-Location "$HOME\cli-academy\projects\debug-context-lab"
+
+@"
+"""
+process_csv.py — reads a CSV file of sales records and prints a summary.
+Usage: python process_csv.py <csv_file>
+"""
+
+import sys
+import csv
+
+def process_sales(filepath):
+    results = []
+    with open(filepath, newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # BUG: column header is 'sale_amount' in the CSV but code reads 'amount'
+            if float(row['amount']) > 1000:
+                results.append({
+                    "region": row['region'],
+                    "amount": float(row['amount']),
+                })
+    return results
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python process_csv.py <csv_file>")
+        sys.exit(1)
+
+    records = process_sales(sys.argv[1])
+    print(f"Found {len(records)} high-value sales")
+    for r in records:
+        print(f"  {r['region']}: \${r['amount']:,.2f}")
+"@ | Set-Content process_csv.py
+
+New-Item -ItemType Directory -Path "data" -Force
+@"
+region,sale_amount,rep
+North,1250.00,Alice
+South,875.50,Bob
+East,2100.00,Carol
+West,450.00,Dave
+North,1800.00,Eve
+"@ | Set-Content data\sales.csv
+```
+
+### Step 3 — Trigger the bug and capture the full output
+
+**macOS / Linux:**
+```bash
+python3 process_csv.py data/sales.csv
+```
+
+**Windows PowerShell:**
+```powershell
+python process_csv.py data/sales.csv
+```
+
+Expected error:
+```
+Traceback (most recent call last):
+  File "process_csv.py", line 13, in process_sales
+    if float(row['amount']) > 1000:
+KeyError: 'amount'
+```
+
+### Step 4 — Assemble the context bundle using cat / Get-Content
+
+The power move: pipe your file contents directly into the debug request so you do not have to copy-paste manually.
+
+**macOS / Linux:**
+```bash
+echo "=== process_csv.py ==="
+cat process_csv.py
+echo ""
+echo "=== data/sales.csv (first 6 lines) ==="
+head -6 data/sales.csv
+```
+
+**Windows PowerShell:**
+```powershell
+Write-Host "=== process_csv.py ==="
+Get-Content process_csv.py
+Write-Host ""
+Write-Host "=== data/sales.csv (first 6 lines) ==="
+Get-Content data\sales.csv | Select-Object -First 6
+```
+
+This gives you the full context bundle you can copy into a Claude prompt.
+
+### Step 5 — Construct the full debug request
+
+Open Claude Code (or `claude`) and send this complete request:
+
+```
+I ran `python3 process_csv.py data/sales.csv` and expected it to print 
+a list of sales records where the sale amount exceeds $1000.
+
+Instead it crashes immediately with:
+
+  KeyError: 'amount'
+  File "process_csv.py", line 13, in process_sales
+
+Here is the full source file:
+
+[paste output of: cat process_csv.py]
+
+Here is the first 6 lines of data/sales.csv:
+
+[paste output of: head -6 data/sales.csv]
+
+What is the root cause of the KeyError, and what is the minimal fix?
+```
+
+Claude's response should identify that the CSV column is `sale_amount` but the code reads `amount`. The fix is to change `row['amount']` to `row['sale_amount']` in both places on lines 13 and 15.
+
+### Step 6 — Apply the fix and verify
+
+Apply Claude's suggested fix:
+
+**macOS / Linux:**
+```bash
+sed -i "s/row\['amount'\]/row['sale_amount']/g" process_csv.py
+python3 process_csv.py data/sales.csv
+```
+
+**Windows PowerShell:**
+```powershell
+(Get-Content process_csv.py) -replace "row\['amount'\]", "row['sale_amount']" | Set-Content process_csv.py
+python process_csv.py data/sales.csv
+```
+
+Expected output after fix:
+```
+Found 3 high-value sales
+  North: $1,250.00
+  East: $2,100.00
+  North: $1,800.00
+```
+
+### Step 7 — Save the debug request template to LEARNING_LOG.md
+
+**macOS / Linux:**
+```bash
+cat >> LEARNING_LOG.md << 'EOF'
+
+## Debug Request Template (Lesson 23.2.1)
+
+Use this template every time you ask Claude to help debug a script.
+
+---
+**Command I ran:**
+`python3 <script.py> <args>`
+
+**Expected behavior:**
+[What the script should have printed or done]
+
+**Actual behavior / Error:**
+```
+[Paste full error message and traceback here]
+```
+
+**Source file (`<script.py>`):**
+```python
+[Paste full file contents here — use: cat <script.py>]
+```
+
+**Input data (first 10 lines of `<datafile>`):**
+```
+[Paste: head -10 <datafile>]
+```
+
+**What I already tried:**
+[List any changes you made before asking]
+
+**Question:**
+What is the root cause, and what is the minimal fix?
+---
+
+## Real Debug Session — process_csv.py KeyError (Lesson 23.2.1)
+
+Command: `python3 process_csv.py data/sales.csv`
+Expected: Print sales records where amount > 1000
+Error: KeyError: 'amount' on line 13
+Root cause: CSV column is 'sale_amount', code read 'amount'
+Fix: Changed row['amount'] to row['sale_amount'] in 2 places
+Verified: Script now prints 3 high-value sales correctly
+
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+
+## Debug Request Template (Lesson 23.2.1)
+
+Use this template every time you ask Claude to help debug a script.
+
+Fields to fill in:
+- Command I ran
+- Expected behavior
+- Actual behavior / Error (full traceback)
+- Source file contents (Get-Content <script.py>)
+- Input data first lines (Get-Content <file> | Select-Object -First 10)
+- What I already tried
+- Question: root cause and minimal fix?
+
+## Real Debug Session — process_csv.py KeyError
+
+Command: python process_csv.py data/sales.csv
+Expected: Print sales > 1000
+Error: KeyError: 'amount' on line 13
+Root cause: CSV header is 'sale_amount', code read 'amount'
+Fix: Changed row['amount'] to row['sale_amount'] in 2 places
+Result: 3 high-value sales printed correctly
+
+"@ | Add-Content LEARNING_LOG.md
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Claude says "I don't see a bug" | The context bundle is missing the data file contents | Include the first 10 lines of the CSV — the column name mismatch is only visible from the data |
+| Fix changes `amount` to `sale_amount` but the script still crashes | There are multiple places in the file where `row['amount']` appears | Run the sed command with the global flag (`/g`) or search the file with `grep "row\['amount'\]"` |
+| `head` command not found on Windows | `head` is not a built-in PowerShell command | Use `Get-Content data\sales.csv | Select-Object -First 6` instead |
+| Claude gives a fix for the wrong column name | The CSV header in your actual file differs from the example | Always include the actual data file headers in your context bundle |
+| Claude asks for more information before answering | Your context bundle was missing a required element | Add the missing element (usually file contents or the exact error line) and resubmit |
+
+<VerificationBlock
+  deliverable="LEARNING_LOG.md containing the debug request template and a completed real debug session entry. The fixed process_csv.py must run without errors."
+  verifyCheck="Run `python3 process_csv.py data/sales.csv` — it must print exactly 3 high-value sales. Run `grep sale_amount process_csv.py` — the fix must appear in the source."
+  rubricCriteria={[
+    "python3 process_csv.py data/sales.csv runs without error",
+    "Output shows exactly 3 high-value sales records",
+    "grep sale_amount process_csv.py returns at least 2 matches",
+    "LEARNING_LOG.md contains the debug request template",
+    "LEARNING_LOG.md contains the completed real debug session entry"
+  ]}
+/>

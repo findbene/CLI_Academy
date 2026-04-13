@@ -4,13 +4,24 @@ lessonNumber: "18.1.1"
 chapterNumber: "18.1"
 pathNumber: "18"
 tutorPreload: "Help me scope a daily brief assistant to the smallest version worth using."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.8"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Build: daily brief assistant
 
-## Objective
+## What you will build
+A working daily brief assistant contract in CLAUDE.md plus one generated daily-brief-YYYY-MM-DD.md file.
+
+## Why this matters
+Real-world agent builds are the proof that everything in the curriculum works in practice, not just in isolated exercises. The everyday productivity scenarios in this path mirror the first agentic projects most developers build when they join an organization using Claude Code.
+
+## Before you start
 Build a real CLAUDE.md-driven assistant that creates a morning summary file named `daily-brief-YYYY-MM-DD.md` by reading yesterday's git activity and your `TODO.md`.
+
 
 ## Walkthrough
 ### Step 1: Create a bounded workspace and starter files
@@ -142,4 +153,9 @@ The correct result is one generated brief file and no unrelated repo changes.
 <VerificationBlock 
   deliverable="A working daily brief assistant contract in CLAUDE.md plus one generated daily-brief-YYYY-MM-DD.md file."
   verifyCheck="You can show: (1) git log and TODO.md were used, (2) exactly one brief file was created, and (3) no unrelated files were modified."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

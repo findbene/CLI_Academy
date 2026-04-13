@@ -4,15 +4,26 @@ lessonNumber: "18.3.1"
 chapterNumber: "18.3"
 pathNumber: "18"
 tutorPreload: "Help me turn this into a team-safe workflow with clear ownership."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.8"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Build: shared weekly brief or intake assistant
 
-## Objective
+## What you will build
+A generated team-weekly-brief-YYYY-MM-DD.md or intake-triage-YYYY-MM-DD.md with explicit owner metadata.
+
+## Why this matters
+Real-world agent builds are the proof that everything in the curriculum works in practice, not just in isolated exercises. The everyday productivity scenarios in this path mirror the first agentic projects most developers build when they join an organization using Claude Code.
+
+## Before you start
 Build a team-shared assistant that creates either:
 - a weekly engineering brief from multiple contributors' git logs, or
 - an intake assistant that reads `requests.md` and categorizes incoming work.
+
 
 ## Walkthrough
 ### Step 1: Create shared inputs
@@ -111,4 +122,9 @@ This prevents "shared automation with no owner," which fails quickly in real tea
 <VerificationBlock 
   deliverable="A generated team-weekly-brief-YYYY-MM-DD.md or intake-triage-YYYY-MM-DD.md with explicit owner metadata."
   verifyCheck="You can show the assistant consumed shared inputs and produced a team-usable artifact under bounded write rules."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

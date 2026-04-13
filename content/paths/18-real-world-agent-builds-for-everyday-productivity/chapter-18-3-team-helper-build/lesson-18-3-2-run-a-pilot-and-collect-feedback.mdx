@@ -4,13 +4,24 @@ lessonNumber: "18.3.2"
 chapterNumber: "18.3"
 pathNumber: "18"
 tutorPreload: "Turn this pilot into a backlog of improvements by severity and effort."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.8"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Run a pilot and collect feedback
 
-## Objective
+## What you will build
+A completed pilot package: pilot-plan.md, populated pilot-feedback.csv, and pilot-review.md with prioritized changes.
+
+## Why this matters
+Real-world agent builds are the proof that everything in the curriculum works in practice, not just in isolated exercises. The everyday productivity scenarios in this path mirror the first agentic projects most developers build when they join an organization using Claude Code.
+
+## Before you start
 Run a real pilot of your assistant with a small team, collect structured feedback, and convert that feedback into concrete CLAUDE.md improvements.
+
 
 ## Walkthrough
 ### Step 1: Define a 1-week pilot scope
@@ -102,4 +113,9 @@ Pilot is complete when improvements are evidenced, not just discussed.
 <VerificationBlock 
     deliverable="A completed pilot package: pilot-plan.md, populated pilot-feedback.csv, and pilot-review.md with prioritized changes."
     verifyCheck="You can show feedback-driven updates were applied to CLAUDE.md and validated in at least one rerun."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

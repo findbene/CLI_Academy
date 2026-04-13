@@ -4,16 +4,26 @@ lessonNumber: "17.3.3"
 chapterNumber: "17.3"
 pathNumber: "17"
 tutorPreload: "Give me the go-live checklist for this integrated assistant."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 40
+prerequisiteLesson: null
 ---
 
 # Mini project: safe integrated assistant
 
-## Objective
+## What you will build
+A ~/projects/safe-integrated-assistant folder containing all six documents: integration-audit.md, scope-decisions.md, read-only-results.md, bounded-write-record.md, risk-audit.md, and revoke-rotate-playbook.md — each with real content from the lesson steps.
 
+## Why this matters
+Integrating Claude with external APIs and services is where most production security incidents happen. A misconfigured webhook, an exposed key, or an over-permissioned OAuth scope can expose entire systems. This path teaches the integration patterns that hold up under a security review.
+
+## Before you start
 This mini-project ties together every lesson in Path 17. You will build a complete secure integration end-to-end: map the surface, choose minimum scopes, connect with real credentials, validate read-only, execute one bounded write, audit the risk, and write the rotation playbook. The deliverable is a folder of interconnected documents that proves you can connect external services responsibly.
 
 The integration target is GitHub — the same service you have been working with throughout this path.
+
 
 ## Walkthrough
 
@@ -393,4 +403,9 @@ Get-ChildItem *.md | ForEach-Object {
 <VerificationBlock 
     deliverable="A ~/projects/safe-integrated-assistant folder containing all six documents: integration-audit.md, scope-decisions.md, read-only-results.md, bounded-write-record.md, risk-audit.md, and revoke-rotate-playbook.md — each with real content from the lesson steps."
     verifyCheck="All six files exist with content, bounded-write-record.md shows issue number and state=closed, and revoke-rotate-playbook.md contains the five gh CLI steps."
+  rubricCriteria={[
+    "The safe-integrated-assistant folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

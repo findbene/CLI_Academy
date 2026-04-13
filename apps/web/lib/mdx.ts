@@ -16,6 +16,9 @@ export interface LessonMeta {
   tutorPreload?: string;
   modeBalance?: string;
   verifyType?: string;
+  groupId?: string;
+  clawClassification?: string;
+  prerequisiteLesson?: string;
 }
 
 export interface LessonRecord extends LessonMeta {
@@ -154,6 +157,9 @@ function toLessonRecord(filePath: string, source: string): LessonRecord {
     tutorPreload: parsed.tutorPreload ? String(parsed.tutorPreload) : undefined,
     modeBalance: parsed.modeBalance ? String(parsed.modeBalance) : undefined,
     verifyType: parsed.verifyType ? String(parsed.verifyType) : undefined,
+    groupId: parsed.groupId ? String(parsed.groupId) : undefined,
+    clawClassification: parsed.clawClassification ? String(parsed.clawClassification) : undefined,
+    prerequisiteLesson: parsed.prerequisiteLesson ? String(parsed.prerequisiteLesson) : undefined,
     body,
     sourcePath: filePath,
   };

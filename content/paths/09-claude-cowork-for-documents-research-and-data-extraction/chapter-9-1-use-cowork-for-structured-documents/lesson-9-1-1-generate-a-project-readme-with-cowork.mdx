@@ -4,14 +4,24 @@ lessonNumber: "9.1.1"
 chapterNumber: "9.1"
 pathNumber: "9"
 tutorPreload: "Help me generate an accurate README by sharing my project files with Claude and iterating on each section."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.6"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Generate a project README with Cowork
 
-## Objective
+## What you will build
+A README.md whose every section matches the actual project files and working CLI commands.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 By the end of this lesson you will use Claude Code to generate a real `README.md` for an existing project by sharing actual project files, iterating on individual sections, and verifying every claim in the README against your codebase
+
 
 ## Walkthrough
 
@@ -204,4 +214,9 @@ Review `git diff --staged` before committing. You should see the full README con
 <VerificationBlock
   deliverable="A README.md whose every section matches the actual project files and working CLI commands."
   verifyCheck="Each usage example runs successfully and produces the output described in the README."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

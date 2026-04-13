@@ -1,0 +1,199 @@
+---
+title: "Trust Levels and Safe Defaults"
+lessonNumber: "20.2.2"
+chapterNumber: "20.2"
+pathNumber: "20"
+tutorPreload: "I'm about to configure a CLAUDE.md that restricts what Claude Code can do in my projects directory. Help me understand what restrictions are realistic and which wording is actually enforced."
+verifyType: "terminal_output"
+estimatedMinutes: 20
+---
+
+# Trust Levels and Safe Defaults
+
+## Objective
+
+By the end of this lesson you will have created a `CLAUDE.md` inside `~/cli-academy/projects/` that explicitly restricts Bash tool usage and limits file writes to that directory. You will verify that Claude reads and acknowledges the restrictions when a session starts. This is the practical version of the permission model — you codify your own safe defaults in writing rather than relying on memory.
+
+## Walkthrough
+
+### Step 1 — Understand what CLAUDE.md can control
+
+`CLAUDE.md` is a plain text file that Claude reads at the start of every session. It is not enforced by the runtime the way a firewall rule is enforced — it is a strong instruction that well-calibrated Claude models follow reliably. The key properties:
+
+- Written in plain English
+- Placed at the root of a project (or a directory you run Claude from)
+- Read automatically on session start
+- Can be layered: a project CLAUDE.md overrides a parent directory CLAUDE.md for that project
+
+What you can control through CLAUDE.md:
+- Which directories Claude is allowed to write to
+- Which shell commands Claude may or may not run
+- Whether Claude must ask before installing packages
+- Whether Claude should explain its plan before acting
+- Whether Claude should stop after each step for review
+
+What CLAUDE.md cannot control (these require the runtime permission model or CLI flags):
+- Overriding the approval prompts built into Claude Code itself
+- Enforcing network access restrictions
+- Preventing Claude from reading files (it can always read files unless you use OS-level permissions)
+
+### Step 2 — Create the projects directory and CLAUDE.md
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/cli-academy/projects
+
+cat > ~/cli-academy/projects/CLAUDE.md << 'EOF'
+# CLAUDE.md — Safe Defaults for Learning Projects
+
+## Mission
+This directory contains practice projects for learning Claude Code.
+Optimize for safety and explicit approval over speed.
+
+## Hard rules
+
+1. **File write scope:** Only create or modify files inside `~/cli-academy/projects/`.
+   Never write to any path outside this directory.
+
+2. **Bash restrictions:**
+   - You may run: `ls`, `pwd`, `cat`, `node`, `npm test`, `npm run lint`, `git status`, `git log`, `git diff`
+   - You must ask before running: `npm install`, `git commit`, `git push`, `rm`, `mv`, `cp`
+   - You must never run: `rm -rf`, `git push --force`, `git reset --hard`, `curl ... | bash`
+
+3. **Explain before acting:** Before each Bash command or file write, state in one sentence what you are about to do and why.
+
+4. **No package installs without approval:** Never run `npm install` or `pip install` without asking first and waiting for explicit confirmation.
+
+5. **No external network calls:** Do not make HTTP requests unless the task explicitly requires it and you have stated the URL and reason.
+
+## What to do if you are unsure
+Stop and ask. Do not guess. Do not proceed with a destructive action because it seems like the right thing to do.
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy\projects"
+
+@"
+# CLAUDE.md — Safe Defaults for Learning Projects
+
+## Mission
+This directory contains practice projects for learning Claude Code.
+Optimize for safety and explicit approval over speed.
+
+## Hard rules
+
+1. **File write scope:** Only create or modify files inside ``$HOME\cli-academy\projects\``.
+   Never write to any path outside this directory.
+
+2. **Bash restrictions:**
+   - You may run: ``ls``, ``pwd``, ``cat``, ``node``, ``npm test``, ``npm run lint``, ``git status``, ``git log``, ``git diff``
+   - You must ask before running: ``npm install``, ``git commit``, ``git push``, ``rm``, ``mv``, ``cp``
+   - You must never run: ``rm -rf``, ``git push --force``, ``git reset --hard``, ``curl ... | bash``
+
+3. **Explain before acting:** Before each Bash command or file write, state in one sentence what you are about to do and why.
+
+4. **No package installs without approval:** Never run ``npm install`` or ``pip install`` without asking first and waiting for explicit confirmation.
+
+5. **No external network calls:** Do not make HTTP requests unless the task explicitly requires it and you have stated the URL and reason.
+
+## What to do if you are unsure
+Stop and ask. Do not guess. Do not proceed with a destructive action because it seems like the right thing to do.
+"@ | Set-Content -Path "$HOME\cli-academy\projects\CLAUDE.md" -Encoding UTF8
+```
+
+### Step 3 — Verify the file was created correctly
+
+**macOS / Linux**
+
+```bash
+cat ~/cli-academy/projects/CLAUDE.md
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content "$HOME\cli-academy\projects\CLAUDE.md"
+```
+
+Confirm you see all five hard rules. If the output is missing sections, re-run the write command from Step 2.
+
+### Step 4 — Test that Claude reads and acknowledges the rules
+
+Navigate to your projects directory and start Claude Code:
+
+**macOS / Linux**
+
+```bash
+cd ~/cli-academy/projects
+claude
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\cli-academy\projects"
+claude
+```
+
+Once the session opens, type:
+
+```
+What are my rules for this session? List them.
+```
+
+Claude should respond with the five rules from your `CLAUDE.md`. If it does, the file is working.
+
+### Step 5 — Test a boundary: ask Claude to do something restricted
+
+While still in the interactive session, type:
+
+```
+Run npm install express
+```
+
+With your CLAUDE.md in place, Claude should stop and say something like: "According to your project rules, I need to ask before running `npm install`. Do you want me to proceed?" It should not silently run the command.
+
+If Claude runs `npm install express` without asking, your rule wording needs strengthening. Add "STOP IMMEDIATELY and ask for confirmation before running `npm install`" to make the instruction unambiguous.
+
+Type `/exit` to leave the session without installing anything.
+
+### Step 6 — Understand the limits of this approach
+
+CLAUDE.md restrictions are strong but not absolute. They work because:
+
+1. Claude Code reads the file at session start and keeps it in context.
+2. Current Claude models are trained to follow explicit instructions reliably.
+3. The instructions are visible — you can audit them and Claude acknowledges them.
+
+They can be bypassed if:
+- The context window is very long and the CLAUDE.md instruction drops out
+- You start a session outside the directory (Claude reads the CLAUDE.md of the directory you are in, not directories above it)
+- A future model version changes how instructions are weighted
+
+For high-stakes work, CLAUDE.md rules are a first layer of defense, not the only layer. The runtime permission model (the approval prompts) is the second layer. OS-level file permissions are the third. Use all three for anything important.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Claude does not mention the rules when asked | The file is in the wrong directory or the session was launched from a different path | Run `pwd` or `Get-Location` to confirm you are in `projects/`, then relaunch Claude |
+| Claude follows the rules initially but then ignores them later in a long session | Context window pressure — the CLAUDE.md scrolled out of the active window | For long sessions, paste the key rules again mid-session: "Reminder: my rules say..." |
+| PowerShell CLAUDE.md has garbled backtick formatting | The `$HOME` expansion inside the here-string modified the double backtick syntax | Check the file with `Get-Content` and manually edit any broken lines |
+| The `npm install` test ran anyway without asking | Rule wording is too soft ("You must ask" vs "STOP and ask") | Edit the CLAUDE.md to use more explicit imperative language and retest |
+| Claude says it cannot find CLAUDE.md | Session launched before the file was saved | Exit, verify the file exists with `ls` or `Get-ChildItem`, then relaunch |
+
+<VerificationBlock
+  deliverable="A CLAUDE.md at ~/cli-academy/projects/ with five hard rules restricting Bash usage and file write scope."
+  verifyCheck="Share Claude's response to 'What are my rules for this session? List them.' — it should enumerate the five hard rules from your CLAUDE.md."
+  rubricCriteria={[
+    "CLAUDE.md exists at ~/cli-academy/projects/ (or the Windows equivalent path)",
+    "The file includes a file write scope restriction limiting writes to the projects directory",
+    "The file includes a Bash restriction with an explicit allowlist and a never-run list",
+    "Claude correctly reads and lists the rules when asked at session start",
+    "The npm install boundary test shows Claude asking for confirmation rather than running silently"
+  ]}
+/>

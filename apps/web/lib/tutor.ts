@@ -20,12 +20,17 @@ export function getTutorModel() {
 }
 
 export function buildTutorSystemPrompt(input: {
+  clawClassification?: string;
+  deliverable?: string;
+  groupId?: string;
+  learningMode?: string;
   lessonTitle?: string;
+  rubricCriteria?: string[];
   supportContext?: string;
   tier: "free" | "pro";
-  tutorPreload?: string;
-  learningMode?: string;
+  tutorGuideMode?: boolean;
   tutorMode?: TutorMode;
+  tutorPreload?: string;
 }) {
   const lessonContext = input.lessonTitle
     ? `The learner is currently in the lesson "${input.lessonTitle}".`
@@ -57,6 +62,25 @@ export function buildTutorSystemPrompt(input: {
                   ? "ACTIVE TUTOR MODE: EXPORT HELPER. Help the learner find the right checklist, template, printable, or reference asset. If a precise asset is missing, say so and suggest the closest alternative."
                   : "ACTIVE TUTOR MODE: GUIDED. Be step-by-step, grounded, and concrete.";
 
+  const rubricSection =
+    input.rubricCriteria?.length
+      ? [
+          "\nRUBRIC CRITERIA (what the learner must demonstrate):",
+          input.rubricCriteria.map((c, i) => `${i + 1}. ${c}`).join("\n"),
+          `\nDELIVERABLE: ${input.deliverable ?? "Complete the task described in the lesson."}`,
+          "\nWhen the learner asks for help with verification, guide them toward each criterion specifically.",
+          "Do not confirm a criterion is met until the learner shows evidence for it.",
+        ].join("\n")
+      : "";
+
+  const guideModeSection = input.tutorGuideMode
+    ? "\nGUIDE MODE: Ask questions before giving answers. If the learner is stuck, ask what they've tried first. Do not provide complete solutions or commands that directly satisfy rubric criteria. Help the learner arrive there themselves through questions."
+    : "\nEXPLAIN MODE: You may give direct explanations, examples, and code snippets when asked. Still encourage the learner to verify outputs themselves.";
+
+  const groupSection = input.groupId
+    ? `\nLESSON GROUP: ${input.groupId} (${input.clawClassification ?? "core"} tier)`
+    : "";
+
   return [
     "You are the built-in CLI Academy Tutor.",
     "CLI Academy is a beginner-friendly academy for Claude Code, Claude CoWork, setup, troubleshooting, and safe first success on real machines.",
@@ -78,6 +102,9 @@ export function buildTutorSystemPrompt(input: {
     learnerModeInstruction,
     input.supportContext ? `Use this grounded support context when relevant: ${input.supportContext}` : "",
     input.tutorPreload ? `\nCRITICAL INSTRUCTION FOR THIS LESSON (TUTOR PRELOAD):\n${input.tutorPreload}` : "",
+    rubricSection,
+    guideModeSection,
+    groupSection,
   ].join(" ");
 }
 

@@ -125,7 +125,17 @@ function buildActionLinks(mode: TutorMode, tier: TutorTier | null) {
 }
 
 export function FloatingTutor() {
-  const { learningMode, lessonTitle, tutorPreload } = useTutorRuntime();
+  const {
+    clawClassification,
+    deliverable,
+    groupId,
+    learningMode,
+    lessonSlug,
+    lessonTitle,
+    pathSlug,
+    rubricCriteria,
+    tutorPreload,
+  } = useTutorRuntime();
   const derivedMode = mapLearningModeToTutorMode(learningMode);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<TutorMode>(derivedMode);
@@ -133,6 +143,7 @@ export function FloatingTutor() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<TutorMessage[]>([buildWelcomeMessage()]);
+  const [storedTurns, setStoredTurns] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const [session, setSession] = useState<TutorSessionState>({
     configured: true,
     dailyLimit: null,
@@ -146,6 +157,28 @@ export function FloatingTutor() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const supportQuery = useDeferredValue(input.trim() || [...messages].reverse().find((m) => m.role === "user")?.content || "");
   const supportMatches = getTutorSupportMatches(supportQuery, lessonTitle);
+
+  const storageKey =
+    pathSlug && lessonSlug
+      ? `tutor-session-${pathSlug}-${lessonSlug}`
+      : "tutor-session-current";
+
+  // Load stored turns from localStorage on mount / when lesson changes.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Array<{ role: "user" | "assistant"; content: string }>;
+        if (Array.isArray(parsed)) {
+          setStoredTurns(parsed);
+        }
+      } else {
+        setStoredTurns([]);
+      }
+    } catch {
+      setStoredTurns([]);
+    }
+  }, [storageKey]);
 
   useEffect(() => {
     setMode(derivedMode);
@@ -235,6 +268,12 @@ export function FloatingTutor() {
   function resetConversation() {
     setInput("");
     setMessages([buildWelcomeMessage(lessonTitle)]);
+    setStoredTurns([]);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {
+      // Ignore localStorage errors in restricted environments.
+    }
   }
 
   async function handleSend(prefilledQuestion?: string) {
@@ -257,9 +296,15 @@ export function FloatingTutor() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          clawClassification,
+          conversationHistory: storedTurns.slice(-9),
+          deliverable: deliverable ?? "",
+          groupId,
           learningMode,
           lessonTitle,
           message: question,
+          rubricCriteria: rubricCriteria ?? [],
+          tutorGuideMode: false,
           tutorMode: mode,
           tutorPreload,
         }),
@@ -304,6 +349,23 @@ export function FloatingTutor() {
             // Ignore malformed chunks.
           }
         }
+      }
+
+      // Persist conversation turns to localStorage.
+      if (assistant) {
+        setStoredTurns((current) => {
+          const updated = [
+            ...current,
+            { role: "user" as const, content: question },
+            { role: "assistant" as const, content: assistant },
+          ].slice(-20);
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(updated));
+          } catch {
+            // Ignore localStorage errors in restricted environments.
+          }
+          return updated;
+        });
       }
     } catch (error) {
       startTransition(() => {
@@ -396,7 +458,15 @@ export function FloatingTutor() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {messages.length > 1 ? (
+                      {storedTurns.length > 0 ? (
+                        <button
+                          type="button"
+                          className="hidden rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-2 text-xs font-medium text-[var(--color-fg-muted)] transition hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg-default)] md:inline-flex"
+                          onClick={resetConversation}
+                        >
+                          Clear conversation
+                        </button>
+                      ) : messages.length > 1 ? (
                         <button
                           type="button"
                           className="hidden rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-3 py-2 text-xs font-medium text-[var(--color-fg-muted)] transition hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg-default)] md:inline-flex"

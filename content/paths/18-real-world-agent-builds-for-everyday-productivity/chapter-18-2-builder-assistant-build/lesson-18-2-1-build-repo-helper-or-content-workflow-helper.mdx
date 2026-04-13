@@ -4,15 +4,26 @@ lessonNumber: "18.2.1"
 chapterNumber: "18.2"
 pathNumber: "18"
 tutorPreload: "Break this helper idea into a safe first version and a later version."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.8"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Build: repo helper or content workflow helper
 
-## Objective
+## What you will build
+A repo helper or content helper run that produced a saved helper-output.md artifact.
+
+## Why this matters
+Real-world agent builds are the proof that everything in the curriculum works in practice, not just in isolated exercises. The everyday productivity scenarios in this path mirror the first agentic projects most developers build when they join an organization using Claude Code.
+
+## Before you start
 Build one practical helper assistant that answers real operational questions in your workspace:
 - Repo helper: "What changed in the last week?" and "What files have TODOs?"
 - Content helper: summarize draft files from a bounded folder.
+
 
 ## Walkthrough
 ### Step 1: Choose your helper scope and define a contract
@@ -120,4 +131,9 @@ Your helper should produce useful read-only analysis without changing project co
 <VerificationBlock 
   deliverable="A repo helper or content helper run that produced a saved helper-output.md artifact."
   verifyCheck="You can show the exact command evidence, bounded scope, and a useful output answering the target questions."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

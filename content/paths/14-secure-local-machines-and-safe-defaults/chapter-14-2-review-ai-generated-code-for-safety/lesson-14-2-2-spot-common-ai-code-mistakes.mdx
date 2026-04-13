@@ -4,16 +4,26 @@ lessonNumber: "14.2.2"
 chapterNumber: "14.2"
 pathNumber: "14"
 tutorPreload: "Review this AI-generated code for security issues and tell me what to fix."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Spot common AI code mistakes
 
-## Objective
+## What you will build
+An ai-mistakes-lab project with five example files demonstrating AI code mistakes and an AI code review checklist.
 
+## Why this matters
+Every agentic developer runs code on their local machine. A compromised machine means compromised keys, leaked data, and potentially compromised production systems. Local security hygiene is the baseline that makes every other security measure meaningful.
+
+## Before you start
 AI code generators produce code that works on the surface but often contains patterns that would fail in production — or worse, create security vulnerabilities. These are not random errors. They fall into predictable categories.
 
 In this lesson you will study the five most common AI code mistakes with real examples, learn to recognize each pattern instantly, and build a reference file you can check against every time you review AI-generated code.
+
 
 ## Walkthrough
 
@@ -379,4 +389,9 @@ git add ai-code-review-checklist.md; git commit -m "add AI code review checklist
 <VerificationBlock
   deliverable="An ai-mistakes-lab project with five example files demonstrating AI code mistakes and an AI code review checklist."
   verifyCheck="Run `git log --oneline` — you should see commits for each mistake category plus the checklist. Run `cat ai-code-review-checklist.md` — the five-item checklist should be present."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

@@ -4,14 +4,24 @@ lessonNumber: "7.2.1"
 chapterNumber: "7.2"
 pathNumber: "7"
 tutorPreload: "Explain what Claude Desktop can and cannot do compared to Claude Code in the terminal."
-verifyType: "terminal_output"
+verifyType: "screenshot"
+groupId: "3.3"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Use Claude Desktop for local projects
 
-## Objective
+## What you will build
+By the end of this lesson you will have Claude Desktop installed, opened a local project folder inside it, and used its drag-and-drop feature to share files with Claude.
 
+## Why this matters
+Real-world agentic work spans surfaces — you start in the terminal, switch to the IDE, check GitHub, and come back to the terminal. Learners who can only use Claude in one surface leave efficiency on the table. Cross-surface fluency is what makes Claude Code genuinely useful for full development cycles.
+
+## Before you start
 By the end of this lesson you will have Claude Desktop installed, opened a local project folder inside it, and used its drag-and-drop feature to share files with Claude. You will also understand exactly what Claude Desktop can and cannot do compared to the Claude Code CLI.
+
 
 ## Walkthrough
 
@@ -164,7 +174,11 @@ Claude analyzes the image and responds. This is something the CLI version cannot
 | Claude says "I can't access your file system" | You asked it to read a file by path without sharing it | Drag the file in or use the attachment button; Claude Desktop cannot browse your disk |
 | Generated code has wrong line endings | Claude may produce Unix line endings on Windows | Open the file in VS Code and change line endings (bottom-right status bar) to CRLF if needed |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The command or workflow step completed on the specified surface (IDE/terminal/browser)",
+    "Output or result matches what the lesson describes as expected",
+    "The cross-surface handoff was completed without losing context from the previous step",
+]}>
 Confirm Claude Desktop is installed and working:
 
 1. Open Claude Desktop and start a new conversation.

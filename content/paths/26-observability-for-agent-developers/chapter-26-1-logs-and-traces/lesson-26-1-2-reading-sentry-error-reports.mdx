@@ -1,0 +1,290 @@
+---
+title: "Reading Sentry Error Reports"
+lessonNumber: "26.1.2"
+chapterNumber: "26.1"
+pathNumber: "26"
+groupId: "5.3"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 20
+verifyType: "screenshot"
+tutorPreload: "I'm about to learn how to read a Sentry error report. Help me understand what breadcrumbs are and why they matter before I look at my first real error report."
+---
+
+# Reading Sentry Error Reports
+
+## What you will build
+
+A documented walkthrough of a real Sentry error report. You will either use the Sentry demo project or trigger a test error in your own application, navigate to the resulting Sentry issue, and annotate each section of the error report in a `LEARNING_LOG.md` entry that explains what each section tells you and what you would do next.
+
+## Why this matters
+
+Getting a Sentry alert at 2 a.m. is only useful if you can read the report quickly and take action. Most developers encounter Sentry for the first time during a production incident — exactly the worst moment to learn the interface. This lesson makes the anatomy of a Sentry error report familiar before you need it.
+
+A Sentry error report is denser than a stack trace in a terminal. It contains: the exception type and message, the full stack trace with local variable values, a breadcrumb trail of events that led to the error, the user and session context at the time of the error, the environment tag (production vs staging), and a count of how many times this error has occurred. Each section answers a different question in your debugging process.
+
+For agentic systems specifically, Sentry is invaluable because agent errors often happen asynchronously — not in response to a user click, but inside a background loop you are not watching. Sentry catches what your logs miss.
+
+## Before you start
+
+- A Sentry account (free tier is sufficient) — sign up at sentry.io if you do not have one
+- Access to the Sentry demo project OR a small Python script you can add Sentry to
+- `sentry-sdk` installed: `pip install "sentry-sdk[pure_eval]"`
+- Your Sentry project DSN (found in Project Settings → Client Keys)
+
+If you prefer to use the Sentry demo project without writing any code: go to sentry.io, create an account, and Sentry creates a demo project with pre-populated error events for you to explore.
+
+## The walkthrough
+
+### Step 1 — Understand the anatomy of a Sentry error report
+
+Before opening Sentry, learn the sections you will find in any error report:
+
+| Section | What it shows | Key question it answers |
+|---------|--------------|------------------------|
+| **Exception** | Error type, message, and module | What broke and what kind of error was it? |
+| **Stack trace** | Call stack at the moment of the error, with line numbers | Where in the code did this happen? |
+| **Local variables** | Variable values at each stack frame | What data was in scope when it crashed? |
+| **Breadcrumbs** | Chronological log of events before the error | What sequence of actions led here? |
+| **User context** | User ID, email, and IP (if configured) | Which user was affected? |
+| **Tags** | Key-value pairs like `environment=production` | Was this in production or staging? Which version? |
+| **Device / Runtime** | Python version, OS, server name | What was the execution environment? |
+
+### Step 2 — Set up Sentry in a test script (or use the demo)
+
+**Option A — Use the Sentry demo (no code required)**
+
+1. Sign in to sentry.io.
+2. From the sidebar, find the **Demo Project** that was created for your account.
+3. Click any error in the Issues list to open the full report.
+4. Skip to Step 4 below.
+
+**Option B — Trigger a real error in a test script**
+
+Replace `YOUR_DSN_HERE` with the DSN from your Sentry project settings.
+
+**macOS / Linux:**
+```bash
+cat > sentry_test.py << 'PYEOF'
+"""
+sentry_test.py — Triggers a deliberate error captured by Sentry.
+Replace YOUR_DSN_HERE with your actual Sentry DSN before running.
+"""
+import sentry_sdk
+from sentry_sdk import capture_exception, set_user, add_breadcrumb
+
+# Initialize Sentry — replace with your real DSN
+sentry_sdk.init(
+    dsn="YOUR_DSN_HERE",
+    traces_sample_rate=1.0,
+    environment="learning",
+    release="cli-academy-lesson-26.1.2",
+)
+
+# Set user context so the error report shows who was affected
+set_user({"id": "learner_001", "username": "cli-academy-student"})
+
+# Add breadcrumbs — these appear in the Sentry report as a timeline of events
+add_breadcrumb(category="auth", message="User authenticated", level="info")
+add_breadcrumb(category="api", message="Starting Anthropic API call", level="info")
+add_breadcrumb(category="api", message="Received response from API", level="info")
+add_breadcrumb(category="processing", message="Attempting to parse response JSON", level="info")
+
+# Simulate a processing error after several successful steps
+try:
+    # This represents an agent that tried to parse JSON but got plain text
+    malformed_response = "This is not JSON at all."
+    import json
+    data = json.loads(malformed_response)  # will raise JSONDecodeError
+except Exception as e:
+    capture_exception(e)
+    print(f"Error captured and sent to Sentry: {type(e).__name__}: {e}")
+    print("Check your Sentry dashboard — the issue should appear within 30 seconds.")
+PYEOF
+python3 sentry_test.py
+```
+
+**Windows PowerShell:**
+```powershell
+pip install "sentry-sdk[pure_eval]"
+
+$sentryTest = @'
+import sentry_sdk
+from sentry_sdk import capture_exception, set_user, add_breadcrumb
+import json
+
+sentry_sdk.init(
+    dsn="YOUR_DSN_HERE",
+    traces_sample_rate=1.0,
+    environment="learning",
+    release="cli-academy-lesson-26.1.2",
+)
+
+set_user({"id": "learner_001", "username": "cli-academy-student"})
+add_breadcrumb(category="auth", message="User authenticated", level="info")
+add_breadcrumb(category="api", message="Starting Anthropic API call", level="info")
+add_breadcrumb(category="processing", message="Attempting to parse response JSON", level="info")
+
+try:
+    malformed_response = "This is not JSON at all."
+    data = json.loads(malformed_response)
+except Exception as e:
+    capture_exception(e)
+    print(f"Error captured: {type(e).__name__}: {e}")
+    print("Check your Sentry dashboard — the issue should appear within 30 seconds.")
+'@
+$sentryTest | Out-File "sentry_test.py" -Encoding utf8
+python sentry_test.py
+```
+
+### Step 3 — Find the error in Sentry
+
+1. Go to your Sentry project dashboard.
+2. Click **Issues** in the left sidebar.
+3. Find the `JSONDecodeError` (or the most recent error if using the demo).
+4. Click the issue title to open the full error report.
+
+### Step 4 — Annotate each section of the report
+
+As you read through the error report, take notes in a `LEARNING_LOG.md` file. This is the deliverable for this lesson.
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/projects/observability/logging
+cat > ~/projects/observability/logging/LEARNING_LOG.md << 'EOF'
+# Learning Log — Lesson 26.1.2: Reading Sentry Error Reports
+
+**Date:** [Today's date]
+**Error examined:** [Paste the issue title from Sentry, e.g. "JSONDecodeError: Expecting value: line 1 column 1"]
+**Project:** [Sentry project name]
+**Environment tag:** [What does the 'environment' tag say?]
+
+## Exception section
+
+**What it shows:** [Describe what you see in the Exception section]
+**Error type:** [e.g. JSONDecodeError]
+**Error message:** [Paste the message]
+**What this tells me:** [One sentence — what broke?]
+
+## Stack trace
+
+**Number of frames:** [How many stack frames are shown?]
+**Application frame:** [Which frame is your own code? What file and line?]
+**What this tells me:** [One sentence — where in my code did this fail?]
+
+## Local variables
+
+**Variables shown at the crash frame:** [List the variable names visible]
+**Was the bad data visible?** [Yes/No — could you see the malformed_response value?]
+**What this tells me:** [One sentence — what data was in scope?]
+
+## Breadcrumbs
+
+**Number of breadcrumbs:** [How many events appear before the crash?]
+**Last breadcrumb before error:** [What was the last event?]
+**What this tells me:** [One sentence — what sequence of events led to the crash?]
+
+## User context
+
+**User ID shown:** [What user ID appears?]
+**What this tells me:** [One sentence — which user was affected?]
+
+## Tags
+
+**Environment tag:** [What value?]
+**Release tag:** [What value?]
+**What this tells me:** [One sentence — was this in production or test?]
+
+## What I would do next
+
+If this error appeared in a real production system, my next three actions would be:
+1. [First action]
+2. [Second action]
+3. [Third action]
+
+## Questions I still have
+
+[Any open questions about Sentry or error monitoring]
+EOF
+echo "LEARNING_LOG.md created — open it and fill in your annotations"
+```
+
+**Windows PowerShell:**
+```powershell
+$logTemplate = @'
+# Learning Log — Lesson 26.1.2: Reading Sentry Error Reports
+
+**Date:** [Today's date]
+**Error examined:** [Paste the issue title from Sentry]
+**Project:** [Sentry project name]
+
+## Exception section
+**Error type:** [e.g. JSONDecodeError]
+**What this tells me:** [One sentence]
+
+## Stack trace
+**Application frame:** [File and line where your code appears]
+**What this tells me:** [One sentence]
+
+## Local variables
+**Variables shown:** [List them]
+**What this tells me:** [One sentence]
+
+## Breadcrumbs
+**Last breadcrumb before error:** [What was the last event?]
+**What this tells me:** [One sentence — what led to the crash?]
+
+## User context
+**User ID shown:** [What value?]
+
+## Tags
+**Environment:** [What value?]
+**Release:** [What value?]
+
+## What I would do next
+1. [First action]
+2. [Second action]
+3. [Third action]
+'@
+$logTemplate | Out-File "$HOME\projects\observability\logging\LEARNING_LOG.md" -Encoding utf8
+Write-Host "LEARNING_LOG.md created"
+```
+
+### Step 5 — Take a screenshot and fill in the log
+
+1. With the Sentry error report open, take a screenshot that shows the full error page (exception, stack trace, and breadcrumbs visible).
+2. Open `LEARNING_LOG.md` in a text editor.
+3. Fill in every bracketed placeholder with your real observations from the Sentry report.
+4. Save the file.
+
+**macOS / Linux:**
+```bash
+# Verify the log file has been filled in (no empty brackets)
+grep "\[Today\|bracketed" ~/projects/observability/logging/LEARNING_LOG.md && echo "WARNING: Unfilled placeholders remain" || echo "Log looks complete"
+```
+
+**Windows PowerShell:**
+```powershell
+$content = Get-Content "$HOME\projects\observability\logging\LEARNING_LOG.md" -Raw
+if ($content -match "\[Today") { Write-Host "WARNING: Unfilled placeholders remain" } else { Write-Host "Log looks complete" }
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Error does not appear in Sentry after running the script | DSN is incorrect or the project is paused | Verify the DSN in Project Settings → Client Keys; check that the project is active and not rate-limited on the free tier |
+| Sentry shows the error but breadcrumbs are missing | `add_breadcrumb()` calls were placed after `capture_exception()` instead of before | Move all `add_breadcrumb()` calls above the `try` block so they are recorded before the error fires |
+| Stack trace shows only one frame with no local variables | `sentry-sdk` installed without the `pure_eval` extra | Reinstall with `pip install "sentry-sdk[pure_eval]"` to enable local variable capture |
+| Demo project has no errors to examine | New Sentry account; demo project was not auto-populated | On the Sentry home screen, click "View sample data" or use Option B to trigger a real error |
+
+<VerificationBlock
+  deliverable="A screenshot of the Sentry error report and a completed LEARNING_LOG.md annotating each section."
+  verifyCheck="Upload your screenshot and paste your LEARNING_LOG.md. The tutor will check that every section of the report is annotated and that the 'What I would do next' section has three concrete actions."
+  rubricCriteria={[
+    "Screenshot shows the Sentry error report with at least the exception, stack trace, and breadcrumbs sections visible",
+    "LEARNING_LOG.md has no unfilled placeholder brackets — every section contains real observations from the report",
+    "The breadcrumbs section identifies the last event before the crash",
+    "The 'What I would do next' section lists three specific, actionable steps (not generic advice)"
+  ]}
+/>

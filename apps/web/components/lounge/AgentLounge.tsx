@@ -7,6 +7,7 @@ import { LoungePageHero } from "./LoungePageHero";
 import { HeroPick } from "./HeroPick";
 import { ContentCard } from "./ContentCard";
 import { FilterNav } from "./FilterNav";
+import { ClawEcosystemTierMap } from "./ClawEcosystemTierMap";
 
 // --- Mock Data ---
 export type Category = "All" | "Agentic Articles" | "Tool Spotlights" | "Visual Explainers" | string;
@@ -32,6 +33,8 @@ export default function AgentLounge({ items }: { items: LoungeItem[] }) {
   return (
     <div className="font-sans text-[#F0F4F8]">
       <LoungePageHero />
+
+      <ClawEcosystemTierMap />
 
       <div className="mx-auto max-w-7xl px-6 py-16">
         <motion.header

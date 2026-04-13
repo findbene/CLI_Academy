@@ -4,14 +4,24 @@ lessonNumber: "5.3.2"
 chapterNumber: "5.3"
 pathNumber: "5"
 tutorPreload: "Walk me through the full loop: find the bug, write a test, fix it, refactor, and commit."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.2"
+clawClassification: "elective"
+estimatedMinutes: 40
+prerequisiteLesson: null
 ---
 
 # Mini project: debug, test, and clean a broken script
 
-## Objective
+## What you will build
+A git commit containing a debugged, tested, and refactored invoice calculator with all tests passing.
 
+## Why this matters
+Debugging without a systematic approach is how engineers waste entire days on problems that take 20 minutes to fix with the right method. Using Claude Code as a debug partner speeds diagnosis while the hypothesis-driven process builds the mental discipline that distinguishes senior engineers.
+
+## Before you start
 Bring together everything from Path 05 in a single end-to-end exercise. You start with a broken, messy script. You debug it with Claude Code, add tests, fix the bugs, refactor for clarity, confirm all tests pass, and commit the result. This is the real workflow professional developers follow every day.
+
 
 ## Walkthrough
 
@@ -302,4 +312,9 @@ This is exactly how the debug → test → refactor loop works in the real world
 <VerificationBlock
   deliverable="A git commit containing a debugged, tested, and refactored invoice calculator with all tests passing."
   verifyCheck="Run `npm test` and confirm all tests pass. Run `git log --oneline -1` and confirm the commit exists."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

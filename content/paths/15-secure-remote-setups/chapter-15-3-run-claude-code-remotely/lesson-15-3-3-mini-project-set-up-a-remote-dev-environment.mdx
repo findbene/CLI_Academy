@@ -4,14 +4,24 @@ lessonNumber: "15.3.3"
 chapterNumber: "15.3"
 pathNumber: "15"
 tutorPreload: "Walk me through the full remote dev setup from SSH keys to a running Claude Code session in tmux."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Mini-project: Set up a remote dev environment
 
-## Objective
+## What you will build
+By the end of this mini-project you will have a complete remote development environment: SSH key authentication, a named SSH config alias, Node.
 
+## Why this matters
+Remote systems are higher-stakes than local ones — they're shared, persistent, and often connected to production data. Secure remote setup is the first thing any security review will check when an organization adopts agentic tooling. Getting this right prevents incidents that are expensive and embarrassing.
+
+## Before you start
 By the end of this mini-project you will have a complete remote development environment: SSH key authentication, a named SSH config alias, Node.js and Claude Code installed on the server, and a tmux session you can detach from, go offline, and reattach to later. This combines everything from Path 15 into one end-to-end workflow.
+
 
 ## Walkthrough
 
@@ -221,6 +231,10 @@ aws ec2 terminate-instances --instance-ids i-0123456789abcdef0
 | Server still running and billing you | Forgot to stop the VPS after the session | Check your provider's dashboard; set up billing alerts |
 | Claude Code says "session expired" after reattach | Anthropic API token expired or idle timeout | Run `claude` again inside the tmux session to restart; your tmux session is fine |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The remote setup step completed without authentication errors",
+    "Connection or access test passes with the correct credentials or token",
+    "The configuration persists after closing and reopening the terminal session",
+]}>
 From your local machine, run `ssh devbox "tmux ls"` and confirm your `dev` session is listed. Then run `ssh devbox` followed by `tmux attach -t dev` and verify Claude Code is responsive inside the session. Finally, from inside the tmux session, run `claude --version` and `git status` to confirm both Claude Code and your project are intact.
 </VerificationBlock>

@@ -1,0 +1,389 @@
+---
+title: "Claude Writes Code to Your Specification"
+lessonNumber: "24.1.3"
+chapterNumber: "24.1"
+pathNumber: "24"
+groupId: "3.8"
+clawClassification: "elective"
+prerequisiteLesson: "24.1.2"
+estimatedMinutes: 25
+verifyType: "code_submission"
+tutorPreload: "I'm about to build a complete TDD cycle with Claude — I'll write the test suite first, then have Claude write the implementation. Help me write tests that are precise and complete enough to fully specify a small utility function."
+---
+
+# Claude Writes Code to Your Specification
+
+## What you will build
+
+A complete test suite with 5+ tests for a Markdown table parser, and the Claude-written implementation that passes all of them. You write the spec (tests), Claude writes the code.
+
+## Why this matters
+
+This lesson is the full TDD workflow at scale. In Lesson 24.1.2 you wrote 3 tests for a simple formatter. Here you will write a complete specification for a real utility — a Markdown table parser — with enough test cases to fully specify the behavior. Then you hand the failing test suite to Claude and ask for the implementation.
+
+The goal is for you to experience the discipline of spec-first thinking. A Markdown table parser has edge cases: tables with different alignments, rows with missing cells, headers vs. data rows, leading/trailing whitespace inside cells. You have to think through all of these when writing tests, before you get distracted by implementation details. That forced thinking up front leads to better software.
+
+## Before you start
+
+- Python 3 and pytest installed.
+- The `tdd-lab` project from Lesson 24.1.2, or a fresh directory.
+- Claude Code available.
+
+## The walkthrough
+
+### Step 1 — Understand the Markdown table format
+
+A Markdown table looks like this:
+
+```
+| Name    | Score | Grade |
+|---------|-------|-------|
+| Alice   | 95    | A     |
+| Bob     | 82    | B     |
+| Carol   | 74    | C     |
+```
+
+The format has:
+- A header row (first row, pipe-separated)
+- A separator row (second row, dashes and pipes)
+- One or more data rows (remaining rows)
+
+Your parser will convert this into a list of dictionaries:
+```python
+[
+    {"Name": "Alice", "Score": "95", "Grade": "A"},
+    {"Name": "Bob",   "Score": "82", "Grade": "B"},
+    {"Name": "Carol", "Score": "74", "Grade": "C"},
+]
+```
+
+### Step 2 — Set up the project
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/tdd-lab && cd ~/cli-academy/projects/tdd-lab
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\cli-academy\projects\tdd-lab"
+```
+
+### Step 3 — Write the test suite (no implementation yet)
+
+Think through the behavior before writing. Ask yourself:
+- What is the simplest valid table?
+- What should happen with extra whitespace inside cells?
+- What if a table has only one row of data?
+- What if a row has fewer cells than the header?
+- What should the function return for an empty string?
+
+Now write the tests:
+
+**macOS / Linux:**
+```bash
+cat > test_md_table.py << 'EOF'
+"""
+test_md_table.py — specification tests for parse_markdown_table().
+Written before any implementation exists.
+"""
+
+import pytest
+from md_table_parser import parse_markdown_table
+
+
+SIMPLE_TABLE = """| Name  | Score | Grade |
+|-------|-------|-------|
+| Alice | 95    | A     |
+| Bob   | 82    | B     |"""
+
+SINGLE_ROW_TABLE = """| City   | Country |
+|--------|---------|
+| London | UK      |"""
+
+WHITESPACE_TABLE = """| Name     | Value   |
+|----------|---------|
+|  Alice   |  100    |
+|  Bob     |  200    |"""
+
+MISMATCHED_ROW = """| A | B | C |
+|---|---|---|
+| 1 | 2 |"""
+
+
+# ── Core behavior ──────────────────────────────────────────────────────────────
+
+def test_parse_returns_list_of_dicts():
+    """Result must be a list of dicts, one per data row."""
+    result = parse_markdown_table(SIMPLE_TABLE)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], dict)
+
+
+def test_parse_uses_header_row_as_keys():
+    """Dict keys must come from the header row, stripped of whitespace."""
+    result = parse_markdown_table(SIMPLE_TABLE)
+    assert "Name" in result[0]
+    assert "Score" in result[0]
+    assert "Grade" in result[0]
+
+
+def test_parse_extracts_cell_values():
+    """Cell values must match the table content, stripped of whitespace."""
+    result = parse_markdown_table(SIMPLE_TABLE)
+    assert result[0]["Name"] == "Alice"
+    assert result[0]["Score"] == "95"
+    assert result[0]["Grade"] == "A"
+    assert result[1]["Name"] == "Bob"
+    assert result[1]["Score"] == "82"
+
+
+def test_parse_single_data_row():
+    """A table with one data row must return a list with one dict."""
+    result = parse_markdown_table(SINGLE_ROW_TABLE)
+    assert len(result) == 1
+    assert result[0]["City"] == "London"
+    assert result[0]["Country"] == "UK"
+
+
+def test_parse_strips_whitespace_from_cells():
+    """Extra whitespace inside cell values must be stripped."""
+    result = parse_markdown_table(WHITESPACE_TABLE)
+    assert result[0]["Name"] == "Alice"
+    assert result[0]["Value"] == "100"
+    assert result[1]["Name"] == "Bob"
+    assert result[1]["Value"] == "200"
+
+
+def test_parse_empty_string_returns_empty_list():
+    """Empty input must return an empty list, not raise an exception."""
+    result = parse_markdown_table("")
+    assert result == []
+
+
+def test_parse_skips_separator_row():
+    """The separator row (dashes) must not appear in the output as a data row."""
+    result = parse_markdown_table(SIMPLE_TABLE)
+    for row in result:
+        for value in row.values():
+            assert "---" not in value
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+"""
+test_md_table.py — specification tests for parse_markdown_table().
+Written before any implementation exists.
+"""
+
+import pytest
+from md_table_parser import parse_markdown_table
+
+
+SIMPLE_TABLE = """| Name  | Score | Grade |
+|-------|-------|-------|
+| Alice | 95    | A     |
+| Bob   | 82    | B     |"""
+
+SINGLE_ROW_TABLE = """| City   | Country |
+|--------|---------|
+| London | UK      |"""
+
+WHITESPACE_TABLE = """| Name     | Value   |
+|----------|---------|
+|  Alice   |  100    |
+|  Bob     |  200    |"""
+
+
+def test_parse_returns_list_of_dicts():
+    result = parse_markdown_table(SIMPLE_TABLE)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], dict)
+
+
+def test_parse_uses_header_row_as_keys():
+    result = parse_markdown_table(SIMPLE_TABLE)
+    assert "Name" in result[0]
+    assert "Score" in result[0]
+    assert "Grade" in result[0]
+
+
+def test_parse_extracts_cell_values():
+    result = parse_markdown_table(SIMPLE_TABLE)
+    assert result[0]["Name"] == "Alice"
+    assert result[0]["Score"] == "95"
+    assert result[0]["Grade"] == "A"
+    assert result[1]["Name"] == "Bob"
+    assert result[1]["Score"] == "82"
+
+
+def test_parse_single_data_row():
+    result = parse_markdown_table(SINGLE_ROW_TABLE)
+    assert len(result) == 1
+    assert result[0]["City"] == "London"
+    assert result[0]["Country"] == "UK"
+
+
+def test_parse_strips_whitespace_from_cells():
+    result = parse_markdown_table(WHITESPACE_TABLE)
+    assert result[0]["Name"] == "Alice"
+    assert result[0]["Value"] == "100"
+
+
+def test_parse_empty_string_returns_empty_list():
+    result = parse_markdown_table("")
+    assert result == []
+
+
+def test_parse_skips_separator_row():
+    result = parse_markdown_table(SIMPLE_TABLE)
+    for row in result:
+        for value in row.values():
+            assert "---" not in value
+"@ | Set-Content test_md_table.py
+```
+
+### Step 4 — Confirm the tests are red
+
+**macOS / Linux:**
+```bash
+pytest test_md_table.py -v
+```
+
+**Windows PowerShell:**
+```powershell
+pytest test_md_table.py -v
+```
+
+Expected: `ImportError: No module named 'md_table_parser'`
+
+All tests fail because the module does not exist yet. Red phase confirmed.
+
+### Step 5 — Hand the failing tests to Claude
+
+Open Claude Code and send this prompt:
+
+```
+I have written a complete test suite for a Markdown table parser in test_md_table.py.
+Here are the tests:
+
+[paste the full contents of test_md_table.py]
+
+Write the implementation in md_table_parser.py. The function signature must be:
+
+    def parse_markdown_table(text: str) -> list[dict]:
+
+Requirements (from the tests):
+- Returns a list of dicts, one per data row
+- Keys come from the header row (first row), stripped of whitespace
+- Skips the separator row (second row with dashes)
+- Strips whitespace from all cell values
+- Returns [] for empty input
+
+Write only what is needed to make all 7 tests pass.
+```
+
+Claude will produce an implementation. Save it to `md_table_parser.py`.
+
+A typical correct implementation looks like:
+
+```python
+def parse_markdown_table(text: str) -> list[dict]:
+    if not text.strip():
+        return []
+
+    lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
+
+    if len(lines) < 2:
+        return []
+
+    # Parse header
+    headers = [cell.strip() for cell in lines[0].split("|") if cell.strip()]
+
+    # lines[1] is the separator — skip it
+    data_lines = lines[2:]
+
+    result = []
+    for line in data_lines:
+        cells = [cell.strip() for cell in line.split("|") if cell.strip() or cell == ""]
+        # Only keep cells that align with headers
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        row = {}
+        for i, header in enumerate(headers):
+            row[header] = cells[i].strip() if i < len(cells) else ""
+        result.append(row)
+
+    return result
+```
+
+### Step 6 — Run the tests and confirm green
+
+**macOS / Linux:**
+```bash
+pytest test_md_table.py -v
+```
+
+**Windows PowerShell:**
+```powershell
+pytest test_md_table.py -v
+```
+
+Expected output:
+```
+======================== test session starts =========================
+collected 7 items
+
+test_md_table.py::test_parse_returns_list_of_dicts           PASSED
+test_md_table.py::test_parse_uses_header_row_as_keys         PASSED
+test_md_table.py::test_parse_extracts_cell_values            PASSED
+test_md_table.py::test_parse_single_data_row                 PASSED
+test_md_table.py::test_parse_strips_whitespace_from_cells    PASSED
+test_md_table.py::test_parse_empty_string_returns_empty_list PASSED
+test_md_table.py::test_parse_skips_separator_row             PASSED
+
+========================= 7 passed in 0.xx s =========================
+```
+
+### Step 7 — Iterate if any test fails
+
+If some tests fail, do not edit the implementation manually. Instead, go back to Claude with the specific failures:
+
+```
+These tests still fail after your implementation:
+
+FAILED test_md_table.py::test_parse_strips_whitespace_from_cells
+AssertionError: assert 'Alice  ' == 'Alice'
+
+Here is your current implementation:
+[paste md_table_parser.py]
+
+Fix only the failing tests without breaking the passing ones.
+```
+
+This is the TDD iteration loop. Keep going until all 7 are green.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Claude's implementation passes 5 of 7 tests | Edge cases in your tests expose real behavior the first implementation missed | Feed the failing tests back to Claude with the specific assertion error |
+| Tests pass but the implementation is 80 lines | Claude over-engineered the solution | Ask Claude: "Simplify this to the minimal implementation — all 7 tests pass, but the function is currently too long. Refactor without breaking the tests." |
+| `list[dict]` type hint causes SyntaxError | Using Python < 3.9 | Change type hint to `List[dict]` with `from typing import List` at the top |
+| One test's expected value is wrong | Mistake in the test assertion | Use `python3 -c "from md_table_parser import parse_markdown_table; import pprint; pprint.pprint(parse_markdown_table(...))"` to check the actual output and fix the assertion |
+| Claude asks clarifying questions instead of writing code | The prompt was too vague about the output format | Show Claude the expected output: paste the exact dict structure you expect from SIMPLE_TABLE |
+
+<VerificationBlock
+  deliverable="A test_md_table.py with 7 tests and an md_table_parser.py that makes all 7 pass."
+  verifyCheck="Submit the output of `pytest test_md_table.py -v`. All 7 tests must show PASSED."
+  rubricCriteria={[
+    "test_md_table.py exists with 7 or more test functions",
+    "md_table_parser.py exists with a parse_markdown_table function",
+    "pytest test_md_table.py -v shows 7 passed, 0 failed",
+    "Tests were written before the implementation (evidenced by test file creation time or git log)",
+    "test_parse_strips_whitespace_from_cells passes"
+  ]}
+/>

@@ -5,13 +5,23 @@ chapterNumber: "5.1"
 pathNumber: "5"
 tutorPreload: "Add logging to this script so I can see exactly where the problem is."
 verifyType: "terminal_output"
+groupId: "3.2"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Let Claude add debug logging
 
-## Objective
+## What you will build
+A script with debug logging added by Claude, a run showing the traced values, and a final clean version with logging removed and the bug fixed.
 
+## Why this matters
+Debugging without a systematic approach is how engineers waste entire days on problems that take 20 minutes to fix with the right method. Using Claude Code as a debug partner speeds diagnosis while the hypothesis-driven process builds the mental discipline that distinguishes senior engineers.
+
+## Before you start
 Ask Claude Code to insert temporary `console.log` or `print()` statements at key points in a script so you can trace what the code is actually doing at runtime. Run the script, read the trace, spot where the values go wrong, and then ask Claude to remove the debug lines once you understand the bug. This teaches you the most common real-world debugging technique — observation before guessing.
+
 
 ## Walkthrough
 
@@ -174,4 +184,9 @@ No debug noise, correct answer.
 <VerificationBlock
   deliverable="A script with debug logging added by Claude, a run showing the traced values, and a final clean version with logging removed and the bug fixed."
   verifyCheck="Run the cleaned script and confirm the average and grade are correct with no debug output."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

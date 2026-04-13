@@ -4,14 +4,24 @@ lessonNumber: "15.1.1"
 chapterNumber: "15.1"
 pathNumber: "15"
 tutorPreload: "Explain what happens during an SSH connection and how to verify the host fingerprint."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 15
+prerequisiteLesson: null
 ---
 
 # Understand SSH and connect to a server
 
-## Objective
+## What you will build
+By the end of this lesson you will be able to open a secure shell (SSH) connection to a remote server, understand the host-key verification prompt, run a command on the remote machine, and exit cleanly.
 
+## Why this matters
+Remote systems are higher-stakes than local ones — they're shared, persistent, and often connected to production data. Secure remote setup is the first thing any security review will check when an organization adopts agentic tooling. Getting this right prevents incidents that are expensive and embarrassing.
+
+## Before you start
 By the end of this lesson you will be able to open a secure shell (SSH) connection to a remote server, understand the host-key verification prompt, run a command on the remote machine, and exit cleanly. You will know what to do when a connection drops or times out.
+
 
 ## Walkthrough
 
@@ -99,6 +109,10 @@ This is useful for quick checks and automation scripts.
 | Session freezes, no response | Network interruption | Press Enter, then type `~.` to force-disconnect; reconnect afterward |
 | `ssh` not found on Windows | OpenSSH client feature not installed | Run `Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0` in an elevated PowerShell |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The remote setup step completed without authentication errors",
+    "Connection or access test passes with the correct credentials or token",
+    "The configuration persists after closing and reopening the terminal session",
+]}>
 Run `ssh -V` locally and confirm the version prints without error. Then connect to a remote server with `ssh user@host`, run `hostname` to confirm you are on the remote machine, and type `exit` to disconnect cleanly. You should see your local prompt return.
 </VerificationBlock>

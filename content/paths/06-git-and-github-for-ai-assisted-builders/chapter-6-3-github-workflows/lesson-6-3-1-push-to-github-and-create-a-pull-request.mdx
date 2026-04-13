@@ -4,14 +4,24 @@ lessonNumber: "6.3.1"
 chapterNumber: "6.3"
 pathNumber: "6"
 tutorPreload: "Help me write a clear PR title and description for this feature branch."
-verifyType: "terminal_output"
+verifyType: "screenshot"
+groupId: "3.4"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Push to GitHub and create a pull request
 
-## Objective
+## What you will build
+By the end of this lesson you will push a feature branch to GitHub and create a pull request using both the GitHub CLI (`gh`) and the web interface.
 
+## Why this matters
+Git is non-negotiable in any professional development context. AI-assisted builders who cannot use Git correctly are blocked from collaborating, reviewing, or shipping. This path makes Git operations fast and reliable using Claude Code so you can focus on building instead of remembering commands.
+
+## Before you start
 By the end of this lesson you will push a feature branch to GitHub and create a pull request using both the GitHub CLI (`gh`) and the web interface. You will understand that a pull request is a request to merge your branch into `main` — the standard way teams review code before it lands.
+
 
 ## Walkthrough
 
@@ -163,7 +173,11 @@ Or visit `https://github.com/YOUR_USERNAME/pr-lab/pulls` in your browser.
 | PR shows wrong base branch | Default branch is `master` instead of `main` | Change base branch in the PR dropdown, or rename with `git branch -M main` |
 | `error: src refspec feature-homepage does not match any` | Branch name typo or no commits on branch | Run `git branch` to verify the name, ensure you committed |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The git command completed without errors and output matches the expected format",
+    "Running git log --oneline or git status shows the correct state described in the lesson",
+    "The commit message or branch name follows the naming convention from the walkthrough",
+]}>
 Run these commands and confirm:
 
 ```bash

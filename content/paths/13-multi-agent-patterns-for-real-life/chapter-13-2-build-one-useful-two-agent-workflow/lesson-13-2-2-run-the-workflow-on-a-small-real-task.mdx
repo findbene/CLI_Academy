@@ -4,16 +4,26 @@ lessonNumber: "13.2.2"
 chapterNumber: "13.2"
 pathNumber: "13"
 tutorPreload: "Read this run and tell me where the handoff broke down."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.7"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Build a two-agent research-and-write pipeline
 
-## Objective
+## What you will build
+A `research-write-pipeline/` directory containing `researcher-CLAUDE.md`, `writer-CLAUDE.md`, `research-findings.md`, and `article-draft.md`.
 
+## Why this matters
+Multi-agent workflows are the current frontier of production AI systems. Understanding how to wire agents together, manage handoffs, and avoid complexity spirals is the knowledge gap between hobby projects and production deployments. This path gives you the vocabulary and the architecture patterns used at scale.
+
+## Before you start
 In Lesson 13.2.1 you created agent contracts with defined roles, boundaries, and stop conditions. Now you will put those contracts to work. You will build a complete two-agent pipeline — a Researcher that gathers findings into a file and a Writer that turns those findings into a polished document — run it end-to-end on a real topic, and verify the handoff.
 
 By the end you will have a working `research-write-pipeline/` directory with contracts, a research output, and a finished document you can read.
+
 
 ## Walkthrough
 
@@ -214,4 +224,9 @@ This manual audit is how real multi-agent systems are validated. Automated check
 <VerificationBlock
   deliverable="A `research-write-pipeline/` directory containing `researcher-CLAUDE.md`, `writer-CLAUDE.md`, `research-findings.md`, and `article-draft.md`."
   verifyCheck="The Writer's article references only findings from the Researcher. Both agents have explicit stop conditions. The handoff file exists and is non-empty."
+  rubricCriteria={[
+    "The ` directory containing `researcher-CLAUDE.md`, `writer-CLAUDE.md`, `research-findings.md`, and `article-draft.md`. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

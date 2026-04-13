@@ -4,14 +4,24 @@ lessonNumber: "6.3.3"
 chapterNumber: "6.3"
 pathNumber: "6"
 tutorPreload: "Coach me through the full branch-to-merge workflow for this feature."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.4"
+clawClassification: "elective"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Mini project: Ship a feature branch to GitHub
 
-## Objective
+## What you will build
+In this mini project you will complete the full feature branch workflow from start to finish: create a branch, implement a small feature, commit, push to GitHub, open a pull request, review, merge, and clean up.
 
+## Why this matters
+Git is non-negotiable in any professional development context. AI-assisted builders who cannot use Git correctly are blocked from collaborating, reviewing, or shipping. This path makes Git operations fast and reliable using Claude Code so you can focus on building instead of remembering commands.
+
+## Before you start
 In this mini project you will complete the full feature branch workflow from start to finish: create a branch, implement a small feature, commit, push to GitHub, open a pull request, review, merge, and clean up. This is the daily workflow used by professional development teams.
+
 
 ## Walkthrough
 
@@ -245,7 +255,11 @@ Open your repo on GitHub — the contact page file should appear in the file lis
 | `gh pr merge` says "merge not allowed" | Branch protection rules in repo settings | Adjust settings or use the web merge button |
 | PR description is empty | Forgot `--body` flag | Edit on GitHub or run `gh pr edit --body "..."` |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The git command completed without errors and output matches the expected format",
+    "Running git log --oneline or git status shows the correct state described in the lesson",
+    "The commit message or branch name follows the naming convention from the walkthrough",
+]}>
 Run these commands and confirm each:
 
 ```bash

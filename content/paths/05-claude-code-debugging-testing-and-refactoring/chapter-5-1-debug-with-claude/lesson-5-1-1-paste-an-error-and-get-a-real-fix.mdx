@@ -5,13 +5,23 @@ chapterNumber: "5.1"
 pathNumber: "5"
 tutorPreload: "Help me read this error traceback and fix the bug in my code."
 verifyType: "terminal_output"
+groupId: "3.2"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Paste an error and get a real fix
 
-## Objective
+## What you will build
+A script that crashed, a Claude Code conversation showing the fix, and the script running cleanly after the fix.
 
+## Why this matters
+Debugging without a systematic approach is how engineers waste entire days on problems that take 20 minutes to fix with the right method. Using Claude Code as a debug partner speeds diagnosis while the hypothesis-driven process builds the mental discipline that distinguishes senior engineers.
+
+## Before you start
 Create a small script that has a deliberate bug, run it, watch it crash, and then paste the full error into Claude Code. Claude reads the traceback, identifies the broken line, and proposes a fix. You accept or reject the fix and run the script again to confirm the bug is gone. By the end you will know the fastest debugging loop available in Claude Code.
+
 
 ## Walkthrough
 
@@ -178,4 +188,9 @@ Claude explains that dictionaries are keyed by name not by integer index, and pr
 <VerificationBlock
   deliverable="A script that crashed, a Claude Code conversation showing the fix, and the script running cleanly after the fix."
   verifyCheck="Run the script and confirm it produces correct output with no errors."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

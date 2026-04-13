@@ -4,16 +4,26 @@ lessonNumber: "13.3.2"
 chapterNumber: "13.3"
 pathNumber: "13"
 tutorPreload: "Define review triggers for this multi-agent workflow."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.7"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Add a review gate between agents
 
-## Objective
+## What you will build
+A `review-gate-pipeline/` directory with Researcher, Writer, and Reviewer contracts, an orchestration script with `MAX_REVISIONS`, and output files including `review-verdict.md`.
 
+## Why this matters
+Multi-agent workflows are the current frontier of production AI systems. Understanding how to wire agents together, manage handoffs, and avoid complexity spirals is the knowledge gap between hobby projects and production deployments. This path gives you the vocabulary and the architecture patterns used at scale.
+
+## Before you start
 A two-agent pipeline can produce output that looks polished but contains factual errors, invented claims, or drift from the source material. In this lesson you will add a third agent — a **Reviewer** — that checks the Writer's article against the Researcher's findings. If the review fails, the pipeline loops back to the Writer with specific feedback. You will cap the loop to prevent runaway iterations.
 
 By the end you will have a three-stage pipeline (Researcher → Writer → Reviewer) with a gated review loop and a hard iteration limit.
+
 
 ## Walkthrough
 
@@ -286,4 +296,9 @@ After `MAX_REVISIONS`, the pipeline stops regardless. This cap is critical.
 <VerificationBlock
   deliverable="A `review-gate-pipeline/` directory with Researcher, Writer, and Reviewer contracts, an orchestration script with `MAX_REVISIONS`, and output files including `review-verdict.md`."
   verifyCheck="The orchestration script caps review iterations. The Reviewer compares the article against the findings. If the Reviewer says FAIL, the Writer runs again with feedback."
+  rubricCriteria={[
+    "The ` directory with Researcher, Writer, and Reviewer contracts, an orchestration script with `MAX_REVISIONS`, and output files including `review-verdict.md`. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

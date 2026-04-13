@@ -4,14 +4,24 @@ lessonNumber: "16.1.2"
 chapterNumber: "16.1"
 pathNumber: "16"
 tutorPreload: "Help me decide whether this task needs computer use, a CLI tool, or a direct API call."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.5"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # When computer use is appropriate
 
-## Objective
+## What you will build
+By the end of this lesson you will be able to apply a simple decision framework to determine whether a task should be solved with a direct API call, a CLI tool, or computer use (screen control).
 
+## Why this matters
+Computer use and browser automation extend Claude's capabilities to the full surface area of a knowledge worker's day — not just files and code, but UIs, web apps, and dashboards. Sandbox discipline prevents these powerful capabilities from doing unintended damage during development.
+
+## Before you start
 By the end of this lesson you will be able to apply a simple decision framework to determine whether a task should be solved with a direct API call, a CLI tool, or computer use (screen control). You will understand that computer use is a last resort — not a first choice — and you will be able to list the safety considerations that apply whenever screen control is on the table.
+
 
 ## Walkthrough
 
@@ -141,6 +151,10 @@ Both commands create the same file. Read through the checklist — this is your 
 | Agent logs in with your real password | Credentials stored in the automation script | Use a dedicated test account; store credentials in environment variables, never in code |
 | Task works today but breaks tomorrow | The website changed its layout | This is inherent to computer use — prefer APIs and CLIs precisely because they have stable contracts |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The sandbox or container started without errors and is accessible",
+    "The specified automation or browser action completed in the isolated environment",
+    "The sandbox was cleanly stopped or destroyed after the lesson task was complete",
+]}>
 Open `decision-framework.md` and confirm it contains the three-tier preference order and the pre-flight checklist. Pick one task you automate regularly and write a one-sentence justification for which tier it belongs to. Add that sentence to the bottom of the file.
 </VerificationBlock>

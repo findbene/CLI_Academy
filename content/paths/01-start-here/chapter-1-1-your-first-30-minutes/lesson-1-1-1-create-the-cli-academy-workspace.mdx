@@ -5,13 +5,23 @@ chapterNumber: "1.1"
 pathNumber: "1"
 tutorPreload: "Show me where to create my workspace safely on {{os}} and explain each folder in plain English."
 verifyType: "terminal_output"
+groupId: "0.1"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Create the CLI Academy workspace
 
-## Objective
+## What you will build
+A cli-academy/ folder in your home directory containing notes/, projects/, and screenshots/ subfolders — all created from the terminal.
 
+## Why this matters
+Professional developers spend the first minutes of any new project setting up a clean workspace. Starting from an organized structure prevents lost files, confusing paths, and the embarrassment of committing secrets. This habit — workspace first, then work — is the foundation of every reliable agentic workflow.
+
+## Before you start
 You will use terminal commands to create a dedicated `cli-academy/` workspace folder with three subfolders. By the end of this lesson you will have built an organized home for every project, note, and screenshot you produce in CLI Academy — entirely from the command line.
+
 
 ## Walkthrough
 
@@ -114,4 +124,9 @@ Confirm the printed path ends with `cli-academy`.
 <VerificationBlock
   deliverable="A cli-academy/ folder in your home directory containing notes/, projects/, and screenshots/ subfolders — all created from the terminal."
   verifyCheck="Run ls cli-academy (macOS/Linux) or Get-ChildItem cli-academy -Name (Windows) and confirm notes, projects, and screenshots all appear."
+  rubricCriteria={[
+    "The required folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

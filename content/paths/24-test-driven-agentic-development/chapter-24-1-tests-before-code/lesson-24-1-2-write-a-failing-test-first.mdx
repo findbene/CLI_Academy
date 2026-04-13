@@ -1,0 +1,270 @@
+---
+title: "Write a Failing Test First"
+lessonNumber: "24.1.2"
+chapterNumber: "24.1"
+pathNumber: "24"
+groupId: "3.8"
+clawClassification: "elective"
+prerequisiteLesson: "24.1.1"
+estimatedMinutes: 25
+verifyType: "terminal_output"
+tutorPreload: "I'm about to write pytest tests for a function that doesn't exist yet — the red phase of TDD. Help me understand how to write tests that are precise enough to guide an implementation without over-specifying."
+---
+
+# Write a Failing Test First
+
+## What you will build
+
+A `test_formatter.py` file with 3 test cases for a string formatting function — written before the implementation exists. The tests will fail (red). Then you will have Claude write the implementation (`formatter.py`) that makes them pass (green).
+
+## Why this matters
+
+This lesson is where TDD goes from concept to practice. You are going to experience the full cycle in its correct order:
+
+1. Write the tests (you cannot run them successfully — the function does not exist).
+2. Run the tests and confirm they fail for the right reason.
+3. Ask Claude to write the implementation.
+4. Run the tests again and confirm they pass.
+
+The moment all tests go green is a distinct, clear signal that the implementation is complete and correct for the specified behavior. No manual checking required.
+
+## Before you start
+
+- Python 3 and pytest installed (`pytest --version`).
+- A project directory to work in.
+- Claude Code running in the same directory.
+
+## The walkthrough
+
+### Step 1 — Define the function you want (without writing it)
+
+Before writing tests, you need a clear specification. We will build a `format_name` function that normalizes human name strings.
+
+Here is the specification in plain English:
+
+- Input: a raw name string, which may have inconsistent capitalization and extra whitespace.
+- Output: a formatted name string where each word is title-cased and extra whitespace is removed.
+- `format_name("  alice  smith  ")` → `"Alice Smith"`
+- `format_name("JOHN DOE")` → `"John Doe"`
+- `format_name("mary o'brien")` → `"Mary O'Brien"`
+- Empty strings or whitespace-only strings should return an empty string.
+
+This is your spec. Now translate it into tests.
+
+### Step 2 — Create the project directory
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/tdd-lab && cd ~/cli-academy/projects/tdd-lab
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\tdd-lab" -Force
+Set-Location "$HOME\cli-academy\projects\tdd-lab"
+```
+
+### Step 3 — Write the test file (no implementation yet)
+
+**macOS / Linux:**
+```bash
+cat > test_formatter.py << 'EOF'
+"""
+test_formatter.py — tests for format_name function.
+Written BEFORE the implementation. These tests define the contract.
+"""
+
+import pytest
+from formatter import format_name
+
+
+def test_format_name_strips_extra_whitespace():
+    """Leading, trailing, and internal extra spaces must be removed."""
+    assert format_name("  alice  smith  ") == "Alice Smith"
+
+
+def test_format_name_title_cases_all_caps_input():
+    """Fully uppercased names must be converted to title case."""
+    assert format_name("JOHN DOE") == "John Doe"
+
+
+def test_format_name_handles_apostrophe_in_name():
+    """Names with apostrophes must have correct capitalization after the apostrophe."""
+    assert format_name("mary o'brien") == "Mary O'Brien"
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+"""
+test_formatter.py — tests for format_name function.
+Written BEFORE the implementation. These tests define the contract.
+"""
+
+import pytest
+from formatter import format_name
+
+
+def test_format_name_strips_extra_whitespace():
+    assert format_name("  alice  smith  ") == "Alice Smith"
+
+
+def test_format_name_title_cases_all_caps_input():
+    assert format_name("JOHN DOE") == "John Doe"
+
+
+def test_format_name_handles_apostrophe_in_name():
+    assert format_name("mary o'brien") == "Mary O'Brien"
+"@ | Set-Content test_formatter.py
+```
+
+### Step 4 — Run the tests and confirm they are red
+
+**macOS / Linux:**
+```bash
+pytest test_formatter.py -v
+```
+
+**Windows PowerShell:**
+```powershell
+pytest test_formatter.py -v
+```
+
+Expected output — all three tests fail because `formatter.py` does not exist:
+```
+======================== test session starts =========================
+collected 0 items / 1 error
+
+ERROR collecting test_formatter.py
+ImportError: No module named 'formatter'
+```
+
+Or if `formatter.py` exists but is empty:
+```
+FAILED test_formatter.py::test_format_name_strips_extra_whitespace - ...
+FAILED test_formatter.py::test_format_name_title_cases_all_caps_input - ...
+FAILED test_formatter.py::test_format_name_handles_apostrophe_in_name - ...
+3 failed
+```
+
+This is correct. Red phase confirmed. The tests exist, they describe the desired behavior, and they fail because the implementation does not exist. Now hand the spec to Claude.
+
+### Step 5 — Ask Claude to write the implementation
+
+Open Claude Code and send this prompt:
+
+```
+I have written failing tests for a format_name function in test_formatter.py.
+Here are the tests:
+
+[paste the contents of test_formatter.py]
+
+Write the minimal implementation in formatter.py that makes all three tests pass.
+Requirements from the tests:
+- Strips leading, trailing, and extra internal whitespace
+- Converts to title case regardless of input case
+- Handles apostrophes correctly (o'brien → O'Brien)
+
+Write only what is needed to make these tests pass. No extra features.
+```
+
+Claude will write something like:
+
+```python
+# formatter.py
+
+def format_name(name: str) -> str:
+    """Format a raw name string to title case with normalized whitespace."""
+    # Normalize whitespace: strip and collapse internal spaces
+    normalized = " ".join(name.split())
+    # Title case handles apostrophes correctly in Python 3
+    return normalized.title()
+```
+
+Save Claude's response to `formatter.py`.
+
+### Step 6 — Run the tests and confirm they are green
+
+**macOS / Linux:**
+```bash
+pytest test_formatter.py -v
+```
+
+**Windows PowerShell:**
+```powershell
+pytest test_formatter.py -v
+```
+
+Expected output — all three pass:
+```
+======================== test session starts =========================
+collected 3 items
+
+test_formatter.py::test_format_name_strips_extra_whitespace       PASSED
+test_formatter.py::test_format_name_title_cases_all_caps_input    PASSED
+test_formatter.py::test_format_name_handles_apostrophe_in_name    PASSED
+
+========================= 3 passed in 0.xx s =========================
+```
+
+Green. The implementation satisfies all three specifications.
+
+### Step 7 — Examine why this worked
+
+Look at what Python's `.title()` method does for the apostrophe case:
+
+**macOS / Linux:**
+```bash
+python3 -c "print(\"mary o'brien\".title())"
+```
+
+**Windows PowerShell:**
+```powershell
+python -c "print(\"mary o'brien\".title())"
+```
+
+Output: `Mary O'Brien`
+
+Python's `.title()` method capitalizes the first character after any non-letter — including apostrophes. This is exactly the behavior the test specified. Claude chose this approach because it is the simplest implementation that satisfies the spec.
+
+If Claude had written a manual loop or a regex, it would have passed the tests but been more complex than necessary. The test constraint — "satisfy these three behaviors" — nudged Claude toward the minimal solution.
+
+### Step 8 — What happens if Claude writes a wrong implementation
+
+Ask Claude to intentionally write a wrong version to see what a failing green-to-red flip looks like:
+
+```
+Write an intentionally wrong version of format_name that fails 
+test_format_name_handles_apostrophe_in_name but passes the other two.
+```
+
+Claude might write:
+```python
+def format_name(name: str) -> str:
+    return " ".join(name.split()).title().replace("'S", "'s")  # breaks apostrophe
+```
+
+Run `pytest test_formatter.py -v` — one test will fail. Restore the correct implementation and tests go green again. This is the cycle working correctly.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `ImportError: No module named 'formatter'` on first run | This is expected — the test file exists but formatter.py does not | Confirm it is red, then proceed to ask Claude for the implementation |
+| All tests pass on first `pytest` run | `formatter.py` already existed in the directory from a previous exercise | Delete it (`rm formatter.py`) and re-run to confirm red before proceeding |
+| `test_format_name_handles_apostrophe_in_name` fails after Claude's implementation | Claude used a different strategy that doesn't handle apostrophes | Ask Claude specifically: "The apostrophe test is failing. The input is `mary o'brien` and expected output is `Mary O'Brien`. Fix your implementation." |
+| pytest finds no tests | Test function names do not start with `test_` | Rename functions to start with `test_`; pytest requires this convention |
+| Tests pass with the wrong output | Assertion is incorrect in the test | Print the actual output: `python3 -c "from formatter import format_name; print(repr(format_name('  alice  smith  ')))"` and compare to expected |
+
+<VerificationBlock
+  deliverable="A test_formatter.py with 3 tests and a formatter.py that makes all 3 pass."
+  verifyCheck="Run `pytest test_formatter.py -v`. Output must show 3 passed, 0 failed."
+  rubricCriteria={[
+    "test_formatter.py exists with 3 test functions",
+    "formatter.py exists with a format_name function",
+    "pytest test_formatter.py -v shows 3 passed, 0 failed",
+    "test_format_name_strips_extra_whitespace passes",
+    "test_format_name_handles_apostrophe_in_name passes"
+  ]}
+/>

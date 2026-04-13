@@ -4,14 +4,24 @@ lessonNumber: "1.2.1"
 chapterNumber: "1.2"
 pathNumber: "1"
 tutorPreload: "Turn my setup into a simple green/yellow/red risk checklist for a beginner."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "0.1"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Make a personal safety checklist
 
-## Objective
+## What you will build
+A safety-checklist.md in cli-academy/notes/ with stop rules, permission rules, and at least one personal rule — plus a successful git status run.
 
+## Why this matters
+Professional developers spend the first minutes of any new project setting up a clean workspace. Starting from an organized structure prevents lost files, confusing paths, and the embarrassment of committing secrets. This habit — workspace first, then work — is the foundation of every reliable agentic workflow.
+
+## Before you start
 You will create a `safety-checklist.md` file that lists the rules you follow before saying "yes" to any AI agent command. Then you will practice one safety habit — running `git status` — so the checklist is not just words on a page.
+
 
 ## Walkthrough
 
@@ -148,4 +158,9 @@ Save the file.
 <VerificationBlock
   deliverable="A safety-checklist.md in cli-academy/notes/ with stop rules, permission rules, and at least one personal rule — plus a successful git status run."
   verifyCheck="Run cat safety-checklist.md (macOS/Linux) or Get-Content safety-checklist.md (Windows) and confirm stop rules, permission rules, and your personal rule all appear. Run git status in cli-academy/ and confirm it prints status without errors."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

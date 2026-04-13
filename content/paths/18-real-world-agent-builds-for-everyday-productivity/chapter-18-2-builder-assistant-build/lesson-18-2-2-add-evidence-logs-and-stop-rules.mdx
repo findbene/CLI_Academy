@@ -4,13 +4,24 @@ lessonNumber: "18.2.2"
 chapterNumber: "18.2"
 pathNumber: "18"
 tutorPreload: "Review this builder assistant and tell me what evidence is missing."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.8"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Add evidence, logs, and stop rules
 
-## Objective
+## What you will build
+A working safety pack: stop-rules.md plus agent-log.md with at least one real recorded run.
+
+## Why this matters
+Real-world agent builds are the proof that everything in the curriculum works in practice, not just in isolated exercises. The everyday productivity scenarios in this path mirror the first agentic projects most developers build when they join an organization using Claude Code.
+
+## Before you start
 Add a mandatory `agent-log.md` evidence trail and strict stop rules (max iterations, max file count, allowed glob scope) so your assistant cannot run away or silently overreach.
+
 
 ## Walkthrough
 ### Step 1: Create evidence and rule files
@@ -100,4 +111,9 @@ Get-Content agent-log.md
 <VerificationBlock 
   deliverable="A working safety pack: stop-rules.md plus agent-log.md with at least one real recorded run."
   verifyCheck="You can point to logged actions and prove stop conditions (iterations, file count, path bounds) are explicitly enforced."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

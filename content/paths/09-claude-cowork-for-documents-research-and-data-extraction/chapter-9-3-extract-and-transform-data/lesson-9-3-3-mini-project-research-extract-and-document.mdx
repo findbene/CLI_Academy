@@ -4,14 +4,24 @@ lessonNumber: "9.3.3"
 chapterNumber: "9.3"
 pathNumber: "9"
 tutorPreload: "Walk me through the full pipeline — research a topic, extract key data, produce a formatted document, review for accuracy, and commit."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.6"
+clawClassification: "elective"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Mini project: research, extract, and document
 
-## Objective
+## What you will build
+A complete research package with raw notes, extracted CSV and JSON, a polished decision document, and a Git history showing each phase.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 By the end of this lesson you will complete a full research-to-document pipeline: research a topic with Claude, extract key data into structured formats, produce a polished summary document, verify every claim for accuracy, and commit the entire package to Git.
+
 
 ## Walkthrough
 
@@ -275,4 +285,9 @@ And a commit history that shows each phase:
 <VerificationBlock
   deliverable="A complete research package with raw notes, extracted CSV and JSON, a polished decision document, and a Git history showing each phase."
   verifyCheck="The JSON parses, scoring totals are correct, every caveat from the raw research appears in the final doc, and git log shows at least 4 commits."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

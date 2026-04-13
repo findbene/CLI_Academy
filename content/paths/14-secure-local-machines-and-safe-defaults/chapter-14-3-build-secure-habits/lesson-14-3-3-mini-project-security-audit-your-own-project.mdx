@@ -4,13 +4,22 @@ lessonNumber: "14.3.3"
 chapterNumber: "14.3"
 pathNumber: "14"
 tutorPreload: "Give me the acceptance checklist for a complete beginner security audit."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 40
+prerequisiteLesson: null
 ---
 
 # Mini project: security audit your own project
 
-## Objective
+## What you will build
+An audit-target project with a completed `security-audit-report.md` documenting at least five findings, and Git history showing the initial vulnerable state followed by remediation commits.
 
+## Why this matters
+Every agentic developer runs code on their local machine. A compromised machine means compromised keys, leaked data, and potentially compromised production systems. Local security hygiene is the baseline that makes every other security measure meaningful.
+
+## Before you start
 You have learned individual security skills throughout this path: secrets management, diff review, AI code mistake detection, pre-commit hooks, and the review-test-commit cycle. Now you will combine them all in a single, end-to-end security audit of a practice project.
 
 In this mini project you will:
@@ -21,6 +30,7 @@ In this mini project you will:
 4. Document your findings in a structured audit report.
 
 This is the same process that professional security engineers follow — scaled down for a beginner project.
+
 
 ## Walkthrough
 
@@ -493,4 +503,9 @@ You should see commits for: initial project, gitignore fix, code fixes, dependen
 <VerificationBlock
   deliverable="An audit-target project with a completed `security-audit-report.md` documenting at least five findings, and Git history showing the initial vulnerable state followed by remediation commits."
   verifyCheck="Run `git log --oneline` — you should see the initial commit plus at least three fix commits and the audit report commit. Run `cat security-audit-report.md` — at least five findings should be documented with severity ratings."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

@@ -4,14 +4,24 @@ lessonNumber: "1.3.3"
 chapterNumber: "1.3"
 pathNumber: "1"
 tutorPreload: "Help me debug my hello-agent script. Common errors: Node version, missing API key, module not found."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "0.1"
+clawClassification: "core"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # ZeroClaw Hello World – Your First Agent in Under 10 Minutes
 
-## Objective
+## What you will build
+A hello-agent/ project in cli-academy/projects/ containing package.json, hello-agent.mjs, and node_modules/ — with a successful run that printed an AI response and token count.
 
+## Why this matters
+Professional developers spend the first minutes of any new project setting up a clean workspace. Starting from an organized structure prevents lost files, confusing paths, and the embarrassment of committing secrets. This habit — workspace first, then work — is the foundation of every reliable agentic workflow.
+
+## Before you start
 You will write a small Node.js script that sends a prompt to an AI model and prints the response in your terminal. By the end of this lesson you will have run your first AI agent locally — a real script that talks to a real model and gives you a real answer.
+
 
 ## Walkthrough
 
@@ -210,4 +220,9 @@ git commit -m "Add hello-agent: first AI agent script"
 <VerificationBlock
   deliverable="A hello-agent/ project in cli-academy/projects/ containing package.json, hello-agent.mjs, and node_modules/ — with a successful run that printed an AI response and token count."
   verifyCheck="Run node hello-agent.mjs inside the hello-agent/ folder and confirm the terminal prints an AI-generated greeting and a token count."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

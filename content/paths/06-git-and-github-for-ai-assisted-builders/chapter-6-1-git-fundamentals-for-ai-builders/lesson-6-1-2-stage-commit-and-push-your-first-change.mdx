@@ -5,13 +5,23 @@ chapterNumber: "6.1"
 pathNumber: "6"
 tutorPreload: "Walk me through what git status is showing me and what my safest next step is."
 verifyType: "terminal_output"
+groupId: "3.4"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Stage, commit, and push your first change
 
-## Objective
+## What you will build
+By the end of this lesson you will complete the full add → commit → push cycle, checking `git status` at every step.
 
+## Why this matters
+Git is non-negotiable in any professional development context. AI-assisted builders who cannot use Git correctly are blocked from collaborating, reviewing, or shipping. This path makes Git operations fast and reliable using Claude Code so you can focus on building instead of remembering commands.
+
+## Before you start
 By the end of this lesson you will complete the full add → commit → push cycle, checking `git status` at every step. You will connect a local repository to GitHub using either HTTPS or SSH and push your first commit to a remote.
+
 
 ## Walkthrough
 
@@ -187,7 +197,11 @@ Check `git status` one more time. Clean tree, up to date with remote.
 | `fatal: The current branch main has no upstream branch` | First push without `-u` flag | Run `git push -u origin main` |
 | Branch is named `master` instead of `main` | Older Git default | Run `git branch -M main` to rename |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The git command completed without errors and output matches the expected format",
+    "Running git log --oneline or git status shows the correct state described in the lesson",
+    "The commit message or branch name follows the naming convention from the walkthrough",
+]}>
 Run these commands and confirm each output:
 
 ```bash

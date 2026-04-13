@@ -4,14 +4,24 @@ lessonNumber: "11.3.2"
 chapterNumber: "11.3"
 pathNumber: "11"
 tutorPreload: "Help me configure Claude Code so it cannot run destructive commands or access files outside my project."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Set permission boundaries for Claude Code
 
-## Objective
+## What you will build
+A global settings.json blocking dangerous commands, a project-level settings.json with allow/deny lists, and a PERMISSIONS.md documenting the policy.
 
+## Why this matters
+Custom runtimes are how agentic developers move from using Claude to building with Claude. Understanding the sandbox model and runtime foundations is the prerequisite for everything in the advanced Claw ecosystem. This knowledge is increasingly sought after in AI engineering roles.
+
+## Before you start
 By the end of this lesson you will configure Claude Code's permission system to restrict which tools it can use, which commands it can run, and which directories it can access. You will edit the settings file, verify the restrictions work, and understand the layered permission model.
+
 
 ## Walkthrough
 
@@ -267,4 +277,9 @@ Get-Content ".claude\PERMISSIONS.md"
 <VerificationBlock
   deliverable="A global settings.json blocking dangerous commands, a project-level settings.json with allow/deny lists, and a PERMISSIONS.md documenting the policy."
   verifyCheck="The global settings file blocks rm -rf and curl-pipe-bash patterns, the project settings file has an explicit allow list, and Claude refuses to run a denied command."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

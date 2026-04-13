@@ -4,16 +4,26 @@ lessonNumber: "17.2.3"
 chapterNumber: "17.2"
 pathNumber: "17"
 tutorPreload: "Review this write action and tell me how to make it reversible."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Enable one bounded write action
 
-## Objective
+## What you will build
+A bounded-write-record.md confirming: issue created via POST, issue number captured, read-back verified state=open, rollback executed via PATCH, read-back confirmed state=closed.
 
+## Why this matters
+Integrating Claude with external APIs and services is where most production security incidents happen. A misconfigured webhook, an exposed key, or an over-permissioned OAuth scope can expose entire systems. This path teaches the integration patterns that hold up under a security review.
+
+## Before you start
 A **bounded write** has three properties: it does exactly one thing, it targets a specific resource (not a category of resources), and there is a clear way to undo it. In this lesson you will create a real GitHub issue using the API — a live write action against GitHub's servers — and then document and execute the rollback (closing the issue).
 
 This is the first time in Path 17 that you will make a change that persists outside your local machine. That makes verifying and reversing it essential skills.
+
 
 ## Walkthrough
 
@@ -204,4 +214,9 @@ Get-Content bounded-write-record.md
 <VerificationBlock 
     deliverable="A bounded-write-record.md confirming: issue created via POST, issue number captured, read-back verified state=open, rollback executed via PATCH, read-back confirmed state=closed."
     verifyCheck="gh api /repos/OWNER/REPO/issues/NUMBER returns state=closed after the rollback PATCH call."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

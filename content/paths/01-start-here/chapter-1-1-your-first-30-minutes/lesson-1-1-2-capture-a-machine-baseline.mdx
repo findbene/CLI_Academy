@@ -5,13 +5,23 @@ chapterNumber: "1.1"
 pathNumber: "1"
 tutorPreload: "Read my baseline output and tell me what matters for future lessons and what I should not paste publicly."
 verifyType: "terminal_output"
+groupId: "0.1"
+clawClassification: "core"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Capture a machine baseline
 
-## Objective
+## What you will build
+A machine-baseline.md file in cli-academy/notes/ containing your real OS, shell, Node.js, and editor versions.
 
+## Why this matters
+Professional developers spend the first minutes of any new project setting up a clean workspace. Starting from an organized structure prevents lost files, confusing paths, and the embarrassment of committing secrets. This habit — workspace first, then work — is the foundation of every reliable agentic workflow.
+
+## Before you start
 You will run a series of terminal commands to capture your operating system, shell, Node.js version, and other key details, then save them to a file called `machine-baseline.md`. This baseline helps you (and anyone helping you) troubleshoot problems in future lessons.
+
 
 ## Walkthrough
 
@@ -160,4 +170,9 @@ You should see your actual OS, shell, Node, and editor versions printed to the s
 <VerificationBlock
   deliverable="A machine-baseline.md file in cli-academy/notes/ containing your real OS, shell, Node.js, and editor versions."
   verifyCheck="Run cat machine-baseline.md (macOS/Linux) or Get-Content machine-baseline.md (Windows) and confirm all four sections contain real values, not placeholders."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

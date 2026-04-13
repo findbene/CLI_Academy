@@ -1,0 +1,272 @@
+---
+title: "Setting Up Your First Production Alert"
+lessonNumber: "26.2.1"
+chapterNumber: "26.2"
+pathNumber: "26"
+groupId: "5.3"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 25
+verifyType: "screenshot"
+tutorPreload: "I'm about to set up my first production alert in Sentry. Help me understand what alert fatigue is and how to avoid it before I configure my first alert rule."
+---
+
+# Setting Up Your First Production Alert
+
+## What you will build
+
+A configured Sentry alert rule that fires when your application produces more than 5 errors in a 10-minute window, delivered to your email or a Slack channel. You will verify the alert works by triggering a test error, confirming the notification arrives, and documenting the full alert setup in a screenshot.
+
+## Why this matters
+
+An alert that fires too often is ignored. An alert that never fires is useless. The goal of a production alert is to tell you exactly once, promptly, when something real is wrong — and to stay silent when everything is fine.
+
+For an agentic system, the events worth alerting on are different from a typical web app:
+
+- **Error rate spike:** More than N uncaught exceptions in a short window indicates a broken prompt, a changed API response format, or an infrastructure failure.
+- **Cost spike:** API spend exceeding your daily rate limit guard (from lesson 25.1.1) indicates a rogue process or a compromised key.
+- **Latency spike:** API calls taking more than 30 seconds indicates either Anthropic service degradation or an extremely long context that is approaching the token limit.
+- **Tutor limit breach:** A free-tier user somehow bypassing the tutor call cap indicates a quota enforcement bug.
+
+This lesson focuses on error rate alerts — the most common and most actionable type — using Sentry's alert rules. The same pattern applies to any monitoring tool.
+
+## Before you start
+
+- A Sentry account with a project set up (from lesson 26.1.2, or a new project)
+- The `sentry-sdk` installed and configured in a test application
+- At minimum, the `sentry_test.py` script from lesson 26.1.2 to trigger test errors
+- Optional: A Slack workspace where you can create an incoming webhook for Sentry notifications
+
+## The walkthrough
+
+### Step 1 — Understand Sentry alert anatomy
+
+Every Sentry alert rule has three parts:
+
+| Part | What it does | Example |
+|------|-------------|---------|
+| **Condition (When)** | What triggers the evaluation | An event is captured |
+| **Filter (If)** | What the event must match to count | Level equals `error` |
+| **Action (Then)** | What happens when conditions are met | Send email to owner |
+| **Threshold** | How many events trigger the action | More than 5 in 10 minutes |
+
+A well-designed alert answers: "What is the minimum number of errors that represents a real problem, not just noise?" For a low-traffic learning platform, 5 errors in 10 minutes is significant. For a high-traffic API, you might set 50 in 5 minutes.
+
+### Step 2 — Navigate to Alert Rules in Sentry
+
+1. Open your Sentry project.
+2. In the left sidebar, click **Alerts**.
+3. Click **Create Alert Rule** (or **+ Alert Rule**).
+4. When prompted to choose between **Issues** and **Metrics**, choose **Issues**.
+
+### Step 3 — Configure the alert rule
+
+Fill in the alert form with these settings:
+
+**Alert condition:**
+- Trigger: `An issue is seen more than [5] times in [10] minutes`
+- This fires when a single issue accumulates 5 occurrences within any rolling 10-minute window
+
+**Environment filter:**
+- Select your environment — `learning` if you used the environment tag from lesson 26.1.2, or `production` for a live deployment
+- Avoid selecting `All Environments` — this causes the alert to fire for staging errors that are not actionable
+
+**Notification action:**
+- **Email:** Select "Send an email to" → choose Members → select your own account
+- **Slack (optional):** Select "Send a Slack notification to" → configure the Sentry Slack integration first if needed
+
+**Alert name:**
+- Use a descriptive name: `[Your project] — Error rate spike (>5 in 10 min)`
+- A good alert name tells an on-call engineer exactly what happened without reading the body
+
+**Owner:**
+- Assign it to yourself
+
+### Step 4 — Test the alert by triggering errors deliberately
+
+Go back to your terminal and trigger more than 5 errors in quick succession:
+
+**macOS / Linux:**
+```bash
+# Trigger 6 errors in a loop — replace YOUR_DSN_HERE with your actual DSN
+cat > trigger_alert.py << 'PYEOF'
+"""
+trigger_alert.py — Fires 6 errors to trip the alert threshold.
+Run from the same directory as sentry_test.py, or copy the sentry.init() setup.
+"""
+import sentry_sdk
+import time
+
+sentry_sdk.init(
+    dsn="YOUR_DSN_HERE",
+    environment="learning",
+    release="cli-academy-lesson-26.2.1",
+)
+
+for i in range(6):
+    try:
+        # Raise a division by zero — appears as ZeroDivisionError in Sentry
+        result = 1 / 0
+    except ZeroDivisionError as e:
+        sentry_sdk.capture_exception(e)
+        print(f"Error {i+1}/6 sent to Sentry")
+    time.sleep(0.5)
+
+sentry_sdk.flush()
+print("\n6 errors sent. Check Sentry Issues and your email/Slack for the alert.")
+PYEOF
+python3 trigger_alert.py
+```
+
+**Windows PowerShell:**
+```powershell
+$triggerCode = @'
+import sentry_sdk, time
+
+sentry_sdk.init(
+    dsn="YOUR_DSN_HERE",
+    environment="learning",
+    release="cli-academy-lesson-26.2.1",
+)
+
+for i in range(6):
+    try:
+        result = 1 / 0
+    except ZeroDivisionError as e:
+        sentry_sdk.capture_exception(e)
+        print(f"Error {i+1}/6 sent to Sentry")
+    time.sleep(0.5)
+
+sentry_sdk.flush()
+print("\n6 errors sent. Check Sentry Issues and your email/Slack for the alert.")
+'@
+$triggerCode | Out-File "trigger_alert.py" -Encoding utf8
+python trigger_alert.py
+```
+
+Expected output:
+```
+Error 1/6 sent to Sentry
+Error 2/6 sent to Sentry
+Error 3/6 sent to Sentry
+Error 4/6 sent to Sentry
+Error 5/6 sent to Sentry
+Error 6/6 sent to Sentry
+
+6 errors sent. Check Sentry Issues and your email/Slack for the alert.
+```
+
+### Step 5 — Confirm the alert fired
+
+Within 1–5 minutes of running the script:
+- Check your email inbox for a message from Sentry with the subject line matching your alert name
+- If you configured Slack, check the channel for the Sentry notification
+- In the Sentry sidebar, go to **Alerts → Alert History** and confirm the alert appears as "Triggered"
+
+### Step 6 — Document the oncall rotation for a solo developer
+
+When you are the only developer, the "oncall rotation" is just you — but documenting it makes the process explicit and reduces panic during an incident.
+
+**macOS / Linux:**
+```bash
+cat > ONCALL_RUNBOOK.md << 'EOF'
+# Oncall Runbook — [Your Project Name]
+
+**Solo developer:** [Your name]
+**Updated:** [Today's date]
+
+## Alert inventory
+
+| Alert name | Threshold | Channel | Priority |
+|------------|-----------|---------|----------|
+| Error rate spike | >5 errors in 10 min | Email | High |
+| [Add more alerts here] | | | |
+
+## Response playbook
+
+### Error rate spike alert
+
+**Severity:** High
+**Response time:** Within 30 minutes during business hours; next morning otherwise.
+
+**Steps:**
+1. Open the Sentry alert link in the notification email.
+2. Check the error type and stack trace. Is it one error repeating, or many different errors?
+   - Same error repeating: a specific input is breaking a specific code path. Check the most recent deployment.
+   - Many different errors: infrastructure failure or a breaking API change. Check Anthropic status page.
+3. If errors involve the AI tutor: check rate_limiter.py counter file and loop_guard_report.txt.
+4. If errors are in production and affecting learners: set a maintenance flag and post a status update.
+5. Fix the root cause, deploy, and confirm error rate returns to zero.
+6. Write a one-paragraph post-mortem in INCIDENT_LOG.md.
+
+## Escalation
+
+For incidents I cannot resolve alone within 2 hours:
+- Post in [community/forum/Slack workspace] for help
+- Check Anthropic status at status.anthropic.com
+- Check platform status at [your hosting provider status page]
+EOF
+echo "ONCALL_RUNBOOK.md written"
+```
+
+**Windows PowerShell:**
+```powershell
+$runbook = @'
+# Oncall Runbook
+
+**Solo developer:** [Your name]
+**Updated:** [Today's date]
+
+## Alert inventory
+
+| Alert name | Threshold | Channel | Priority |
+|------------|-----------|---------|----------|
+| Error rate spike | >5 errors in 10 min | Email | High |
+
+## Response playbook
+
+### Error rate spike alert
+
+1. Open the Sentry alert link in the notification email.
+2. Identify whether it is one error repeating or many different errors.
+3. Check rate_limiter.py and loop_guard_report.txt if tutor-related.
+4. Fix root cause, deploy, confirm error rate returns to zero.
+5. Write post-mortem in INCIDENT_LOG.md.
+
+## Escalation
+
+- Anthropic status: status.anthropic.com
+- Check your hosting provider status page
+'@
+$runbook | Out-File "ONCALL_RUNBOOK.md" -Encoding utf8
+Write-Host "ONCALL_RUNBOOK.md written"
+```
+
+### Step 7 — Take a screenshot for verification
+
+Take a screenshot that shows either:
+- The Sentry Alert History page with your alert in "Triggered" state, OR
+- The email or Slack notification you received from the alert
+
+The screenshot must show the alert name and the trigger event clearly.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Alert rule is saved but never fires even after 6 errors | The environment filter is set to `production` but your test script uses `environment="learning"` | Either change the alert's environment filter to `learning`, or change the `sentry.init()` environment in your test script to `production` |
+| Alert fires immediately on the first error | Threshold is set to `more than 0` or `at least 1` instead of `more than 5` | Edit the alert rule and change the threshold value to 5 |
+| Email notification never arrives | Sentry notification email is in your spam folder, or the email address on your Sentry account is wrong | Check spam, then verify the email at sentry.io → Account Settings → Notifications |
+| Alert history shows "Triggered" but the count is wrong | Multiple alert rules are stacking on the same errors | Review your alert rules list and disable or delete duplicate rules |
+| `sentry_sdk.flush()` hangs for more than 10 seconds | Network issue sending events to Sentry | Add a timeout: `sentry_sdk.flush(timeout=5)` |
+
+<VerificationBlock
+  deliverable="A screenshot of the triggered Sentry alert (in Alert History or as an email/Slack notification), plus a completed ONCALL_RUNBOOK.md."
+  verifyCheck="Upload your screenshot showing the alert fired. The tutor will check that the alert name, threshold, and trigger event are visible, and ask you to describe your response playbook."
+  rubricCriteria={[
+    "Screenshot shows the alert in 'Triggered' state in Sentry Alert History, OR shows the notification email/Slack message with the alert name visible",
+    "ONCALL_RUNBOOK.md has no unfilled placeholders — your name, date, and project name are filled in",
+    "The alert was configured with a meaningful threshold (not 'every error') and an environment filter",
+    "The response playbook has at least 4 numbered steps that are specific to your project, not generic"
+  ]}
+/>

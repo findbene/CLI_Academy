@@ -1,0 +1,278 @@
+---
+title: "Reproduce Before You Fix"
+lessonNumber: "23.1.1"
+chapterNumber: "23.1"
+pathNumber: "23"
+groupId: "3.7"
+clawClassification: "elective"
+prerequisiteLesson: null
+estimatedMinutes: 20
+verifyType: "terminal_output"
+tutorPreload: "I'm about to learn the golden rule of debugging: reproduce before you fix. Help me understand why reliable reproduction matters and how to write a minimal repro script."
+---
+
+# Reproduce Before You Fix
+
+## What you will build
+
+A `repro.sh` or `repro.py` script that reliably triggers a specific, seeded bug on every run — outputting the exact same error message each time. This is a minimal reproduction case: the smallest possible piece of code that consistently demonstrates the problem.
+
+## Why this matters
+
+The single biggest mistake beginners make when debugging is trying to fix a bug they cannot reliably trigger. You change something, the bug seems to go away, you move on — and three days later it is back. You never actually fixed it because you never confirmed you had reproduced it in the first place.
+
+A minimal reproduction case does three things:
+
+1. **Proves the bug is real** — not a one-off fluke, not a network hiccup, not a timing issue.
+2. **Isolates the cause** — the smaller the repro, the fewer variables. Fewer variables means faster diagnosis.
+3. **Becomes your verification test** — after you fix it, you run the repro script to confirm it no longer triggers.
+
+Claude Code is dramatically more useful when you hand it a repro script rather than a vague description. "Here is a script that consistently fails on line 12" gives Claude a concrete starting point. "Sometimes my app crashes" gives Claude almost nothing.
+
+## Before you start
+
+- Python 3 installed (`python3 --version` or `python --version` returns 3.x).
+- A text editor or the ability to create files from the terminal.
+- A terminal open in a directory you can experiment in.
+- No special libraries required — this uses only the Python standard library.
+
+## The walkthrough
+
+### Step 1 — Understand what a minimal repro looks like
+
+A good repro script has these properties:
+
+- **Minimal** — contains only the code needed to trigger the bug; nothing else.
+- **Self-contained** — no external dependencies, no database, no network call if possible.
+- **Deterministic** — runs the same way every time, producing the same error.
+- **Fast** — fails within a second or two.
+
+Here is an example of a bad repro description vs. a good repro script:
+
+**Bad (description):**
+"My app sometimes crashes when users search for items. I think it happens when there are no results."
+
+**Good (script):**
+```python
+# repro.py — demonstrates crash when search returns empty results
+results = []
+first_result = results[0]  # IndexError: list index out of range
+print(first_result)
+```
+
+The second version runs in 0.1 seconds and produces the exact same error every time.
+
+### Step 2 — Create a project directory
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/debug-protocol && cd ~/cli-academy/projects/debug-protocol
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\debug-protocol" -Force
+Set-Location "$HOME\cli-academy\projects\debug-protocol"
+```
+
+### Step 3 — Create a buggy script with a seeded bug
+
+We will create a slightly more realistic script — a function that processes order data — with a deliberate bug that causes a consistent crash.
+
+**macOS / Linux:**
+```bash
+cat > repro.py << 'EOF'
+"""
+order_summary.py — calculates a price summary from a list of orders.
+Bug: crashes when the discount field is missing from an order.
+"""
+
+def calculate_total(orders):
+    """Sum up order totals after applying discounts."""
+    total = 0
+    for order in orders:
+        # BUG: 'discount' key may not exist, causing KeyError
+        discounted_price = order['price'] * (1 - order['discount'])
+        total += discounted_price
+    return round(total, 2)
+
+
+# Test data — third order is missing the 'discount' field
+sample_orders = [
+    {"id": 1, "item": "Widget A", "price": 25.00, "discount": 0.10},
+    {"id": 2, "item": "Widget B", "price": 40.00, "discount": 0.05},
+    {"id": 3, "item": "Widget C", "price": 15.00},   # <-- no discount key
+    {"id": 4, "item": "Widget D", "price": 60.00, "discount": 0.20},
+]
+
+if __name__ == "__main__":
+    result = calculate_total(sample_orders)
+    print(f"Total after discounts: ${result}")
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+"""
+order_summary.py — calculates a price summary from a list of orders.
+Bug: crashes when the discount field is missing from an order.
+"""
+
+def calculate_total(orders):
+    """Sum up order totals after applying discounts."""
+    total = 0
+    for order in orders:
+        # BUG: 'discount' key may not exist, causing KeyError
+        discounted_price = order['price'] * (1 - order['discount'])
+        total += discounted_price
+    return round(total, 2)
+
+
+# Test data — third order is missing the 'discount' field
+sample_orders = [
+    {"id": 1, "item": "Widget A", "price": 25.00, "discount": 0.10},
+    {"id": 2, "item": "Widget B", "price": 40.00, "discount": 0.05},
+    {"id": 3, "item": "Widget C", "price": 15.00},   # <-- no discount key
+    {"id": 4, "item": "Widget D", "price": 60.00, "discount": 0.20},
+]
+
+if __name__ == "__main__":
+    result = calculate_total(sample_orders)
+    print(f"Total after discounts: \${result}")
+"@ | Set-Content repro.py
+```
+
+### Step 4 — Run the script and capture the error
+
+**macOS / Linux:**
+```bash
+python3 repro.py
+```
+
+**Windows PowerShell:**
+```powershell
+python repro.py
+```
+
+Expected output — the same error every single run:
+```
+Traceback (most recent call last):
+  File "repro.py", line 22, in <module>
+    result = calculate_total(sample_orders)
+  File "repro.py", line 10, in calculate_total
+    discounted_price = order['price'] * (1 - order['discount'])
+KeyError: 'discount'
+```
+
+Run it three times to confirm it is deterministic:
+
+**macOS / Linux:**
+```bash
+python3 repro.py; python3 repro.py; python3 repro.py
+```
+
+**Windows PowerShell:**
+```powershell
+python repro.py; python repro.py; python repro.py
+```
+
+All three runs produce identical output. This is a reliable repro.
+
+### Step 5 — Create the repro.sh wrapper (macOS/Linux only)
+
+A shell wrapper makes it easy to run the repro with a single command and captures the output in a standard way. This is the artifact you hand to Claude Code or a colleague.
+
+**macOS / Linux:**
+```bash
+cat > repro.sh << 'EOF'
+#!/bin/bash
+# repro.sh — minimal reproduction case for the missing-discount KeyError bug
+# Run this script to see the bug. Expected output: KeyError: 'discount'
+# Created: 2026-04-13
+
+echo "=== Running repro ==="
+python3 repro.py
+EXIT_CODE=$?
+echo "=== Exit code: $EXIT_CODE ==="
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "BUG CONFIRMED: script exited with error"
+else
+    echo "Bug not triggered (fix may be applied)"
+fi
+EOF
+chmod +x repro.sh
+```
+
+Run it:
+```bash
+./repro.sh
+```
+
+Expected output:
+```
+=== Running repro ===
+Traceback (most recent call last):
+  File "repro.py", line 22, in <module>
+    result = calculate_total(sample_orders)
+  File "repro.py", line 10, in calculate_total
+    discounted_price = order['price'] * (1 - order['discount'])
+KeyError: 'discount'
+=== Exit code: 1 ===
+BUG CONFIRMED: script exited with error
+```
+
+**Windows PowerShell equivalent:**
+```powershell
+python repro.py
+$exitCode = $LASTEXITCODE
+Write-Host "=== Exit code: $exitCode ==="
+if ($exitCode -ne 0) { Write-Host "BUG CONFIRMED: script exited with error" }
+else { Write-Host "Bug not triggered (fix may be applied)" }
+```
+
+### Step 6 — Understand what makes this repro good
+
+Compare your script against the checklist:
+
+- **Minimal**: 20 lines. No web framework, no database, no external files.
+- **Self-contained**: All test data is hardcoded inline.
+- **Deterministic**: Same four orders, same bug, same error line every time.
+- **Fast**: Fails in under 0.1 seconds.
+- **Documented**: Comment at the top explains what bug it demonstrates.
+
+The bug is on line 10, triggered by the third order in the test data. A developer reading this script in 10 seconds knows exactly where the problem is and can write a fix.
+
+### Step 7 — Hand the repro to Claude Code
+
+Launch Claude Code in the project directory and try this prompt:
+
+```
+I have a bug in repro.py. Run repro.sh (or python3 repro.py) to see it crash. 
+The script fails with KeyError: 'discount'. Do NOT fix it yet — 
+first explain what is causing the error and where in the code it originates.
+```
+
+This forces Claude to explain before fixing — a good habit that ensures you understand the root cause, not just the patch.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Script runs successfully instead of crashing | Python version difference in key lookup behavior, or you edited the file | Double-check the test data; the third order must have no `discount` key |
+| Error message differs from expected | You are running a different Python version or the file was modified | Run `python3 --version` and compare; recreate the file using the exact content from Step 3 |
+| `repro.sh` exits with permission denied | Executable bit not set | Run `chmod +x repro.sh` then retry |
+| `repro.sh` not found on Windows | Shell scripts do not run natively on Windows | Use the PowerShell equivalent from Step 5, or install Git Bash |
+| Claude "fixes" the bug before you ask it to | Claude sometimes proactively suggests fixes when it sees buggy code | Add "DO NOT fix this yet" to your prompt; you want diagnosis first |
+
+<VerificationBlock
+  deliverable="A repro.py (and optionally repro.sh) that produces a consistent KeyError: 'discount' on every run."
+  verifyCheck="Run `python3 repro.py` three times in a row. All three runs must produce identical error output ending with `KeyError: 'discount'`."
+  rubricCriteria={[
+    "repro.py exists in the project directory",
+    "Running repro.py produces KeyError: 'discount'",
+    "Running repro.py three times produces identical output",
+    "The error traceback points to a specific line number",
+    "Script contains a comment explaining what bug it demonstrates"
+  ]}
+/>

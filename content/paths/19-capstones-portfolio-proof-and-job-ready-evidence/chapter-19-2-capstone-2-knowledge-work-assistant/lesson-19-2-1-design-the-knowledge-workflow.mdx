@@ -4,13 +4,24 @@ lessonNumber: "19.2.1"
 chapterNumber: "19.2"
 pathNumber: "19"
 tutorPreload: "Review this workflow design for traceability and oversight."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "6.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Design the knowledge workflow
 
-## Objective
+## What you will build
+A capstone workspace containing WORKFLOW-DESIGN.md, CLAUDE.md, and logs/design-review.md for one real knowledge workflow.
+
+## Why this matters
+The portfolio capstone is the artifact that converts learning into professional evidence. Employers and clients cannot assess what they cannot see. A concrete, documented portfolio project answers the question 'show me something you built' — the question that closes every technical hiring conversation.
+
+## Before you start
 Design a real knowledge-extraction workflow that produces a structured artifact another person can inspect and reuse. In this lesson, you will define a schema, pick a real source folder, and write the design docs for a TODO extraction workflow that turns a real codebase scan into a clean todo-report.md.
+
 
 ## Walkthrough
 
@@ -203,4 +214,9 @@ Get-Content logs/design-review.md
 <VerificationBlock 
   deliverable="A capstone workspace containing WORKFLOW-DESIGN.md, CLAUDE.md, and logs/design-review.md for one real knowledge workflow."
   verifyCheck="A reviewer can see the exact source folders, report schema, output format, and explicit handling for empty datasets and rate-limited sources."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

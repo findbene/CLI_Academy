@@ -4,13 +4,24 @@ lessonNumber: "18.1.2"
 chapterNumber: "18.1"
 pathNumber: "18"
 tutorPreload: "Audit this daily brief assistant like a careful operator."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.8"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Review: approval, memory, and failure modes
 
-## Objective
+## What you will build
+A hardened daily brief workflow with review gate, brief-memory.md, and documented failure playbook.
+
+## Why this matters
+Real-world agent builds are the proof that everything in the curriculum works in practice, not just in isolated exercises. The everyday productivity scenarios in this path mirror the first agentic projects most developers build when they join an organization using Claude Code.
+
+## Before you start
 Harden your daily brief assistant with human approval gates, brief memory, explicit failure handling, and stop conditions so the workflow is useful and safe to run every morning.
+
 
 ## Walkthrough
 ### Step 1: Add review gate and memory policy to CLAUDE.md
@@ -105,4 +116,9 @@ You should see recent run history and no uncontrolled growth.
 <VerificationBlock 
   deliverable="A hardened daily brief workflow with review gate, brief-memory.md, and documented failure playbook."
   verifyCheck="You can demonstrate: (1) assistant pauses for human approval, (2) failure cases stop safely, and (3) brief-memory.md retains only the latest entries."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

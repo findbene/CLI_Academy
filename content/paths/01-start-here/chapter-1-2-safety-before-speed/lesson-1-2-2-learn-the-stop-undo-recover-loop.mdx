@@ -4,14 +4,24 @@ lessonNumber: "1.2.2"
 chapterNumber: "1.2"
 pathNumber: "1"
 tutorPreload: "What is the safest undo path for this mistake on {{os}}? Give me the least risky option first."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "0.1"
+clawClassification: "core"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Learn the stop, undo, recover loop
 
-## Objective
+## What you will build
+A test-undo.txt file restored to its original content in cli-academy/projects/ plus an undo-recover.md playbook in cli-academy/notes/.
 
+## Why this matters
+Professional developers spend the first minutes of any new project setting up a clean workspace. Starting from an organized structure prevents lost files, confusing paths, and the embarrassment of committing secrets. This habit — workspace first, then work — is the foundation of every reliable agentic workflow.
+
+## Before you start
 You will practice three emergency skills on your own machine: stopping a runaway command with `Ctrl+C`, undoing a file change with `git checkout`, and recovering a moved file with `mv`. After this lesson, you will have muscle memory for the three most common "oh no" moments in terminal work.
+
 
 ## Walkthrough
 
@@ -202,4 +212,9 @@ Reverts ALL uncommitted changes in the current folder. Use when everything is br
 <VerificationBlock
   deliverable="A test-undo.txt file restored to its original content in cli-academy/projects/ plus an undo-recover.md playbook in cli-academy/notes/."
   verifyCheck="Run cat test-undo.txt (macOS/Linux) or Get-Content test-undo.txt (Windows) and confirm it says 'This file is safe.' — proving the undo worked. Then verify undo-recover.md exists in notes/."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

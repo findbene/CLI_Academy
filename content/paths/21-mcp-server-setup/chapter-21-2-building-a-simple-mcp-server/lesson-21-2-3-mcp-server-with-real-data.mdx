@@ -1,0 +1,537 @@
+---
+title: "Build an MCP Server That Reads Real Data"
+lessonNumber: "21.2.3"
+chapterNumber: "21.2"
+pathNumber: "21"
+tutorPreload: "I'm building an MCP server that reads from a JSON file. Help me understand how to expose a list_notes tool that returns structured data from notes.json."
+verifyType: "terminal_output"
+estimatedMinutes: 35
+---
+
+# Build an MCP Server That Reads Real Data
+
+## Objective
+
+By the end of this lesson you will have a `data-mcp` server with a `list_notes` tool that reads from a `notes.json` file and returns structured note data to Claude. You will be able to ask Claude questions about your notes and have it query the live data through the MCP layer. This is the minimal viable personal knowledge MCP server — the same pattern scales to databases, APIs, and any other data source.
+
+## Walkthrough
+
+### Step 1 — Understand the pattern
+
+The `hello-mcp` server from the previous lessons returns a static string. A real MCP server does something more useful: it reads from a data source and returns structured data that Claude can reason over.
+
+The pattern we are building:
+
+```
+Claude asks: "List my notes about MCP"
+  ↓
+Claude calls list_notes({ filter: "MCP" })
+  ↓
+data-mcp server reads notes.json
+  ↓
+Server filters notes containing "MCP"
+  ↓
+Server returns array of note objects
+  ↓
+Claude reads the structured data and answers the question
+```
+
+The data lives in `notes.json`. The server is the read/search layer. Claude is the reasoning layer.
+
+### Step 2 — Create the project and data file
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/cli-academy/projects/data-mcp
+cd ~/cli-academy/projects/data-mcp
+npm init -y
+npm install @modelcontextprotocol/sdk
+
+# Create a notes.json with sample data
+cat > notes.json << 'EOF'
+[
+  {
+    "id": "1",
+    "title": "MCP server structure",
+    "content": "Every MCP server needs three parts: server identity, tools array, and request handler.",
+    "tags": ["mcp", "learning"],
+    "created": "2026-04-01"
+  },
+  {
+    "id": "2",
+    "title": "Claude context window",
+    "content": "Claude does not automatically read every file. It reads CLAUDE.md and files it explicitly opens.",
+    "tags": ["claude", "learning"],
+    "created": "2026-04-02"
+  },
+  {
+    "id": "3",
+    "title": "Bash tool approval",
+    "content": "The Bash tool requires explicit approval. Never skip permissions on your personal machine.",
+    "tags": ["safety", "claude"],
+    "created": "2026-04-03"
+  },
+  {
+    "id": "4",
+    "title": "MCP filesystem server",
+    "content": "The @modelcontextprotocol/server-filesystem package provides read_file, write_file, and list_directory tools.",
+    "tags": ["mcp", "tools"],
+    "created": "2026-04-05"
+  },
+  {
+    "id": "5",
+    "title": "Safe defaults with CLAUDE.md",
+    "content": "Use CLAUDE.md to restrict what directories Claude can write to and which Bash commands it may run.",
+    "tags": ["safety", "claude"],
+    "created": "2026-04-06"
+  }
+]
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy\projects\data-mcp"
+Set-Location "$HOME\cli-academy\projects\data-mcp"
+npm init -y
+npm install @modelcontextprotocol/sdk
+
+@'
+[
+  {
+    "id": "1",
+    "title": "MCP server structure",
+    "content": "Every MCP server needs three parts: server identity, tools array, and request handler.",
+    "tags": ["mcp", "learning"],
+    "created": "2026-04-01"
+  },
+  {
+    "id": "2",
+    "title": "Claude context window",
+    "content": "Claude does not automatically read every file. It reads CLAUDE.md and files it explicitly opens.",
+    "tags": ["claude", "learning"],
+    "created": "2026-04-02"
+  },
+  {
+    "id": "3",
+    "title": "Bash tool approval",
+    "content": "The Bash tool requires explicit approval. Never skip permissions on your personal machine.",
+    "tags": ["safety", "claude"],
+    "created": "2026-04-03"
+  },
+  {
+    "id": "4",
+    "title": "MCP filesystem server",
+    "content": "The @modelcontextprotocol/server-filesystem package provides read_file, write_file, and list_directory tools.",
+    "tags": ["mcp", "tools"],
+    "created": "2026-04-05"
+  },
+  {
+    "id": "5",
+    "title": "Safe defaults with CLAUDE.md",
+    "content": "Use CLAUDE.md to restrict what directories Claude can write to and which Bash commands it may run.",
+    "tags": ["safety", "claude"],
+    "created": "2026-04-06"
+  }
+]
+'@ | Set-Content notes.json -Encoding UTF8
+```
+
+### Step 3 — Write the data-mcp server
+
+**macOS / Linux**
+
+```bash
+cat > ~/cli-academy/projects/data-mcp/index.js << 'EOF'
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+// Resolve the path to notes.json relative to this file
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const NOTES_PATH = join(__dirname, "notes.json");
+
+function loadNotes() {
+  const raw = readFileSync(NOTES_PATH, "utf8");
+  return JSON.parse(raw);
+}
+
+const server = new Server(
+  { name: "data-mcp", version: "1.0.0" },
+  { capabilities: { tools: {} } }
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      {
+        name: "list_notes",
+        description: "List notes from the knowledge base. Optionally filter by a search term that matches title, content, or tags.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            filter: {
+              type: "string",
+              description: "Optional search term. Returns only notes where the title, content, or tags contain this string (case-insensitive).",
+            },
+          },
+          required: [],
+        },
+      },
+      {
+        name: "get_note",
+        description: "Get a single note by its ID.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "The ID of the note to retrieve.",
+            },
+          },
+          required: ["id"],
+        },
+      },
+    ],
+  };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const notes = loadNotes();
+
+  if (request.params.name === "list_notes") {
+    const filter = request.params.arguments?.filter;
+    let results = notes;
+
+    if (filter) {
+      const term = filter.toLowerCase();
+      results = notes.filter(
+        (note) =>
+          note.title.toLowerCase().includes(term) ||
+          note.content.toLowerCase().includes(term) ||
+          note.tags.some((tag) => tag.toLowerCase().includes(term))
+      );
+    }
+
+    const summary = results.map((n) => ({
+      id: n.id,
+      title: n.title,
+      tags: n.tags,
+      created: n.created,
+      preview: n.content.slice(0, 80) + (n.content.length > 80 ? "..." : ""),
+    }));
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(summary, null, 2),
+        },
+      ],
+    };
+  }
+
+  if (request.params.name === "get_note") {
+    const id = request.params.arguments?.id;
+    const note = notes.find((n) => n.id === id);
+
+    if (!note) {
+      return {
+        content: [{ type: "text", text: `Note with id "${id}" not found.` }],
+        isError: true,
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(note, null, 2),
+        },
+      ],
+    };
+  }
+
+  return {
+    content: [{ type: "text", text: `Unknown tool: ${request.params.name}` }],
+    isError: true,
+  };
+});
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@'
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const NOTES_PATH = join(__dirname, "notes.json");
+
+function loadNotes() {
+  const raw = readFileSync(NOTES_PATH, "utf8");
+  return JSON.parse(raw);
+}
+
+const server = new Server(
+  { name: "data-mcp", version: "1.0.0" },
+  { capabilities: { tools: {} } }
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      {
+        name: "list_notes",
+        description: "List notes from the knowledge base. Optionally filter by a search term that matches title, content, or tags.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            filter: {
+              type: "string",
+              description: "Optional search term. Returns only notes where the title, content, or tags contain this string (case-insensitive).",
+            },
+          },
+          required: [],
+        },
+      },
+      {
+        name: "get_note",
+        description: "Get a single note by its ID.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: "The ID of the note to retrieve." },
+          },
+          required: ["id"],
+        },
+      },
+    ],
+  };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const notes = loadNotes();
+
+  if (request.params.name === "list_notes") {
+    const filter = request.params.arguments?.filter;
+    let results = notes;
+    if (filter) {
+      const term = filter.toLowerCase();
+      results = notes.filter(
+        (note) =>
+          note.title.toLowerCase().includes(term) ||
+          note.content.toLowerCase().includes(term) ||
+          note.tags.some((tag) => tag.toLowerCase().includes(term))
+      );
+    }
+    const summary = results.map((n) => ({
+      id: n.id,
+      title: n.title,
+      tags: n.tags,
+      created: n.created,
+      preview: n.content.slice(0, 80) + (n.content.length > 80 ? "..." : ""),
+    }));
+    return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
+  }
+
+  if (request.params.name === "get_note") {
+    const id = request.params.arguments?.id;
+    const note = notes.find((n) => n.id === id);
+    if (!note) {
+      return {
+        content: [{ type: "text", text: `Note with id "${id}" not found.` }],
+        isError: true,
+      };
+    }
+    return { content: [{ type: "text", text: JSON.stringify(note, null, 2) }] };
+  }
+
+  return {
+    content: [{ type: "text", text: `Unknown tool: ${request.params.name}` }],
+    isError: true,
+  };
+});
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+'@ | Set-Content -Path "$HOME\cli-academy\projects\data-mcp\index.js" -Encoding UTF8
+```
+
+### Step 4 — Add "type": "module" to package.json
+
+**macOS / Linux**
+
+```bash
+cd ~/cli-academy/projects/data-mcp
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.type = 'module';
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+console.log('Done');
+"
+```
+
+**Windows PowerShell**
+
+```powershell
+Set-Location "$HOME\cli-academy\projects\data-mcp"
+node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.type='module';fs.writeFileSync('package.json',JSON.stringify(p,null,2));console.log('Done')"
+```
+
+### Step 5 — Register data-mcp in settings.json
+
+Add `data-mcp` to `~/.claude/settings.json` alongside your existing servers.
+
+**macOS / Linux**
+
+```bash
+node << 'EOF'
+const fs = require('fs');
+const path = require('path');
+const settingsPath = path.join(process.env.HOME, '.claude', 'settings.json');
+const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+
+settings.mcpServers = settings.mcpServers || {};
+settings.mcpServers['data-mcp'] = {
+  command: process.execPath,
+  args: [process.env.HOME + '/cli-academy/projects/data-mcp/index.js']
+};
+
+fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+console.log('Registered data-mcp. Current servers:', Object.keys(settings.mcpServers).join(', '));
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+$settingsPath = "$HOME\.claude\settings.json"
+$settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
+
+$dataMcp = [PSCustomObject]@{
+    command = (Get-Command node).Source
+    args    = @("$HOME\cli-academy\projects\data-mcp\index.js")
+}
+$settings.mcpServers | Add-Member -NotePropertyName "data-mcp" -NotePropertyValue $dataMcp -Force
+$settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
+Write-Host "Registered data-mcp"
+```
+
+### Step 6 — Test with Claude
+
+Open a Claude Code session and verify `/mcp` shows `data-mcp` as connected. Then test two queries:
+
+**macOS / Linux**
+
+```bash
+claude --verbose --print "Use the data-mcp list_notes tool to list all my notes about MCP."
+```
+
+**Windows PowerShell**
+
+```powershell
+claude --verbose --print "Use the data-mcp list_notes tool to list all my notes about MCP."
+```
+
+Expected: Claude calls `list_notes` with `{ "filter": "mcp" }` and returns the two MCP-tagged notes.
+
+Then try getting a specific note:
+
+```bash
+claude --verbose --print "Use the data-mcp get_note tool to retrieve note with id 3."
+```
+
+Expected: Claude calls `get_note` with `{ "id": "3" }` and returns the full Bash tool approval note.
+
+### Step 7 — Add a real note to notes.json and verify it appears
+
+The server reads `notes.json` fresh on every tool call (no caching). To test live data updates:
+
+**macOS / Linux**
+
+```bash
+node << 'EOF'
+const fs = require('fs');
+const notesPath = process.env.HOME + '/cli-academy/projects/data-mcp/notes.json';
+const notes = JSON.parse(fs.readFileSync(notesPath, 'utf8'));
+notes.push({
+  id: String(notes.length + 1),
+  title: "My first MCP server",
+  content: "I built a data-mcp server that reads from notes.json and exposes list_notes and get_note tools.",
+  tags: ["mcp", "milestone"],
+  created: new Date().toISOString().split('T')[0]
+});
+fs.writeFileSync(notesPath, JSON.stringify(notes, null, 2));
+console.log('Added note. Total:', notes.length);
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+$notesPath = "$HOME\cli-academy\projects\data-mcp\notes.json"
+$notes = Get-Content $notesPath -Raw | ConvertFrom-Json
+$newNote = [PSCustomObject]@{
+    id      = [string]($notes.Count + 1)
+    title   = "My first MCP server"
+    content = "I built a data-mcp server that reads from notes.json and exposes list_notes and get_note tools."
+    tags    = @("mcp", "milestone")
+    created = (Get-Date -Format "yyyy-MM-dd")
+}
+$notes += $newNote
+$notes | ConvertTo-Json -Depth 5 | Set-Content $notesPath -Encoding UTF8
+Write-Host "Added note. Total: $($notes.Count)"
+```
+
+Now ask Claude again:
+
+```
+Use the data-mcp list_notes tool with filter "milestone" to find my milestone notes.
+```
+
+The new note should appear in the results — no server restart needed.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `list_notes` returns an empty array even without a filter | `notes.json` path resolution failed — the server cannot find the file | Verify the `NOTES_PATH` in `index.js` resolves correctly: add `console.error(NOTES_PATH)` temporarily and check the server error output |
+| `get_note` returns "not found" for a valid ID | The IDs in `notes.json` are numbers but the tool receives a string, or vice versa | Make sure all IDs in `notes.json` are strings (`"1"` not `1`), matching the `String(...)` comparison in the handler |
+| Filter returns wrong results | Case sensitivity issue | The handler uses `.toLowerCase()` on both sides — double-check that the filter string is being passed through correctly in the tool call input |
+| data-mcp appears as error in /mcp | Missing `@modelcontextprotocol/sdk` or wrong path in settings.json | Run `cd ~/cli-academy/projects/data-mcp && npm install` and verify the path in settings.json matches the actual file |
+| New note added to notes.json does not appear | Server is caching the data at startup | The reference implementation calls `loadNotes()` inside the handler, not at startup — verify `loadNotes()` is called inside the `CallToolRequestSchema` handler, not outside it |
+
+<VerificationBlock
+  deliverable="A data-mcp server with list_notes and get_note tools that reads from notes.json, registered in settings.json, and responding to live queries from Claude."
+  verifyCheck="Share the verbose output showing Claude calling data-mcp.list_notes with a filter and returning the filtered notes from your notes.json."
+  rubricCriteria={[
+    "data-mcp/index.js exists and contains both list_notes and get_note tool definitions",
+    "notes.json exists at data-mcp/notes.json with at least 5 notes",
+    "/mcp shows data-mcp as connected",
+    "list_notes with filter 'mcp' returns only MCP-tagged notes",
+    "get_note with a valid id returns the full note object",
+    "Adding a new note to notes.json and calling list_notes again returns the new note without restarting the server"
+  ]}
+/>

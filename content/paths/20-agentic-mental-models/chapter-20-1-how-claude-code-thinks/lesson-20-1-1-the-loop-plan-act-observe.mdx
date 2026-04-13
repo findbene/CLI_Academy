@@ -1,0 +1,184 @@
+---
+title: "The Loop: Plan, Act, Observe"
+lessonNumber: "20.1.1"
+chapterNumber: "20.1"
+pathNumber: "20"
+tutorPreload: "I'm about to learn how Claude Code's agentic loop works. Help me understand the three phases — plan, act, and observe — before I try to explain them in my own words."
+verifyType: "quiz"
+estimatedMinutes: 15
+---
+
+# The Loop: Plan, Act, Observe
+
+## Objective
+
+By the end of this lesson you will be able to explain, in your own words, the three phases every Claude Code session runs through: planning, acting, and observing. You will document your understanding in a `LEARNING_LOG.md` entry so you have something concrete to reference as you build more complex workflows.
+
+This is a conceptual lesson — no commands to run. The goal is a durable mental model you can reason from.
+
+## Walkthrough
+
+### Step 1 — Understand why there is a loop at all
+
+Claude Code is not a one-shot chatbot. When you give it a task, it does not write a response and stop. Instead it runs a loop:
+
+1. Read context (files, your message, memory files, tool results)
+2. Make a plan (decide what to do next)
+3. Execute one or more tool calls (read a file, run a command, write code)
+4. Observe the result (read the tool output back)
+5. Decide whether the task is done, or loop again from step 2
+
+This loop continues until Claude judges the task complete, hits a permission boundary, or you interrupt it.
+
+Understanding this loop changes how you give instructions. A vague prompt forces Claude into many guessing loops. A precise prompt with clear success criteria collapses the loop into fewer iterations.
+
+### Step 2 — The Plan phase
+
+Before Claude executes anything, it builds an internal plan: what files to read, what sequence of actions to take, what success looks like.
+
+You can see evidence of the plan phase when Claude Code prints something like:
+
+```
+I'll start by reading package.json to understand the project structure,
+then look at src/index.js to find the bug you described.
+```
+
+That sentence is the plan being externalized. Claude is telling you — and confirming to itself — the sequence of steps it intends to follow.
+
+**What makes a good plan phase:**
+- Claude has enough context to form a plan without guessing (this is why `CLAUDE.md` files matter)
+- The task is scoped narrowly enough that the plan is short
+- The success condition is explicit ("return a passing test", "write the output to report.md")
+
+**What breaks the plan phase:**
+- The working directory contains hundreds of files with no `CLAUDE.md` or README
+- The prompt says "improve the code" without specifying what "improved" means
+- Required files do not exist yet
+
+### Step 3 — The Act phase
+
+Acting means executing tool calls. Every concrete thing Claude does is a tool call:
+
+- Reading a file → `Read` tool
+- Running a shell command → `Bash` tool
+- Writing or editing a file → `Write` or `Edit` tool
+- Searching file contents → `Grep` tool
+
+Each tool call consumes part of the context window and returns a result. The Act phase is where real work happens — and where real mistakes can happen. A misunderstood plan leads to wrong tool calls.
+
+**Key insight:** Claude cannot act on your codebase without tool calls. If you see Claude generating a long explanation but no tool calls, it is describing, not doing. If you want it to do something, your prompt needs to request an action, not just a description.
+
+### Step 4 — The Observe phase
+
+After each tool call, Claude reads the result back. This is the Observe phase. The output of a `Bash` tool call — including error messages and exit codes — becomes part of the context that informs the next plan iteration.
+
+This is why errors are useful: when a command fails, Claude sees the error output in the Observe phase and can adjust. If you suppress errors (e.g., `command 2>/dev/null`), you hide information that Claude needs.
+
+**Practical consequence:** Let commands fail visibly. Do not pipe errors to `/dev/null` when working with Claude. The error message is data.
+
+### Step 5 — The loop in practice
+
+Here is what a simple three-iteration loop looks like when you ask Claude to add a function to a file:
+
+```
+Iteration 1
+  Plan:   Read the file to understand its current structure.
+  Act:    Read tool → reads src/utils.js
+  Observe: File has 3 functions, no tests, uses CommonJS exports.
+
+Iteration 2
+  Plan:   Write the new function following the existing style.
+  Act:    Edit tool → adds the new function to src/utils.js
+  Observe: Write succeeded, file now has 4 functions.
+
+Iteration 3
+  Plan:   Verify the syntax is valid by running the linter.
+  Act:    Bash tool → runs `npm run lint`
+  Observe: Linter passes. Task complete.
+```
+
+Each iteration refines the result. The loop is not a bug — it is the mechanism that makes Claude Code accurate.
+
+### Step 6 — Write your LEARNING_LOG.md entry
+
+Now document your understanding in your notes directory.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/cli-academy/notes
+cat > ~/cli-academy/notes/LEARNING_LOG.md << 'EOF'
+# Learning Log
+
+## Lesson 20.1.1 — The Agentic Loop
+
+**Date:** [today's date]
+
+### The three phases in my own words
+
+**Plan:** Before doing anything, Claude reads the available context and decides what sequence of steps to take. A good prompt with clear success criteria makes this phase short and accurate.
+
+**Act:** Claude executes tool calls — reading files, running commands, writing code. Each tool call is a discrete, observable action. Nothing changes in my project without a tool call.
+
+**Observe:** After each tool call, Claude reads the result back. Errors and output become the input for the next plan iteration. Hiding errors breaks this feedback loop.
+
+### Why this matters to me
+
+[Write one or two sentences about how this changes the way you will give Claude instructions.]
+
+### Questions I still have
+
+[Write any open questions here.]
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\cli-academy\notes"
+@"
+# Learning Log
+
+## Lesson 20.1.1 — The Agentic Loop
+
+**Date:** [today's date]
+
+### The three phases in my own words
+
+**Plan:** Before doing anything, Claude reads the available context and decides what sequence of steps to take. A good prompt with clear success criteria makes this phase short and accurate.
+
+**Act:** Claude executes tool calls — reading files, running commands, writing code. Each tool call is a discrete, observable action. Nothing changes in my project without a tool call.
+
+**Observe:** After each tool call, Claude reads the result back. Errors and output become the input for the next plan iteration. Hiding errors breaks this feedback loop.
+
+### Why this matters to me
+
+[Write one or two sentences about how this changes the way you will give Claude instructions.]
+
+### Questions I still have
+
+[Write any open questions here.]
+"@ | Set-Content -Path "$HOME\cli-academy\notes\LEARNING_LOG.md" -Encoding UTF8
+```
+
+Open the file and fill in the two bracketed sections in your own words. Do not copy the example text verbatim — write what you actually think. The tutor will check that your description captures the three phases accurately.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| The file writes but the bracketed sections stay empty | You forgot to open and edit the file after creating it | Open `LEARNING_LOG.md` in any text editor and fill in your own words before submitting |
+| `mkdir` fails with "Permission denied" on macOS/Linux | The home directory path expansion failed | Use an explicit path like `mkdir -p /Users/yourname/cli-academy/notes` |
+| `New-Item` fails on Windows with "path already exists" | The directory was created in a previous attempt | This error is harmless — the directory exists, so run only the `Set-Content` line |
+| The file is created but appears empty | PowerShell encoding issue with here-string | Use `Get-Content "$HOME\cli-academy\notes\LEARNING_LOG.md"` to verify contents and re-run if needed |
+
+<VerificationBlock
+  deliverable="A LEARNING_LOG.md entry in ~/cli-academy/notes/ describing the three phases of the agentic loop in your own words."
+  verifyCheck="Paste your LEARNING_LOG.md entry. The tutor will check you can describe plan, act, and observe in your own words."
+  rubricCriteria={[
+    "Plan phase is described: Claude reads context and decides a sequence of steps before acting",
+    "Act phase is described: Claude executes tool calls (Read, Write, Bash, etc.) to do real work",
+    "Observe phase is described: Claude reads tool output back and uses it to inform the next iteration",
+    "Description uses the learner's own words, not a copy of the lesson text"
+  ]}
+/>

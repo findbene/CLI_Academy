@@ -4,14 +4,24 @@ lessonNumber: "8.3.3"
 chapterNumber: "8.3"
 pathNumber: "8"
 tutorPreload: "Guide me through a full end-to-end Cowork session so I can practice every step from brief to deliverable."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.5"
+clawClassification: "elective"
+estimatedMinutes: 40
+prerequisiteLesson: null
 ---
 
 # Mini project: run a full Cowork session
 
-## Objective
+## What you will build
+A project folder containing: (1) `cowork-session-brief.md`, (2) `README.md`, (3) `CONTRIBUTING.md`, and (4) a `cowork-patterns/` folder with at least one prompt pattern file.
 
+## Why this matters
+Structured Cowork sessions are how teams use AI for longer, more complex tasks without losing control. An unstructured AI session produces unpredictable results and costs more than it should. The Cowork discipline covered here is directly applicable to any enterprise team introducing AI tooling.
+
+## Before you start
 In this mini project you will run a complete Cowork session from start to finish: write a brief, start the session, iterate through multiple turns, review the output, save the deliverables, and template the pattern. The task is to produce a project README and a CONTRIBUTING guide for a real or practice project.
+
 
 ## Walkthrough
 
@@ -358,4 +368,9 @@ git commit -m "chore: add cowork session patterns for reuse"
 <VerificationBlock
   deliverable="A project folder containing: (1) `cowork-session-brief.md`, (2) `README.md`, (3) `CONTRIBUTING.md`, and (4) a `cowork-patterns/` folder with at least one prompt pattern file."
   verifyCheck="README and CONTRIBUTING both pass the review checklist, contain dual-platform commands, and the cowork-patterns folder contains at least one generalized prompt pattern."
+  rubricCriteria={[
+    "The A project folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

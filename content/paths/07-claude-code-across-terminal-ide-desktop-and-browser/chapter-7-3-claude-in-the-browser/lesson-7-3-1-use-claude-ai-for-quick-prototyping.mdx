@@ -4,14 +4,24 @@ lessonNumber: "7.3.1"
 chapterNumber: "7.3"
 pathNumber: "7"
 tutorPreload: "Show me how to use claude.ai in the browser to quickly prototype and iterate on an idea without setting up a local project."
-verifyType: "terminal_output"
+verifyType: "screenshot"
+groupId: "3.3"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Use Claude AI for quick prototyping
 
-## Objective
+## What you will build
+By the end of this lesson you will use claude.
 
+## Why this matters
+Real-world agentic work spans surfaces — you start in the terminal, switch to the IDE, check GitHub, and come back to the terminal. Learners who can only use Claude in one surface leave efficiency on the table. Cross-surface fluency is what makes Claude Code genuinely useful for full development cycles.
+
+## Before you start
 By the end of this lesson you will use claude.ai in the browser to upload a file for analysis, create an artifact (a runnable code preview), organize work using the Projects feature, and understand what the browser interface can and cannot do compared to the CLI and Desktop experiences.
+
 
 ## Walkthrough
 
@@ -161,7 +171,11 @@ Some plans allow you to export or share conversations. Check the three-dot menu 
 | Pasted code has wrong formatting | Clipboard added extra whitespace or lost indentation | Paste into VS Code (which preserves formatting) rather than a plain text editor |
 | Session expired — "Please sign in again" | Browser session timed out | Sign in again; your conversation history is saved |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The command or workflow step completed on the specified surface (IDE/terminal/browser)",
+    "Output or result matches what the lesson describes as expected",
+    "The cross-surface handoff was completed without losing context from the previous step",
+]}>
 Confirm you can use the core browser features:
 
 1. Go to [claude.ai](https://claude.ai) and start a new conversation.

@@ -4,14 +4,24 @@ lessonNumber: "16.3.4"
 chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Review my automated daily workflow and tell me what would break if I left it running unattended for a week."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.5"
+clawClassification: "advanced"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Mini project: automate a daily workflow
 
-## Objective
+## What you will build
+By the end of this mini project you will have built, scheduled, and tested a complete daily automation workflow that combines file operations, monitoring, and scheduling into a single pipeline.
 
+## Why this matters
+Computer use and browser automation extend Claude's capabilities to the full surface area of a knowledge worker's day — not just files and code, but UIs, web apps, and dashboards. Sandbox discipline prevents these powerful capabilities from doing unintended damage during development.
+
+## Before you start
 By the end of this mini project you will have built, scheduled, and tested a complete daily automation workflow that combines file operations, monitoring, and scheduling into a single pipeline. You will commit the project to a Git repository so you can iterate on it over time.
+
 
 ## Walkthrough
 
@@ -289,6 +299,10 @@ daily-workflow/
 | Git commit includes the logs folder | Missing or incorrect `.gitignore` | Add `logs/` to `.gitignore` and run `git rm -r --cached logs/` if already tracked |
 | The workflow runs indefinitely on a cloud VM | No cost controls and the VM stays on 24/7 | Set the VM to auto-shutdown after the task, or use a serverless function instead |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The sandbox or container started without errors and is accessible",
+    "The specified automation or browser action completed in the isolated environment",
+    "The sandbox was cleanly stopped or destroyed after the lesson task was complete",
+]}>
 Run the daily health check script and confirm a log file is created in the `logs/` folder with today's date. Run the summary script and confirm it prints a one-line summary with the correct pass/fail/warning counts. Verify the project is committed to Git with `git log --oneline -1` showing your commit message.
 </VerificationBlock>

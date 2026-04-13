@@ -4,13 +4,24 @@ lessonNumber: "19.3.1"
 chapterNumber: "19.3"
 pathNumber: "19"
 tutorPreload: "Pressure-test this integrated capstone plan for safety gaps."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "6.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Plan the integrated workflow
 
-## Objective
+## What you will build
+An integrated capstone plan containing INTEGRATION-PLAN.md, CLAUDE.md, and portfolio-evidence/plan-review.md.
+
+## Why this matters
+The portfolio capstone is the artifact that converts learning into professional evidence. Employers and clients cannot assess what they cannot see. A concrete, documented portfolio project answers the question 'show me something you built' — the question that closes every technical hiring conversation.
+
+## Before you start
 Plan a real workflow that combines multiple tools instead of pretending one agent does everything alone. In this lesson, you will define an integrated workflow that uses Claude Code plus git plus a real content folder to generate a curriculum change brief, and you will document the integration seams, stop rules, and failure test before building it.
+
 
 ## Walkthrough
 
@@ -198,4 +209,9 @@ Get-Content portfolio-evidence/plan-review.md
 <VerificationBlock 
   deliverable="An integrated capstone plan containing INTEGRATION-PLAN.md, CLAUDE.md, and portfolio-evidence/plan-review.md."
   verifyCheck="A reviewer can identify the role of git, the role of the content source, the role of Claude Code, and the exact failure mode the pilot will test before broader use."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

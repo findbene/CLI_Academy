@@ -5,13 +5,23 @@ chapterNumber: "5.1"
 pathNumber: "5"
 tutorPreload: "Help me isolate which function in this script is producing the wrong output."
 verifyType: "terminal_output"
+groupId: "3.2"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Narrow down a bug with binary search prompts
 
-## Objective
+## What you will build
+A multi-function script with a bug found via binary search debugging in three or fewer Claude Code prompts.
 
+## Why this matters
+Debugging without a systematic approach is how engineers waste entire days on problems that take 20 minutes to fix with the right method. Using Claude Code as a debug partner speeds diagnosis while the hypothesis-driven process builds the mental discipline that distinguishes senior engineers.
+
+## Before you start
 When a script has several functions and the output is wrong, you need a strategy to find which function is broken without reading every line. The technique is called binary search debugging: ask Claude Code to test half the pipeline, see which half breaks, then test half of that half, and repeat until you find the guilty function. By the end of this lesson you will have isolated a bug across four functions using only three prompts.
+
 
 ## Walkthrough
 
@@ -223,4 +233,9 @@ Widget is now $26.97 (3 × 9.99 = 29.97, minus 10% = 26.97). Correct.
 <VerificationBlock
   deliverable="A multi-function script with a bug found via binary search debugging in three or fewer Claude Code prompts."
   verifyCheck="Run the fixed script and confirm the order totals are mathematically correct."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

@@ -4,16 +4,26 @@ lessonNumber: "17.3.1"
 chapterNumber: "17.3"
 pathNumber: "17"
 tutorPreload: "Build me a fast revoke-and-rotate playbook for this integration."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Create a revoke-and-rotate playbook
 
-## Objective
+## What you will build
+A revoke-rotate-playbook.md with real commands for revoking via gh auth logout, verifying revocation, rotating with minimum scopes via gh auth login --scopes, and updating dependent systems.
 
+## Why this matters
+Integrating Claude with external APIs and services is where most production security incidents happen. A misconfigured webhook, an exposed key, or an over-permissioned OAuth scope can expose entire systems. This path teaches the integration patterns that hold up under a security review.
+
+## Before you start
 Token compromise is not a hypothetical. GitHub tokens leak through git history, CI/CD logs, screenshots, and accidental `echo` calls. When that happens, you have one goal: **stop the bleeding fast**. A revoke-and-rotate playbook is a pre-written, tested sequence of commands you can run in under five minutes without having to think under pressure.
 
 In this lesson you will learn the real commands for revoking a GitHub token, verify revocation worked, generate a fresh token with only the scopes you need, and write a playbook document you can execute without hesitation in an emergency.
+
 
 ## Walkthrough
 
@@ -208,4 +218,9 @@ Get-Content revoke-rotate-playbook.md
 <VerificationBlock 
   deliverable="A revoke-rotate-playbook.md with real commands for revoking via gh auth logout, verifying revocation, rotating with minimum scopes via gh auth login --scopes, and updating dependent systems."
   verifyCheck="Playbook file exists with all five steps and gh auth status confirms a fresh active token after rotation."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

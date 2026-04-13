@@ -4,16 +4,26 @@ lessonNumber: "13.1.1"
 chapterNumber: "13.1"
 pathNumber: "13"
 tutorPreload: "Explain the manager-worker pattern using my own planned workflow."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.7"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # What multi-agent means in Claude Code
 
-## Objective
+## What you will build
+A `multi-agent-intro/` directory containing `lister-CLAUDE.md`, `summarizer-CLAUDE.md`, `file-inventory.md`, and `summary.md`.
 
+## Why this matters
+Multi-agent workflows are the current frontier of production AI systems. Understanding how to wire agents together, manage handoffs, and avoid complexity spirals is the knowledge gap between hobby projects and production deployments. This path gives you the vocabulary and the architecture patterns used at scale.
+
+## Before you start
 By the end of this lesson you will understand what "multi-agent" actually means inside Claude Code — separate sessions or subagents, each governed by its own `CLAUDE.md` instructions, collaborating on parts of a larger task. You will create a minimal two-agent directory structure, run both agents, and see the handoff in practice.
 
 This is **not** about external frameworks like AutoGen or LangChain. Everything here uses native Claude Code patterns: `CLAUDE.md` contracts, the Task tool for subagent spawning, and file-based handoffs.
+
 
 ## Walkthrough
 
@@ -198,4 +208,9 @@ If you removed the contracts and told one Claude session to "list files and then
 <VerificationBlock
   deliverable="A `multi-agent-intro/` directory containing `lister-CLAUDE.md`, `summarizer-CLAUDE.md`, `file-inventory.md`, and `summary.md`."
   verifyCheck="Two separate contracts exist. The Summarizer's output references only data from `file-inventory.md`. Each contract has an explicit stop condition."
+  rubricCriteria={[
+    "The ` directory containing `lister-CLAUDE.md`, `summarizer-CLAUDE.md`, `file-inventory.md`, and `summary.md`. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

@@ -4,14 +4,24 @@ lessonNumber: "11.3.1"
 chapterNumber: "11.3"
 pathNumber: "11"
 tutorPreload: "Show me the review-then-sandbox workflow for code that Claude Code generates."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Sandbox AI-generated code before running
 
-## Objective
+## What you will build
+Terminal output showing the AI-generated script ran successfully inside a Docker sandbox with --network none and --read-only, and the output files were captured in a mounted directory.
 
+## Why this matters
+Custom runtimes are how agentic developers move from using Claude to building with Claude. Understanding the sandbox model and runtime foundations is the prerequisite for everything in the advanced Claw ecosystem. This knowledge is increasingly sought after in AI engineering roles.
+
+## Before you start
 By the end of this lesson you will follow a repeatable workflow for handling code that Claude Code (or any AI) generates: review the diff first, run it in a Docker sandbox, check the result, and only then promote it to your real project. You will practice every step with a concrete example.
+
 
 ## Walkthrough
 
@@ -191,4 +201,9 @@ git commit -m "feat(data): add filtered CSV from AI-generated processor (sandbox
 <VerificationBlock
   deliverable="Terminal output showing the AI-generated script ran successfully inside a Docker sandbox with --network none and --read-only, and the output files were captured in a mounted directory."
   verifyCheck="The script produced correct output in the sandbox, no network access was used, and the output directory contains the expected CSV file."
+  rubricCriteria={[
+    "The Terminal output showing the AI-generated script ran successfully inside a Docker sandbox with --network none and --read-only, and the output files were captured in a mounted directory. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

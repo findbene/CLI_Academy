@@ -5,13 +5,23 @@ chapterNumber: "4.1"
 pathNumber: "4"
 tutorPreload: "Help me find the entry point, config files, and tech stack for this project."
 verifyType: "terminal_output"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Find the entry point and config files
 
-## Objective
+## What you will build
+A reference card listing the entry point, config files, and tech stack with verified file paths.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Use Claude Code to pinpoint the main entry point file, locate every configuration file, and identify the tech stack of a real project. By the end you will have a short reference card listing these items with their exact file paths.
+
 
 ## Walkthrough
 
@@ -152,4 +162,9 @@ This reference card is your deliverable. Whenever you return to this project lat
 <VerificationBlock
   deliverable="A reference card listing the entry point, config files, and tech stack with verified file paths."
   verifyCheck="Reference card names the correct entry-point file and at least three config files confirmed against the actual repo."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

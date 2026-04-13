@@ -4,13 +4,22 @@ lessonNumber: "14.3.1"
 chapterNumber: "14.3"
 pathNumber: "14"
 tutorPreload: "Help me add pre-commit hooks that catch secrets and common mistakes before they get committed."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Set up pre-commit hooks for safety
 
-## Objective
+## What you will build
+A hooks-lab repository with pre-commit installed, `.pre-commit-config.yaml` committed, and all hooks passing on commit.
 
+## Why this matters
+Every agentic developer runs code on their local machine. A compromised machine means compromised keys, leaked data, and potentially compromised production systems. Local security hygiene is the baseline that makes every other security measure meaningful.
+
+## Before you start
 A pre-commit hook runs automatically every time you type `git commit`. It checks your code *before* the commit is created — and blocks the commit if something is wrong. This means secrets, merge conflicts, and broken formatting get caught before they ever enter your Git history.
 
 In this lesson you will:
@@ -20,6 +29,7 @@ In this lesson you will:
 3. Test that each hook actually blocks a bad commit.
 
 After this lesson, your repo will automatically protect you from the most common mistakes — even when you forget to check manually.
+
 
 ## Walkthrough
 
@@ -280,4 +290,9 @@ This is a good habit. Direct commits to `main` bypass code review and are a comm
 <VerificationBlock
   deliverable="A hooks-lab repository with pre-commit installed, `.pre-commit-config.yaml` committed, and all hooks passing on commit."
   verifyCheck="Run `pre-commit run --all-files` — all hooks should report Passed. Run `git log --oneline` — the config commit should be visible."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

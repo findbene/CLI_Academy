@@ -5,13 +5,23 @@ chapterNumber: "5.2"
 pathNumber: "5"
 tutorPreload: "My test is failing. Read the failure output and help me fix the code."
 verifyType: "terminal_output"
+groupId: "3.2"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Run tests and fix failures with Claude
 
-## Objective
+## What you will build
+A red test run (failing), a Claude Code fix, and a green test run (passing) — all three visible in terminal history.
 
+## Why this matters
+Debugging without a systematic approach is how engineers waste entire days on problems that take 20 minutes to fix with the right method. Using Claude Code as a debug partner speeds diagnosis while the hypothesis-driven process builds the mental discipline that distinguishes senior engineers.
+
+## Before you start
 Introduce a bug into the function you tested in the previous lesson, run the test suite, see it fail with a clear error message, paste the failure into Claude Code, and let Claude fix the source code (not the test). Then run the tests again to confirm they pass. This teaches the red-green debugging cycle that professional developers use every day.
+
 
 ## Walkthrough
 
@@ -200,4 +210,9 @@ Claude explains that tests are repeatable, run in milliseconds, check multiple c
 <VerificationBlock
   deliverable="A red test run (failing), a Claude Code fix, and a green test run (passing) — all three visible in terminal history."
   verifyCheck="Run the test suite and confirm all tests pass with zero failures."
+  rubricCriteria={[
+    "All test functions are present and the test file runs without import errors",
+    "Running the test suite with `pytest -v` shows the expected pass/fail states",
+    "At least one test covers the specific scenario described in the lesson deliverable",
+  ]}
 />

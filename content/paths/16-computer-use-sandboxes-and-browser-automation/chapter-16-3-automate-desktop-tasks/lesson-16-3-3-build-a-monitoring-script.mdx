@@ -4,14 +4,24 @@ lessonNumber: "16.3.3"
 chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Review my monitoring script and tell me if the alerting logic will actually catch real outages."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.5"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Build a monitoring script
 
-## Objective
+## What you will build
+By the end of this lesson you will have a working monitoring script that checks whether a website or service is reachable, logs the result with a timestamp, and prints an alert when the service is down.
 
+## Why this matters
+Computer use and browser automation extend Claude's capabilities to the full surface area of a knowledge worker's day — not just files and code, but UIs, web apps, and dashboards. Sandbox discipline prevents these powerful capabilities from doing unintended damage during development.
+
+## Before you start
 By the end of this lesson you will have a working monitoring script that checks whether a website or service is reachable, logs the result with a timestamp, and prints an alert when the service is down. You will write both a Bash version (macOS / Linux) and a PowerShell version (Windows), and you will test the alert path by pointing the script at a URL that does not exist.
+
 
 ## Walkthrough
 
@@ -228,6 +238,10 @@ Combine this with what you learned in Lesson 16.3.2:
 | All URLs report DOWN simultaneously | Your own network is down | Add a canary check (e.g., `https://1.1.1.1`) at the start — if that fails, the problem is your connection, not the targets |
 | The 500 test URL returns 200 | `httpstat.us` occasionally has issues or caching | Try `https://httpbin.org/status/500` as an alternative |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The sandbox or container started without errors and is accessible",
+    "The specified automation or browser action completed in the isolated environment",
+    "The sandbox was cleanly stopped or destroyed after the lesson task was complete",
+]}>
 Run the monitoring script against `https://httpstat.us/200` and confirm it reports UP. Run it against `https://httpstat.us/500` and confirm it reports DOWN. Open `monitor.log` and confirm both entries are recorded with timestamps.
 </VerificationBlock>

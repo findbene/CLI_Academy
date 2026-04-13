@@ -5,13 +5,23 @@ chapterNumber: "6.2"
 pathNumber: "6"
 tutorPreload: "Explain this merge conflict and show me the minimal safe resolution."
 verifyType: "terminal_output"
+groupId: "3.4"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Merge branches and resolve conflicts
 
-## Objective
+## What you will build
+By the end of this lesson you will merge a feature branch into `main`, deliberately create a merge conflict by editing the same line in two branches, read the conflict markers Git places in the file, resolve the conflict manually, and complete the merge.
 
+## Why this matters
+Git is non-negotiable in any professional development context. AI-assisted builders who cannot use Git correctly are blocked from collaborating, reviewing, or shipping. This path makes Git operations fast and reliable using Claude Code so you can focus on building instead of remembering commands.
+
+## Before you start
 By the end of this lesson you will merge a feature branch into `main`, deliberately create a merge conflict by editing the same line in two branches, read the conflict markers Git places in the file, resolve the conflict manually, and complete the merge. You will also learn how to ask Claude Code for help resolving conflicts.
+
 
 ## Walkthrough
 
@@ -244,7 +254,11 @@ Claude Code can read the conflict markers and produce the resolved file. You sti
 | Merge commit opens a text editor | Git wants a merge message | Save and close the editor, or use `git commit -m "message"` |
 | File encoding issues on Windows | PowerShell added BOM to the file | Use `Out-File -Encoding utf8` consistently |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The git command completed without errors and output matches the expected format",
+    "Running git log --oneline or git status shows the correct state described in the lesson",
+    "The commit message or branch name follows the naming convention from the walkthrough",
+]}>
 Run these commands and confirm:
 
 ```bash

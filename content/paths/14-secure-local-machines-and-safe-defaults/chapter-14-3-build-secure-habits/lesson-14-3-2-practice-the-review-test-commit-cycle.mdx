@@ -4,13 +4,22 @@ lessonNumber: "14.3.2"
 chapterNumber: "14.3"
 pathNumber: "14"
 tutorPreload: "Walk me through the review-test-commit cycle for my latest change."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Practice the review-test-commit cycle
 
-## Objective
+## What you will build
+An rtc-lab project where you practiced the full review-test-commit cycle: caught a removed validation in a diff, saw a test fail, fixed the issue, and committed only after all tests passed.
 
+## Why this matters
+Every agentic developer runs code on their local machine. A compromised machine means compromised keys, leaked data, and potentially compromised production systems. Local security hygiene is the baseline that makes every other security measure meaningful.
+
+## Before you start
 Most security mistakes happen when developers commit without thinking. They write code, `git add .`, `git commit`, and push — skipping the steps that catch problems.
 
 The **review → test → commit** cycle is a three-step habit:
@@ -20,6 +29,7 @@ The **review → test → commit** cycle is a three-step habit:
 3. **Commit** — Only after review and tests pass, create a clean, atomic commit.
 
 In this lesson you will practice the full cycle on a real code change, building muscle memory that will protect every project you work on.
+
 
 ## Walkthrough
 
@@ -372,4 +382,9 @@ The commit should contain exactly `calculator.py` and `test_calculator.py`.
 <VerificationBlock
   deliverable="An rtc-lab project where you practiced the full review-test-commit cycle: caught a removed validation in a diff, saw a test fail, fixed the issue, and committed only after all tests passed."
   verifyCheck="Run `python -m pytest test_calculator.py -v` — all six tests should pass. Run `git log --oneline` — two commits should be visible (initial and the multiply feature)."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

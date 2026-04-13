@@ -5,13 +5,23 @@ chapterNumber: "2.2"
 pathNumber: "2"
 tutorPreload: "Check whether my rename plan will break references or lose files."
 verifyType: "terminal_output"
+groupId: "1.1"
+clawClassification: "core"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Rename and move without breaking things
 
-## Objective
+## What you will build
+The reorganized tiny-agent-project/ with INSTRUCTIONS.md at the root, main.py.bak in src/, and plan.md back in docs/.
 
+## Why this matters
+The terminal is the lingua franca of every professional development environment. Navigating confidently from the command line is what separates a developer who can work anywhere from one who is helpless without a GUI. These skills transfer directly to remote servers, CI runners, and containerized environments.
+
+## Before you start
 Use `mv` / `Move-Item` and `cp` / `Copy-Item` to rename files, move them between folders, copy them for safety, and undo a bad move. By the end you will have reorganized `tiny-agent-project/` without losing any content.
+
 
 ## Walkthrough
 
@@ -188,4 +198,9 @@ You should see `INSTRUCTIONS.md` at the root, `main.py` and `main.py.bak` in `sr
 <VerificationBlock
   deliverable="The reorganized tiny-agent-project/ with INSTRUCTIONS.md at the root, main.py.bak in src/, and plan.md back in docs/."
   verifyCheck="Run tree . (macOS/Linux) or Get-ChildItem -Recurse -Name (Windows) and confirm INSTRUCTIONS.md, src/main.py, src/main.py.bak, docs/plan.md, and tests/test_main.py all appear."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

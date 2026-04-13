@@ -4,14 +4,24 @@ lessonNumber: "16.3.1"
 chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Review my file-operations script and flag anything that could delete data I did not intend to lose."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.5"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Use scripts to automate file operations
 
-## Objective
+## What you will build
+By the end of this lesson you will have three working scripts: one that organizes a messy downloads folder by file type, one that batch-renames files with a consistent pattern, and one that cleans up old log files.
 
+## Why this matters
+Computer use and browser automation extend Claude's capabilities to the full surface area of a knowledge worker's day — not just files and code, but UIs, web apps, and dashboards. Sandbox discipline prevents these powerful capabilities from doing unintended damage during development.
+
+## Before you start
 By the end of this lesson you will have three working scripts: one that organizes a messy downloads folder by file type, one that batch-renames files with a consistent pattern, and one that cleans up old log files. Each script runs on your local machine with no browser or API required. You will write both a Bash version (macOS / Linux) and a PowerShell version (Windows).
+
 
 ## Walkthrough
 
@@ -257,6 +267,10 @@ Write-Host "Done."
 | PowerShell script won't run — `execution policy` error | Windows blocks unsigned scripts by default | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once |
 | `find: unknown predicate` on macOS | GNU vs BSD `find` syntax difference | macOS uses BSD `find` — the `-mtime +N` syntax works on both, but more complex predicates may differ |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The sandbox or container started without errors and is accessible",
+    "The specified automation or browser action completed in the isolated environment",
+    "The sandbox was cleanly stopped or destroyed after the lesson task was complete",
+]}>
 Run the organize script on the `test-downloads` folder and confirm files are sorted into extension-based subfolders. Run the batch-rename script on `test-rename` and confirm files have a date prefix. Run the clean-logs script in dry-run mode and confirm it lists files without deleting anything.
 </VerificationBlock>

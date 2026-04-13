@@ -4,13 +4,22 @@ lessonNumber: "14.2.1"
 chapterNumber: "14.2"
 pathNumber: "14"
 tutorPreload: "Show me a diff and help me spot the security problem hidden in it."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Read diffs before accepting changes
 
-## Objective
+## What you will build
+A diff-review-lab project where you created a baseline, simulated a dangerous change, and identified three security problems in the diff.
 
+## Why this matters
+Every agentic developer runs code on their local machine. A compromised machine means compromised keys, leaked data, and potentially compromised production systems. Local security hygiene is the baseline that makes every other security measure meaningful.
+
+## Before you start
 When Claude Code suggests a change to your project, it shows you a diff — a line-by-line comparison of what will change. Most beginners accept every diff without reading it. That is how `eval()` calls, hardcoded URLs, removed input validation, and accidentally deleted security checks end up in production code.
 
 In this lesson you will:
@@ -20,6 +29,7 @@ In this lesson you will:
 3. Build a personal diff-review checklist you will use every time before accepting AI-generated changes.
 
 Reading diffs is your last line of defense before code enters your project.
+
 
 ## Walkthrough
 
@@ -220,4 +230,9 @@ This should show no output — meaning your working copy matches the last commit
 <VerificationBlock
   deliverable="A diff-review-lab project where you created a baseline, simulated a dangerous change, and identified three security problems in the diff."
   verifyCheck="Run `git log --oneline` — the initial safe commit should be visible. Run `git diff server.js` — there should be no uncommitted changes (you reset to the safe version)."
+  rubricCriteria={[
+    "Every audit criterion has been assessed with a Pass, Fail, or N/A rating",
+    "Each Fail item includes a remediation plan with a specific next action",
+    "The audit document is saved at the correct path and readable without errors",
+  ]}
 />

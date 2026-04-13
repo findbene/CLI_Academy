@@ -4,14 +4,24 @@ lessonNumber: "11.1.2"
 chapterNumber: "11.1"
 pathNumber: "11"
 tutorPreload: "Help me decide which isolation approach fits my use case — local venv, Docker, or a cloud sandbox."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Compare local, Docker, and cloud sandboxes
 
-## Objective
+## What you will build
+A sandbox-comparison.md file listing which isolation tools are available on your machine, and terminal output showing a venv can see your home directory but Docker cannot.
 
+## Why this matters
+Custom runtimes are how agentic developers move from using Claude to building with Claude. Understanding the sandbox model and runtime foundations is the prerequisite for everything in the advanced Claw ecosystem. This knowledge is increasingly sought after in AI engineering roles.
+
+## Before you start
 By the end of this lesson you will understand four levels of code isolation — bare metal, language-level virtual environments, OS-level Docker containers, and cloud sandboxes — and be able to choose the right one for a given situation. You will generate a comparison snapshot from your own machine to anchor the theory.
+
 
 ## Walkthrough
 
@@ -144,4 +154,9 @@ Get-Content "$HOME\sandbox-comparison.md"
 <VerificationBlock
   deliverable="A sandbox-comparison.md file listing which isolation tools are available on your machine, and terminal output showing a venv can see your home directory but Docker cannot."
   verifyCheck="The comparison file exists with accurate tool versions, and the Docker container output shows an empty or default home directory while the venv output shows real home contents."
+  rubricCriteria={[
+    "The A sandbox-comparison.md file listing which isolation tools are available on your machine, and terminal output showing a venv can see your home directory but Docker cannot. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

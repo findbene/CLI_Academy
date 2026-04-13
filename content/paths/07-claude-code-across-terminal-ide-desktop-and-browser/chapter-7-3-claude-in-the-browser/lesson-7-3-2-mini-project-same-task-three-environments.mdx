@@ -4,14 +4,24 @@ lessonNumber: "7.3.2"
 chapterNumber: "7.3"
 pathNumber: "7"
 tutorPreload: "Help me compare how the same refactoring task works across Claude Code CLI, Claude Desktop, and claude.ai."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.3"
+clawClassification: "elective"
+estimatedMinutes: 40
+prerequisiteLesson: null
 ---
 
 # Mini-project: same task, three environments
 
-## Objective
+## What you will build
+By the end of this lesson you will perform the same coding task — refactoring a messy function — in all three Claude environments (CLI, Desktop, Browser), document what each environment did well and where it struggled, and produce a comparison table in a Markdown file.
 
+## Why this matters
+Real-world agentic work spans surfaces — you start in the terminal, switch to the IDE, check GitHub, and come back to the terminal. Learners who can only use Claude in one surface leave efficiency on the table. Cross-surface fluency is what makes Claude Code genuinely useful for full development cycles.
+
+## Before you start
 By the end of this lesson you will perform the same coding task — refactoring a messy function — in all three Claude environments (CLI, Desktop, Browser), document what each environment did well and where it struggled, and produce a comparison table in a Markdown file. This gives you firsthand experience choosing the right tool for the job.
+
 
 ## Walkthrough
 
@@ -334,7 +344,11 @@ You should see commits for the original file, the CLI refactor, and the comparis
 | PowerShell here-string `@'...'@` fails | The closing `'@` must be at the start of a line with no leading spaces | Make sure `'@` is flush-left on its own line |
 | Git says "pathspec did not match" on checkout | Typo in the filename | Run `git log --oneline --stat` to see exact filenames in each commit |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The command or workflow step completed on the specified surface (IDE/terminal/browser)",
+    "Output or result matches what the lesson describes as expected",
+    "The cross-surface handoff was completed without losing context from the previous step",
+]}>
 Run these commands from the `env-comparison` folder to confirm everything is in place:
 
 ```bash

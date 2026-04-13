@@ -24,6 +24,34 @@
     "note": "Best used during first setup and first-run checks."
   },
   {
+    "entityType": "asset",
+    "entitySlug": "claude-code-setup-checklist",
+    "pathSlug": "01-start-here",
+    "lessonSlug": "lesson-1-1-1-create-the-cli-academy-workspace",
+    "note": "Use during workspace creation to verify all setup steps are complete."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "claude-code-setup-checklist",
+    "pathSlug": "01-start-here",
+    "lessonSlug": "lesson-1-1-2-capture-a-machine-baseline",
+    "note": "Cross-check baseline captures against this checklist."
+  },
+  {
+    "entityType": "exercise",
+    "entitySlug": "rewrite-a-vague-request",
+    "pathSlug": "01-start-here",
+    "lessonSlug": "lesson-1-3-1-complete-the-first-tiny-project",
+    "note": "Practice framing a clear project request before asking Claude to build it."
+  },
+  {
+    "entityType": "runtime",
+    "entitySlug": "claude-code-cli",
+    "pathSlug": "01-start-here",
+    "lessonSlug": "lesson-1-3-3-zero-claw-hello-world",
+    "note": "This lesson uses Claude Code CLI directly."
+  },
+  {
     "entityType": "quiz",
     "entitySlug": "setup-surfaces-and-permissions",
     "pathSlug": "03-claude-code",
@@ -87,6 +115,18 @@
     "pathSlug": "03-claude-code",
     "lessonSlug": "lesson-3-3-3-mini-project-first-real-improvement",
     "note": "Pairs well with first prompt rewrites and safer implementation requests."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "builder-extension-pack-starter",
+    "pathSlug": "03-claude-code",
+    "note": "Extend your Claude Code setup with this builder pack after the path is complete."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "claude-md-template-library",
+    "pathSlug": "03-claude-code",
+    "note": "Use a CLAUDE.md template to bootstrap well-structured project context for every new Claude Code project."
   },
   {
     "entityType": "quiz",
@@ -177,5 +217,53 @@
     "entitySlug": "runtime-validation-lab",
     "pathSlug": "12-skills-memory-heartbeats-and-scheduled-work",
     "note": "Reuse the validation lab when learners compare persistent runtime behavior and sanity checks."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "builder-extension-pack-starter",
+    "pathSlug": "18-real-world-agent-builds-for-everyday-productivity",
+    "note": "After completing Path 18, use this pack to make your workflows reusable."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "prompt-makeover-pack",
+    "pathSlug": "19-capstones-portfolio-proof-and-job-ready-evidence",
+    "note": "Use the prompt makeover pack to strengthen the framing in your portfolio pieces."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "portfolio-template-pack",
+    "pathSlug": "19-capstones-portfolio-proof-and-job-ready-evidence",
+    "note": "Use these templates to document your capstone work in a job-ready format."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "claude-md-template-library",
+    "pathSlug": "22-dev-environment-hardening",
+    "note": "Use the appropriate CLAUDE.md template as a baseline when hardening your dev environment configuration."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "portfolio-template-pack",
+    "pathSlug": "27-job-ready-brief",
+    "note": "Use the one-page brief and case study templates to produce employer-facing evidence from this path."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "debug-session-template",
+    "pathSlug": "23-debug-first-thinking",
+    "note": "Use this template to log every debug session with a consistent structure throughout the path."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "mcp-server-starter-template",
+    "pathSlug": "21-mcp-server-setup",
+    "note": "Clone and customize this starter when building your first custom MCP server in this path."
+  },
+  {
+    "entityType": "asset",
+    "entitySlug": "interview-prep-question-bank",
+    "pathSlug": "27-job-ready-brief",
+    "note": "Work through the question bank with Claude as mock interviewer to prepare for AI-adjacent roles."
   }
 ]

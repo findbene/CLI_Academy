@@ -5,13 +5,23 @@ chapterNumber: "15.3"
 pathNumber: "15"
 tutorPreload: "Show me how to use tmux so Claude Code survives an SSH disconnect."
 verifyType: "terminal_output"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Use tmux or screen for persistent sessions
 
-## Objective
-
+## What you will build
 By the end of this lesson you will be able to start a tmux session on a remote server, run Claude Code inside it, detach from the session, close your SSH connection, reconnect later, and reattach to find Claude Code still running exactly where you left off.
+
+## Why this matters
+Remote systems are higher-stakes than local ones — they're shared, persistent, and often connected to production data. Secure remote setup is the first thing any security review will check when an organization adopts agentic tooling. Getting this right prevents incidents that are expensive and embarrassing.
+
+## Before you start
+By the end of this lesson you will be able to start a tmux session on a remote server, run Claude Code inside it, detach from the session, close your SSH connection, reconnect later, and reattach to find Claude Code still running exactly where you left off.
+
 
 ## Walkthrough
 
@@ -136,6 +146,10 @@ tmux is preferred for its better pane management and scripting, but screen works
 | Claude Code session loses context after reattach | Claude Code itself timed out (API token expired or idle timeout) | Restart Claude Code inside the tmux session — the tmux session is still alive, only the Claude process exited |
 | Server rebooted and all tmux sessions are gone | tmux sessions do not survive reboots | This is expected; restart tmux and Claude Code after a reboot |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The remote setup step completed without authentication errors",
+    "Connection or access test passes with the correct credentials or token",
+    "The configuration persists after closing and reopening the terminal session",
+]}>
 Run `tmux new -s test-session`, then inside the session run `echo "tmux is working"`. Detach with `Ctrl+b` then `d`. Run `tmux ls` to confirm the session is listed. Reattach with `tmux attach -t test-session` and verify your shell history is intact. Finally, exit the session with `exit` and confirm `tmux ls` shows no sessions.
 </VerificationBlock>

@@ -4,13 +4,24 @@ lessonNumber: "19.1.1"
 chapterNumber: "19.1"
 pathNumber: "19"
 tutorPreload: "Pressure-test my capstone scope and cut anything nonessential."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "6.1"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Plan the workflow and scope
 
-## Objective
+## What you will build
+A capstone workspace containing SCOPE.md, CLAUDE.md, and logs/scope-review.md for one real automation workflow.
+
+## Why this matters
+The portfolio capstone is the artifact that converts learning into professional evidence. Employers and clients cannot assess what they cannot see. A concrete, documented portfolio project answers the question 'show me something you built' — the question that closes every technical hiring conversation.
+
+## Before you start
 Define a real capstone workflow you can defend in a portfolio. In this lesson, you will scope one bounded automation workflow, write a real SCOPE.md, choose the exact input and output artifacts, and document stop rules that prevent irreversible commits, deployed secrets, or runaway agent behavior.
+
 
 ## Walkthrough
 
@@ -217,4 +228,9 @@ If the review says your task is too broad, reduce it now. A smaller workflow wit
 <VerificationBlock 
     deliverable="A capstone workspace containing SCOPE.md, CLAUDE.md, and logs/scope-review.md for one real automation workflow."
     verifyCheck="A reviewer can see the exact repo input, output artifact, and stop rules, and can tell the workflow is bounded against irreversible repo changes and secret exposure."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

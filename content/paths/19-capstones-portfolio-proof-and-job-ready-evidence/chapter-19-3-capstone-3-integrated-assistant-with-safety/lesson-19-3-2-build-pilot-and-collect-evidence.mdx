@@ -4,13 +4,24 @@ lessonNumber: "19.3.2"
 chapterNumber: "19.3"
 pathNumber: "19"
 tutorPreload: "Help me review this pilot evidence and decide whether it is ready for broader use."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "6.1"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Build, pilot, and collect evidence
 
-## Objective
+## What you will build
+A pilot package containing pilot-output/curriculum-change-brief.md, portfolio-evidence/run-001.md, portfolio-evidence/failure-test.md, and portfolio-evidence/iteration-001.md.
+
+## Why this matters
+The portfolio capstone is the artifact that converts learning into professional evidence. Employers and clients cannot assess what they cannot see. A concrete, documented portfolio project answers the question 'show me something you built' — the question that closes every technical hiring conversation.
+
+## Before you start
 Run the integrated workflow on real repo data, capture the evidence that fed the brief, test one failure mode, and record at least one iteration based on what you learned. By the end of this lesson, you will have a real pilot artifact plus proof that you checked how the workflow behaves when the input is incomplete.
+
 
 ## Walkthrough
 
@@ -135,4 +146,9 @@ This prevents invented summaries and keeps the workflow tied to real repo state.
 <VerificationBlock 
     deliverable="A pilot package containing pilot-output/curriculum-change-brief.md, portfolio-evidence/run-001.md, portfolio-evidence/failure-test.md, and portfolio-evidence/iteration-001.md."
     verifyCheck="You can show a real integrated run, a tested no-op failure mode, and one documented iteration that made the workflow safer or more accurate."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

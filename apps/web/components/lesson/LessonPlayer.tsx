@@ -42,6 +42,8 @@ interface LessonPlayerProps {
   hasSafetyWarning: boolean;
   tutorPreload?: string;
   modeBalance?: string;
+  groupId?: string;
+  clawClassification?: string;
   knownIssueTitle?: string;
   previousLessonHref?: string;
   nextLessonHref?: string;
@@ -88,6 +90,8 @@ export function LessonPlayer({
   hasSafetyWarning,
   tutorPreload,
   modeBalance,
+  groupId,
+  clawClassification,
   knownIssueTitle,
   previousLessonHref,
   nextLessonHref,
@@ -335,6 +339,19 @@ export function LessonPlayer({
               {pathTitle}
             </Link>
             <h1 className="text-4xl font-semibold tracking-tight">{lessonTitle}</h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {clawClassification ? (
+                <span
+                  className="badge"
+                  data-tone={clawClassification === 'core' ? 'accent' : clawClassification === 'advanced' ? 'warning' : undefined}
+                >
+                  {clawClassification}
+                </span>
+              ) : null}
+              {groupId ? (
+                <span className="badge">Group {groupId}</span>
+              ) : null}
+            </div>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <span className="badge" data-tone={freshnessTone(freshnessState)}>
                 {freshnessLabel(freshnessState)}

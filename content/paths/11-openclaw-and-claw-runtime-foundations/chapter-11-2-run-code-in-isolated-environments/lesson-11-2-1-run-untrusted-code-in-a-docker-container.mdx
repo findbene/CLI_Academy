@@ -4,14 +4,24 @@ lessonNumber: "11.2.1"
 chapterNumber: "11.2"
 pathNumber: "11"
 tutorPreload: "Walk me through building a locked-down Docker container for running code I did not write."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Run untrusted code in a Docker container
 
-## Objective
+## What you will build
+Terminal output showing the sandboxed script was blocked from network access, could only write to the container
 
+## Why this matters
+Custom runtimes are how agentic developers move from using Claude to building with Claude. Understanding the sandbox model and runtime foundations is the prerequisite for everything in the advanced Claw ecosystem. This knowledge is increasingly sought after in AI engineering roles.
+
+## Before you start
 By the end of this lesson you will build a minimal Docker image designed for sandboxing, run untrusted code inside it with file system, network, and resource limits, and prove that the container cannot affect your host machine.
+
 
 ## Walkthrough
 
@@ -229,4 +239,9 @@ if (Test-Path "$env:TEMP\escape.txt") { Write-Host "LEAK DETECTED" } else { Writ
 <VerificationBlock
   deliverable="Terminal output showing the sandboxed script was blocked from network access, could only write to the container's /tmp, and your host file system has no escape.txt file."
   verifyCheck="The evil_test.py output shows network BLOCKED, and the host check confirms no file leaked from the container."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

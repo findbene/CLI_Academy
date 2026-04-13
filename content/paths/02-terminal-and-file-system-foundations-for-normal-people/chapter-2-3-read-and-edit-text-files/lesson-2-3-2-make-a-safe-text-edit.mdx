@@ -4,14 +4,24 @@ lessonNumber: "2.3.2"
 chapterNumber: "2.3"
 pathNumber: "2"
 tutorPreload: "I need to change one line safely. Show me the smallest safe edit and how to verify it."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "1.1"
+clawClassification: "core"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Make a safe text edit
 
-## Objective
+## What you will build
+Terminal output showing the backup copy, the appended lines, and a diff comparing the backup to the edited file.
 
+## Why this matters
+The terminal is the lingua franca of every professional development environment. Navigating confidently from the command line is what separates a developer who can work anywhere from one who is helpless without a GUI. These skills transfer directly to remote servers, CI runners, and containerized environments.
+
+## Before you start
 Edit a text file safely using the backup-edit-verify pattern. You will make a backup copy, edit the file with two different methods (command-line append and a real editor), and confirm the change with `diff`.
+
 
 ## Walkthrough
 
@@ -182,4 +192,9 @@ Only delete the backup once you are sure the edited version is correct.
 <VerificationBlock
   deliverable="Terminal output showing the backup copy, the appended lines, and a diff comparing the backup to the edited file."
   verifyCheck="Output includes a cp/Copy-Item backup command, appended content visible in the file, and a diff/Compare-Object showing the added lines."
+  rubricCriteria={[
+    "The command ran without errors and produced visible output",
+    "The output matches the expected format or values described in the lesson",
+    "The command was run from the correct working directory",
+  ]}
 />

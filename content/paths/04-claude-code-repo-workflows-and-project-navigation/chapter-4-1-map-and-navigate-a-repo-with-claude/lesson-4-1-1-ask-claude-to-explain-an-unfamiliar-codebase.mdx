@@ -5,13 +5,23 @@ chapterNumber: "4.1"
 pathNumber: "4"
 tutorPreload: "Help me understand what this project does and how its code is organized."
 verifyType: "terminal_output"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Ask Claude to explain an unfamiliar codebase
 
-## Objective
+## What you will build
+A plain-English summary of the cloned project confirmed by reading the entry-point file.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Clone a real open-source repository you have never seen before and use Claude Code to understand what it does, how it is organized, and where to start reading. By the end of this lesson you will have a plain-English summary of the project confirmed against the actual source files.
+
 
 ## Walkthrough
 
@@ -100,4 +110,9 @@ Claude will correct itself or explain what you are seeing.
 <VerificationBlock
   deliverable="A plain-English summary of the cloned project confirmed by reading the entry-point file."
   verifyCheck="Learner can state what the project does, name the main entry file, and describe at least two top-level directories."
+  rubricCriteria={[
+    "A plain-English summary of the cloned project confirmed by reading the entry-point file exists as described and is accessible",
+    "All required elements mentioned in the deliverable are present and correctly formed",
+    "The artifact was produced by following the walkthrough steps, not by copying an existing file",
+  ]}
 />

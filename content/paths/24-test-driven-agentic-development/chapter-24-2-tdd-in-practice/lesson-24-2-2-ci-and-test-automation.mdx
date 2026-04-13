@@ -1,0 +1,355 @@
+---
+title: "CI and Test Automation: Making Tests Run Automatically"
+lessonNumber: "24.2.2"
+chapterNumber: "24.2"
+pathNumber: "24"
+groupId: "3.8"
+clawClassification: "elective"
+prerequisiteLesson: "24.2.1"
+estimatedMinutes: 30
+verifyType: "code_submission"
+tutorPreload: "I'm about to add a GitHub Actions CI workflow that runs pytest on every push. Help me understand how CI closes the TDD loop and what a minimal but correct workflow YAML should contain."
+---
+
+# CI and Test Automation: Making Tests Run Automatically
+
+## What you will build
+
+A `.github/workflows/test.yml` that runs pytest on every push and pull request. You will have Claude write the workflow YAML, push a change, and confirm the CI run goes green in GitHub Actions.
+
+## Why this matters
+
+The TDD loop is only complete when tests run automatically — not just when you remember to run them. Continuous Integration (CI) closes the loop: every time you push code, the full test suite runs on a clean machine, with no "works on my machine" exceptions.
+
+Here is what breaks without CI:
+
+- A teammate pushes a change that breaks a test. You discover it three days later when you run the suite yourself. By then, several more commits have been added on top of the broken one, and it is hard to tell which change caused the failure.
+- You are working fast and forget to run tests before pushing. One push breaks the main branch.
+- A test that passes on your machine fails on the CI server because of a missing dependency. You would have never known without CI.
+
+With CI:
+
+- Every push triggers an automated test run.
+- GitHub shows a green checkmark or red X on every commit and pull request.
+- You and your team get instant feedback on every change.
+
+The workflow YAML file you are about to create is a Claude-written artifact. You define what you want ("run pytest on every push"), Claude writes the YAML, you verify it works. This is the TDD + Claude pattern applied to infrastructure.
+
+## Before you start
+
+- A GitHub account and a repository with push access.
+- The `tdd-lab` project from earlier lessons — or any Python project with a `test_*.py` file.
+- Git installed and the project initialized as a git repo.
+- The project pushed to GitHub (if not already).
+
+If your project is not yet on GitHub:
+
+**macOS / Linux:**
+```bash
+cd ~/cli-academy/projects/tdd-lab
+git init
+git add .
+git commit -m "chore: initial commit — TDD lab with test suite"
+# Then create a new repo on github.com and push:
+git remote add origin https://github.com/YOUR_USERNAME/tdd-lab.git
+git branch -M main
+git push -u origin main
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\cli-academy\projects\tdd-lab"
+git init
+git add .
+git commit -m "chore: initial commit — TDD lab with test suite"
+git remote add origin https://github.com/YOUR_USERNAME/tdd-lab.git
+git branch -M main
+git push -u origin main
+```
+
+## The walkthrough
+
+### Step 1 — Understand what the workflow must do
+
+A minimal pytest CI workflow needs to:
+
+1. Trigger on every push to `main` and on every pull request.
+2. Check out the repository.
+3. Set up the correct Python version.
+4. Install dependencies (at minimum: `pytest`).
+5. Run `pytest` and fail the workflow if any test fails.
+
+This is five steps. Simple. Claude can write this in one shot.
+
+### Step 2 — Ask Claude to write the workflow YAML
+
+Open Claude Code and send this prompt:
+
+```
+Write a GitHub Actions workflow file for my Python project.
+Save it at .github/workflows/test.yml
+
+Requirements:
+- Trigger on: push to main, and on pull_request
+- Run on: ubuntu-latest
+- Python version: 3.11
+- Install: pytest (no other dependencies needed for this project)
+- Run: pytest with verbose output
+- The workflow job should be named "test"
+- The workflow itself should be named "Run Tests"
+
+Write the complete YAML. No extra features — just these 5 steps.
+```
+
+Claude will produce something like:
+
+```yaml
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run tests
+        run: pytest -v
+```
+
+### Step 3 — Create the workflow file
+
+**macOS / Linux:**
+```bash
+mkdir -p .github/workflows
+cat > .github/workflows/test.yml << 'EOF'
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run tests
+        run: pytest -v
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path ".github\workflows" -Force
+@"
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run tests
+        run: pytest -v
+"@ | Set-Content .github\workflows\test.yml
+```
+
+### Step 4 — Verify the YAML is valid before pushing
+
+Check the file looks correct:
+
+**macOS / Linux:**
+```bash
+cat .github/workflows/test.yml
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content .github\workflows\test.yml
+```
+
+Things to confirm:
+- Indentation uses spaces, not tabs (YAML requires spaces).
+- `on:` block has both `push` and `pull_request`.
+- `python-version` is quoted (`"3.11"` not `3.11`).
+- All four steps are present.
+
+### Step 5 — Commit and push
+
+**macOS / Linux:**
+```bash
+git add .github/workflows/test.yml
+git commit -m "ci: add GitHub Actions workflow to run pytest on push"
+git push
+```
+
+**Windows PowerShell:**
+```powershell
+git add .github\workflows\test.yml
+git commit -m "ci: add GitHub Actions workflow to run pytest on push"
+git push
+```
+
+### Step 6 — Watch the CI run in GitHub
+
+1. Open your repository on `github.com`.
+2. Click the **Actions** tab.
+3. You should see a workflow run titled "Run Tests" triggered by your push.
+4. Click into the run to see the job steps.
+5. Wait for all steps to complete.
+
+Expected output in the "Run tests" step:
+```
+======================== test session starts =========================
+platform linux -- Python 3.11.x, pytest-7.x.x
+rootdir: /home/runner/work/tdd-lab/tdd-lab
+
+test_formatter.py::test_format_name_strips_extra_whitespace       PASSED
+test_formatter.py::test_format_name_title_cases_all_caps_input    PASSED
+test_formatter.py::test_format_name_handles_apostrophe_in_name    PASSED
+test_invoice.py::test_single_item_no_discount_no_tax              PASSED
+...
+
+========================= N passed in 0.xx s =========================
+```
+
+A green checkmark on the commit means CI passed.
+
+### Step 7 — Confirm CI catches a broken test
+
+Make a deliberate breaking change, push it, and watch CI fail:
+
+**macOS / Linux:**
+```bash
+# Temporarily break one test
+python3 -c "
+content = open('formatter.py').read()
+broken = content.replace('return normalized.title()', 'return normalized.upper()')
+open('formatter.py', 'w').write(broken)
+print('Broke formatter.py — normalized.title() replaced with normalized.upper()')
+"
+git add formatter.py
+git commit -m "test: intentionally broken commit to verify CI catches failures"
+git push
+```
+
+**Windows PowerShell:**
+```powershell
+$content = Get-Content formatter.py -Raw
+$broken = $content -replace 'return normalized\.title\(\)', 'return normalized.upper()'
+Set-Content formatter.py $broken
+Write-Host "Broke formatter.py"
+git add formatter.py
+git commit -m "test: intentionally broken commit to verify CI catches failures"
+git push
+```
+
+Go to GitHub Actions — the new run will show a red X. The failing step "Run tests" will show the assertion error.
+
+Now fix it and push again:
+
+**macOS / Linux:**
+```bash
+python3 -c "
+content = open('formatter.py').read()
+fixed = content.replace('return normalized.upper()', 'return normalized.title()')
+open('formatter.py', 'w').write(fixed)
+print('Fixed formatter.py')
+"
+git add formatter.py
+git commit -m "fix: restore correct title() behavior in formatter"
+git push
+```
+
+**Windows PowerShell:**
+```powershell
+$content = Get-Content formatter.py -Raw
+$fixed = $content -replace 'return normalized\.upper\(\)', 'return normalized.title()'
+Set-Content formatter.py $fixed
+Write-Host "Fixed formatter.py"
+git add formatter.py
+git commit -m "fix: restore correct title() behavior in formatter"
+git push
+```
+
+The CI run goes green again. The TDD loop is now fully automated.
+
+### Step 8 — Understanding what "CI" means for your workflow
+
+With this workflow in place, the following is now true for every push to your repo:
+
+- Tests run within 30–60 seconds of the push.
+- Failures are flagged immediately on the commit and in your email.
+- No one can merge a pull request (if you enable branch protection) without the tests passing.
+- The test history is preserved in GitHub Actions — you can see when tests started failing and which commit caused it.
+
+You are no longer relying on human discipline to run the test suite. The machine runs it automatically, every time.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Workflow file not found by GitHub Actions | File is not at the exact path `.github/workflows/test.yml` | Run `git ls-files .github/` to confirm the file is tracked; check for typos in the path |
+| CI fails with `ModuleNotFoundError` | A test imports a module that is not installed in CI | Add the module to the `pip install` step: `pip install pytest your-module` |
+| YAML parse error in GitHub Actions | Tab character used for indentation | Open the file in an editor that shows whitespace; replace all tabs with spaces (2-space indent is standard) |
+| Workflow triggers on every branch, not just main | The `push` trigger has no `branches` filter | Add `branches: [main]` under the push trigger as shown in Step 2 |
+| Python version mismatch between local and CI | Local Python is 3.9 but workflow uses 3.11 | Match the version in `test.yml` to your local Python version; check with `python3 --version` |
+| Tests pass locally but fail in CI | A file that exists locally is not committed to git | Run `git status` to find untracked files; add and commit the missing files |
+
+<VerificationBlock
+  deliverable="A .github/workflows/test.yml committed to GitHub with a confirmed green CI run in GitHub Actions."
+  verifyCheck="Submit the URL of your GitHub Actions run showing all tests passing (green checkmark). Also submit the content of .github/workflows/test.yml."
+  rubricCriteria={[
+    ".github/workflows/test.yml exists and is committed",
+    "Workflow triggers on push to main and pull_request",
+    "Workflow uses ubuntu-latest and Python 3.11",
+    "GitHub Actions run shows green checkmark",
+    "pytest output in the Actions log shows all tests passing"
+  ]}
+/>

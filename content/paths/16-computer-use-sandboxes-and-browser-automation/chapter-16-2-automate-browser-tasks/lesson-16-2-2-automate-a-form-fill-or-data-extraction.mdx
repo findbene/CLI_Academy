@@ -4,14 +4,24 @@ lessonNumber: "16.2.2"
 chapterNumber: "16.2"
 pathNumber: "16"
 tutorPreload: "Review my Playwright script and tell me if I am selecting elements reliably."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.5"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Automate a form fill or data extraction
 
-## Objective
+## What you will build
+By the end of this lesson you will have written a Playwright script that navigates to a public web page, fills in a form, submits it, and verifies the result.
 
+## Why this matters
+Computer use and browser automation extend Claude's capabilities to the full surface area of a knowledge worker's day — not just files and code, but UIs, web apps, and dashboards. Sandbox discipline prevents these powerful capabilities from doing unintended damage during development.
+
+## Before you start
 By the end of this lesson you will have written a Playwright script that navigates to a public web page, fills in a form, submits it, and verifies the result. You will also write a second script that extracts data from an HTML table and saves it to a JSON file. You will understand locator strategies and why they matter for long-term reliability.
+
 
 ## Walkthrough
 
@@ -224,6 +234,10 @@ Prefer the top of this list. If a page has `data-testid` attributes, use them. I
 | `page.goto: net::ERR_NAME_NOT_RESOLVED` | No internet connection or DNS failure | Check your network; verify the URL is correct |
 | JSON file contains HTML entities instead of clean text | `allTextContents()` returns raw text including markup fragments | Use `allInnerTexts()` instead, or post-process with a regex to strip tags |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The sandbox or container started without errors and is accessible",
+    "The specified automation or browser action completed in the isolated environment",
+    "The sandbox was cleanly stopped or destroyed after the lesson task was complete",
+]}>
 Run both tests: `npx playwright test tests/form-fill.spec.ts tests/extract-data.spec.ts --project=chromium`. Confirm `2 passed` in the output. Verify that `screenshots/todo-filled.png` exists and `screenshots/release-headings.json` contains at least one heading.
 </VerificationBlock>

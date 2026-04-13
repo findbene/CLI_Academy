@@ -1,0 +1,334 @@
+---
+title: "Interview Preparation for AI-Adjacent Roles"
+lessonNumber: "27.1.3"
+chapterNumber: "27.1"
+pathNumber: "27"
+groupId: "6.2"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 25
+verifyType: "code_submission"
+tutorPreload: "I'm about to prepare for interviews at companies that use AI tooling. Help me understand what interviewers in these roles are really trying to find out when they ask about AI safety and verification."
+---
+
+# Interview Preparation for AI-Adjacent Roles
+
+## What you will build
+
+An `INTERVIEW_PREP.md` file containing 10 common interview questions for AI-adjacent roles and your prepared answers for each. You will draft your initial answers, use Claude to stress-test them (by asking Claude to respond as a skeptical interviewer), and refine until each answer is confident, specific, and under 90 seconds when read aloud.
+
+## Why this matters
+
+AI-adjacent roles are growing faster than the hiring process has adapted to them. Interviewers at these companies often do not have standardized questions — they are figuring out what to ask as the field develops. This means the same question can mean different things at different companies, and a candidate who can bridge technical reality with business impact will stand out.
+
+The ten questions in this lesson are drawn from patterns that repeat across these roles: engineering teams want to know you can build reliably; product teams want to know you can constrain AI behavior; operations teams want to know you can debug what you cannot see; leadership wants to know you have thought about risk. Your answers need to speak to all of these audiences.
+
+The preparation document is also useful during the interview itself. If you have written and rehearsed answers to these ten questions, you are covering roughly 80% of the territory that comes up in AI-adjacent first-round and second-round interviews.
+
+## Before you start
+
+- Complete lessons 27.1.1 and 27.1.2 — your projects and your brief give you the examples for your answers
+- Have your CLI Academy project list accessible
+- Claude Code running in your terminal
+- 30–40 minutes for writing and refinement
+
+## The walkthrough
+
+### Step 1 — Understand the ten questions and what they are really asking
+
+Read these questions and the underlying concern each one probes before writing any answers.
+
+| # | Question | What the interviewer is really asking |
+|---|----------|--------------------------------------|
+| 1 | "How do you verify that Claude's output is correct?" | Can you build reliable systems, or do you just trust whatever the model produces? |
+| 2 | "What safeguards do you put in place for AI systems?" | Do you think about failure modes, or do you build optimistically? |
+| 3 | "How do you handle a runaway agent?" | Have you actually dealt with production problems, or just toy demos? |
+| 4 | "How would you add AI to our existing workflow?" | Can you assess a real situation and make a proportionate recommendation? |
+| 5 | "What do you do when Claude gives a confidently wrong answer?" | Do you have a verification strategy, or do you defer to the model? |
+| 6 | "How do you manage AI costs in production?" | Are you thinking like a professional developer or like a hobbyist? |
+| 7 | "How do you handle sensitive data when using AI APIs?" | Do you understand data privacy obligations, or are you naive about them? |
+| 8 | "What is the biggest limitation of current AI coding tools?" | Are you honest about the technology, or overselling it? |
+| 9 | "How would you explain this AI system to a non-technical stakeholder?" | Can you communicate across technical boundaries? |
+| 10 | "Where do you see AI tooling in 3 years, and how does that affect your work now?" | Are you building durable skills, or chasing hype? |
+
+### Step 2 — Create your preparation file with skeleton answers
+
+**macOS / Linux:**
+```bash
+cd ~/projects/job-ready
+
+cat > INTERVIEW_PREP.md << 'EOF'
+# Interview Preparation — AI-Adjacent Roles
+
+**Date prepared:** [Today's date]
+**Target roles:** [List 2-3 job titles you are interviewing for]
+
+---
+
+## Q1: How do you verify that Claude's output is correct?
+
+**Draft answer:**
+[Write your answer here. Reference a specific project where you had to verify AI output.
+Include: what verification method you used, what you checked for, one example of catching an error.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q2: What safeguards do you put in place for AI systems?
+
+**Draft answer:**
+[Write your answer here. Reference specific tools: rate_limiter.py, CLAUDE.md permission scoping,
+MAX_ITERATIONS guard. Name at least two concrete safeguards from your own projects.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q3: How do you handle a runaway agent?
+
+**Draft answer:**
+[Write your answer here. Describe the detection step (log volume spike, cost spike, time limit),
+the stopping step (how to kill a Claude Code session or trip the MAX_ITERATIONS guard),
+and the post-mortem step (reading the loop_guard_report.txt).]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q4: How would you add AI to our existing workflow?
+
+**Draft answer:**
+[Write your answer here. Use the framework: identify the highest-friction manual step,
+check whether AI can reduce that friction reliably, start with a narrow pilot,
+measure before expanding. Use a concrete example from your work.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q5: What do you do when Claude gives a confidently wrong answer?
+
+**Draft answer:**
+[Write your answer here. Describe your verification workflow: what signals tell you an answer
+might be wrong, how you cross-check (run the code, check the docs, ask a follow-up),
+and what you do with the incorrect answer (log it, refine the prompt, add a test).]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q6: How do you manage AI costs in production?
+
+**Draft answer:**
+[Write your answer here. Reference: daily rate limiters, console spend limits, model selection
+(haiku for fast/cheap tasks, sonnet for complex tasks), and token optimization (short prompts,
+no unnecessary context). Name the specific tool you built in lesson 25.1.1.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q7: How do you handle sensitive data when using AI APIs?
+
+**Draft answer:**
+[Write your answer here. Cover: no PII in prompts unless contractually cleared,
+data minimization (send only what the task needs), on-premise alternatives for
+highly sensitive data, checking the API's data retention policy before integrating.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q8: What is the biggest limitation of current AI coding tools?
+
+**Draft answer:**
+[Write your honest answer here. Good candidates: context window limitations (the model forgets
+what it read earlier), hallucination of library APIs that do not exist, inability to detect
+subtle business logic errors, and the latency cost of multi-step reasoning.
+Pick the one that most affects your actual work and explain it concretely.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q9: How would you explain this AI system to a non-technical stakeholder?
+
+**Draft answer:**
+[Write your answer here. Describe a specific system you built. Use an analogy if helpful.
+Cover: what the system does, what it cannot do, what the human oversight step is,
+and what the failure mode looks like if something goes wrong.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+
+---
+
+## Q10: Where do you see AI tooling in 3 years, and how does that affect your work now?
+
+**Draft answer:**
+[Write your honest perspective here. Avoid hype. Cover: which trends you see as durable
+(better reasoning, lower latency, more reliable tool use), which you see as uncertain
+(AGI timelines, regulatory landscape), and what skills you are building now because they
+will matter regardless of which direction the field goes.]
+
+**Refined answer:** [Will be filled in after Claude stress test]
+EOF
+echo "INTERVIEW_PREP.md created — fill in all draft answers before continuing"
+```
+
+**Windows PowerShell:**
+```powershell
+$prep = @'
+# Interview Preparation — AI-Adjacent Roles
+
+**Date prepared:** [Today's date]
+**Target roles:** [List 2-3 job titles]
+
+## Q1: How do you verify that Claude's output is correct?
+
+**Draft answer:**
+[Reference a specific project. Include: verification method, what you checked for, one example of catching an error.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q2: What safeguards do you put in place for AI systems?
+
+**Draft answer:**
+[Name at least two concrete safeguards: rate_limiter.py, CLAUDE.md permission scoping, MAX_ITERATIONS guard.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q3: How do you handle a runaway agent?
+
+**Draft answer:**
+[Describe: detection step, stopping step, post-mortem step. Reference loop_guard_report.txt.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q4: How would you add AI to our existing workflow?
+
+**Draft answer:**
+[Framework: identify high-friction step, narrow pilot, measure before expanding. Use a concrete example.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q5: What do you do when Claude gives a confidently wrong answer?
+
+**Draft answer:**
+[Describe your verification workflow and what you do with incorrect output.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q6: How do you manage AI costs in production?
+
+**Draft answer:**
+[Reference: daily rate limiters, console limits, model selection, token optimization.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q7: How do you handle sensitive data when using AI APIs?
+
+**Draft answer:**
+[Cover: no PII in prompts, data minimization, checking data retention policies.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q8: What is the biggest limitation of current AI coding tools?
+
+**Draft answer:**
+[Pick one real limitation that affects your work. Be concrete and honest.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q9: How would you explain this AI system to a non-technical stakeholder?
+
+**Draft answer:**
+[Name a specific system. Cover: what it does, what it cannot do, human oversight, failure mode.]
+
+**Refined answer:** [After Claude stress test]
+
+## Q10: Where do you see AI tooling in 3 years?
+
+**Draft answer:**
+[Durable trends vs uncertain trends. Skills you are building now and why.]
+
+**Refined answer:** [After Claude stress test]
+'@
+$prep | Out-File "INTERVIEW_PREP.md" -Encoding utf8
+Write-Host "Fill in all draft answers before continuing"
+```
+
+### Step 3 — Fill in all ten draft answers
+
+Open `INTERVIEW_PREP.md` and write your draft answers. Allow 2–3 minutes per question. The goal is not perfection — it is getting your real thinking onto the page so Claude can improve it.
+
+Rules for draft answers:
+- Use specific project names from your CLI Academy work
+- Include at least one concrete number or outcome
+- Do not worry about length — you will cut later
+- Do not write "I would..." for every answer — you want to describe things you have actually done
+
+### Step 4 — Use Claude to stress-test your answers
+
+Once all ten drafts are written, use Claude as a skeptical interviewer:
+
+**macOS / Linux:**
+```bash
+claude "Read my INTERVIEW_PREP.md file. For each question, act as a skeptical senior engineer interviewer and give me one follow-up question that would expose a weak or vague answer. Then tell me what specific detail my draft answer is missing that would make it stronger. Do not rewrite my answers — just flag the gaps."
+```
+
+**Windows PowerShell:**
+```powershell
+claude "Read INTERVIEW_PREP.md. For each question, act as a skeptical interviewer and give me one follow-up question that would expose a weak answer. Tell me what specific detail my draft is missing. Do not rewrite my answers — just flag the gaps."
+```
+
+Read Claude's feedback. For each question where it identified a gap, revise your draft answer to address that gap, then write the refined version in the `**Refined answer:**` field.
+
+### Step 5 — Tighten each answer to 90 seconds
+
+Read each refined answer aloud and time it. An interview answer should be 60–90 seconds — long enough to be substantive, short enough to leave room for follow-up questions.
+
+If an answer is over 90 seconds, ask Claude to compress it:
+
+```bash
+claude "Read my answer to Q3 in INTERVIEW_PREP.md. It is too long. Rewrite it to be 60-90 seconds when read aloud at normal speaking pace, keeping the specific project reference and the concrete example. Do not make it vaguer to make it shorter."
+```
+
+### Step 6 — Verify the prep document is complete
+
+**macOS / Linux:**
+```bash
+# Confirm all 10 questions have refined answers (no placeholder text)
+grep -c "Refined answer:" INTERVIEW_PREP.md   # should be 10
+grep "\[After Claude\|After stress test\]" INTERVIEW_PREP.md && echo "WARNING: Unrefined answers remain" || echo "All answers refined"
+
+# Confirm specific project references appear
+grep -i "rate_limiter\|MAX_ITERATIONS\|CLAUDE.md\|loop_guard\|lesson" INTERVIEW_PREP.md | wc -l
+```
+
+**Windows PowerShell:**
+```powershell
+(Select-String -Path INTERVIEW_PREP.md -Pattern "Refined answer:").Count
+$unrefined = Select-String -Path INTERVIEW_PREP.md -Pattern "\[After Claude"
+if ($unrefined) { Write-Host "WARNING: Unrefined answers remain: $($unrefined.Count)" } else { Write-Host "All answers refined" }
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Draft answers are generic ("I would make sure the output is correct") with no project references | You skipped pulling specific examples from your CLI Academy projects | Open your project directories and pull one concrete detail per answer before continuing |
+| Claude's stress-test identifies the same gap in every answer ("too vague, lacks specifics") | All your draft answers describe what you would do rather than what you have done | Rewrite in past tense: "When I built X, I ran into Y and handled it by Z" |
+| Refined answers are longer than the drafts | Claude added context instead of compressing | Explicitly ask Claude: "Rewrite in 60-75 words. Remove any sentence that does not add new information." |
+| Q10 answer sounds like a press release about AI | You wrote what you thought you should believe rather than what you actually think | Write your honest uncertainty — "I genuinely do not know when X will be reliable, so I am investing in Y because it matters either way" |
+
+<VerificationBlock
+  deliverable="A completed INTERVIEW_PREP.md with all 10 questions answered in both draft and refined form."
+  verifyCheck="Paste the refined answers for Q2 (safeguards), Q3 (runaway agent), and Q6 (cost management). The tutor will check that each answer references a specific tool or project from your CLI Academy work and is under 150 words."
+  rubricCriteria={[
+    "All 10 questions have both a draft answer and a refined answer — no '[After Claude stress test]' placeholders remain",
+    "At least 5 answers reference a specific CLI Academy project, tool, or file by name",
+    "Q3 (runaway agent) mentions either MAX_ITERATIONS, loop_guard_report.txt, or a specific stopping mechanism",
+    "Q6 (cost management) mentions a specific rate limiting approach and at least one cost optimization technique"
+  ]}
+/>

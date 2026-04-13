@@ -4,14 +4,24 @@ lessonNumber: "2.3.3"
 chapterNumber: "2.3"
 pathNumber: "2"
 tutorPreload: "Turn everything I used today into a cheat sheet I can actually trust."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "1.1"
+clawClassification: "core"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Mini project: create your command cheat sheet
 
-## Objective
+## What you will build
+A command-cheat-sheet.md in cli-academy/cheatsheets/ with at least 20 command entries organized into sections, built entirely from the terminal.
 
+## Why this matters
+The terminal is the lingua franca of every professional development environment. Navigating confidently from the command line is what separates a developer who can work anywhere from one who is helpless without a GUI. These skills transfer directly to remote servers, CI runners, and containerized environments.
+
+## Before you start
 Build a real `command-cheat-sheet.md` file by running every command you learned in Path 02, recording the output, and organizing it into a reference you will actually use going forward.
+
 
 ## Walkthrough
 
@@ -228,4 +238,9 @@ You should see at least 20 lines, proving you have documented a solid set of com
 <VerificationBlock
   deliverable="A command-cheat-sheet.md in cli-academy/cheatsheets/ with at least 20 command entries organized into sections, built entirely from the terminal."
   verifyCheck="Run cat command-cheat-sheet.md (macOS/Linux) or Get-Content command-cheat-sheet.md (Windows) and confirm at least five sections and 20 dash-prefixed command entries."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

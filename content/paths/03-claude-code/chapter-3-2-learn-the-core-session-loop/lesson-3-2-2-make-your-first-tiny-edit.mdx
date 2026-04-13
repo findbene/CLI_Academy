@@ -5,13 +5,23 @@ chapterNumber: "3.2"
 pathNumber: "3"
 tutorPreload: "Review this diff like a patient mentor and tell me if anything unnecessary changed."
 verifyType: "terminal_output"
+groupId: "1.2"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Make your first tiny edit
 
-## Objective
+## What you will build
+README.md has a new Usage section added by Claude Code, committed to Git.
 
+## Why this matters
+Claude Code is the primary interface for agentic development. Understanding how it reads context, executes tools, and takes action is the difference between a developer who directs Claude precisely and one who gets unpredictable results. Every advanced agentic pattern builds on this foundation.
+
+## Before you start
 Ask Claude Code to make one small, concrete change to your practice project, review the diff it shows you, and then accept or reject it. This is the core editing loop: you stay in control and Claude Code does the typing.
+
 
 ## Walkthrough
 
@@ -110,4 +120,9 @@ You just completed the ask → review → accept → commit loop for the first t
 <VerificationBlock
   deliverable="README.md has a new Usage section added by Claude Code, committed to Git."
   verifyCheck="Learner shows the git log entry and the updated README content."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

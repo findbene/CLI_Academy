@@ -4,18 +4,29 @@ lessonNumber: "18.3.3"
 chapterNumber: "18.3"
 pathNumber: "18"
 tutorPreload: "Give me the controlled-pilot checklist for this assistant."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.8"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Mini project: useful bounded assistant
 
-## Objective
+## What you will build
+A complete mini-project folder containing: running assistant, CLAUDE.md, stop-rules.md, agent-log.md, and case-study.md.
+
+## Why this matters
+Real-world agent builds are the proof that everything in the curriculum works in practice, not just in isolated exercises. The everyday productivity scenarios in this path mirror the first agentic projects most developers build when they join an organization using Claude Code.
+
+## Before you start
 Deliver a full design -> build -> pilot -> document cycle for one useful bounded assistant, including:
 - running assistant,
 - CLAUDE.md contract,
 - evidence log,
 - stop rules,
 - short case study.
+
 
 ## Walkthrough
 ### Step 1: Define project scope and constraints
@@ -115,4 +126,9 @@ You should have all five deliverables in one folder.
 <VerificationBlock 
   deliverable="A complete mini-project folder containing: running assistant, CLAUDE.md, stop-rules.md, agent-log.md, and case-study.md."
   verifyCheck="You can execute the assistant end-to-end in bounded mode, show evidence logs, and present pilot-informed improvements."
+  rubricCriteria={[
+    "The A complete mini-project folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

@@ -4,14 +4,24 @@ lessonNumber: "4.3.2"
 chapterNumber: "4.3"
 pathNumber: "4"
 tutorPreload: "Guide me through a full codebase tour: clone, map, trace, improve, verify, and commit."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Mini-project: codebase tour and improvement
 
-## Objective
+## What you will build
+A completed codebase tour: structure map, feature trace, one verified improvement committed, and a session summary.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Complete a full codebase tour on a project you have never worked with before. You will clone it, map its structure with Claude, trace a feature, make one real improvement, verify it works, and commit everything. This combines every skill from Path 04 into a single end-to-end workflow.
+
 
 ## Walkthrough
 
@@ -178,4 +188,9 @@ This summary is proof you completed the tour and a useful reference for the futu
 <VerificationBlock
   deliverable="A completed codebase tour: structure map, feature trace, one verified improvement committed, and a session summary."
   verifyCheck="git log shows a clean commit with a conventional message, tests pass or diff is reviewed, and session-summary.md exists."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

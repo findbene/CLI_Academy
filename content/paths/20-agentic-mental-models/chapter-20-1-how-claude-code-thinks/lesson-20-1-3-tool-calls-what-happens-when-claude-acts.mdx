@@ -1,0 +1,228 @@
+---
+title: "Tool Calls: What Happens When Claude Acts"
+lessonNumber: "20.1.3"
+chapterNumber: "20.1"
+pathNumber: "20"
+tutorPreload: "I'm about to learn how Claude Code's tool calls work. Help me understand what a Read tool call and a Write tool call look like in verbose output, and what I should pay attention to."
+verifyType: "terminal_output"
+estimatedMinutes: 20
+---
+
+# Tool Calls: What Happens When Claude Acts
+
+## Objective
+
+By the end of this lesson you will have run a Claude Code session with `--verbose` enabled and captured at least one Read tool call and one Write tool call in the output. You will annotate what you see in your `LEARNING_LOG.md`. Understanding tool calls lets you audit what Claude actually did — not just what it said it did.
+
+## Walkthrough
+
+### Step 1 — Understand what a tool call is
+
+When Claude Code acts on your project, every action is a structured tool call. A tool call has:
+
+- **A name** — which tool Claude is invoking (Read, Write, Edit, Bash, Grep, etc.)
+- **Input parameters** — what Claude is passing to the tool (file path, command string, etc.)
+- **A result** — what the tool returned (file contents, command output, success/error)
+
+The tool call goes out to the CLI runtime, executes on your machine, and the result comes back to Claude. Claude never touches your files directly — it always goes through these tool calls. This architecture is what makes it possible to intercept, log, and approve Claude's actions.
+
+### Step 2 — Create a practice project
+
+We need a small project Claude can work on.
+
+**macOS / Linux**
+
+```bash
+mkdir -p ~/tool-call-lab
+cd ~/tool-call-lab
+
+cat > greeting.js << 'EOF'
+// Simple greeting module
+function greet(name) {
+  return "Hello, " + name + "!";
+}
+
+module.exports = { greet };
+EOF
+
+cat > package.json << 'EOF'
+{
+  "name": "tool-call-lab",
+  "version": "1.0.0",
+  "description": "Practice project for observing tool calls"
+}
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\tool-call-lab"
+Set-Location "$HOME\tool-call-lab"
+
+@"
+// Simple greeting module
+function greet(name) {
+  return "Hello, " + name + "!";
+}
+
+module.exports = { greet };
+"@ | Set-Content greeting.js -Encoding UTF8
+
+@"
+{
+  "name": "tool-call-lab",
+  "version": "1.0.0",
+  "description": "Practice project for observing tool calls"
+}
+"@ | Set-Content package.json -Encoding UTF8
+```
+
+### Step 3 — Run a Claude Code session with --verbose
+
+The `--verbose` flag makes Claude Code print every tool call and its result as it happens.
+
+**macOS / Linux**
+
+```bash
+claude --verbose --print "Read greeting.js and then add a farewell function called goodbye that takes a name and returns 'Goodbye, name!'. Write the updated file."
+```
+
+**Windows PowerShell**
+
+```powershell
+claude --verbose --print "Read greeting.js and then add a farewell function called goodbye that takes a name and returns 'Goodbye, name!'. Write the updated file."
+```
+
+This single command asks Claude to do two things: read a file (triggering a Read tool call) and write an updated file (triggering a Write or Edit tool call). With `--verbose`, you see both.
+
+### Step 4 — Read the verbose output
+
+With `--verbose`, you will see tool call blocks that look something like this:
+
+```
+[Tool: Read]
+Input: { "file_path": "/Users/you/tool-call-lab/greeting.js" }
+Result:
+// Simple greeting module
+function greet(name) {
+  return "Hello, " + name + "!";
+}
+module.exports = { greet };
+
+[Tool: Write]
+Input: {
+  "file_path": "/Users/you/tool-call-lab/greeting.js",
+  "content": "// Simple greeting module\nfunction greet(name) {\n  return \"Hello, \" + name + \"!\";\n}\n\nfunction goodbye(name) {\n  return \"Goodbye, \" + name + \"!\";\n}\n\nmodule.exports = { greet, goodbye };\n"
+}
+Result: File written successfully.
+```
+
+The exact formatting varies by Claude Code version, but you will always see:
+- The tool name
+- The input parameters (what Claude decided to pass)
+- The result (what your machine returned)
+
+### Step 5 — Verify the file was changed
+
+Confirm the Write tool call actually modified your file.
+
+**macOS / Linux**
+
+```bash
+cat ~/tool-call-lab/greeting.js
+```
+
+**Windows PowerShell**
+
+```powershell
+Get-Content "$HOME\tool-call-lab\greeting.js"
+```
+
+You should see both `greet` and `goodbye` functions in the file. If the file is unchanged, the Write tool call failed — check the verbose output for an error result.
+
+### Step 6 — Annotate your LEARNING_LOG.md
+
+Open your `LEARNING_LOG.md` from Lesson 20.1.1 and add a new section:
+
+**macOS / Linux**
+
+```bash
+cat >> ~/cli-academy/notes/LEARNING_LOG.md << 'EOF'
+
+## Lesson 20.1.3 — Tool Calls
+
+**Date:** [today's date]
+
+### Read tool call — what I saw
+
+[Paste the [Tool: Read] block from your verbose output here]
+
+### Write tool call — what I saw
+
+[Paste the [Tool: Write] block from your verbose output here]
+
+### What I noticed
+
+[One or two sentences about what surprised you or what you want to remember]
+EOF
+```
+
+**Windows PowerShell**
+
+```powershell
+@"
+
+## Lesson 20.1.3 — Tool Calls
+
+**Date:** [today's date]
+
+### Read tool call — what I saw
+
+[Paste the [Tool: Read] block from your verbose output here]
+
+### Write tool call — what I saw
+
+[Paste the [Tool: Write] block from your verbose output here]
+
+### What I noticed
+
+[One or two sentences about what surprised you or what you want to remember]
+"@ | Add-Content -Path "$HOME\cli-academy\notes\LEARNING_LOG.md" -Encoding UTF8
+```
+
+Then open the file and paste in the actual tool call blocks from your terminal session.
+
+### Step 7 — Understand the tool approval flow
+
+By default, Claude Code asks for your approval before running Bash commands and before writing files, but reads files silently. This is the default trust tier:
+
+- **Read** — auto-approved, no prompt
+- **Write / Edit** — approval prompt (you type `y` or press Enter to confirm)
+- **Bash** — approval prompt, shown as a yellow warning
+- **Bash with dangerous flags** (e.g., `rm -rf`) — explicit confirmation required
+
+When you use `--print` mode, Claude runs non-interactively and may skip some approval prompts. In an interactive session (`claude` with no flags), you see every approval request.
+
+You can also run `claude --dangerouslySkipPermissions` to bypass all approvals — but do not do that until you understand exactly what the session will do. That flag is covered in Chapter 20.2.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `--verbose` output shows no tool call blocks | The Claude Code version does not support this verbose format | Run `claude --version` and update to the latest release: `npm install -g @anthropic-ai/claude-code` |
+| File was not modified after the Write call | The Write call succeeded but was writing to a different path | Check the `file_path` in the Write tool input against the actual file path |
+| Claude printed a description of the change but the file is unchanged | You ran without `--print` and Claude needed approval — or approval was declined | Rerun in an interactive session (`claude`) and type `y` at the approval prompt |
+| Verbose output is too long to read in the terminal | Long file contents in the tool result | Pipe to a file: `claude --verbose --print "..." > tool-call-output.txt` then open the file |
+| Two Write calls appear in the verbose output | Claude read, edited, then verified by reading again and made a second write | This is normal; look at the final file state to confirm the result |
+
+<VerificationBlock
+  deliverable="Verbose Claude Code output showing at least one Read and one Write tool call, plus an annotated LEARNING_LOG.md entry."
+  verifyCheck="Share your verbose output showing the Read and Write tool call blocks, and confirm greeting.js now contains both greet and goodbye functions."
+  rubricCriteria={[
+    "Verbose output shows a [Tool: Read] block with greeting.js as the input path",
+    "Verbose output shows a [Tool: Write] or [Tool: Edit] block with the updated file contents",
+    "The final greeting.js file contains both the greet and goodbye functions",
+    "LEARNING_LOG.md has been updated with the pasted tool call output and a personal observation"
+  ]}
+/>

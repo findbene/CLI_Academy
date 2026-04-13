@@ -1,0 +1,340 @@
+---
+title: "Restricting Claude with CLAUDE.md"
+lessonNumber: "22.2.1"
+chapterNumber: "22.2"
+pathNumber: "22"
+groupId: "2.3"
+clawClassification: "core"
+prerequisiteLesson: "22.1.3"
+estimatedMinutes: 25
+verifyType: "code_submission"
+tutorPreload: "I'm about to learn how to write a CLAUDE.md file that restricts Claude Code's tool usage and file scope. Help me understand what restrictions are possible and how Claude enforces them."
+---
+
+# Restricting Claude with CLAUDE.md
+
+## What you will build
+
+A `CLAUDE.md` file that explicitly restricts Claude Code's behavior in a project: limits Bash tool execution, scopes file writes to a specific directory, and prevents Claude from touching sensitive paths. You will verify that Claude respects these restrictions by asking it to perform a disallowed action and confirming it refuses.
+
+## Why this matters
+
+Claude Code is powerful, and by default it can read any file, run any command, and write anywhere in a project. That is exactly what you want for general development work. But there are situations where you need tighter control:
+
+- A project where sensitive config files must not be touched by automated agents.
+- A workspace where you are experimenting and want Claude confined to a sandbox directory.
+- A shared codebase where certain paths are owned by another team.
+- A production-adjacent environment where you want extra friction before destructive operations.
+
+`CLAUDE.md` is the primary mechanism for communicating constraints to Claude Code. Claude reads this file at the start of every session and treats its contents as operating instructions. Restrictions you write there are not enforced by a security sandbox — they are respected because Claude follows explicit instructions. This makes `CLAUDE.md` the right tool for workflow governance, not for preventing a truly adversarial agent.
+
+## Before you start
+
+- Claude Code installed and working (`claude --version` returns a version number).
+- A test project directory where you can experiment freely.
+- Familiarity with the basic structure of a `CLAUDE.md` file (from the CLI Academy course introduction).
+
+## The walkthrough
+
+### Step 1 — Create a sandboxed test project
+
+We will build a project that simulates a scenario where sensitive directories should be off-limits.
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/restricted-project
+cd ~/cli-academy/projects/restricted-project
+git init
+mkdir -p src/sandbox
+mkdir -p config/sensitive
+mkdir -p scripts
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\restricted-project" -Force
+Set-Location "$HOME\cli-academy\projects\restricted-project"
+git init
+New-Item -ItemType Directory -Path "src\sandbox" -Force
+New-Item -ItemType Directory -Path "config\sensitive" -Force
+New-Item -ItemType Directory -Path "scripts" -Force
+```
+
+Create a dummy sensitive file to test against:
+
+**macOS / Linux:**
+```bash
+echo "db_password=supersecret" > config/sensitive/database.conf
+echo "ssl_cert=BEGIN CERTIFICATE..." >> config/sensitive/database.conf
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+db_password=supersecret
+ssl_cert=BEGIN CERTIFICATE...
+"@ | Set-Content config\sensitive\database.conf
+```
+
+### Step 2 — Understand the anatomy of a restriction block
+
+A `CLAUDE.md` file communicates restrictions through clear, plain-English instructions. Claude Code does not use a formal schema — it reads your prose and follows it. The most effective restriction blocks have three parts:
+
+1. **A clear rule statement** — what is allowed or forbidden
+2. **The specific paths or tools** — the exact scope of the restriction
+3. **The reason** — context helps Claude apply the rule to edge cases correctly
+
+Here is the structure you will write:
+
+```
+## Tool Restrictions
+
+### Bash
+[Rules about what shell commands are allowed]
+
+## File Scope
+
+### Allowed write paths
+[Directories where Claude may create or edit files]
+
+### Forbidden paths
+[Directories and files Claude must never modify]
+```
+
+### Step 3 — Write the CLAUDE.md restriction file
+
+**macOS / Linux:**
+```bash
+cat > CLAUDE.md << 'EOF'
+# CLAUDE.md — Operating Instructions for This Project
+
+## Overview
+
+This is a sandboxed development project. Claude Code must follow the restrictions below during every session. These rules exist to prevent accidental modification of sensitive configuration files and to keep experimental work isolated to the sandbox directory.
+
+## Tool Restrictions
+
+### Bash tool
+
+**Allowed commands:**
+- `ls`, `pwd`, `cat`, `echo` — read-only inspection commands
+- `git status`, `git log`, `git diff` — git inspection commands
+- `python3 src/sandbox/*.py` — run Python scripts in the sandbox only
+- `pytest src/sandbox/` — run tests in the sandbox directory only
+
+**Forbidden commands:**
+- Do NOT run `rm`, `rmdir`, `mv`, or `cp` without explicit user confirmation on each file.
+- Do NOT run commands that write to `config/`, `scripts/`, or any path outside `src/sandbox/`.
+- Do NOT run `sudo` or any command requiring elevated privileges.
+- Do NOT install system packages, run package managers (apt, brew, choco), or modify system configuration.
+
+If a task requires a forbidden command, stop and ask the user to confirm the specific command before running it.
+
+## File Scope
+
+### Allowed write paths
+
+Claude may create and edit files in these locations:
+- `src/sandbox/` — all subdirectories included
+- `LEARNING_LOG.md` — for notes and documentation
+
+### Forbidden paths
+
+Claude must NEVER read, write, modify, or delete files in:
+- `config/sensitive/` — contains production credentials
+- `scripts/` — contains deployment scripts; changes require human review
+- `.env` — environment variables; never touch this file
+- `.git/` — never modify git internals directly
+
+If a user asks Claude to modify a file in a forbidden path, Claude must:
+1. Decline to make the change.
+2. Explain that the path is restricted per CLAUDE.md.
+3. Ask the user to either move the task to an allowed path or explicitly override this restriction.
+
+## Escalation Rule
+
+If you are ever unsure whether an action is within bounds, stop and ask before proceeding. It is always better to confirm than to take an action that cannot be undone.
+
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# CLAUDE.md — Operating Instructions for This Project
+
+## Overview
+
+This is a sandboxed development project. Claude Code must follow the restrictions below during every session. These rules exist to prevent accidental modification of sensitive configuration files and to keep experimental work isolated to the sandbox directory.
+
+## Tool Restrictions
+
+### Bash tool
+
+**Allowed commands:**
+- ``ls``, ``pwd``, ``cat``, ``echo`` — read-only inspection commands
+- ``git status``, ``git log``, ``git diff`` — git inspection commands
+- ``python3 src/sandbox/*.py`` — run Python scripts in the sandbox only
+- ``pytest src/sandbox/`` — run tests in the sandbox directory only
+
+**Forbidden commands:**
+- Do NOT run ``rm``, ``rmdir``, ``mv``, or ``cp`` without explicit user confirmation on each file.
+- Do NOT run commands that write to ``config/``, ``scripts/``, or any path outside ``src/sandbox/``.
+- Do NOT run ``sudo`` or any command requiring elevated privileges.
+- Do NOT install system packages, run package managers (apt, brew, choco), or modify system configuration.
+
+If a task requires a forbidden command, stop and ask the user to confirm the specific command before running it.
+
+## File Scope
+
+### Allowed write paths
+
+Claude may create and edit files in these locations:
+- ``src/sandbox/`` — all subdirectories included
+- ``LEARNING_LOG.md`` — for notes and documentation
+
+### Forbidden paths
+
+Claude must NEVER read, write, modify, or delete files in:
+- ``config/sensitive/`` — contains production credentials
+- ``scripts/`` — contains deployment scripts; changes require human review
+- ``.env`` — environment variables; never touch this file
+- ``.git/`` — never modify git internals directly
+
+If a user asks Claude to modify a file in a forbidden path, Claude must:
+1. Decline to make the change.
+2. Explain that the path is restricted per CLAUDE.md.
+3. Ask the user to either move the task to an allowed path or explicitly override this restriction.
+
+## Escalation Rule
+
+If you are ever unsure whether an action is within bounds, stop and ask before proceeding. It is always better to confirm than to take an action that cannot be undone.
+"@ | Set-Content CLAUDE.md
+```
+
+### Step 4 — Add a legitimate file to the sandbox
+
+Give Claude something valid to work with, so you can see both allowed and disallowed behaviors:
+
+**macOS / Linux:**
+```bash
+cat > src/sandbox/hello.py << 'EOF'
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+
+if __name__ == "__main__":
+    print(greet("World"))
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+
+if __name__ == "__main__":
+    print(greet("World"))
+"@ | Set-Content src\sandbox\hello.py
+```
+
+### Step 5 — Start Claude Code and test an allowed action
+
+Launch Claude Code in this directory:
+
+**macOS / Linux:**
+```bash
+claude
+```
+
+**Windows PowerShell:**
+```powershell
+claude
+```
+
+Try an allowed action first — ask Claude to add a function to the sandbox file:
+
+```
+Add a farewell function to src/sandbox/hello.py that returns "Goodbye, {name}!"
+```
+
+Claude should read the file, add the function, and confirm the change. This is within the allowed write paths. You will see a diff and Claude will ask to apply it.
+
+### Step 6 — Test a restricted action
+
+Now ask Claude to do something the `CLAUDE.md` explicitly forbids:
+
+```
+Edit the file config/sensitive/database.conf and add a comment at the top.
+```
+
+Claude's response should follow the pattern defined in the CLAUDE.md escalation rule:
+
+```
+I can't modify config/sensitive/database.conf. Per the CLAUDE.md in this 
+project, that directory is listed as a forbidden path because it contains 
+production credentials. 
+
+If you want me to make this change, you can either:
+1. Move the file to src/sandbox/ where I'm allowed to write
+2. Explicitly tell me to override this restriction for this specific change
+
+Would you like to do one of those, or is there something else I can help with?
+```
+
+The exact wording will vary, but the key behavior is: Claude declines, explains the reason, and offers a path forward rather than just saying no.
+
+### Step 7 — Test a restricted Bash command
+
+Ask Claude to delete a file:
+
+```
+Delete the file src/sandbox/hello.py using rm
+```
+
+Claude should ask for explicit confirmation before running `rm`, per the Bash restriction rules in CLAUDE.md. It might say:
+
+```
+Running `rm src/sandbox/hello.py` will permanently delete that file. 
+Per my operating instructions, I need explicit confirmation before running 
+destructive commands like rm. 
+
+Do you want me to proceed with deleting src/sandbox/hello.py? 
+(yes/no)
+```
+
+### Step 8 — Commit the CLAUDE.md
+
+**macOS / Linux:**
+```bash
+git add CLAUDE.md src/
+git commit -m "chore: add CLAUDE.md with tool restrictions and file scope rules"
+```
+
+**Windows PowerShell:**
+```powershell
+git add CLAUDE.md src/
+git commit -m "chore: add CLAUDE.md with tool restrictions and file scope rules"
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Claude ignores the restrictions entirely | Claude Code was started before CLAUDE.md was created | Restart the Claude session so it reads the updated CLAUDE.md from scratch |
+| Claude reads CLAUDE.md but misinterprets a rule | The restriction was written ambiguously | Rewrite the rule with a concrete example — instead of "don't modify sensitive files", write "do NOT modify any file under config/sensitive/" |
+| Claude refuses allowed actions because restrictions are too broad | Overly aggressive pattern matching | Be specific in allowed vs. forbidden lists; avoid blanket prohibitions that catch legitimate work |
+| CLAUDE.md works in one session but not another | Claude's context window does not guarantee CLAUDE.md is always fully re-read in very long sessions | Keep CLAUDE.md concise and front-load the most important restrictions |
+| Restrictions do not prevent truly adversarial behavior | CLAUDE.md is not a security sandbox — it is operating instructions for a cooperative agent | Use OS-level controls (file permissions, Docker) if you need hard enforcement |
+
+<VerificationBlock
+  deliverable="A committed CLAUDE.md with explicit Bash restrictions and file scope rules, plus a Claude Code session log showing Claude refusing a disallowed action."
+  verifyCheck="Submit your CLAUDE.md content and a copy-paste of Claude's response when you asked it to edit config/sensitive/database.conf. The response must show Claude declining and citing the restriction."
+  rubricCriteria={[
+    "CLAUDE.md is committed to the repo",
+    "CLAUDE.md contains explicit allowed and forbidden Bash commands",
+    "CLAUDE.md lists config/sensitive/ as a forbidden write path",
+    "Claude's response to the disallowed request shows it declining",
+    "Claude's response explains the reason and references the restriction"
+  ]}
+/>

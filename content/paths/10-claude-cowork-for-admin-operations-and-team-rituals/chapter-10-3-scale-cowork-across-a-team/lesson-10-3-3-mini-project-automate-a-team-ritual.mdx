@@ -4,14 +4,24 @@ lessonNumber: "10.3.3"
 chapterNumber: "10.3"
 pathNumber: "10"
 tutorPreload: "Walk me through automating one team ritual end to end — from picking it to committing the template."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.1"
+clawClassification: "elective"
+estimatedMinutes: 40
+prerequisiteLesson: null
 ---
 
 # Mini-project: automate a team ritual
 
-## Objective
+## What you will build
+A complete automation package in automations/weekly-changelog/ with a data-gathering script, a session brief, a README, and at least one verified changelog output.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 In this mini-project you will pick one recurring team ritual, automate it with Claude, document the process, save it as a reusable template, and commit the entire package to version control. By the end you will have a working, documented automation that anyone on the team can run.
+
 
 ## Walkthrough
 
@@ -353,4 +363,9 @@ git commit -m "feat: add weekly changelog automation with gather script and sess
 <VerificationBlock
   deliverable="A complete automation package in automations/weekly-changelog/ with a data-gathering script, a session brief, a README, and at least one verified changelog output."
   verifyCheck="The gather script runs without errors, the session brief produces a correctly formatted changelog, and every changelog entry traces to a real commit."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

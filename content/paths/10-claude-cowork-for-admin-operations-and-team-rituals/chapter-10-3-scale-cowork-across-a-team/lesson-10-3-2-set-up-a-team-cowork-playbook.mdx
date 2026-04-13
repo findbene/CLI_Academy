@@ -4,14 +4,24 @@ lessonNumber: "10.3.2"
 chapterNumber: "10.3"
 pathNumber: "10"
 tutorPreload: "Help me write a playbook that tells my team when and how to use Cowork effectively."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.1"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Set up a team Cowork playbook
 
-## Objective
+## What you will build
+A cowork-playbook.md in docs/ with When to use, When NOT to use, Review checklist, and Conventions sections — linked from the project README.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 By the end of this lesson you will have a team Cowork playbook — a single markdown document that defines when to use Claude Cowork, which session templates to start with, how to review outputs, and what conventions to follow. This playbook lives in your repo and becomes the team's shared reference for AI-assisted workflows.
+
 
 ## Walkthrough
 
@@ -226,4 +236,9 @@ Link to the playbook from your project's main README so new team members find it
 <VerificationBlock
   deliverable="A cowork-playbook.md in docs/ with When to use, When NOT to use, Review checklist, and Conventions sections — linked from the project README."
   verifyCheck="The playbook covers your team's real Cowork use cases, the review checklist catches known failure modes, and the file is reachable from the project README."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

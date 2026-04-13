@@ -4,14 +4,24 @@ lessonNumber: "12.3.2"
 chapterNumber: "12.3"
 pathNumber: "12"
 tutorPreload: "Help me organize my Claude Code memory into topic files that actually help."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Set up a useful memory system
 
-## Objective
+## What you will build
+Three organized memory files (preferences.md, patterns.md, debugging.md) in ~/.claude/memory/ with real, useful entries.
 
+## Why this matters
+Persistent skills and memory are what distinguish a one-shot agent from a long-running one. Heartbeats and scheduled work enable agents that operate independently over time. These patterns underpin every production agentic system that handles real business workflows.
+
+## Before you start
 By the end of this lesson you will have a structured memory system with topic-based files — `preferences.md`, `patterns.md`, and `debugging.md` — containing real entries. You will verify that Claude Code loads these files and draws on them during a new session.
+
 
 ## Walkthrough
 
@@ -189,4 +199,9 @@ Claude should mention checking for UTF-16 BOM encoding, because that is in your 
 <VerificationBlock
   deliverable="Three organized memory files (preferences.md, patterns.md, debugging.md) in ~/.claude/memory/ with real, useful entries."
   verifyCheck="Claude Code correctly applies your preferences, patterns, and debugging notes when asked relevant questions in a new session."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

@@ -5,13 +5,23 @@ chapterNumber: "4.2"
 pathNumber: "4"
 tutorPreload: "Help me update one dependency without breaking the project."
 verifyType: "terminal_output"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Update dependencies and lock files safely
 
-## Objective
+## What you will build
+One dependency updated with tests passing and a clean commit.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Use Claude Code to check for outdated dependencies, pick the safest one to update, perform the update, and verify the project still works. By the end you will have updated one package with tests passing and a clean commit.
+
 
 ## Walkthrough
 
@@ -157,4 +167,9 @@ git commit -m "chore: update requests to 2.31.0"
 <VerificationBlock
   deliverable="One dependency updated with tests passing and a clean commit."
   verifyCheck="git log shows a dependency-update commit message and npm test or pytest exits with code 0."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

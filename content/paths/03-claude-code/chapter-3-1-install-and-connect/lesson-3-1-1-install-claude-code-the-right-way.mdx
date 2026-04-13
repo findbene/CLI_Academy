@@ -5,13 +5,23 @@ chapterNumber: "3.1"
 pathNumber: "3"
 tutorPreload: "Help me install Claude Code on {{os}} and tell me how to verify the install before I do anything else."
 verifyType: "terminal_output"
+groupId: "1.2"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Install Claude Code the right way
 
-## Objective
+## What you will build
+claude --version prints a version number and authentication succeeds.
 
+## Why this matters
+Claude Code is the primary interface for agentic development. Understanding how it reads context, executes tools, and takes action is the difference between a developer who directs Claude precisely and one who gets unpredictable results. Every advanced agentic pattern builds on this foundation.
+
+## Before you start
 Install Claude Code from npm, authenticate with your Anthropic account, and confirm the tool is ready to use by checking its version. When you finish you will have a working `claude` command available from any terminal window.
+
 
 ## Walkthrough
 
@@ -84,4 +94,9 @@ This opens a browser window where you sign in to your Anthropic account and auth
 <VerificationBlock
   deliverable="claude --version prints a version number and authentication succeeds."
   verifyCheck="Learner runs claude --version and shares output showing a valid version string."
+  rubricCriteria={[
+    "claude --version prints a version number and authentication succeeds exists as described and is accessible",
+    "All required elements mentioned in the deliverable are present and correctly formed",
+    "The artifact was produced by following the walkthrough steps, not by copying an existing file",
+  ]}
 />

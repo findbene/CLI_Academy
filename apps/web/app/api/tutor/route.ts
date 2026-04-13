@@ -108,6 +108,12 @@ export async function POST(request: Request) {
     tutorPreload?: string;
     learningMode?: string;
     tutorMode?: TutorMode;
+    conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>;
+    rubricCriteria?: string[];
+    deliverable?: string;
+    groupId?: string;
+    clawClassification?: string;
+    tutorGuideMode?: boolean;
   };
 
   const question = body.message?.trim();
@@ -231,17 +237,30 @@ export async function POST(request: Request) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          const messageHistory = [
+            ...(body.conversationHistory ?? []).slice(-9).map((turn) => ({
+              role: turn.role as "user" | "assistant",
+              content: turn.content,
+            })),
+            { role: "user" as const, content: question },
+          ];
+
           const anthropicStream = anthropic.messages.stream({
             max_tokens: 900,
-            messages: [{ role: "user", content: question }],
+            messages: messageHistory,
             model: getTutorModel(),
             system: buildTutorSystemPrompt({
+              clawClassification: body.clawClassification,
+              deliverable: body.deliverable,
+              groupId: body.groupId,
+              learningMode: body.learningMode,
               lessonTitle,
+              rubricCriteria: body.rubricCriteria,
               supportContext,
               tier,
+              tutorGuideMode: body.tutorGuideMode,
               tutorMode,
               tutorPreload: body.tutorPreload,
-              learningMode: body.learningMode,
             }),
           });
 

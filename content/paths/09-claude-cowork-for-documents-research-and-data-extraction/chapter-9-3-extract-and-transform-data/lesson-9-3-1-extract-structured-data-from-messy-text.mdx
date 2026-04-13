@@ -4,14 +4,24 @@ lessonNumber: "9.3.1"
 chapterNumber: "9.3"
 pathNumber: "9"
 tutorPreload: "Help me extract structured data from messy meeting notes — names, dates, and action items — and output clean Markdown and JSON."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.6"
+clawClassification: "elective"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Extract structured data from messy text
 
-## Objective
+## What you will build
+An extracted.md and extracted.json where every data point traces back to a specific line in meeting-notes.txt.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 By the end of this lesson you will take messy, unstructured text (meeting notes), ask Claude Code to extract names, dates, and action items, output the results as structured Markdown and JSON, and verify the extraction by comparing it against the original text.
+
 
 ## Walkthrough
 
@@ -205,4 +215,9 @@ git commit -m "Add structured extractions from meeting notes"
 <VerificationBlock
   deliverable="An extracted.md and extracted.json where every data point traces back to a specific line in meeting-notes.txt."
   verifyCheck="The JSON parses without errors, contains exactly 5 action items, and no field contains data not present in the source text."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

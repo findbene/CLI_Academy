@@ -5,13 +5,23 @@ chapterNumber: "4.3"
 pathNumber: "4"
 tutorPreload: "Help me find every file connected to this module and understand the dependency chain."
 verifyType: "terminal_output"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Use Claude to jump between related files
 
-## Objective
+## What you will build
+A verified map of file relationships: importers of a module, definition location of a function, and a two-level dependency chain.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Use Claude Code to navigate between related files in a project — finding every file that imports a given module, locating where a function is defined, and mapping dependency chains. By the end you will have verified Claude's navigation answers with your own searches across at least two different queries.
+
 
 ## Walkthrough
 
@@ -149,4 +159,9 @@ Claude finds the error handler definition, then finds its callers — a two-hop 
 <VerificationBlock
   deliverable="A verified map of file relationships: importers of a module, definition location of a function, and a two-level dependency chain."
   verifyCheck="Learner confirms Claude's navigation answers against manual grep output on at least two of the three queries."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

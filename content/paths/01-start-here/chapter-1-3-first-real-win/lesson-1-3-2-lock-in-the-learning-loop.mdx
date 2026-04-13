@@ -4,14 +4,24 @@ lessonNumber: "1.3.2"
 chapterNumber: "1.3"
 pathNumber: "1"
 tutorPreload: "Based on my struggles in this lesson, recommend the next mode and why."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "0.1"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Lock in the learning loop
 
-## Objective
+## What you will build
+A learning-log.md in cli-academy/notes/ with a dated Entry 1 that includes personal notes about what you did, what surprised you, and what you want to learn next.
 
+## Why this matters
+Professional developers spend the first minutes of any new project setting up a clean workspace. Starting from an organized structure prevents lost files, confusing paths, and the embarrassment of committing secrets. This habit — workspace first, then work — is the foundation of every reliable agentic workflow.
+
+## Before you start
 You will create a `learning-log.md` file, write your first dated entry describing what you built in Path 01, and establish a concrete ritual you will repeat after every future lesson. By the end you will have a running log that proves your progress over time.
+
 
 ## Walkthrough
 
@@ -147,4 +157,9 @@ git commit -m "Start learning log with Path 01 entry"
 <VerificationBlock
   deliverable="A learning-log.md in cli-academy/notes/ with a dated Entry 1 that includes personal notes about what you did, what surprised you, and what you want to learn next."
   verifyCheck="Run cat learning-log.md (macOS/Linux) or Get-Content learning-log.md (Windows) and confirm Entry 1 has a real date, filled-in personal sections (not placeholder text), and a difficulty/confidence rating."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

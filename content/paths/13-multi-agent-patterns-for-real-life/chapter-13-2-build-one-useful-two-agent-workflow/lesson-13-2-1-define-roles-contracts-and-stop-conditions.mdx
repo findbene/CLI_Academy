@@ -4,16 +4,26 @@ lessonNumber: "13.2.1"
 chapterNumber: "13.2"
 pathNumber: "13"
 tutorPreload: "Review my two-agent contract and tell me if the roles overlap or if the stop conditions are missing."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.7"
+clawClassification: "advanced"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Define roles, contracts, and stop conditions
 
-## Objective
+## What you will build
+A `two-agent-contract/` directory with coordinator CLAUDE.md, two agent contracts, and two output files.
 
+## Why this matters
+Multi-agent workflows are the current frontier of production AI systems. Understanding how to wire agents together, manage handoffs, and avoid complexity spirals is the knowledge gap between hobby projects and production deployments. This path gives you the vocabulary and the architecture patterns used at scale.
+
+## Before you start
 When two Claude Code agents collaborate on a task, each one needs a clear role, a defined boundary, and an explicit stop condition. Without these, agents duplicate effort, contradict each other, or run indefinitely. In this lesson you will create a `CLAUDE.md`-based contract that assigns two agents non-overlapping responsibilities and defines exactly when each one stops.
 
 By the end, you will have a working two-agent contract directory that you can hand to Claude Code to execute.
+
 
 ## Why this matters
 
@@ -244,4 +254,9 @@ After it finishes, check your directory. You should see four files:
 <VerificationBlock 
   deliverable="A `two-agent-contract/` directory with coordinator CLAUDE.md, two agent contracts, and two output files."
   verifyCheck="Each agent has a distinct role, defined boundaries, and an explicit stop condition. The Analyzer's output references only findings from the Researcher."
+  rubricCriteria={[
+    "The ` directory with coordinator CLAUDE.md, two agent contracts, and two output files. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

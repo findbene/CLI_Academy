@@ -1,0 +1,380 @@
+---
+title: "Reading Error Messages with Claude"
+lessonNumber: "23.1.2"
+chapterNumber: "23.1"
+pathNumber: "23"
+groupId: "3.7"
+clawClassification: "elective"
+prerequisiteLesson: "23.1.1"
+estimatedMinutes: 20
+verifyType: "terminal_output"
+tutorPreload: "I'm about to learn how to read error messages with Claude's help. Help me understand the 'what, where, why' decomposition of error messages and how to get the most useful explanations from Claude."
+---
+
+# Reading Error Messages with Claude
+
+## What you will build
+
+Three documented error analyses in `LEARNING_LOG.md` — one for each of three common Python error types (`NameError`, `FileNotFoundError`, and a port conflict). Each entry records: the error message, a Claude explanation using the "what, where, why" framework, and the fix you applied.
+
+## Why this matters
+
+Most beginners read an error message, panic, and immediately start changing things at random. This is the worst possible approach. Error messages are not insults — they are precise technical statements. They tell you exactly what went wrong, exactly where it went wrong, and often why.
+
+Claude is exceptionally good at decomposing error messages because it has seen thousands of them. The pattern is simple: paste the full error into Claude, tell it what you were trying to do, and ask it to explain using the "what, where, why" framework. Once you understand the error, the fix is usually obvious.
+
+The three error types in this lesson cover a large fraction of real-world bugs: `NameError` (using something that doesn't exist), `FileNotFoundError` (looking for something that isn't there), and port conflicts (infrastructure collision). These are not toy examples — they are the actual errors that slow people down on real projects.
+
+## Before you start
+
+- Python 3 installed.
+- The project directory from Lesson 23.1.1, or a new one.
+- `LEARNING_LOG.md` already exists, or you will create it.
+- Claude Code running in your project directory.
+
+## The walkthrough
+
+### Step 1 — The "what, where, why" framework
+
+Before touching Claude, learn to read an error message yourself using this decomposition:
+
+- **What**: The error type and message. `NameError: name 'process_order' is not defined` — What happened? A name lookup failed.
+- **Where**: The file path and line number in the traceback. `File "app.py", line 47` — Where did it fail?
+- **Why**: The root cause. Why was the name not defined? Usually because of a typo, a missing import, or a function defined after it is called.
+
+Claude's explanation should always answer all three. If an explanation only covers "what" without "why", ask a follow-up: "Why does Python not find this name?"
+
+### Step 2 — Create the three buggy scripts
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/debug-protocol
+cd ~/cli-academy/projects/debug-protocol
+```
+
+**Windows PowerShell:**
+```powershell
+Set-Location "$HOME\cli-academy\projects\debug-protocol"
+```
+
+**Script 1: NameError**
+
+**macOS / Linux:**
+```bash
+cat > name_error_demo.py << 'EOF'
+# name_error_demo.py — demonstrates a NameError from a typo
+
+def process_orders(orders):
+    results = []
+    for order in orders:
+        processed = proccess_order(order)  # typo: double 'c'
+        results.append(processed)
+    return results
+
+def process_order(order):
+    return {**order, "processed": True}
+
+test_orders = [{"id": 1, "item": "Widget"}, {"id": 2, "item": "Gadget"}]
+print(process_orders(test_orders))
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# name_error_demo.py — demonstrates a NameError from a typo
+
+def process_orders(orders):
+    results = []
+    for order in orders:
+        processed = proccess_order(order)  # typo: double 'c'
+        results.append(processed)
+    return results
+
+def process_order(order):
+    return {**order, "processed": True}
+
+test_orders = [{"id": 1, "item": "Widget"}, {"id": 2, "item": "Gadget"}]
+print(process_orders(test_orders))
+"@ | Set-Content name_error_demo.py
+```
+
+**Script 2: FileNotFoundError**
+
+**macOS / Linux:**
+```bash
+cat > file_not_found_demo.py << 'EOF'
+# file_not_found_demo.py — demonstrates FileNotFoundError
+
+import json
+
+def load_config(path):
+    with open(path, 'r') as f:
+        return json.load(f)
+
+# This file does not exist
+config = load_config("config/app_settings.json")
+print(f"Loaded config: {config}")
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# file_not_found_demo.py — demonstrates FileNotFoundError
+
+import json
+
+def load_config(path):
+    with open(path, 'r') as f:
+        return json.load(f)
+
+# This file does not exist
+config = load_config("config/app_settings.json")
+print(f"Loaded config: {config}")
+"@ | Set-Content file_not_found_demo.py
+```
+
+**Script 3: Port conflict simulation**
+
+This one does not crash with a Python exception — it produces an OS-level error that looks different. We will simulate what you see when two processes try to bind the same port.
+
+**macOS / Linux:**
+```bash
+cat > port_conflict_demo.py << 'EOF'
+# port_conflict_demo.py — demonstrates an address-already-in-use error
+
+import socket
+
+PORT = 9876
+
+# Start a "server" that holds the port
+server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+server1.bind(('localhost', PORT))
+server1.listen(1)
+print(f"Server 1 bound to port {PORT}")
+
+# Try to start a second "server" on the same port — this will fail
+server2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+server2.bind(('localhost', PORT))  # OSError: [Errno 98] Address already in use
+print(f"Server 2 also bound to port {PORT}")
+
+server1.close()
+server2.close()
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# port_conflict_demo.py — demonstrates an address-already-in-use error
+
+import socket
+
+PORT = 9876
+
+# Start a "server" that holds the port
+server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+server1.bind(('localhost', PORT))
+server1.listen(1)
+print(f"Server 1 bound to port {PORT}")
+
+# Try to start a second "server" on the same port — this will fail
+server2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+server2.bind(('localhost', PORT))  # OSError: address already in use
+print(f"Server 2 also bound to port {PORT}")
+
+server1.close()
+server2.close()
+"@ | Set-Content port_conflict_demo.py
+```
+
+### Step 3 — Run each script and collect the errors
+
+**macOS / Linux:**
+```bash
+python3 name_error_demo.py 2>&1
+echo "---"
+python3 file_not_found_demo.py 2>&1
+echo "---"
+python3 port_conflict_demo.py 2>&1
+```
+
+**Windows PowerShell:**
+```powershell
+python name_error_demo.py 2>&1
+Write-Host "---"
+python file_not_found_demo.py 2>&1
+Write-Host "---"
+python port_conflict_demo.py 2>&1
+```
+
+Expected outputs:
+
+**NameError:**
+```
+Traceback (most recent call last):
+  File "name_error_demo.py", line 6, in process_orders
+    processed = proccess_order(order)
+NameError: name 'proccess_order' is not defined. Did you mean: 'process_order'?
+```
+
+**FileNotFoundError:**
+```
+Traceback (most recent call last):
+  File "file_not_found_demo.py", line 10, in <module>
+    config = load_config("config/app_settings.json")
+  File "file_not_found_demo.py", line 6, in load_config
+    with open(path, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'config/app_settings.json'
+```
+
+**Port conflict:**
+```
+Server 1 bound to port 9876
+Traceback (most recent call last):
+  File "port_conflict_demo.py", line 17, in <module>
+    server2.bind(('localhost', PORT))
+OSError: [Errno 98] Address already in use
+```
+(On Windows the errno differs but the message is similar: `[WinError 10048] Only one usage of each socket address`)
+
+### Step 4 — Ask Claude to explain each error
+
+Open Claude Code (or use `claude "..."` for each) and use this prompt pattern:
+
+**For NameError:**
+```
+I ran `python3 name_error_demo.py` and got this error. Explain it using 
+"what, where, why" — what went wrong, exactly where in the code, and why Python 
+raised this specific error type.
+
+NameError: name 'proccess_order' is not defined. Did you mean: 'process_order'?
+  File "name_error_demo.py", line 6, in process_orders
+```
+
+**For FileNotFoundError:**
+```
+Explain this error using "what, where, why":
+
+FileNotFoundError: [Errno 2] No such file or directory: 'config/app_settings.json'
+  File "file_not_found_demo.py", line 6, in load_config
+    with open(path, 'r') as f:
+```
+
+**For port conflict:**
+```
+Explain this error using "what, where, why". I was trying to start a server 
+on port 9876 but something else is using it:
+
+OSError: [Errno 98] Address already in use
+  File "port_conflict_demo.py", line 17, in <module>
+    server2.bind(('localhost', PORT))
+```
+
+### Step 5 — Document the three analyses in LEARNING_LOG.md
+
+**macOS / Linux:**
+```bash
+cat >> LEARNING_LOG.md << 'EOF'
+
+## Error Message Analyses (Lesson 23.1.2)
+
+### Error 1: NameError
+
+**Error:**
+```
+NameError: name 'proccess_order' is not defined. Did you mean: 'process_order'?
+```
+
+**What**: Python could not find a name called `proccess_order` in the current scope.
+**Where**: Line 6 of name_error_demo.py, inside the `process_orders` function.
+**Why**: The function name was misspelled (`proccess` with a double 'c') at the call site. The correctly spelled `process_order` function exists but was not matched because Python names are case- and spelling-sensitive.
+
+**Fix**: Correct the typo on line 6 — change `proccess_order` to `process_order`.
+
+---
+
+### Error 2: FileNotFoundError
+
+**Error:**
+```
+FileNotFoundError: [Errno 2] No such file or directory: 'config/app_settings.json'
+```
+
+**What**: The `open()` call tried to open a file that does not exist at the specified path.
+**Where**: Line 6 of file_not_found_demo.py, inside `load_config`.
+**Why**: The file `config/app_settings.json` does not exist in the working directory where the script was run. Either the file was never created, or the script was run from the wrong directory.
+
+**Fix**: Create the config file (`mkdir -p config && echo '{}' > config/app_settings.json`) or add a check with `os.path.exists()` before opening.
+
+---
+
+### Error 3: Port Conflict (OSError)
+
+**Error:**
+```
+OSError: [Errno 98] Address already in use
+```
+
+**What**: The OS refused to bind a second socket to port 9876 because that port is already in use.
+**Where**: Line 17 of port_conflict_demo.py, at the `server2.bind()` call.
+**Why**: Only one process can hold a TCP port at a time. Server 1 was already bound and listening on port 9876 when Server 2 tried to claim the same address.
+
+**Fix**: Use a different port number for Server 2, or shut down Server 1 first with `server1.close()`. In real applications: check what process is holding the port with `lsof -i :9876` (macOS/Linux) or `netstat -ano | findstr :9876` (Windows).
+
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+
+## Error Message Analyses (Lesson 23.1.2)
+
+### Error 1: NameError
+What: Python could not find 'proccess_order' — it was misspelled at the call site.
+Where: Line 6 of name_error_demo.py
+Why: Python names are exact — one wrong letter and the lookup fails.
+Fix: Change proccess_order to process_order on line 6.
+
+### Error 2: FileNotFoundError
+What: open() tried to read a file that does not exist.
+Where: Line 6 of file_not_found_demo.py
+Why: config/app_settings.json was never created, or the script ran from the wrong directory.
+Fix: Create the file, or use os.path.exists() to check before opening.
+
+### Error 3: Port Conflict (OSError)
+What: The OS refused to bind port 9876 to a second socket.
+Where: Line 17 of port_conflict_demo.py
+Why: TCP ports are exclusive — only one process can hold a port at a time.
+Fix: Use a different port, or close server1 before trying to bind server2.
+
+"@ | Add-Content LEARNING_LOG.md
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `NameError` says "not defined" but the function clearly exists | Python's suggestion "Did you mean X?" is a hint that X is the correct spelling | Look for typos; Python 3.10+ gives suggestions, but earlier versions just say "not defined" |
+| `FileNotFoundError` even though the file exists | Script is running from a different directory than expected | Run `import os; print(os.getcwd())` to confirm the working directory, then use an absolute path |
+| Port conflict error on a different port number | Port 9876 was already taken on your machine | Change `PORT = 9876` to any unused port; run `lsof -i :9876` to check |
+| Claude gives a one-line answer without "what, where, why" | The prompt did not request the framework explicitly | Add "structure your answer using what, where, why" to the prompt |
+| Claude's explanation is correct but the fix does not work | There is a second bug the error was masking | After applying the fix, run the script again — a new error is a new bug, not a failure of the first fix |
+
+<VerificationBlock
+  deliverable="LEARNING_LOG.md entries for all three error types, each containing the original error message, Claude's what/where/why explanation, and the fix applied."
+  verifyCheck="Run all three demo scripts and confirm each one produces the expected error. Then open LEARNING_LOG.md and confirm it has three completed error analysis sections."
+  rubricCriteria={[
+    "name_error_demo.py produces NameError on every run",
+    "file_not_found_demo.py produces FileNotFoundError on every run",
+    "port_conflict_demo.py produces OSError on every run",
+    "LEARNING_LOG.md contains what/where/why analysis for all three errors",
+    "Each LEARNING_LOG entry includes the fix that was applied"
+  ]}
+/>

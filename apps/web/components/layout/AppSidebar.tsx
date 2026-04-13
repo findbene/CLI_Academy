@@ -17,12 +17,13 @@ const navItems = [
 ];
 
 interface AppSidebarProps {
+  groupId?: string;
   tier?: "free" | "pro";
   tutorMessagesRemaining?: number | null;
   userEmail?: string | null;
 }
 
-export function AppSidebar({ tier = "free", tutorMessagesRemaining, userEmail }: AppSidebarProps) {
+export function AppSidebar({ groupId, tier = "free", tutorMessagesRemaining, userEmail }: AppSidebarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dailyLimit = tier === "pro" ? 100 : 10;
@@ -43,6 +44,14 @@ export function AppSidebar({ tier = "free", tutorMessagesRemaining, userEmail }:
             <div className="text-xs text-[var(--color-fg-subtle)]">Learn · Build · Ship</div>
           </div>
         </Link>
+
+        {groupId ? (
+          <div className="px-3 pt-0 pb-3">
+            <span className="text-xs uppercase tracking-wider text-[var(--color-fg-muted)]">
+              Group {groupId}
+            </span>
+          </div>
+        ) : null}
 
         <div className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-fg-subtle)]">
           Navigation

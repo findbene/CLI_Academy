@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Tool call flow sequence diagram">
+  <title>Tool Call Flow</title>
+  <defs>
+    <marker id="arrowR" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M1,1 L9,5 L1,9 Z" fill="#4CAF50"/>
+    </marker>
+    <marker id="arrowL" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto">
+      <path d="M9,1 L1,5 L9,9 Z" fill="#2196F3"/>
+    </marker>
+    <marker id="arrowRg" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M1,1 L9,5 L1,9 Z" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="#0f1117" rx="12"/>
+
+  <!-- Title -->
+  <text x="400" y="34" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#ffffff">Tool Call Flow</text>
+
+  <!-- Swimlane headers -->
+  <rect x="40" y="50" width="160" height="36" rx="6" fill="#1e2636" stroke="#333" stroke-width="1"/>
+  <text x="120" y="73" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#ccc">User</text>
+
+  <rect x="320" y="50" width="160" height="36" rx="6" fill="#1e2636" stroke="#4CAF50" stroke-width="1.5"/>
+  <text x="400" y="73" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#4CAF50">Claude</text>
+
+  <rect x="600" y="50" width="160" height="36" rx="6" fill="#1e2636" stroke="#2196F3" stroke-width="1.5"/>
+  <text x="680" y="73" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#2196F3">Tool / System</text>
+
+  <!-- Swimlane lifelines -->
+  <line x1="120" y1="86" x2="120" y2="470" stroke="#333" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="400" y1="86" x2="400" y2="470" stroke="#4CAF50" stroke-width="1" stroke-dasharray="4,4" opacity="0.4"/>
+  <line x1="680" y1="86" x2="680" y2="470" stroke="#2196F3" stroke-width="1" stroke-dasharray="4,4" opacity="0.4"/>
+
+  <!-- Step 1: User asks -->
+  <line x1="130" y1="115" x2="388" y2="115" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowR)"/>
+  <text x="258" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">Asks question</text>
+
+  <!-- Step 2: Claude reads context -->
+  <line x1="410" y1="150" x2="668" y2="150" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowR)"/>
+  <text x="540" y="144" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">Read tool call</text>
+
+  <!-- Step 2b: Returns -->
+  <line x1="668" y1="170" x2="412" y2="170" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowL)"/>
+  <text x="540" y="184" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#666" font-style="italic">context returned</text>
+
+  <!-- Step 3: Claude decides action -->
+  <rect x="340" y="198" width="120" height="28" rx="4" fill="#4CAF50" fill-opacity="0.15" stroke="#4CAF50" stroke-width="1"/>
+  <text x="400" y="217" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#4CAF50">Decides action</text>
+
+  <!-- Step 4: Awaiting approval box -->
+  <rect x="72" y="242" width="656" height="36" rx="6" fill="#FFB900" fill-opacity="0.08" stroke="#FFB900" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="400" y="265" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#FFB900">Awaiting approval — tool use paused until user confirms</text>
+
+  <!-- Step 4b: Claude → User approval request -->
+  <line x1="388" y1="296" x2="132" y2="296" stroke="#FFB900" stroke-width="2" marker-end="url(#arrowL)"/>
+  <text x="258" y="290" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">Requests approval</text>
+
+  <!-- Step 5: User approves -->
+  <line x1="132" y1="326" x2="388" y2="326" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowR)"/>
+  <text x="258" y="320" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">Approves</text>
+
+  <!-- Step 6: Tool executes -->
+  <line x1="412" y1="356" x2="668" y2="356" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowR)"/>
+  <text x="540" y="350" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">Tool executes</text>
+
+  <!-- Step 7: Result returned -->
+  <line x1="668" y1="386" x2="412" y2="386" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowL)"/>
+  <text x="540" y="400" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#666" font-style="italic">result returned</text>
+
+  <!-- Step 8: Claude responds -->
+  <line x1="388" y1="424" x2="132" y2="424" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowL)"/>
+  <text x="258" y="418" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#aaa">Claude responds</text>
+
+  <!-- Step labels on left -->
+  <text x="44" y="118" font-family="system-ui, sans-serif" font-size="10" fill="#555">1</text>
+  <text x="44" y="153" font-family="system-ui, sans-serif" font-size="10" fill="#555">2</text>
+  <text x="44" y="214" font-family="system-ui, sans-serif" font-size="10" fill="#555">3</text>
+  <text x="44" y="265" font-family="system-ui, sans-serif" font-size="10" fill="#555">4</text>
+  <text x="44" y="299" font-family="system-ui, sans-serif" font-size="10" fill="#555">5</text>
+  <text x="44" y="329" font-family="system-ui, sans-serif" font-size="10" fill="#555">6</text>
+  <text x="44" y="359" font-family="system-ui, sans-serif" font-size="10" fill="#555">7</text>
+  <text x="44" y="389" font-family="system-ui, sans-serif" font-size="10" fill="#555">8</text>
+  <text x="44" y="427" font-family="system-ui, sans-serif" font-size="10" fill="#555">9</text>
+
+  <text x="400" y="490" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#555">Every tool use goes through this flow. Approval keeps you in control.</text>
+</svg>

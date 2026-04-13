@@ -4,14 +4,24 @@ lessonNumber: "16.3.2"
 chapterNumber: "16.3"
 pathNumber: "16"
 tutorPreload: "Check whether my scheduled task is actually registered and will fire at the right time."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.5"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Schedule recurring tasks with cron or Task Scheduler
 
-## Objective
+## What you will build
+By the end of this lesson you will have a script scheduled to run automatically once a day — using `cron` on macOS / Linux or Task Scheduler on Windows.
 
+## Why this matters
+Computer use and browser automation extend Claude's capabilities to the full surface area of a knowledge worker's day — not just files and code, but UIs, web apps, and dashboards. Sandbox discipline prevents these powerful capabilities from doing unintended damage during development.
+
+## Before you start
 By the end of this lesson you will have a script scheduled to run automatically once a day — using `cron` on macOS / Linux or Task Scheduler on Windows. You will know how to list, edit, and remove scheduled tasks, and you will verify that your task actually fired.
+
 
 ## Walkthrough
 
@@ -186,6 +196,10 @@ Unregister-ScheduledTask -TaskName "CLI Academy Daily Log" -Confirm:$false
 | Task runs but you cannot see the output | Cron swallows stdout/stderr by default | Redirect output in the cron line: `... >> /path/to/log.txt 2>&1` |
 | You accidentally deleted all cron jobs with `crontab -r` | `crontab -r` removes everything without confirmation | There is no undo — always `crontab -l > crontab-backup.txt` before editing |
 
-<VerificationBlock>
+<VerificationBlock rubricCriteria={[
+    "The sandbox or container started without errors and is accessible",
+    "The specified automation or browser action completed in the isolated environment",
+    "The sandbox was cleanly stopped or destroyed after the lesson task was complete",
+]}>
 Run your daily-log script manually and confirm a timestamped line appears in `daily.log`. Then verify the task is registered: on macOS/Linux run `crontab -l` and confirm your entry is listed; on Windows run `Get-ScheduledTask -TaskName "CLI Academy Daily Log"` and confirm the task state is `Ready`. Trigger the task once more and confirm a second line appears in the log.
 </VerificationBlock>

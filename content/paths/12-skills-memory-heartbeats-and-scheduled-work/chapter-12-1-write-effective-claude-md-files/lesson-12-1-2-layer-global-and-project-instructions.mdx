@@ -4,14 +4,24 @@ lessonNumber: "12.1.2"
 chapterNumber: "12.1"
 pathNumber: "12"
 tutorPreload: "Show me how global and project CLAUDE.md files interact when both exist."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Layer global and project instructions
 
-## Objective
+## What you will build
+A working three-layer setup: global CLAUDE.md, project CLAUDE.md with a conflicting rule, and a .claude/rules/ file.
 
+## Why this matters
+Persistent skills and memory are what distinguish a one-shot agent from a long-running one. Heartbeats and scheduled work enable agents that operate independently over time. These patterns underpin every production agentic system that handles real business workflows.
+
+## Before you start
 By the end of this lesson you will understand the three layers of Claude Code instructions — global `~/.claude/CLAUDE.md`, project `CLAUDE.md`, and `.claude/rules/*.md` — and prove which layer wins when they conflict. You will set up all three layers and run a conflict test so you can see the priority order firsthand.
+
 
 ## Walkthrough
 
@@ -162,4 +172,9 @@ This is useful because you can set comfortable defaults globally (like "be conci
 <VerificationBlock
   deliverable="A working three-layer setup: global CLAUDE.md, project CLAUDE.md with a conflicting rule, and a .claude/rules/ file."
   verifyCheck="Claude Code follows the project rule over the global preference when they conflict, and cites rules from .claude/rules/ when asked."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

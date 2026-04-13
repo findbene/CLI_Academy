@@ -4,14 +4,24 @@ lessonNumber: "11.3.3"
 chapterNumber: "11.3"
 pathNumber: "11"
 tutorPreload: "Guide me through building a pipeline where Claude writes code, I review it, it runs in Docker, and only safe results get promoted."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 40
+prerequisiteLesson: null
 ---
 
 # Mini-project: Build a safe execution pipeline
 
-## Objective
+## What you will build
+A working safe-pipeline directory containing sandbox-run.sh (or .ps1), at least one PASSED execution log, output files from the sandbox run, and one FAILED log from the deliberately broken script.
 
+## Why this matters
+Custom runtimes are how agentic developers move from using Claude to building with Claude. Understanding the sandbox model and runtime foundations is the prerequisite for everything in the advanced Claw ecosystem. This knowledge is increasingly sought after in AI engineering roles.
+
+## Before you start
 By the end of this mini-project you will have a working pipeline script that implements the full safe execution flow: Claude Code writes a script, the script is saved to a staging area, it runs inside a locked-down Docker container, the exit code is checked, and only if execution succeeds are the outputs promoted to your real project directory. You will build and test every piece.
+
 
 ## Walkthrough
 
@@ -337,4 +347,9 @@ git commit -m "feat(reports): add stats report (sandbox-verified, AI-generated)"
 <VerificationBlock
   deliverable="A working safe-pipeline directory containing sandbox-run.sh (or .ps1), at least one PASSED execution log, output files from the sandbox run, and one FAILED log from the deliberately broken script."
   verifyCheck="The pipeline directory has staging/, approved/, output/, and logs/ folders. At least one log shows STATUS: PASSED with exit code 0, the output directory contains the stats report, and a second log shows STATUS: FAILED for the bad script."
+  rubricCriteria={[
+    "The A working safe-pipeline directory containing sandbox-run.sh folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

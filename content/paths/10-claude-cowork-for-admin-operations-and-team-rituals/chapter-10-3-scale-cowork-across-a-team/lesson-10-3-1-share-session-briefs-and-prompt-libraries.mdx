@@ -4,14 +4,24 @@ lessonNumber: "10.3.1"
 chapterNumber: "10.3"
 pathNumber: "10"
 tutorPreload: "Set up a shared prompts folder so every teammate gets consistent Claude results."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.1"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Share session briefs and prompt libraries
 
-## Objective
+## What you will build
+A git-tracked prompts/ directory with a README, a session brief template, and at least two concrete prompt files that produce consistent results.
 
+## Why this matters
+This skill is foundational to working confidently with Claude Code in a professional context. Developers who master it can move faster, make fewer mistakes, and produce work that is easier to review and maintain.
+
+## Before you start
 By the end of this lesson you will create a git-tracked `prompts/` directory containing reusable session briefs and prompt templates that your whole team can use. When someone needs Claude to generate a standup summary, write a runbook, or review code, they pull from a shared library instead of writing prompts from scratch.
+
 
 ## Walkthrough
 
@@ -266,4 +276,9 @@ The best test: have someone else on your team open `prompts/standup-summary.md`,
 <VerificationBlock
   deliverable="A git-tracked prompts/ directory with a README, a session brief template, and at least two concrete prompt files that produce consistent results."
   verifyCheck="A teammate can pick any prompt from the library, paste it into Claude Code, and get a correctly formatted output without modifications."
+  rubricCriteria={[
+    "The directory with a README, a session brief template, and at least two concrete prompt files that produce consistent results. folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

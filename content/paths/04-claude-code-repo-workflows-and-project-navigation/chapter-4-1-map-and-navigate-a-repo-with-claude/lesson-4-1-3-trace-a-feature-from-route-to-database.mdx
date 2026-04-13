@@ -5,13 +5,23 @@ chapterNumber: "4.1"
 pathNumber: "4"
 tutorPreload: "Walk me through how one feature flows from the route handler to the data layer."
 verifyType: "terminal_output"
+groupId: "3.1"
+clawClassification: "elective"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Trace a feature from route to database
 
-## Objective
+## What you will build
+A numbered trace of one feature from HTTP route to data layer with file paths and function names.
 
+## Why this matters
+Navigating and mapping an unfamiliar codebase is one of the most time-consuming parts of a developer's day. Claude Code turns a 30-minute orientation into a 3-minute operation. This skill directly reduces ramp-up time on new projects, client codebases, and open-source contributions.
+
+## Before you start
 Use Claude Code to trace how a single feature works end-to-end — from the incoming HTTP request through the route handler, any middleware or service layers, and down to the data store. By the end you will have a numbered step-by-step trace naming every file and function involved in handling one request.
+
 
 ## Walkthrough
 
@@ -119,4 +129,9 @@ Save this trace — it is your deliverable and the foundation for understanding 
 <VerificationBlock
   deliverable="A numbered trace of one feature from HTTP route to data layer with file paths and function names."
   verifyCheck="Trace names at least three files in the correct order, confirmed by manual inspection of at least two of them."
+  rubricCriteria={[
+    "The script file exists at the specified path and runs without syntax errors",
+    "Running the script produces the expected output described in the lesson",
+    "The script handles at least one error case or edge condition without crashing",
+  ]}
 />

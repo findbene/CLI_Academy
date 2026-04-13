@@ -1,0 +1,251 @@
+---
+title: "Install Your First MCP Server"
+lessonNumber: "21.1.2"
+chapterNumber: "21.1"
+pathNumber: "21"
+tutorPreload: "I'm about to install the @modelcontextprotocol/server-filesystem MCP server. Help me understand the configuration steps and how to verify it shows up in /mcp."
+verifyType: "terminal_output"
+estimatedMinutes: 25
+---
+
+# Install Your First MCP Server
+
+## Objective
+
+By the end of this lesson you will have the `@modelcontextprotocol/server-filesystem` MCP server installed, configured in your Claude Code settings, and verified as visible in the `/mcp` listing. This is the reference MCP server from Anthropic — a clean, well-documented starting point for understanding how MCP works end to end.
+
+## Walkthrough
+
+### Step 1 — Understand what this server does
+
+The `@modelcontextprotocol/server-filesystem` server gives Claude a set of filesystem tools that run through the MCP layer rather than the built-in Claude Code Read/Write tools. These tools include:
+
+- `read_file` — read a single file's contents
+- `read_multiple_files` — read several files in one call
+- `write_file` — write content to a file
+- `list_directory` — list files in a directory
+- `create_directory` — create a new directory
+- `move_file` — rename or move a file
+- `search_files` — search for files matching a pattern
+- `get_file_info` — get metadata about a file (size, dates, permissions)
+
+You configure this server with a list of **allowed directories**. The server will only operate on files inside those directories — a sandboxing feature the built-in tools do not have.
+
+### Step 2 — Install the package
+
+**macOS / Linux**
+
+```bash
+npm install -g @modelcontextprotocol/server-filesystem
+```
+
+**Windows PowerShell (run as Administrator)**
+
+```powershell
+npm install -g @modelcontextprotocol/server-filesystem
+```
+
+Wait for the install to complete. You should see output ending with a line like `added N packages`.
+
+Verify the binary is available:
+
+**macOS / Linux**
+
+```bash
+npx @modelcontextprotocol/server-filesystem --version
+```
+
+**Windows PowerShell**
+
+```powershell
+npx @modelcontextprotocol/server-filesystem --version
+```
+
+If you see a version number, the package is installed and the binary works.
+
+### Step 3 — Find the full path to the server binary
+
+The Claude Code config file needs the full absolute path to `node` and to the server's package entrypoint. Let's find both.
+
+**macOS / Linux**
+
+```bash
+# Find the node binary
+which node
+
+# Find the server package entrypoint
+node -e "console.log(require.resolve('@modelcontextprotocol/server-filesystem'))"
+```
+
+Example output:
+```
+/usr/local/bin/node
+/usr/local/lib/node_modules/@modelcontextprotocol/server-filesystem/dist/index.js
+```
+
+**Windows PowerShell**
+
+```powershell
+# Find the node binary
+(Get-Command node).Source
+
+# Find the server package entrypoint
+node -e "console.log(require.resolve('@modelcontextprotocol/server-filesystem'))"
+```
+
+Example output:
+```
+C:\Program Files\nodejs\node.exe
+C:\Users\you\AppData\Roaming\npm\node_modules\@modelcontextprotocol\server-filesystem\dist\index.js
+```
+
+Write both of these paths down. You will need them in the next step.
+
+### Step 4 — Configure Claude Code to load the server
+
+Claude Code reads MCP server configuration from `~/.claude/settings.json`. Open this file if it exists, or create it.
+
+First, look at what is currently in the file:
+
+**macOS / Linux**
+
+```bash
+cat ~/.claude/settings.json 2>/dev/null || echo "File does not exist yet"
+```
+
+**Windows PowerShell**
+
+```powershell
+if (Test-Path "$HOME\.claude\settings.json") {
+    Get-Content "$HOME\.claude\settings.json"
+} else {
+    Write-Host "File does not exist yet"
+}
+```
+
+If the file exists, you need to merge the new `mcpServers` entry into it without deleting existing content. If it does not exist, you will create it from scratch.
+
+**Create or update the file (macOS / Linux):**
+
+Replace `/path/to/node` and `/path/to/server-filesystem/dist/index.js` with the actual paths you found in Step 3. Replace `/Users/you/cli-academy` with the directory you want to allow.
+
+```bash
+cat > ~/.claude/settings.json << 'EOF'
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "/path/to/node",
+      "args": [
+        "/path/to/server-filesystem/dist/index.js",
+        "/Users/you/cli-academy"
+      ]
+    }
+  }
+}
+EOF
+```
+
+**Create or update the file (Windows PowerShell):**
+
+Replace paths with your actual values from Step 3.
+
+```powershell
+@"
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "C:\\Users\\you\\AppData\\Roaming\\npm\\node_modules\\@modelcontextprotocol\\server-filesystem\\dist\\index.js",
+        "C:\\Users\\you\\cli-academy"
+      ]
+    }
+  }
+}
+"@ | Set-Content -Path "$HOME\.claude\settings.json" -Encoding UTF8
+```
+
+> **Important:** The `args` array's last entry is the allowed directory. The server will refuse to operate on any file outside this path. Start with your `~/cli-academy` directory so the server has access to your learning files.
+
+### Step 5 — Verify the server appears in /mcp
+
+Open a new Claude Code session. Claude Code reads `settings.json` at startup, starts the MCP server subprocess, and queries it for available tools.
+
+**macOS / Linux**
+
+```bash
+claude
+```
+
+**Windows PowerShell**
+
+```powershell
+claude
+```
+
+Once the session is open, type:
+
+```
+/mcp
+```
+
+You should see output similar to:
+
+```
+Connected MCP servers:
+
+filesystem
+  Tools: read_file, read_multiple_files, write_file, list_directory,
+         create_directory, move_file, search_files, get_file_info
+  Status: connected
+```
+
+If `filesystem` appears in the list with a `connected` status, your MCP server is working.
+
+Type `/exit` to close the session.
+
+### Step 6 — Quick sanity check: ask Claude to list a directory via MCP
+
+Open Claude Code again and ask it to use the MCP server:
+
+```bash
+claude
+```
+
+Then type:
+
+```
+Use the filesystem MCP server to list the files in my cli-academy directory.
+```
+
+Claude should call the `list_directory` MCP tool and return the file listing. If you see an output like:
+
+```
+[MCP: filesystem.list_directory]
+Path: /Users/you/cli-academy
+Result: notes/, projects/
+```
+
+Your MCP server is working end to end.
+
+### What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `/mcp` shows no servers after config | `settings.json` has a JSON syntax error (trailing comma, wrong brackets) | Run `node -e "require('/path/to/settings.json')"` to validate the JSON; fix any syntax errors |
+| Server shows as `error` or `disconnected` | The path to node or the server index.js is wrong | Double-check the paths from Step 3 against what is in `settings.json`; use the full absolute path, not relative |
+| `npm install -g` fails with EACCES | Permission denied on global node_modules | macOS/Linux: prefix with `sudo`; Windows: run PowerShell as Administrator |
+| `npx ... --version` says "not found" | Global npm bin directory is not on PATH | Restart your terminal after installing, or add `$(npm bin -g)` to your PATH |
+| Claude says "I don't have a filesystem MCP tool" | Session was opened before `settings.json` was saved | Exit the session, save the config file, and open a fresh session |
+| Server shows connected but list_directory fails | The allowed directory path in `args` does not match what you asked Claude to list | Update `settings.json` to include the path you want; restart Claude Code |
+
+<VerificationBlock
+  deliverable="A configured Claude Code installation with the filesystem MCP server listed as connected in /mcp."
+  verifyCheck="Share the output of /mcp from your Claude Code session showing the filesystem server with status: connected."
+  rubricCriteria={[
+    "settings.json exists at ~/.claude/settings.json with a valid mcpServers entry",
+    "/mcp output lists the filesystem server as connected",
+    "The filesystem server's tools list includes at least list_directory and read_file",
+    "Claude successfully called list_directory via the MCP server when asked"
+  ]}
+/>

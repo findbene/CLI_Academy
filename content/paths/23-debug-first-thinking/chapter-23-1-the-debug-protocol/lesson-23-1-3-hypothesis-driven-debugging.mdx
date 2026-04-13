@@ -1,0 +1,385 @@
+---
+title: "Hypothesis-Driven Debugging"
+lessonNumber: "23.1.3"
+chapterNumber: "23.1"
+pathNumber: "23"
+groupId: "3.7"
+clawClassification: "elective"
+prerequisiteLesson: "23.1.2"
+estimatedMinutes: 25
+verifyType: "code_submission"
+tutorPreload: "I'm about to learn hypothesis-driven debugging — the scientific method applied to code. Help me understand how to form a testable hypothesis before trying a fix, and why this prevents wasted effort."
+---
+
+# Hypothesis-Driven Debugging
+
+## What you will build
+
+A `DEBUG_LOG.md` documenting one complete debug session using the hypothesis method: the observed symptom, your hypothesis, the test you designed to validate or invalidate it, the fix you applied, and your verification that the fix resolved the bug.
+
+## Why this matters
+
+Random debugging — changing things and hoping the bug goes away — is exhausting and unreliable. You can spend an hour making random edits and end up further from a solution than when you started. Worse, you might "fix" a symptom without understanding the root cause, and the bug returns a week later in a slightly different form.
+
+The scientific debugging method replaces random guessing with a structured loop:
+
+1. **Observe** — what is the symptom? What exactly does the system do vs. what it should do?
+2. **Hypothesize** — form one specific, falsifiable hypothesis about the root cause.
+3. **Test** — design the smallest experiment that would prove or disprove the hypothesis.
+4. **Conclude** — did the test confirm your hypothesis? If not, revise and repeat.
+5. **Fix** — once you know the root cause, apply the minimal fix.
+6. **Verify** — confirm the fix resolves the symptom without introducing new ones.
+
+Claude is most useful in the hypothesize and test stages. It can help you form hypotheses from symptoms and suggest targeted experiments — but you need to feed it the observation first.
+
+## Before you start
+
+- Python 3 installed.
+- `LEARNING_LOG.md` and the project from earlier lessons present, or a fresh directory.
+- `DEBUG_LOG.md` does not need to exist yet — you will create it.
+
+## The walkthrough
+
+### Step 1 — Meet the bug scenario
+
+You are working on a simple data pipeline that reads student score records and calculates class statistics. The function works for most inputs, but fails on certain datasets. Your colleague left a note: "sometimes `calculate_stats` returns wrong averages — maybe off by 10-15%."
+
+This is the kind of vague symptom you will encounter constantly in real work. Let's create it.
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/debug-protocol && cd ~/cli-academy/projects/debug-protocol
+cat > stats_bug.py << 'EOF'
+"""
+stats_bug.py — calculates class statistics from student score records.
+Contains a subtle bug that causes incorrect averages for some datasets.
+"""
+
+def calculate_stats(records):
+    """
+    Calculate mean, min, and max from a list of score records.
+    Each record is a dict: {"student": str, "score": int, "extra_credit": int}
+    """
+    scores = []
+    for record in records:
+        # BUG: adds extra_credit to score but also double-counts extra_credit
+        adjusted_score = record["score"] + record.get("extra_credit", 0)
+        scores.append(adjusted_score + record.get("extra_credit", 0))  # double add
+
+    mean = sum(scores) / len(scores)
+    return {
+        "mean": round(mean, 1),
+        "min": min(scores),
+        "max": max(scores),
+        "count": len(scores),
+    }
+
+
+# Dataset A — no extra credit, results should be exact
+dataset_a = [
+    {"student": "Alice", "score": 85, "extra_credit": 0},
+    {"student": "Bob", "score": 90, "extra_credit": 0},
+    {"student": "Carol", "score": 78, "extra_credit": 0},
+]
+
+# Dataset B — some students have extra credit
+dataset_b = [
+    {"student": "Alice", "score": 85, "extra_credit": 0},
+    {"student": "Bob", "score": 75, "extra_credit": 10},   # 10 pts extra credit
+    {"student": "Carol", "score": 80, "extra_credit": 5},  # 5 pts extra credit
+]
+
+if __name__ == "__main__":
+    stats_a = calculate_stats(dataset_a)
+    stats_b = calculate_stats(dataset_b)
+    print(f"Dataset A stats: {stats_a}")
+    print(f"Expected mean for A: 84.3")
+    print()
+    print(f"Dataset B stats: {stats_b}")
+    print(f"Expected mean for B: 85.0 (85 + 85 + 85 = 255 / 3)")
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+"""
+stats_bug.py — calculates class statistics from student score records.
+Contains a subtle bug that causes incorrect averages for some datasets.
+"""
+
+def calculate_stats(records):
+    scores = []
+    for record in records:
+        # BUG: adds extra_credit to score but also double-counts extra_credit
+        adjusted_score = record["score"] + record.get("extra_credit", 0)
+        scores.append(adjusted_score + record.get("extra_credit", 0))  # double add
+
+    mean = sum(scores) / len(scores)
+    return {
+        "mean": round(mean, 1),
+        "min": min(scores),
+        "max": max(scores),
+        "count": len(scores),
+    }
+
+
+dataset_a = [
+    {"student": "Alice", "score": 85, "extra_credit": 0},
+    {"student": "Bob", "score": 90, "extra_credit": 0},
+    {"student": "Carol", "score": 78, "extra_credit": 0},
+]
+
+dataset_b = [
+    {"student": "Alice", "score": 85, "extra_credit": 0},
+    {"student": "Bob", "score": 75, "extra_credit": 10},
+    {"student": "Carol", "score": 80, "extra_credit": 5},
+]
+
+if __name__ == "__main__":
+    stats_a = calculate_stats(dataset_a)
+    stats_b = calculate_stats(dataset_b)
+    print(f"Dataset A stats: {stats_a}")
+    print(f"Expected mean for A: 84.3")
+    print()
+    print(f"Dataset B stats: {stats_b}")
+    print(f"Expected mean for B: 85.0 (85 + 85 + 85 = 255 / 3)")
+"@ | Set-Content stats_bug.py
+```
+
+### Step 2 — Observe the symptom
+
+**macOS / Linux:**
+```bash
+python3 stats_bug.py
+```
+
+**Windows PowerShell:**
+```powershell
+python stats_bug.py
+```
+
+Expected output:
+```
+Dataset A stats: {'mean': 84.3, 'min': 78, 'max': 90, 'count': 3}
+Expected mean for A: 84.3
+
+Dataset B stats: {'mean': 88.3, 'min': 85, 'max': 95, 'count': 3}
+Expected mean for B: 85.0 (85 + 85 + 85 = 255 / 3)
+```
+
+The symptom is clear: Dataset A is correct (84.3 matches). Dataset B is wrong — 88.3 instead of 85.0. The bug only manifests when `extra_credit` is non-zero. **This is your observation.**
+
+### Step 3 — Form a hypothesis before looking at the code
+
+Write your hypothesis before reading the implementation. This is the discipline that separates scientific debugging from random guessing.
+
+Based on the symptom — "mean is too high when extra_credit is non-zero" — a reasonable first hypothesis is:
+
+> **Hypothesis 1**: The `extra_credit` value is being added to scores more than once.
+
+This hypothesis is:
+- **Specific** — it names a particular mechanism (double-adding).
+- **Falsifiable** — you can test it by tracing what happens to a record with non-zero extra credit.
+
+### Step 4 — Design a test for the hypothesis
+
+If extra_credit is being double-added, then a student with `score=75` and `extra_credit=10` should end up with `95` in the scores list (75 + 10 + 10) instead of `85` (75 + 10).
+
+Add a debug print to the function to test this hypothesis without changing any logic:
+
+**macOS / Linux:**
+```bash
+python3 -c "
+records = [{'student': 'Bob', 'score': 75, 'extra_credit': 10}]
+for record in records:
+    adjusted_score = record['score'] + record.get('extra_credit', 0)
+    final = adjusted_score + record.get('extra_credit', 0)
+    print(f'score={record[\"score\"]}, extra_credit={record[\"extra_credit\"]}')
+    print(f'adjusted_score={adjusted_score}, final appended={final}')
+    print(f'Expected: 85, Got: {final}')
+"
+```
+
+**Windows PowerShell:**
+```powershell
+python -c @"
+records = [{'student': 'Bob', 'score': 75, 'extra_credit': 10}]
+for record in records:
+    adjusted_score = record['score'] + record.get('extra_credit', 0)
+    final = adjusted_score + record.get('extra_credit', 0)
+    print(f'score={record[chr(34)+chr(115)+chr(99)+chr(111)+chr(114)+chr(101)+chr(34)]}, extra_credit={record[chr(34)+chr(101)+chr(120)+chr(116)+chr(114)+chr(97)+chr(95)+chr(99)+chr(114)+chr(101)+chr(100)+chr(105)+chr(116)+chr(34)]}')
+    print(f'Expected: 85, Got: {final}')
+"@
+# Simpler version: add a debug print directly to the script and run it
+```
+
+Or more simply — open `stats_bug.py` in your editor and add one debug print inside the loop:
+```python
+print(f"  DEBUG record={record}, adjusted={adjusted_score}, appended={adjusted_score + record.get('extra_credit', 0)}")
+```
+
+Run again and observe:
+```
+DEBUG record={'student': 'Bob', 'score': 75, 'extra_credit': 10}, adjusted=85, appended=95
+```
+
+**The hypothesis is confirmed.** `extra_credit` (10) is added once to make `adjusted_score=85`, then added again when appending, giving 95. The bug is exactly as hypothesized: extra_credit is double-counted.
+
+### Step 5 — Apply the minimal fix
+
+Now that the root cause is confirmed, apply the minimal fix — change only the double-add line:
+
+Old code (line with the bug):
+```python
+scores.append(adjusted_score + record.get("extra_credit", 0))  # double add
+```
+
+Fixed code:
+```python
+scores.append(adjusted_score)
+```
+
+**macOS / Linux:**
+```bash
+# Apply the fix
+sed -i 's/scores.append(adjusted_score + record.get("extra_credit", 0))  # double add/scores.append(adjusted_score)/' stats_bug.py
+```
+
+**Windows PowerShell:**
+```powershell
+(Get-Content stats_bug.py) -replace 'scores\.append\(adjusted_score \+ record\.get\("extra_credit", 0\)\)  # double add', 'scores.append(adjusted_score)' | Set-Content stats_bug.py
+```
+
+Or simply open the file and edit that one line manually.
+
+### Step 6 — Verify the fix
+
+**macOS / Linux:**
+```bash
+python3 stats_bug.py
+```
+
+**Windows PowerShell:**
+```powershell
+python stats_bug.py
+```
+
+Expected output after fix:
+```
+Dataset A stats: {'mean': 84.3, 'min': 78, 'max': 90, 'count': 3}
+Expected mean for A: 84.3
+
+Dataset B stats: {'mean': 85.0, 'min': 85, 'max': 85, 'count': 3}
+Expected mean for B: 85.0 (85 + 85 + 85 = 255 / 3)
+```
+
+Both datasets now match expected values. The fix is verified.
+
+### Step 7 — Document the session in DEBUG_LOG.md
+
+**macOS / Linux:**
+```bash
+cat > DEBUG_LOG.md << 'EOF'
+# Debug Session Log
+
+## Session 1 — stats_bug.py double extra_credit (Lesson 23.1.3)
+
+**Date:** 2026-04-13
+**File:** stats_bug.py
+**Function:** calculate_stats()
+
+### Symptom
+Dataset A (all extra_credit=0) returns correct mean of 84.3.
+Dataset B (some extra_credit > 0) returns mean of 88.3 instead of expected 85.0.
+Bug only appears when extra_credit is non-zero.
+
+### Hypothesis
+Extra_credit is being added to each score more than once, inflating the totals.
+
+### Test designed
+Added a debug print inside the loop to trace the exact value being appended
+to the scores list for a record with extra_credit=10.
+
+### Test result
+Confirmed: record with score=75, extra_credit=10 was appended as 95, not 85.
+extra_credit was added once to make adjusted_score=85, then added again during
+the append, yielding 95. Hypothesis confirmed.
+
+### Root cause
+Line: `scores.append(adjusted_score + record.get("extra_credit", 0))`
+The extra_credit is already incorporated into adjusted_score. Adding it again
+during the append statement causes double-counting.
+
+### Fix applied
+Changed the append to: `scores.append(adjusted_score)`
+Removed the redundant `+ record.get("extra_credit", 0)` from the append line.
+
+### Verification
+Ran stats_bug.py after fix. Dataset A: 84.3 (correct). Dataset B: 85.0 (correct).
+Both datasets now match expected values.
+
+### Lesson learned
+Bugs that only appear for certain input shapes (non-zero extra_credit) are often
+addition or accumulation errors. The diagnostic approach: trace the exact value
+that enters the accumulator for a known input and compare it to the expected value.
+
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Debug Session Log
+
+## Session 1 — stats_bug.py double extra_credit (Lesson 23.1.3)
+
+Date: 2026-04-13
+File: stats_bug.py
+Function: calculate_stats()
+
+Symptom:
+Dataset A (extra_credit=0) gives correct mean 84.3.
+Dataset B (some extra_credit > 0) gives 88.3 instead of 85.0.
+Bug only triggers when extra_credit is non-zero.
+
+Hypothesis:
+extra_credit is added to each score more than once.
+
+Test:
+Debug print inside the loop showing the exact value appended for a record
+with extra_credit=10. Expected 85, got 95.
+
+Result: Hypothesis confirmed. extra_credit added twice.
+
+Root cause:
+scores.append(adjusted_score + record.get('extra_credit', 0))
+extra_credit already in adjusted_score — adding it again = double-count.
+
+Fix: Changed to scores.append(adjusted_score)
+
+Verification: Both datasets now return correct means.
+"@ | Set-Content DEBUG_LOG.md
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Dataset A is also wrong after the fix | The fix was applied to the wrong line or introduced a new error | Run `git diff` to see exactly what changed; compare against the expected fix |
+| Hypothesis test confirms nothing — the debug print looks correct | The bug is not in the loop but elsewhere (e.g., in how records are passed in) | Form a new hypothesis targeting the input validation layer |
+| sed command fails or corrupts the file | Regex did not match exactly | Use your editor to make the one-line change manually instead |
+| The fix resolves Dataset B but breaks Dataset A | The fix was too broad — changed behavior for zero-extra_credit cases too | Check the fix handles the `extra_credit=0` case correctly; `adjusted_score` should still equal `score` when extra_credit is 0 |
+| Claude's hypothesis contradicts yours | Claude often catches bugs you miss | Compare both hypotheses; form a combined test that would distinguish between them |
+
+<VerificationBlock
+  deliverable="A DEBUG_LOG.md with a complete hypothesis-driven debug session: symptom, hypothesis, test, result, fix, and verification."
+  verifyCheck="Submit your DEBUG_LOG.md. It must contain all six sections. Also run stats_bug.py after applying the fix — both dataset means must match expected values."
+  rubricCriteria={[
+    "DEBUG_LOG.md contains Symptom, Hypothesis, Test, Result, Fix, and Verification sections",
+    "The hypothesis is falsifiable and specific",
+    "The test was designed before the fix was applied",
+    "python3 stats_bug.py returns mean=84.3 for Dataset A",
+    "python3 stats_bug.py returns mean=85.0 for Dataset B"
+  ]}
+/>

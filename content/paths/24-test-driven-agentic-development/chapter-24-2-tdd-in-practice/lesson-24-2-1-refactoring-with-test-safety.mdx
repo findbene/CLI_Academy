@@ -1,0 +1,421 @@
+---
+title: "Refactoring With Test Safety"
+lessonNumber: "24.2.1"
+chapterNumber: "24.2"
+pathNumber: "24"
+groupId: "3.8"
+clawClassification: "elective"
+prerequisiteLesson: "24.1.3"
+estimatedMinutes: 25
+verifyType: "terminal_output"
+tutorPreload: "I'm about to learn how to use an existing test suite as a safety net while refactoring. Help me understand the 'surgical refactor' pattern and how to keep tests green throughout."
+---
+
+# Refactoring With Test Safety
+
+## What you will build
+
+A before/after refactor of a messy function, with the test suite passing both before and after the refactor. You will also create a `REFACTOR_NOTES.md` documenting what changed and why.
+
+## Why this matters
+
+Code gets messy over time. Functions grow as requirements are added. Variables get named carelessly under deadline pressure. Logic that was clear six months ago is opaque today. Refactoring is the practice of improving the internal structure of code without changing its external behavior.
+
+The danger of refactoring is that you break something. Every developer has a story about "just cleaning up" a function and spending the next three hours tracking down a subtle regression.
+
+Tests eliminate that fear. When you have a test suite that fully covers a function's behavior, you can refactor with confidence: if the tests stay green, the behavior is unchanged. If a test turns red, you immediately know what broke and can undo the change.
+
+This lesson shows you the "surgical refactor" pattern with Claude:
+
+1. Run the tests — confirm they are green before you touch anything.
+2. Ask Claude to refactor a messy function.
+3. Run the tests again — they must stay green.
+4. If any test turns red, Claude reverts or fixes the change.
+
+## Before you start
+
+- Python 3 and pytest installed.
+- The `tdd-lab` project from earlier lessons, or a fresh directory.
+- A messy function to refactor (we provide one below).
+
+## The walkthrough
+
+### Step 1 — Create the messy function with its test suite
+
+We will start with a function that works correctly but is difficult to read. It calculates invoice totals with tax and discount logic all mixed together.
+
+**macOS / Linux:**
+```bash
+mkdir -p ~/cli-academy/projects/tdd-lab && cd ~/cli-academy/projects/tdd-lab
+cat > invoice.py << 'EOF'
+"""
+invoice.py — calculates invoice totals.
+This works but the code is hard to read.
+"""
+
+
+def calc(items, d=0, tx=0.0, r=False):
+    """Calculate invoice total. d=discount%, tx=tax rate, r=round result."""
+    t = 0
+    for i in items:
+        p = i.get('p', 0)
+        q = i.get('q', 1)
+        t = t + (p * q)
+    if d > 0:
+        t = t - (t * (d / 100))
+    if tx > 0:
+        t = t + (t * tx)
+    if r:
+        t = round(t, 2)
+    return t
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Path "$HOME\cli-academy\projects\tdd-lab" -Force
+Set-Location "$HOME\cli-academy\projects\tdd-lab"
+@"
+"""
+invoice.py — calculates invoice totals.
+This works but the code is hard to read.
+"""
+
+
+def calc(items, d=0, tx=0.0, r=False):
+    t = 0
+    for i in items:
+        p = i.get('p', 0)
+        q = i.get('q', 1)
+        t = t + (p * q)
+    if d > 0:
+        t = t - (t * (d / 100))
+    if tx > 0:
+        t = t + (t * tx)
+    if r:
+        t = round(t, 2)
+    return t
+"@ | Set-Content invoice.py
+```
+
+Now create the test suite for this function. These tests define the contract that must hold before and after refactoring:
+
+**macOS / Linux:**
+```bash
+cat > test_invoice.py << 'EOF'
+"""
+test_invoice.py — tests for calc() / calculate_invoice_total().
+These must pass before AND after refactoring.
+"""
+
+import pytest
+from invoice import calc
+
+
+def test_single_item_no_discount_no_tax():
+    items = [{"p": 10.00, "q": 3}]
+    assert calc(items) == 30.0
+
+
+def test_multiple_items_sum():
+    items = [{"p": 5.00, "q": 2}, {"p": 20.00, "q": 1}]
+    assert calc(items) == 30.0
+
+
+def test_discount_applied():
+    items = [{"p": 100.00, "q": 1}]
+    result = calc(items, d=10)  # 10% discount
+    assert result == 90.0
+
+
+def test_tax_applied():
+    items = [{"p": 100.00, "q": 1}]
+    result = calc(items, tx=0.08)  # 8% tax
+    assert result == 108.0
+
+
+def test_discount_then_tax():
+    items = [{"p": 100.00, "q": 1}]
+    # 10% discount → 90.00, then 10% tax → 99.00
+    result = calc(items, d=10, tx=0.10, r=True)
+    assert result == 99.0
+
+
+def test_rounding():
+    items = [{"p": 3.33, "q": 3}]
+    result = calc(items, r=True)
+    assert result == 9.99
+
+
+def test_missing_quantity_defaults_to_one():
+    items = [{"p": 25.00}]  # no 'q' key
+    assert calc(items) == 25.0
+
+
+def test_empty_items_returns_zero():
+    assert calc([]) == 0
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+"""
+test_invoice.py — tests for calc() / calculate_invoice_total().
+These must pass before AND after refactoring.
+"""
+
+import pytest
+from invoice import calc
+
+
+def test_single_item_no_discount_no_tax():
+    items = [{"p": 10.00, "q": 3}]
+    assert calc(items) == 30.0
+
+
+def test_multiple_items_sum():
+    items = [{"p": 5.00, "q": 2}, {"p": 20.00, "q": 1}]
+    assert calc(items) == 30.0
+
+
+def test_discount_applied():
+    items = [{"p": 100.00, "q": 1}]
+    result = calc(items, d=10)
+    assert result == 90.0
+
+
+def test_tax_applied():
+    items = [{"p": 100.00, "q": 1}]
+    result = calc(items, tx=0.08)
+    assert result == 108.0
+
+
+def test_discount_then_tax():
+    items = [{"p": 100.00, "q": 1}]
+    result = calc(items, d=10, tx=0.10, r=True)
+    assert result == 99.0
+
+
+def test_rounding():
+    items = [{"p": 3.33, "q": 3}]
+    result = calc(items, r=True)
+    assert result == 9.99
+
+
+def test_missing_quantity_defaults_to_one():
+    items = [{"p": 25.00}]
+    assert calc(items) == 25.0
+
+
+def test_empty_items_returns_zero():
+    assert calc([]) == 0
+"@ | Set-Content test_invoice.py
+```
+
+### Step 2 — Confirm tests are green before refactoring
+
+**macOS / Linux:**
+```bash
+pytest test_invoice.py -v
+```
+
+**Windows PowerShell:**
+```powershell
+pytest test_invoice.py -v
+```
+
+Expected: all 8 tests pass. If any fail, do not proceed until they are green — you need a stable baseline.
+
+```
+8 passed in 0.xx s
+```
+
+This is your before state. Screenshot or note this result.
+
+### Step 3 — Ask Claude to refactor
+
+Open Claude Code and send this prompt:
+
+```
+Here is a function that works but is hard to read:
+
+[paste contents of invoice.py]
+
+Here is the test suite that defines its behavior:
+
+[paste contents of test_invoice.py]
+
+Refactor the function using these goals:
+1. Use descriptive variable names (no single-letter names)
+2. Use a descriptive function name instead of 'calc'
+3. Add a docstring that explains parameters and return value
+4. Keep all 8 tests passing — do not change behavior
+
+Add an alias at the bottom: calc = calculate_invoice_total
+so the tests continue to import 'calc' without changes.
+
+Show me the refactored invoice.py.
+```
+
+Claude should produce something like:
+
+```python
+def calculate_invoice_total(
+    items: list,
+    discount_percent: float = 0,
+    tax_rate: float = 0.0,
+    round_result: bool = False,
+) -> float:
+    """
+    Calculate the total cost of an invoice.
+
+    Args:
+        items: List of dicts with 'p' (unit price) and optional 'q' (quantity, default 1).
+        discount_percent: Percentage discount to apply before tax (e.g. 10 for 10%).
+        tax_rate: Tax rate as a decimal (e.g. 0.08 for 8%).
+        round_result: If True, rounds the result to 2 decimal places.
+
+    Returns:
+        The total invoice amount as a float.
+    """
+    subtotal = sum(item.get('p', 0) * item.get('q', 1) for item in items)
+
+    if discount_percent > 0:
+        subtotal -= subtotal * (discount_percent / 100)
+
+    if tax_rate > 0:
+        subtotal += subtotal * tax_rate
+
+    return round(subtotal, 2) if round_result else subtotal
+
+
+# Alias for backward compatibility with tests that import 'calc'
+calc = calculate_invoice_total
+```
+
+Save this to `invoice.py`.
+
+### Step 4 — Run the tests again after refactoring
+
+**macOS / Linux:**
+```bash
+pytest test_invoice.py -v
+```
+
+**Windows PowerShell:**
+```powershell
+pytest test_invoice.py -v
+```
+
+Expected: still 8 passed, 0 failed. The refactor preserved all behavior.
+
+### Step 5 — Compare before and after
+
+**macOS / Linux:**
+```bash
+git diff invoice.py
+```
+
+Or if not using git, compare manually. Key changes:
+- `calc` → `calculate_invoice_total` (with backward-compatible alias)
+- `d`, `tx`, `r` → `discount_percent`, `tax_rate`, `round_result`
+- `i`, `p`, `q`, `t` → `item`, `subtotal` (used consistently)
+- Loop replaced with `sum()` comprehension
+- Docstring added
+
+Same behavior. More readable code. Tests confirm it.
+
+### Step 6 — Create REFACTOR_NOTES.md
+
+**macOS / Linux:**
+```bash
+cat > REFACTOR_NOTES.md << 'EOF'
+# Refactor Notes — invoice.py (Lesson 24.2.1)
+
+## What changed
+
+### Function name
+- Before: `calc`
+- After: `calculate_invoice_total` with `calc = calculate_invoice_total` alias
+
+### Parameter names
+- `d` → `discount_percent`
+- `tx` → `tax_rate`
+- `r` → `round_result`
+
+### Variable names inside the function
+- `t` → `subtotal`
+- `i` → `item` (loop variable)
+- `p`, `q` → still accessed via `item.get('p')`, `item.get('q')`
+
+### Logic changes
+- Loop replaced with `sum()` comprehension — same semantics, more idiomatic Python
+- No logic changes — all 8 tests pass before and after
+
+### What was NOT changed
+- The behavior of every code path
+- The backward-compatible `calc` alias (tests still work unchanged)
+- The default values for all parameters
+
+## Why these changes
+Single-letter variable names like `d`, `tx`, `t`, `i`, `p`, `q` require the reader
+to hold a mental mapping while reading. Descriptive names make the code self-documenting.
+The alias pattern (`calc = calculate_invoice_total`) allows backward-compatible renaming
+without touching call sites or tests.
+
+## Test results
+Before: 8 passed, 0 failed
+After:  8 passed, 0 failed
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+# Refactor Notes — invoice.py (Lesson 24.2.1)
+
+## What changed
+- calc -> calculate_invoice_total (with calc = calculate_invoice_total alias)
+- d -> discount_percent
+- tx -> tax_rate
+- r -> round_result
+- t -> subtotal, loop variable i -> item
+- Loop replaced with sum() comprehension
+
+## What was NOT changed
+- Behavior (all 8 tests pass before and after)
+- Default parameter values
+- Backward-compatible calc alias
+
+## Why
+Single-letter names require the reader to hold a mental mapping.
+Descriptive names are self-documenting.
+
+## Test results
+Before: 8 passed
+After: 8 passed
+"@ | Set-Content REFACTOR_NOTES.md
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| One test fails after Claude's refactor | Claude changed subtle logic while renaming | Show Claude the failing test with the assertion error; ask it to fix only the broken behavior |
+| `calc` is not found after refactor | Claude removed the alias line | Add `calc = calculate_invoice_total` at the bottom of `invoice.py` |
+| `test_discount_then_tax` fails with wrong value | Discount and tax are applied in the wrong order | Discount must be applied before tax; check the order of the two `if` blocks in the refactored code |
+| Claude adds features during refactoring | Claude interpreted "improve" as "add more capabilities" | Specify explicitly: "make zero behavior changes — only rename variables and improve readability" |
+| Tests pass but the code is not actually more readable | Claude's variable names are still opaque | Ask Claude: "Rename every variable so that the code reads like plain English without comments" |
+
+<VerificationBlock
+  deliverable="A refactored invoice.py, a REFACTOR_NOTES.md, and test output showing 8 passed both before and after the refactor."
+  verifyCheck="Run `pytest test_invoice.py -v` against the refactored invoice.py. All 8 tests must pass. Submit the pytest output and your REFACTOR_NOTES.md."
+  rubricCriteria={[
+    "pytest test_invoice.py -v shows 8 passed, 0 failed",
+    "invoice.py uses descriptive variable names (no single-letter param names)",
+    "invoice.py has a docstring on the main function",
+    "calc alias is present at the bottom of invoice.py",
+    "REFACTOR_NOTES.md documents what changed and why"
+  ]}
+/>

@@ -4,14 +4,24 @@ lessonNumber: "12.3.3"
 chapterNumber: "12.3"
 pathNumber: "12"
 tutorPreload: "Walk me through setting up CLAUDE.md, a custom skill, and memory for a real project."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "4.6"
+clawClassification: "advanced"
+estimatedMinutes: 35
+prerequisiteLesson: null
 ---
 
 # Mini project: customize Claude for your workflow
 
-## Objective
+## What you will build
+A project with CLAUDE.md, .claude/rules/, .claude/memory/, user memory files, and a custom skill — all three layers verified in a single Claude Code session.
 
+## Why this matters
+Persistent skills and memory are what distinguish a one-shot agent from a long-running one. Heartbeats and scheduled work enable agents that operate independently over time. These patterns underpin every production agentic system that handles real business workflows.
+
+## Before you start
 By the end of this mini project you will have a personal project set up with all three customization layers working together: a project `CLAUDE.md`, a custom skill, and organized memory files. You will start a fresh Claude Code session and verify that Claude reads all three layers by running a single end-to-end test.
+
 
 ## Walkthrough
 
@@ -276,4 +286,9 @@ If all five tests pass, your full customization system is working.
 <VerificationBlock
   deliverable="A project with CLAUDE.md, .claude/rules/, .claude/memory/, user memory files, and a custom skill — all three layers verified in a single Claude Code session."
   verifyCheck="Claude Code correctly answers questions about project rules, code style, test framework, language preference, and generates a conventional commit message — proving all five customization sources are active."
+  rubricCriteria={[
+    "The CLAUDE.md file exists at the specified path and opens without errors",
+    "The file contains the required sections or restrictions as described in the lesson",
+    "Claude Code reads and applies the instructions when a session is started in that directory",
+  ]}
 />

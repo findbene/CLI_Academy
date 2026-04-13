@@ -4,14 +4,24 @@ lessonNumber: "3.2.1"
 chapterNumber: "3.2"
 pathNumber: "3"
 tutorPreload: "Before changing anything, summarize this repo and tell me the safest first improvement."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "1.2"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Ask for understanding before editing
 
-## Objective
+## What you will build
+A Claude Code summary of the practice repo and a candidate improvement, with zero files changed.
 
+## Why this matters
+Claude Code is the primary interface for agentic development. Understanding how it reads context, executes tools, and takes action is the difference between a developer who directs Claude precisely and one who gets unpredictable results. Every advanced agentic pattern builds on this foundation.
+
+## Before you start
 Learn the most important Claude Code habit: always ask first, edit second. You will open a Claude Code session inside your practice repo and prompt it to summarize the project, list its files, and suggest the safest first improvement — all without changing a single line of code.
+
 
 ## Walkthrough
 
@@ -99,4 +109,9 @@ Type `/exit` to quit. Nothing in your project has changed. You have a clear pict
 <VerificationBlock
   deliverable="A Claude Code summary of the practice repo and a candidate improvement, with zero files changed."
   verifyCheck="Learner shares Claude Code's summary showing correct file names and the suggested improvement."
+  rubricCriteria={[
+    "A Claude Code summary of the practice repo and a candidate improvement, with zero files changed exists as described and is accessible",
+    "All required elements mentioned in the deliverable are present and correctly formed",
+    "The artifact was produced by following the walkthrough steps, not by copying an existing file",
+  ]}
 />

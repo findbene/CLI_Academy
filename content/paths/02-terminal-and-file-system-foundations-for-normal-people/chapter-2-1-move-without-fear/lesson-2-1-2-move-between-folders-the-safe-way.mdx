@@ -5,13 +5,23 @@ chapterNumber: "2.1"
 pathNumber: "2"
 tutorPreload: "Convert this path instruction into the exact command for {{os}} and shell {{shell}}."
 verifyType: "terminal_output"
+groupId: "1.1"
+clawClassification: "core"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Move between folders the safe way
 
-## Objective
+## What you will build
+Terminal output showing a complete navigation drill: home → Documents → back → Downloads → home, with path verification at each step.
 
+## Why this matters
+The terminal is the lingua franca of every professional development environment. Navigating confidently from the command line is what separates a developer who can work anywhere from one who is helpless without a GUI. These skills transfer directly to remote servers, CI runners, and containerized environments.
+
+## Before you start
 Navigate your file system using `cd` with relative paths, absolute paths, `..`, and `~`. By the end you will move confidently between folders and always know how to get back.
+
 
 ## Walkthrough
 
@@ -174,4 +184,9 @@ After the final `pwd` or `Get-Location`, your output should show your home direc
 <VerificationBlock
   deliverable="Terminal output showing a complete navigation drill: home → Documents → back → Downloads → home, with path verification at each step."
   verifyCheck="Output contains at least five cd or Set-Location commands and ends back at the home directory."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

@@ -1,0 +1,146 @@
+---
+title: "Why Write Tests Before Code"
+lessonNumber: "24.1.1"
+chapterNumber: "24.1"
+pathNumber: "24"
+groupId: "3.8"
+clawClassification: "elective"
+prerequisiteLesson: null
+estimatedMinutes: 15
+verifyType: "quiz"
+tutorPreload: "I'm about to learn why writing tests before code — Test-Driven Development — is a powerful approach, especially when combined with Claude Code. Help me understand the red-green-refactor cycle and why it prevents over-engineering."
+---
+
+# Why Write Tests Before Code
+
+## What you will build
+
+A clear written explanation of the red-green-refactor cycle in your own words, saved in `LEARNING_LOG.md`. No code to write in this lesson — you will read, think, then articulate what you understood. The next lesson starts the hands-on work.
+
+## Why this matters
+
+Test-Driven Development (TDD) is counterintuitive the first time you hear it. Why would you write a test for code that doesn't exist yet? The test will fail immediately — that sounds like failure, not progress.
+
+The counterintuitive insight is that **a failing test is not failure — it is a specification**. When you write a test before the code, you are forcing yourself to be precise about exactly what the code should do. You have to answer: "What inputs will it receive? What should it return? What should it do with edge cases?" You answer these questions *before* you are deep in implementation and tempted to bend the requirements to fit whatever you've already written.
+
+The second counterintuitive insight involves Claude Code. When you use TDD with Claude, the workflow becomes:
+
+1. **You write the tests** (the specification of what must be true).
+2. **Claude writes the implementation** (the minimal code to satisfy your specification).
+3. **You verify** (run the tests; they must pass).
+
+This is a powerful division of labor. You own the requirements — the "what". Claude handles the implementation — the "how". Your tests prevent Claude from over-building or misunderstanding the spec. And because the tests are already written when you ask Claude for code, you have a ready-made verification tool.
+
+Without tests, you are essentially asking Claude to guess what you want, then manually checking the output. With tests, you can run `pytest` and know immediately whether Claude's implementation is correct.
+
+## Before you start
+
+- No tools or code required for this lesson.
+- Read the entire walkthrough before writing your answer — the quiz question appears at the end.
+
+## The walkthrough
+
+### Step 1 — The red-green-refactor cycle explained
+
+TDD operates in a three-phase loop. Every feature, every function, every bug fix goes through this cycle:
+
+**Red** — Write a failing test. Run it. Confirm it fails. A test that fails before the code exists means your test is checking a real behavior.
+
+**Green** — Write the minimum code to make the test pass. Not the cleanest code — the *minimum* code. If the test says "the function should return 42", returning the literal `42` is valid at this stage. The goal is a passing test, not beautiful code.
+
+**Refactor** — Now that the test is passing and you have a safety net, clean up the code. Improve variable names. Extract duplicate logic. Simplify. The tests protect you — if your refactor breaks something, a test turns red and tells you immediately.
+
+Then the cycle repeats for the next behavior.
+
+### Step 2 — Why red-green-refactor prevents over-engineering
+
+The most common mistake when building software is writing code for requirements you don't have yet. "I might need this later." "What if the user wants to sort by multiple fields?" "I should probably add caching."
+
+TDD prevents this because the rule is simple: **you can only write code that makes a failing test pass**. If there is no test requiring it, you do not build it. This forces you to implement exactly what is specified — no more, no less.
+
+Over-engineering is expensive. Every line of code you write for a hypothetical future requirement is code that must be maintained, understood, and potentially removed later. TDD is a discipline that keeps your codebase lean.
+
+### Step 3 — A short demo of the cycle
+
+Here is the full red-green-refactor cycle for one simple function: `celsius_to_fahrenheit`.
+
+**Red phase** — write the test, run it, watch it fail:
+```python
+# test_converter.py
+def test_celsius_to_fahrenheit_freezing():
+    assert celsius_to_fahrenheit(0) == 32
+
+def test_celsius_to_fahrenheit_boiling():
+    assert celsius_to_fahrenheit(100) == 212
+```
+
+Running `pytest test_converter.py` now:
+```
+NameError: name 'celsius_to_fahrenheit' is not defined
+FAILED
+```
+
+This is correct. The function doesn't exist. The test is red.
+
+**Green phase** — write the minimum code to pass:
+```python
+# converter.py
+def celsius_to_fahrenheit(c):
+    return c * 9/5 + 32
+```
+
+Running `pytest` now:
+```
+PASSED  test_celsius_to_fahrenheit_freezing
+PASSED  test_celsius_to_fahrenheit_boiling
+```
+
+Green. The function is correct for the tested cases.
+
+**Refactor phase** — the function is already clean in this case. If it were messy, we'd clean it now, re-running `pytest` after each change to confirm nothing broke.
+
+### Step 4 — Why this is a superpower with Claude
+
+In a traditional workflow without tests:
+
+1. You describe what you want to Claude in prose.
+2. Claude writes code.
+3. You read the code and manually test it.
+4. You realize Claude misunderstood part of the spec.
+5. You correct Claude and repeat.
+
+In a TDD workflow with Claude:
+
+1. You write tests that capture your spec precisely.
+2. You show Claude the failing tests: "Write the code to make these pass."
+3. Claude writes the code.
+4. You run `pytest` — either green (done) or red (Claude needs another attempt).
+5. You never need to manually check whether Claude's code is correct — the tests do it.
+
+The tests are not just a quality gate. They are a communication channel between you and Claude that is more precise than prose.
+
+### Step 5 — The key principle to remember
+
+TDD is not about testing — it is about **specification**. You are not writing tests to check code you wrote. You are writing tests to *define* what the code must do before you write it.
+
+When you internalize this, the ordering stops feeling backward. Tests first means: define the contract before writing the implementation. It is the natural order if you think of tests as specifications.
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| You cannot think of what to test before writing code | You do not yet have a clear picture of what the function should do | That's useful information — write the function signature and the inputs/outputs first, then the test follows naturally |
+| Tests feel redundant after the code is written | You are used to writing tests as an afterthought | Flip the order: commit to writing the test file before opening the implementation file at all |
+| TDD slows you down at first | Writing tests takes time and the habit is new | It speeds you up on the second and third feature, when you are refactoring without fear |
+
+<VerificationBlock
+  deliverable="A written answer to the quiz question saved in LEARNING_LOG.md."
+  verifyCheck="Answer: What is the red-green-refactor cycle and why does it prevent over-engineering? Your answer must describe all three phases and explain the constraint that prevents over-building. Paste your answer."
+  rubricCriteria={[
+    "Explains Red phase: write a failing test before the code exists",
+    "Explains Green phase: write minimum code to make the test pass",
+    "Explains Refactor phase: clean up while tests protect against regressions",
+    "Explains why TDD prevents over-engineering: no test = no code",
+    "Answer is in learner's own words, not a copy of the lesson text"
+  ]}
+/>

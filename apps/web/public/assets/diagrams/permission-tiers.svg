@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Tool permission tiers pyramid">
+  <title>Permission Tiers</title>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="#0f1117" rx="12"/>
+
+  <!-- Title -->
+  <text x="400" y="36" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#ffffff">Tool Permission Tiers</text>
+  <text x="400" y="56" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#888">Know what each tool can do — and when to be cautious</text>
+
+  <!-- Tier 4: DANGEROUS (top of pyramid, narrowest) -->
+  <polygon points="400,78 540,148 260,148" fill="#D32F2F" fill-opacity="0.85"/>
+  <text x="400" y="122" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#fff">DANGEROUS</text>
+  <text x="400" y="138" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#ffcdd2">--dangerouslySkipPermissions</text>
+
+  <!-- Tier 3: REQUIRES APPROVAL -->
+  <polygon points="260,152 540,152 590,232 210,232" fill="#E65100" fill-opacity="0.80"/>
+  <text x="400" y="184" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#fff">REQUIRES APPROVAL</text>
+  <text x="400" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#ffe0b2">Bash write, Delete, Network calls</text>
+  <text x="400" y="218" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#ffcc80">Always confirm before running. Check the diff.</text>
+
+  <!-- Tier 2: CAUTIOUS -->
+  <polygon points="210,236 590,236 650,326 150,326" fill="#F57F17" fill-opacity="0.70"/>
+  <text x="400" y="270" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#fff">CAUTIOUS</text>
+  <text x="400" y="288" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#fff9c4">Bash read-only, Write to scoped paths</text>
+  <text x="400" y="308" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#fff59d">Verify scope before allowing. Can affect files.</text>
+
+  <!-- Tier 1: SAFE (base, widest) -->
+  <polygon points="150,330 650,330 720,430 80,430" fill="#2E7D32" fill-opacity="0.80"/>
+  <text x="400" y="364" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#fff">SAFE — ALWAYS ALLOWED</text>
+  <text x="400" y="384" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#c8e6c9">Read, Glob, Grep</text>
+  <text x="400" y="402" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#a5d6a7">Read-only. Cannot modify your codebase.</text>
+  <text x="400" y="418" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#81c784">Use freely during exploration and research.</text>
+
+  <!-- Side labels -->
+  <text x="68" y="440" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#4CAF50">Low risk</text>
+  <line x1="78" y1="430" x2="78" y2="100" stroke="#555" stroke-width="1" stroke-dasharray="2,3"/>
+  <text x="68" y="100" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#D32F2F">High risk</text>
+
+  <text x="400" y="470" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#555">Default approval prompts match these tiers — the riskier the tool, the more explicit the confirmation.</text>
+</svg>

@@ -4,14 +4,24 @@ lessonNumber: "8.3.2"
 chapterNumber: "8.3"
 pathNumber: "8"
 tutorPreload: "Help me turn this successful Cowork session into a template I can reuse next time."
-verifyType: "terminal_output"
+verifyType: "code_submission"
+groupId: "3.5"
+clawClassification: "elective"
+estimatedMinutes: 30
+prerequisiteLesson: null
 ---
 
 # Save useful patterns as reusable templates
 
-## Objective
+## What you will build
+A `cowork-patterns/` folder containing at least three files: a brief template, a prompt pattern, and a review checklist.
 
+## Why this matters
+Structured Cowork sessions are how teams use AI for longer, more complex tasks without losing control. An unstructured AI session produces unpredictable results and costs more than it should. The Cowork discipline covered here is directly applicable to any enterprise team introducing AI tooling.
+
+## Before you start
 By the end of this lesson you will have a `cowork-patterns/` folder containing reusable templates extracted from your successful Cowork sessions. These templates capture what worked — the prompt structures, the brief format, and the review checklists — so you never have to reinvent them.
+
 
 ## Walkthrough
 
@@ -222,4 +232,9 @@ Over time, add more patterns to this folder: prompt patterns for code review, fo
 <VerificationBlock
   deliverable="A `cowork-patterns/` folder containing at least three files: a brief template, a prompt pattern, and a review checklist."
   verifyCheck="Each file is generalized (uses placeholders, not hardcoded project details) and could be used for a different project without modification."
+  rubricCriteria={[
+    "The ` folder exists at the specified path",
+    "All required subdirectories or contents are present and correctly named",
+    "The structure was created entirely from the command line without using a file manager",
+  ]}
 />

@@ -229,6 +229,9 @@ def validate_lesson(path: Path, path_root: Path) -> list[tuple[str, str]]:
     if has_safety_warning is True and not WARN_BLOCK_PATTERN.search(body):
         issues.append(("error", f"{name}: has_safety_warning=true but <WarnBlock> not found in body"))
 
+    # groupId, clawClassification, prerequisiteLesson — optional, no validation needed
+    # (presence alone is accepted; type checking is handled at the app layer)
+
     # Non-empty body
     if not body.strip():
         issues.append(("warning", f"{name}: lesson body is empty"))
@@ -301,9 +304,11 @@ def main() -> int:
     all_warnings: list[str] = []
     total_lessons = 0
     rows: list[tuple[str, int, int, int]] = []
+    verify_type_counts: dict[str, int] = {}
 
     for path_dir in path_dirs:
-        mdx_count = len(_lesson_files(path_dir))
+        lesson_files = _lesson_files(path_dir)
+        mdx_count = len(lesson_files)
         total_lessons += mdx_count
         path_issues = validate_path(path_dir)
         errs = [m for lvl, m in path_issues if lvl == "error"]
@@ -311,6 +316,27 @@ def main() -> int:
         all_errors.extend(errs)
         all_warnings.extend(warns)
         rows.append((path_dir.name, mdx_count, len(errs), len(warns)))
+
+        # Collect verifyType distribution
+        for lesson_file in lesson_files:
+            try:
+                source = lesson_file.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            fm_text, _ = _split_frontmatter(source)
+            fm = _parse_frontmatter(fm_text)
+            verify_type = str(_frontmatter_value(fm, "verifyType") or "unset")
+            verify_type_counts[verify_type] = verify_type_counts.get(verify_type, 0) + 1
+
+    # verifyType distribution check
+    if total_lessons > 0:
+        terminal_count = verify_type_counts.get("terminal_output", 0)
+        terminal_pct = round(terminal_count / total_lessons * 100)
+        if terminal_pct > 60:
+            all_warnings.append(
+                f"verifyType distribution -- terminal_output is {terminal_pct}% of lessons "
+                f"(target: <=60%). Consider adding quiz, code_submission, or screenshot verifications."
+            )
 
     # Summary header
     print()
@@ -342,6 +368,15 @@ def main() -> int:
         print("-" * 60)
         for msg in all_warnings:
             print(f"  [WARN]  {msg}")
+
+    # verifyType distribution summary
+    if verify_type_counts:
+        print()
+        print("verifyType distribution")
+        print("-" * 40)
+        for vtype, count in sorted(verify_type_counts.items(), key=lambda x: -x[1]):
+            pct = round(count / total_lessons * 100) if total_lessons else 0
+            print(f"  {vtype:<30} {count:>4} ({pct}%)")
 
     print()
     if all_errors:

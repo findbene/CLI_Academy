@@ -1,0 +1,281 @@
+---
+title: "How to Rotate and Audit Your API Keys"
+lessonNumber: "22.1.3"
+chapterNumber: "22.1"
+pathNumber: "22"
+groupId: "2.3"
+clawClassification: "core"
+prerequisiteLesson: "22.1.2"
+estimatedMinutes: 20
+verifyType: "screenshot"
+tutorPreload: "I'm about to learn how to rotate and audit API keys. Help me understand when rotation is necessary, how to do it safely at the Anthropic dashboard, and how to verify the old key is dead."
+---
+
+# How to Rotate and Audit Your API Keys
+
+## What you will build
+
+A `LEARNING_LOG.md` entry that documents your personal key rotation checklist — a step-by-step record of when to rotate, how to rotate at the Anthropic console, how to verify the old key is no longer valid, and how to update your `.env` without breaking your workflow. You will also confirm that a real (or test) API key in your `.env` is valid using a one-line curl command.
+
+## Why this matters
+
+You will rotate your API keys at some point. The question is whether you do it on your schedule, or because something bad happened and you are now scrambling.
+
+Key rotation is not just a reaction to disasters. It is a routine hygiene practice — the same way you change a lock when you are not sure who has a copy of the key. Every time you share your screen, push to a repo, use a public network, or give someone access to your machine, the surface area for exposure grows. A rotation schedule closes that surface area.
+
+The second reason to care: audit. Most services track when and from where a key was used. If you know a key was last used on a Tuesday at 3pm from your home IP, and you see it used on Friday from an IP in another country, that is a signal. Learning to read your API usage dashboard turns you from a passive victim into someone who can catch problems early.
+
+## Before you start
+
+- An Anthropic account with API access at `console.anthropic.com`.
+- The `.env` file from Lesson 22.1.2 is present in your project.
+- `curl` available on your system (pre-installed on macOS/Linux; Windows 10+ includes it).
+- A `LEARNING_LOG.md` file in your project (or you will create one here).
+
+## The walkthrough
+
+### Step 1 — Know when to rotate
+
+Rotate your API key immediately in any of these situations:
+
+1. **After accidental commit** — the key touched a Git commit, even for a second.
+2. **After sharing your screen** — someone could have read the key from your terminal or editor.
+3. **After sharing the .env file** — you emailed it, sent it on Slack, or copied it to a shared drive.
+4. **After a machine compromise** — your laptop was stolen or you suspect unauthorized access.
+5. **After a team member leaves** — revoke any keys they had access to.
+6. **On a regular schedule** — every 90 days is a common baseline for production keys.
+
+You do not need to wait for a disaster. Rotation is cheap and takes under two minutes.
+
+### Step 2 — Verify your current key is working
+
+Before rotating, confirm your current key is valid. This gives you a baseline — you want to see it work, then after rotation you want to confirm the old key fails.
+
+**macOS / Linux:**
+```bash
+source .env
+curl -s -o /dev/null -w "%{http_code}" \
+  https://api.anthropic.com/v1/messages \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{"model":"claude-haiku-3-5-latest","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
+```
+
+**Windows PowerShell:**
+```powershell
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^([^#=]+)=(.+)$') {
+    [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+  }
+}
+$key = $env:ANTHROPIC_API_KEY
+$body = '{"model":"claude-haiku-3-5-latest","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
+Invoke-WebRequest -Uri "https://api.anthropic.com/v1/messages" `
+  -Method POST `
+  -Headers @{ "x-api-key" = $key; "anthropic-version" = "2023-06-01"; "content-type" = "application/json" } `
+  -Body $body | Select-Object -ExpandProperty StatusCode
+```
+
+Expected response with a valid key: `200`
+
+Expected response with an invalid/revoked key: `401`
+
+Note: A `200` with a fake key in your `.env` will return `401`. That is correct behavior.
+
+### Step 3 — Rotate your Anthropic API key
+
+1. Open `https://console.anthropic.com/settings/keys` in your browser.
+2. Find your current key in the list. Note its name and the "Last used" date.
+3. Click **Create Key** to generate a new key. Name it with today's date, e.g. `workspace-key-2026-04`.
+4. Copy the new key immediately — it is shown only once.
+5. Update your `.env` file with the new key value.
+
+**macOS / Linux:**
+```bash
+# Open .env in your default editor
+${EDITOR:-nano} .env
+```
+
+**Windows PowerShell:**
+```powershell
+notepad .env
+```
+
+Replace the old value of `ANTHROPIC_API_KEY` with the new key you just copied.
+
+### Step 4 — Verify the new key works
+
+Repeat the curl command from Step 2. This time you should get `200` with the real new key.
+
+**macOS / Linux:**
+```bash
+source .env
+curl -s -o /dev/null -w "%{http_code}" \
+  https://api.anthropic.com/v1/messages \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{"model":"claude-haiku-3-5-latest","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
+```
+
+**Windows PowerShell:**
+```powershell
+# Re-load the .env after editing
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^([^#=]+)=(.+)$') {
+    [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+  }
+}
+$key = $env:ANTHROPIC_API_KEY
+$body = '{"model":"claude-haiku-3-5-latest","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
+(Invoke-WebRequest -Uri "https://api.anthropic.com/v1/messages" `
+  -Method POST `
+  -Headers @{ "x-api-key" = $key; "anthropic-version" = "2023-06-01"; "content-type" = "application/json" } `
+  -Body $body).StatusCode
+```
+
+Expected: `200`
+
+### Step 5 — Revoke the old key
+
+Back in `console.anthropic.com/settings/keys`, find your **old** key and click **Revoke**. Confirm the revocation. The old key is now invalid.
+
+Wait 30 seconds, then verify the old key is dead by temporarily swapping it back in the curl command. Use a hardcoded old key value — do not change your `.env`:
+
+**macOS / Linux:**
+```bash
+OLD_KEY="sk-ant-api03-PASTE_YOUR_OLD_KEY_HERE"
+curl -s -o /dev/null -w "%{http_code}" \
+  https://api.anthropic.com/v1/messages \
+  -H "x-api-key: $OLD_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{"model":"claude-haiku-3-5-latest","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
+```
+
+**Windows PowerShell:**
+```powershell
+$oldKey = "sk-ant-api03-PASTE_YOUR_OLD_KEY_HERE"
+$body = '{"model":"claude-haiku-3-5-latest","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
+try {
+  (Invoke-WebRequest -Uri "https://api.anthropic.com/v1/messages" `
+    -Method POST `
+    -Headers @{ "x-api-key" = $oldKey; "anthropic-version" = "2023-06-01"; "content-type" = "application/json" } `
+    -Body $body).StatusCode
+} catch { $_.Exception.Response.StatusCode.value__ }
+```
+
+Expected: `401` — the old key is dead. The rotation is complete.
+
+### Step 6 — Document your rotation checklist in LEARNING_LOG.md
+
+Create or open `LEARNING_LOG.md` and add this entry:
+
+**macOS / Linux:**
+```bash
+cat >> LEARNING_LOG.md << 'EOF'
+
+## API Key Rotation Checklist (Lesson 22.1.3)
+
+Date completed: 2026-04-13
+
+### When to rotate
+- [ ] After any accidental commit (even if reverted)
+- [ ] After sharing screen or terminal with others
+- [ ] After sharing the .env file in any form
+- [ ] After a machine is lost, stolen, or compromised
+- [ ] After a team member with access leaves
+- [ ] On a regular schedule (every 90 days for production keys)
+
+### How to rotate (Anthropic keys)
+1. Open https://console.anthropic.com/settings/keys
+2. Create a new key — name it with today's date
+3. Copy the new key (shown only once)
+4. Update .env with the new key value
+5. Verify: `curl` to the API returns 200
+6. Revoke the old key in the dashboard
+7. Verify old key is dead: same `curl` returns 401
+
+### Safety rules
+- Never paste the actual key into LEARNING_LOG.md (this file is committed)
+- Always verify the new key BEFORE revoking the old one
+- Source your .env after editing to reload variables in the current shell
+
+EOF
+```
+
+**Windows PowerShell:**
+```powershell
+@"
+
+## API Key Rotation Checklist (Lesson 22.1.3)
+
+Date completed: 2026-04-13
+
+### When to rotate
+- [ ] After any accidental commit (even if reverted)
+- [ ] After sharing screen or terminal with others
+- [ ] After sharing the .env file in any form
+- [ ] After a machine is lost, stolen, or compromised
+- [ ] After a team member with access leaves
+- [ ] On a regular schedule (every 90 days for production keys)
+
+### How to rotate (Anthropic keys)
+1. Open https://console.anthropic.com/settings/keys
+2. Create a new key — name it with today's date
+3. Copy the new key (shown only once)
+4. Update .env with the new key value
+5. Verify: curl to the API returns 200
+6. Revoke the old key in the dashboard
+7. Verify old key is dead: same curl returns 401
+
+### Safety rules
+- Never paste the actual key into LEARNING_LOG.md (this file is committed)
+- Always verify the new key BEFORE revoking the old one
+- Re-load .env after editing to reload variables in the current shell
+
+"@ | Add-Content LEARNING_LOG.md
+```
+
+Commit `LEARNING_LOG.md` (it contains no secrets — only the checklist template):
+
+**macOS / Linux:**
+```bash
+git add LEARNING_LOG.md
+git commit -m "docs: add API key rotation checklist to LEARNING_LOG"
+```
+
+**Windows PowerShell:**
+```powershell
+git add LEARNING_LOG.md
+git commit -m "docs: add API key rotation checklist to LEARNING_LOG"
+```
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| New key returns `401` immediately after creation | Key was not fully propagated yet (can take 10–30 seconds) | Wait 30 seconds and retry the curl command |
+| Old key still returns `200` after revocation | Revocation has a short propagation delay | Wait 60 seconds and retest; if it still works, re-check that you revoked the correct key in the dashboard |
+| Lost the new key before updating .env | The new key is shown only once at creation time | Revoke the new key immediately and create another one — there is no way to retrieve it |
+| curl not found on Windows | curl may not be on the PATH in older Windows versions | Use `Invoke-WebRequest` as shown above, or install curl via `winget install curl.curl` |
+| .env not reloading after edits | Shell still has old `$ANTHROPIC_API_KEY` value in memory | Re-run `source .env` (macOS/Linux) or re-load with the PowerShell snippet from Step 4 |
+
+## What can go wrong
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Accidentally committed the real key to LEARNING_LOG.md | Copy-pasted a real key value instead of describing the rotation | Immediately revoke the key, run `git filter-repo --path LEARNING_LOG.md --invert-paths`, and create a new key |
+
+<VerificationBlock
+  deliverable="A LEARNING_LOG.md committed to the repo containing your rotation checklist, and a screenshot of the Anthropic keys dashboard showing both the new active key and the revoked old key."
+  verifyCheck="Take a screenshot of console.anthropic.com/settings/keys showing a recently created key (active) and a recently revoked key. Confirm `curl` to the API returns 200 with the new key and 401 with the old one."
+  rubricCriteria={[
+    "LEARNING_LOG.md committed to git with rotation checklist present",
+    "Screenshot shows active new key at Anthropic console",
+    "Screenshot shows revoked old key at Anthropic console",
+    "curl command returns 200 with new key",
+    "curl command returns 401 with old key"
+  ]}
+/>

@@ -31,5 +31,60 @@
     "compatibility": ["Claude Code", "Claude Cowork", "RAG Workflows"],
     "whoItsFor": "Learners building better prompting instincts for Claude-based workflows.",
     "exampleUsage": "Compare the weak and strong versions, then adapt the strong variants to your own project."
+  },
+  {
+    "slug": "claude-md-template-library",
+    "title": "CLAUDE.md Template Library",
+    "type": "template",
+    "summary": "A collection of 8 ready-to-use CLAUDE.md templates for common project types: web app, data pipeline, CLI tool, research project, content creation, API service, security audit, and capstone portfolio.",
+    "skillLevel": "beginner",
+    "supportTier": "free",
+    "compatibility": ["Claude Code", "All project types"],
+    "whoItsFor": "Any learner setting up a new project who wants a well-structured CLAUDE.md without starting from scratch.",
+    "exampleUsage": "Copy the template that matches your project type and customize the restrictions and goals sections."
+  },
+  {
+    "slug": "portfolio-template-pack",
+    "title": "Portfolio Write-Up Template Pack",
+    "type": "template",
+    "summary": "Three portfolio write-up templates (project summary, case study, and one-page brief) for documenting CLI Academy work in a job-ready format.",
+    "skillLevel": "intermediate",
+    "supportTier": "free",
+    "compatibility": ["Markdown", "LinkedIn", "GitHub README"],
+    "whoItsFor": "Learners completing Group 4 or 6 who want to turn their project work into employer-facing evidence.",
+    "exampleUsage": "Use the project summary template for each Group 4 project. Use the one-page brief for job applications."
+  },
+  {
+    "slug": "debug-session-template",
+    "title": "Debug Session Log Template",
+    "type": "template",
+    "summary": "A structured Markdown template for logging debug sessions: symptom, hypothesis, test, result, fix, and regression test location.",
+    "skillLevel": "beginner",
+    "supportTier": "free",
+    "compatibility": ["Claude Code", "Python", "Node.js", "Any language"],
+    "whoItsFor": "Learners in Group 3 debug-first track who want a consistent format for debug documentation.",
+    "exampleUsage": "Open a new DEBUG_LOG.md using this template whenever you start a debug session."
+  },
+  {
+    "slug": "mcp-server-starter-template",
+    "title": "MCP Server Starter Template",
+    "type": "starter-pack",
+    "summary": "A minimal Node.js MCP server template with one sample tool, proper error handling, and a README explaining how to register it with Claude Desktop.",
+    "skillLevel": "intermediate",
+    "supportTier": "free",
+    "compatibility": ["Claude Code", "Claude Desktop", "Node.js"],
+    "whoItsFor": "Learners in Group 2.2 (MCP Server Setup) who want a working starting point for their first custom server.",
+    "exampleUsage": "Clone the starter, rename the tool, swap in your data source, and register the server."
+  },
+  {
+    "slug": "interview-prep-question-bank",
+    "title": "AI Developer Interview Question Bank",
+    "type": "reference",
+    "summary": "50 real interview questions for AI-adjacent developer roles, organized by topic: tool use, safety, architecture, team workflow, and business impact. Includes model answers for each.",
+    "skillLevel": "advanced",
+    "supportTier": "pro",
+    "compatibility": ["Career development"],
+    "whoItsFor": "Learners in Group 6.2 (Job-Ready Brief) preparing for technical and behavioral interviews at companies using AI tooling.",
+    "exampleUsage": "Work through 5-10 questions per day with Claude as your mock interviewer."
   }
 ]

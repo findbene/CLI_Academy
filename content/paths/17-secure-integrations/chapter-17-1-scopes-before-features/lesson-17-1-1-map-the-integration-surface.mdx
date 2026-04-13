@@ -4,16 +4,26 @@ lessonNumber: "17.1.1"
 chapterNumber: "17.1"
 pathNumber: "17"
 tutorPreload: "Map this integration and highlight the dangerous surfaces."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Map the integration surface
 
-## Objective
+## What you will build
+A .integration-audit.md file with at least three services mapped, access types recorded, and Write/Delete/Admin rows flagged as Dangerous.
 
+## Why this matters
+Integrating Claude with external APIs and services is where most production security incidents happen. A misconfigured webhook, an exposed key, or an over-permissioned OAuth scope can expose entire systems. This path teaches the integration patterns that hold up under a security review.
+
+## Before you start
 Before you connect anything, you need to know *what* you are connecting. An **integration surface** is the complete set of data, actions, and credentials that an external service can reach the moment you grant it access. Mapping the surface before writing a single line of code lets you spot dangerous zones early, pick the right credential type, and make a deliberate decision about every permission you grant.
 
 In this lesson you will create a real `.integration-audit.md` file that catalogs the services you plan to integrate with. By the end you will have a reusable template any teammate can fill out for any new integration.
+
 
 ## Walkthrough
 
@@ -124,4 +134,9 @@ Select-String -Path .integration-audit.md -Pattern "Dangerous"
 <VerificationBlock 
   deliverable="A .integration-audit.md file with at least three services mapped, access types recorded, and Write/Delete/Admin rows flagged as Dangerous."
   verifyCheck="File exists, contains the service table with at least three rows, and at least one row is marked Dangerous."
+  rubricCriteria={[
+    "The file exists in the correct location and opens without errors",
+    "All required sections or entries described in the lesson are present",
+    "The content is written in the learner's own words, not copied verbatim from the lesson",
+  ]}
 />

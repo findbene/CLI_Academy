@@ -4,13 +4,22 @@ lessonNumber: "14.1.2"
 chapterNumber: "14.1"
 pathNumber: "14"
 tutorPreload: "Show me the fastest way to find secrets that were already committed to my repo."
-verifyType: "terminal_output"
+verifyType: "quiz"
+groupId: "5.1"
+clawClassification: "advanced"
+estimatedMinutes: 25
+prerequisiteLesson: null
 ---
 
 # Never commit .env files or API keys
 
-## Objective
+## What you will build
+A practice repo where you committed a secret, found it with `git log -S`, and removed it with `git filter-repo`.
 
+## Why this matters
+Every agentic developer runs code on their local machine. A compromised machine means compromised keys, leaked data, and potentially compromised production systems. Local security hygiene is the baseline that makes every other security measure meaningful.
+
+## Before you start
 In Lesson 14.1.1 you built a secrets strategy that prevents `.env` files from being committed. But what happens when secrets have **already** been committed — maybe by you, maybe by a teammate, maybe months ago?
 
 In this lesson you will learn to:
@@ -20,6 +29,7 @@ In this lesson you will learn to:
 3. Respond to a real secret exposure incident — rotate, clean, verify.
 
 This is the lesson you wish you had read *before* your API key showed up on a GitHub leak scanner.
+
 
 ## Walkthrough
 
@@ -209,4 +219,9 @@ If you discover a real secret in your repo (or get an alert from GitHub Secret S
 <VerificationBlock
   deliverable="A practice repo where you committed a secret, found it with `git log -S`, and removed it with `git filter-repo`."
   verifyCheck="Run `git log --all -p -S 'sk-proj-'` in the practice repo — it must return no results. Run `git log --oneline` — the cleanup commit should be visible."
+  rubricCriteria={[
+    "The git command completed without error and the output matches the expected format",
+    "Running `git log --oneline -5` (or `git status`) shows the expected state",
+    "The commit message or branch name follows the format described in the lesson",
+  ]}
 />

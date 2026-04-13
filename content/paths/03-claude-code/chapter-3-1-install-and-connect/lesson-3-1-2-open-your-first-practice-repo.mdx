@@ -5,13 +5,23 @@ chapterNumber: "3.1"
 pathNumber: "3"
 tutorPreload: "I'm in this folder. Confirm whether it is the correct repo root for Claude Code."
 verifyType: "terminal_output"
+groupId: "1.2"
+clawClassification: "core"
+estimatedMinutes: 20
+prerequisiteLesson: null
 ---
 
 # Open your first practice repo
 
-## Objective
+## What you will build
+A practice repo with starter files and a successful Claude Code launch.
 
+## Why this matters
+Claude Code is the primary interface for agentic development. Understanding how it reads context, executes tools, and takes action is the difference between a developer who directs Claude precisely and one who gets unpredictable results. Every advanced agentic pattern builds on this foundation.
+
+## Before you start
 Create a small practice project with real files, then launch Claude Code inside it so you can see the welcome screen and the interactive session prompt. By the end you will have a working repo that Claude Code can read and talk about.
+
 
 ## Walkthrough
 
@@ -137,4 +147,9 @@ Type `/help` to see the list of built-in slash commands, then type `/exit` to le
 <VerificationBlock
   deliverable="A practice repo with starter files and a successful Claude Code launch."
   verifyCheck="Learner launches claude inside cli-practice and types /help to confirm the session is live."
+  rubricCriteria={[
+    "A practice repo with starter files and a successful Claude Code launch exists as described and is accessible",
+    "All required elements mentioned in the deliverable are present and correctly formed",
+    "The artifact was produced by following the walkthrough steps, not by copying an existing file",
+  ]}
 />
