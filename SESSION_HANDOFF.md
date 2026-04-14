@@ -25,7 +25,7 @@
 | **Claw ecosystem tier map** | **ADDED** | ClawEcosystemTierMap component wired into /lounge |
 | **FreeTierShowcase** | **REBUILT** | Real content replacing placeholder; Group 0/1/2 cards + Pro CTA |
 | **SVG diagrams** | **ADDED** | 4 diagrams in public/assets/diagrams/ |
-| **Companion resources** | **POPULATED** | 5 new assets, 43 relationships in academy metadata |
+| **Companion resources** | **PLANNED** | 5 target assets defined in `infra/seeds/companion_resources.sql` — physical files and DB rows not yet created |
 | **rubricCriteria** | **COMPLETE** | All 175 VerificationBlocks now have 3 rubric criteria |
 | **v2 lesson sections** | **COMPLETE** | All 175 lessons have ## What you will build, ## Why this matters, ## Before you start |
 | **verifyType diversity** | **COMPLETE** | 45% code_submission, 25% terminal_output, 23% quiz, 7% screenshot |

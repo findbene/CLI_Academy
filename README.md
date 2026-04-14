@@ -57,16 +57,16 @@ The current structure fixes that by:
 ## Current repo state
 
 - Repo normalization is complete.
-- The active frontend lives in `apps/web/`.
-- The active backend lives in `apps/api/`.
+- The active frontend lives in `apps/web/`. The active backend lives in `apps/api/`.
 - Curriculum and downloadable assets live in `content/`.
-- The live curriculum is normalized back to the canonical `content/paths/` slugs for Paths 01-19, with stale duplicate trees archived under `content/paths_old/`.
-- The curriculum rewrite now extends well beyond normalization: live Paths 04-19 are being replaced with deeper practical chapter trees, and older chapter directories are being retired from the learner-facing surface.
-- Learner-flow support in `apps/web/` now includes onboarding start-route recommendations, dashboard resume targets, section-progress tracking, server-backed lesson verification, hosted lesson-progress self-healing, browser-local progress fallback/backfill, and password recovery.
-- Supabase-backed lesson progress now resolves against the live curriculum catalog through `apps/web/lib/supabase/curriculum-sync.ts`, with user-scoped local fallback/backfill protecting learners during sync gaps.
-- The floating tutor runtime has been expanded with mode-aware gating, signed-in usage checks, and richer learner-facing context through `apps/web/components/tutor/TutorRuntimeProvider.tsx` and `/api/tutor`.
+- **Curriculum: 27 paths, 175 lessons** across a 7-group taxonomy (Group 0 Orientation → Group 6 Career Pathways). Paths 01-19 are the original live paths; Paths 20-27 are new paths added in the April 2026 curriculum redesign.
+- **v2 content standard**: all 175 lessons have `## What you will build`, `## Why this matters`, `## Before you start`, 3-criteria rubric criteria, and verifyType diversity (code_submission 45%, terminal_output 25%, quiz 23%, screenshot 7%).
+- **Deployment hardening complete**: Sentry error tracking, PostHog analytics, Playwright e2e in CI, atomic tutor rate limit (PostgreSQL RPC), Dockerfile non-root with HEALTHCHECK, Vercel config, and deployment runbook.
+- 5 manual launch-gate items remain — secret rotation, migration deploy, Sentry/PostHog env vars, Stripe config. See TASKS.md P0 Ops.
+- Learner-flow support includes onboarding start-route recommendations, dashboard resume targets, section-progress tracking, server-backed lesson verification, browser-local progress fallback/backfill, and password recovery.
+- Supabase-backed lesson progress resolves against the live curriculum catalog through `apps/web/lib/supabase/curriculum-sync.ts`, with user-scoped local fallback protecting learners during sync gaps.
+- Python backend now has a pytest suite covering health probes, gamification streak logic, and daily tutor limit enforcement. Run with `cd apps/api && python -m pytest tests/ -v`.
 - Shared extraction work is expected to move gradually into `packages/` when duplication justifies it.
-- The current workstream is curriculum QA and learner-flow hardening: keeping live lesson content, hosted progress semantics, tutor behavior, and app UX aligned.
 
 ## Root operating docs
 
@@ -92,10 +92,10 @@ The current structure fixes that by:
 
 ## Near-term priorities
 
-1. Add regression coverage around hosted lesson progress, browser-local fallback/backfill, dashboard hydration reconciliation, and tutor mode gating.
-2. Continue editorial QA on the rewritten and migrated live paths, especially Paths 11-19.
-3. Revisit backend persistence and gamification concurrency semantics.
-4. Decide the long-term handling strategy for legacy `paths_old/` content and historical lesson artifacts.
+1. Complete the 5 manual launch-gate ops tasks (secret rotation, migration deploy, Sentry/PostHog/Stripe env vars).
+2. Run editorial QA on paths 11-19 and verify lesson content against learner outcomes.
+3. Add regression coverage for local-progress fallback/backfill, dashboard hydration reconciliation, and tutor mode gating.
+4. Run load test against the tutor endpoint before public launch (k6 or Locust, target p99 < 2s at 50 concurrent users).
 
 ## Project-level operating files
 

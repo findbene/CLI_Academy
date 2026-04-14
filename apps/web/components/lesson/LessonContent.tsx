@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { buildAssetDownloadHref, getAssetBySlug, getAssetFormatLabel } from "@/lib/assets";
 import { CodeBlock } from "@/components/lesson/CodeBlock";
+import { DiagramBlock } from "@/components/content/DiagramBlock";
 import { VerificationBlock } from "@/components/lesson/VerificationBlock";
 import { getLesson } from "@/lib/mdx";
 
@@ -161,6 +162,18 @@ function renderBlock(
           </Link>
         </div>
       </section>
+    );
+  }
+
+  const diagramMatch = block.match(/<DiagramBlock[\s\S]*?src="([^"]*)"[\s\S]*?alt="([^"]*)"(?:[\s\S]*?caption="([^"]*)")?[\s\S]*?\/>/);
+  if (diagramMatch) {
+    return (
+      <DiagramBlock
+        key={index}
+        src={diagramMatch[1]}
+        alt={diagramMatch[2]}
+        caption={diagramMatch[3]}
+      />
     );
   }
 

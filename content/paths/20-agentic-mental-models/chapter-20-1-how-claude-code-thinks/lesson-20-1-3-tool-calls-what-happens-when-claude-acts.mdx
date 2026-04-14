@@ -3,6 +3,9 @@ title: "Tool Calls: What Happens When Claude Acts"
 lessonNumber: "20.1.3"
 chapterNumber: "20.1"
 pathNumber: "20"
+groupId: "1.3"
+clawClassification: "core"
+prerequisiteLesson: null
 tutorPreload: "I'm about to learn how Claude Code's tool calls work. Help me understand what a Read tool call and a Write tool call look like in verbose output, and what I should pay attention to."
 verifyType: "terminal_output"
 estimatedMinutes: 20
@@ -13,6 +16,8 @@ estimatedMinutes: 20
 ## Objective
 
 By the end of this lesson you will have run a Claude Code session with `--verbose` enabled and captured at least one Read tool call and one Write tool call in the output. You will annotate what you see in your `LEARNING_LOG.md`. Understanding tool calls lets you audit what Claude actually did — not just what it said it did.
+
+<DiagramBlock src="/assets/diagrams/tool-call-flow.svg" alt="Tool call flow: Claude issues a request, permission check runs, tool executes, observation returns to Claude" caption="Each tool call follows this path. The permission check is where you can intervene before anything is written or executed." />
 
 ## Walkthrough
 

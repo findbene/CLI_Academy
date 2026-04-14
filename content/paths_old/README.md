@@ -30,3 +30,12 @@ Do not use these files in the live learner routes. The live curriculum is in `co
 ## Migration Date
 
 April 2026. See `PROGRESS.md` at the repo root for full migration notes.
+
+## Deprecation Schedule
+
+- **Archive date**: April 2026
+- **Review date**: September 2026 — assess whether any archived lesson has been referenced for migration recovery since the archive date.
+- **Delete date**: October 2026 — remove this directory entirely unless an active recovery need is identified at the September review.
+- **Owner**: Project maintainer. No automated deletion; requires deliberate review before removal.
+
+If any lesson from `paths_old/` is needed for content migration or reference before October 2026, copy the relevant file to `docs/archive/` with a brief migration note rather than restoring it to `content/paths/`.
