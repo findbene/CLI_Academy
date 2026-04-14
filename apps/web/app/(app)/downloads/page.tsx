@@ -1,4 +1,5 @@
-import { Download, FileText, Package } from "lucide-react";
+import Link from "next/link";
+import { BookMarked, Download, FileText, Package } from "lucide-react";
 import { DownloadsFilter } from "@/components/assets/DownloadsFilter";
 import {
   getAllLocalAssets,
@@ -77,6 +78,22 @@ export default async function DownloadsPage() {
           </div>
         </div>
       </section>
+
+      {/* Reference center callout */}
+      <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-[rgba(22,176,168,0.25)] bg-[rgba(22,176,168,0.06)] px-5 py-4">
+        <div className="flex items-center gap-3">
+          <BookMarked className="size-5 shrink-0 text-[var(--color-accent-primary)]" />
+          <div>
+            <p className="text-sm font-semibold">Looking for quick-reference cards?</p>
+            <p className="text-sm text-[var(--color-fg-muted)]">
+              Setup guides, slash commands, MCPs, and cheat sheets — view and print directly in the browser.
+            </p>
+          </div>
+        </div>
+        <Link href="/reference" className="button-secondary shrink-0 text-sm">
+          Reference center
+        </Link>
+      </div>
 
       <div className="mt-8">
         <DownloadsFilter downloads={downloads} />

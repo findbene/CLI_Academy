@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BookMarked } from "lucide-react";
 import { PATH_SECTIONS, getCatalogPathsBySection, getPathCta } from "@/lib/catalog";
 import { getDifficultyLabel, getFormatLabel, getPathExperienceMeta } from "@/lib/learning-experience";
 
@@ -23,6 +24,22 @@ export default async function PathsCatalogPage() {
           Browse every learning path with honest status labels, tier access, and live lesson counts.
           Start with the foundations, then move to the role and environment that matches your goals.
         </p>
+      </div>
+
+      {/* Reference center callout */}
+      <div className="mt-8 flex items-center justify-between gap-4 rounded-2xl border border-[rgba(22,176,168,0.25)] bg-[rgba(22,176,168,0.06)] px-5 py-4">
+        <div className="flex items-center gap-3">
+          <BookMarked className="size-5 shrink-0 text-[var(--color-accent-primary)]" />
+          <div>
+            <p className="text-sm font-semibold">Always in a hurry?</p>
+            <p className="text-sm text-[var(--color-fg-muted)]">
+              Single-page setup guides, command references, and cheat sheets — print them and keep them beside your terminal.
+            </p>
+          </div>
+        </div>
+        <Link href="/reference" className="button-secondary shrink-0 text-sm">
+          Reference center
+        </Link>
       </div>
 
       <div className="mt-10 grid gap-10">

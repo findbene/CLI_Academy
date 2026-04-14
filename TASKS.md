@@ -49,3 +49,4 @@
 - [x] Wire DiagramBlock into 3 path 20 lessons using existing SVG assets.
 - [x] Create Python pytest suite covering health, gamification streak, and daily tutor limit.
 - [x] OpenClaw curriculum restoration: rewrite path 11 (OpenClaw foundations, 7 lessons), add path 28 (configuration and skills, 7 lessons), add path 29 (security and production, 7 lessons), add path 30 (ZeroClaw and variants, 5 lessons). 194 total lessons, 30 paths. All registered in paths.ts under "OpenClaw Ecosystem" section.
+- [x] Reference center: 8 printable single-page reference cards (Claude Code setup, slash commands, quick ref, OpenClaw setup, Claw variants, Skills/SKILL.md, MCPs, Cowork setup) with print-optimized CSS, `/reference` hub page, sidebar nav link, and callouts from paths catalog and downloads pages.

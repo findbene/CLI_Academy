@@ -88,6 +88,25 @@
 - Content validator: 194 lessons across 30 paths, all valid
 - Web build: clean
 
+## Reference Center (This Session)
+
+### What was built
+- **`/reference` hub** — authenticated route listing all 8 reference cards by tier (free/pro) with category icons and topic tags
+- **`/reference/[slug]`** — individual printable reference pages with a full print-optimized CSS layer (`@media print` block in `globals.css`)
+- **8 reference cards** authored at full depth:
+  - Free: Claude Code Setup Guide, Slash Commands Reference, Claude Code Quick Reference, MCP Server Reference, Claude Cowork Setup
+  - Pro: OpenClaw Setup Guide, Claw Variant Selection Guide, Skills & SKILL.md Reference
+- **Sidebar nav updated** — "Reference" link added between Resources and Downloads
+- **Paths catalog** — reference center callout added above the path grid
+- **Downloads page** — reference center callout added
+- **`lib/data/references.ts`** — typed data layer for all reference card metadata
+- **`components/reference/PrintButton.tsx`** — client "Print / Save as PDF" button (hidden on print)
+- **`components/reference/cards/`** — 8 card content components + index barrel
+
+### Print quality
+- CSS `@media print` in `globals.css` collapses colors to light mode, converts code backgrounds to white, sets font sizes to 7-9pt, and uses `break-inside: avoid` on sections so each section stays on the page
+- Pro card access gated: unauthenticated or free-tier users are redirected from pro reference slugs back to `/reference`
+
 ## Next Action (Optional Enhancements)
 
 - Add actual video URLs to VideoBlock instances when recording is done
