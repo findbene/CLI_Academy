@@ -1,6 +1,11 @@
 # CLAUDE.md
 
-This file is the global operating contract for any agent working in the CLI Academy repository.
+@~/.claude/rules/agentic-workspace.md
+@~/.claude/rules/coding-standards.md
+@~/.claude/rules/validation-loop.md
+@~/.claude/rules/subagent-patterns.md
+
+This file is the project operating contract for the CLI Academy repository.
 
 ## Mission
 
