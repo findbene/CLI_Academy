@@ -17,6 +17,24 @@
         "options": ["Approve immediately to save time", "Review what will change and why", "Restart the machine", "Open a new browser tab"],
         "answerIndex": 1,
         "explanation": "The safe default is to inspect the requested action, scope, and expected output before approval."
+      },
+      {
+        "prompt": "What does the YES gate in Claude Code do?",
+        "options": ["Approves all actions automatically", "Asks for your confirmation before executing certain tool calls", "Blocks Claude from running any commands", "Sends data to Anthropic for review"],
+        "answerIndex": 1,
+        "explanation": "The YES gate pauses execution before state-changing tool calls and shows you exactly what Claude intends to do so you can approve or deny."
+      },
+      {
+        "prompt": "Which action requires the most caution before approval?",
+        "options": ["Asking Claude to explain a file", "Having Claude delete or overwrite multiple files", "Running claude --version", "Reading a README with Claude"],
+        "answerIndex": 1,
+        "explanation": "Destructive operations like deleting or overwriting files are hard to reverse. Always review the scope and diff before approving."
+      },
+      {
+        "prompt": "Why run claude --version before starting each session?",
+        "options": ["It is required — Claude will not work otherwise", "To confirm the CLI is installed and note the version for troubleshooting", "To reset Claude's memory", "To check your API balance"],
+        "answerIndex": 1,
+        "explanation": "Checking the version before each session confirms your tooling is ready and gives you a concrete version number if you need to report a bug or find a changelog entry."
       }
     ]
   },
@@ -32,6 +50,30 @@
         "options": ["Do something smart with this repo", "Summarize this repo in 5 bullets and suggest one safe first improvement", "Fix everything", "Use your best judgment"],
         "answerIndex": 1,
         "explanation": "Specific outcome, format, and scope almost always outperform vague prompting."
+      },
+      {
+        "prompt": "Which element is most likely missing from the prompt 'Fix this code'?",
+        "options": ["A task type label", "Context about which code and what is broken", "A word count limit", "A model selection flag"],
+        "answerIndex": 1,
+        "explanation": "'Fix this code' has no context — which code? What is broken? What does correct output look like? Context is the most commonly missing element."
+      },
+      {
+        "prompt": "What does adding an example to a prompt usually accomplish?",
+        "options": ["It slows Claude down", "It calibrates format and style without over-constraining the output", "It makes Claude ignore other instructions", "It reduces the token count"],
+        "answerIndex": 1,
+        "explanation": "Examples show Claude the pattern you want without narrowing it to only that exact output. They are one of the most effective prompt techniques available."
+      },
+      {
+        "prompt": "Why is specifying output format often more useful than describing tone?",
+        "options": ["Tone is always easy to adjust after the fact", "Format is verifiable — you can check whether a table has the right columns or a list has the right length", "Claude cannot understand tone instructions", "Format reduces API cost"],
+        "answerIndex": 1,
+        "explanation": "A concrete format (3-column table, numbered list, one-page summary) is machine-verifiable. Tone is subjective and harder to validate reliably."
+      },
+      {
+        "prompt": "What is the safest first prompt when approaching an unfamiliar codebase?",
+        "options": ["Add a new feature immediately", "Ask Claude to explain the top-level structure before touching anything", "Delete the files that look unused", "Run the test suite and see what breaks"],
+        "answerIndex": 1,
+        "explanation": "Understand before acting. Explore first, change second. This habit prevents accidental damage and gives Claude the context it needs to make safe suggestions."
       }
     ]
   },
@@ -47,6 +89,30 @@
         "options": ["Look through these files and do something useful", "Review this folder and produce a 1-page briefing with 3 risks, 3 actions, and a clean summary table", "Use your instincts", "Write a bunch of notes"],
         "answerIndex": 1,
         "explanation": "Cowork performs best when the deliverable, structure, and expected output are explicit."
+      },
+      {
+        "prompt": "What is a session brief in Claude Cowork?",
+        "options": ["A short summary Claude writes at the end of a session", "A template you write at the start of a session to orient Claude on what you need", "A billing record of Claude usage", "A document Claude emails to you after the session"],
+        "answerIndex": 1,
+        "explanation": "A session brief is a short structured prompt you write before the first substantive message. It tells Claude what you need, what good looks like, and what to avoid — so you don't have to re-orient on every turn."
+      },
+      {
+        "prompt": "Which instruction produces the most immediately usable summary document?",
+        "options": ["Summarize things for me", "Write a 1-page executive summary with a context section, 3 key findings, and a recommended next action", "Tell me what you know", "Review my files and be helpful"],
+        "answerIndex": 1,
+        "explanation": "Specifying page length, sections, and expected output gives Claude a concrete target. Vague instructions produce vague output that requires many follow-up edits."
+      },
+      {
+        "prompt": "What do 'negative constraints' mean in a Cowork session brief?",
+        "options": ["Telling Claude what to avoid, such as passive voice or bullet-point overuse", "Asking Claude to produce fewer words", "Disabling Claude's memory for the session", "Blocking Claude from reading files"],
+        "answerIndex": 0,
+        "explanation": "Negative constraints are explicit 'do NOT' instructions. Claude follows them reliably and they are the fastest way to cut common output anti-patterns like marketing filler, excessive bullets, or passive voice."
+      },
+      {
+        "prompt": "When should you upload source documents to a Cowork session?",
+        "options": ["Never — Claude should work from general knowledge", "When the task requires grounding in specific files, data, transcripts, or contracts", "Only for PDF files", "Only when Claude explicitly asks for them"],
+        "answerIndex": 1,
+        "explanation": "Upload source documents whenever the task requires working with specific content rather than general knowledge. Claude can read PDFs, Word docs, spreadsheets, and plain text dragged directly into the chat."
       }
     ]
   },
@@ -62,6 +128,30 @@
         "options": ["The most experimental runtime because it is exciting", "A runtime with stronger support tier and higher beginner fit", "Any runtime with the fewest configuration files", "Whichever runtime has the shortest setup guide"],
         "answerIndex": 1,
         "explanation": "CLI Academy teaches beginners to prefer stronger support and clearer debugging loops over novelty."
+      },
+      {
+        "prompt": "What does 'support tier' indicate for a runtime?",
+        "options": ["How much the runtime costs to run per month", "How reliable and battle-tested the runtime is across real deployments", "How many concurrent users the runtime can support", "The runtime's maximum token throughput"],
+        "answerIndex": 1,
+        "explanation": "Support tier (experimental, emerging, stable) tells you how confident you should be in the runtime's stability and how much community help you will find if something goes wrong."
+      },
+      {
+        "prompt": "What does high setup complexity mean for a beginner?",
+        "options": ["The output quality of Claude will be higher", "More steps, more dependencies, and more surfaces where setup can fail", "The runtime uses more memory", "The number of skills you can install is unlimited"],
+        "answerIndex": 1,
+        "explanation": "High setup complexity translates directly to more time debugging installation issues before you can do real work. Beginners should prefer low-complexity runtimes to keep the learning loop tight."
+      },
+      {
+        "prompt": "When is it appropriate to choose an experimental runtime?",
+        "options": ["For your very first agentic project", "When you need cutting-edge features and are comfortable debugging with limited support", "When you want the safest, most predictable experience", "When you need the best beginner documentation"],
+        "answerIndex": 1,
+        "explanation": "Experimental runtimes offer new capabilities but come with less stability and less community support. They are appropriate for experienced developers who are comfortable working at the frontier."
+      },
+      {
+        "prompt": "What is the primary trade-off ZeroClaw makes compared to OpenClaw?",
+        "options": ["More configuration options but slower startup", "Lower latency by stripping the gateway layer, at the cost of skill execution and security features", "Better security hardening but higher setup complexity", "More skill compatibility but no web interface"],
+        "answerIndex": 1,
+        "explanation": "ZeroClaw removes the OpenClaw gateway to reduce round-trip latency. This trades flexibility, skill execution, and the YES gate for raw speed — useful when you do not need the full feature set."
       }
     ]
   }

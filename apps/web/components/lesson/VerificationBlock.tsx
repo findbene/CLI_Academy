@@ -165,7 +165,7 @@ export function VerificationBlock({
           />
         </div>
 
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center justify-between mt-2 gap-3">
           {status === "success" && (
             <div className="flex items-center gap-2 text-[var(--color-accent-primary)] font-medium text-sm">
               <CheckCircle2 className="size-5" />
@@ -178,7 +178,12 @@ export function VerificationBlock({
               {feedback || "Not quite right. Please check your output and try again."}
             </div>
           )}
-          {status === "idle" && <div />}
+          {status === "idle" && !output.trim() && (
+            <p className="text-xs text-[var(--color-fg-muted)]">
+              Paste your terminal output or code above, then click <strong>Verify Work</strong>.
+            </p>
+          )}
+          {status === "idle" && output.trim() ? <div /> : null}
 
           <button
             onClick={handleVerify}

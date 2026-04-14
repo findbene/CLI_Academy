@@ -67,6 +67,9 @@ function splitLessonBlocks(body: string) {
   const blocks: string[] = [];
   const currentBlock: string[] = [];
   let inCodeFence = false;
+  // Track when we are inside an open-form VerificationBlock so that empty
+  // lines between the opening tag and </VerificationBlock> don't cause a split.
+  let inVerificationBlock = false;
 
   for (const line of body.split("\n")) {
     const trimmedLine = line.trim();
@@ -78,7 +81,33 @@ function splitLessonBlocks(body: string) {
       continue;
     }
 
-    if (!inCodeFence && trimmedLine === "") {
+    if (!inCodeFence) {
+      // Detect the start of a VerificationBlock (first line of a multi-line component)
+      if (trimmedLine.startsWith("<VerificationBlock")) {
+        inVerificationBlock = true;
+      }
+
+      if (inVerificationBlock) {
+        // Self-closing form ends on the line that contains only "/>"
+        if (trimmedLine === "/>") {
+          inVerificationBlock = false;
+          currentBlock.push(line);
+          blocks.push(currentBlock.join("\n").trim());
+          currentBlock.length = 0;
+          continue;
+        }
+        // Open-close form ends on the closing tag line
+        if (trimmedLine === "</VerificationBlock>") {
+          inVerificationBlock = false;
+          currentBlock.push(line);
+          blocks.push(currentBlock.join("\n").trim());
+          currentBlock.length = 0;
+          continue;
+        }
+      }
+    }
+
+    if (!inCodeFence && !inVerificationBlock && trimmedLine === "") {
       if (currentBlock.length) {
         blocks.push(currentBlock.join("\n").trim());
         currentBlock.length = 0;
@@ -94,6 +123,38 @@ function splitLessonBlocks(body: string) {
   }
 
   return blocks.filter(Boolean);
+}
+
+/** Extract the rubricCriteria string array from a VerificationBlock MDX block. */
+function extractMdxRubricCriteria(block: string): string[] {
+  const arrayMatch = block.match(/rubricCriteria=\{\[([\s\S]*?)\]\}/);
+  if (!arrayMatch) return [];
+  const criteria: string[] = [];
+  const itemRegex = /"((?:[^"\\]|\\.)*)"/g;
+  let m;
+  while ((m = itemRegex.exec(arrayMatch[1])) !== null) {
+    criteria.push(m[1]);
+  }
+  return criteria;
+}
+
+/**
+ * Extract a plain-text verification task from the children of an open-close
+ * VerificationBlock. Returns the first non-empty text paragraph (ignoring code
+ * blocks and blank lines) so it can be displayed as the verifyCheck label.
+ */
+function extractVerifyCheckFromChildren(block: string): string | undefined {
+  const childrenMatch = block.match(/>\s*([\s\S]*?)\s*<\/VerificationBlock>/);
+  if (!childrenMatch) return undefined;
+  const children = childrenMatch[1];
+  // Strip code fences and their content
+  const stripped = children.replace(/```[\s\S]*?```/g, "").trim();
+  // Return the first non-empty line as the task description
+  const firstLine = stripped
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.length > 0);
+  return firstLine ?? undefined;
 }
 
 function renderBlock(
@@ -177,17 +238,27 @@ function renderBlock(
     );
   }
 
-  const verifyMatch = block.match(/<VerificationBlock[\s\S]*?deliverable="([^"]*)"[\s\S]*?verifyCheck="([^"]*)"[\s\S]*?\/>/);
-  if (verifyMatch) {
+  // Render any block that opens with <VerificationBlock.
+  // Handles three formats used across the curriculum:
+  //   1. Self-closing with deliverable + verifyCheck + rubricCriteria
+  //   2. Open-close with deliverable + verifyCheck + rubricCriteria + children
+  //   3. Open-close with rubricCriteria + children only (no deliverable/verifyCheck)
+  if (block.startsWith("<VerificationBlock")) {
+    const deliverableMatch = block.match(/deliverable="([^"]*)"/);
+    const verifyCheckMatch = block.match(/verifyCheck="([^"]*)"/);
+    // Prefer rubricCriteria embedded in the MDX over the generic academy rubric.
+    const mdxRubric = extractMdxRubricCriteria(block);
+    // For open-close blocks without verifyCheck, extract a summary from children.
+    const childrenVerifyCheck = verifyCheckMatch ? undefined : extractVerifyCheckFromChildren(block);
     return (
       <VerificationBlock
         key={index}
-        deliverable={verifyMatch[1]}
+        deliverable={deliverableMatch?.[1]}
         initialMastery={context?.initialMastery}
         lessonSlug={context?.lessonSlug}
         pathSlug={context?.pathSlug}
-        rubricCriteria={context?.rubricCriteria}
-        verifyCheck={verifyMatch[2]}
+        rubricCriteria={mdxRubric.length ? mdxRubric : context?.rubricCriteria}
+        verifyCheck={verifyCheckMatch?.[1] ?? childrenVerifyCheck}
       />
     );
   }

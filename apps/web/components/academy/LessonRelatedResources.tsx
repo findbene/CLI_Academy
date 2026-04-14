@@ -16,7 +16,7 @@ export function LessonRelatedResources({ assets, labs, runtimes }: LessonRelated
     <section className="grid gap-4">
       <div>
         <div className="eyebrow">Related Resources</div>
-        <h2 className="mt-3 text-2xl font-semibold">Use the right asset, lab, or runtime at the right moment</h2>
+        <h2 className="mt-3 text-2xl font-semibold">Companion assets and tools for this lesson</h2>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -32,8 +32,8 @@ export function LessonRelatedResources({ assets, labs, runtimes }: LessonRelated
             <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">{asset.summary}</p>
             {asset.note ? <p className="mt-3 text-sm leading-6">{asset.note}</p> : null}
             <div className="mt-4">
-              <Link href={`/asset-vault/${asset.slug}`} className="button-secondary">
-                Open asset
+              <Link href="/downloads" className="button-secondary">
+                Browse downloads
               </Link>
             </div>
           </article>
@@ -51,49 +51,39 @@ export function LessonRelatedResources({ assets, labs, runtimes }: LessonRelated
             <div className="mt-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-panel-subtle)] px-4 py-3 text-sm">
               Expected output: {lab.expectedOutput}
             </div>
-            <div className="mt-4">
-              <Link href={`/live-labs/${lab.slug}`} className="button-secondary">
-                Launch lab
-              </Link>
-            </div>
           </article>
         ))}
 
-        {runtimes.map((runtime) => {
-          const compareTarget = runtime.slug === "openclaw" ? "hermes-agent" : "openclaw";
-
-          return (
-            <article key={`runtime-${runtime.slug}`} className="panel p-5">
-              <div className="flex flex-wrap gap-2">
-                <span
-                  className="badge"
-                  data-tone={
-                    runtime.supportTier === "stable"
-                      ? "accent"
-                      : runtime.supportTier === "emerging"
-                        ? "warning"
-                        : "danger"
-                  }
-                >
-                  {runtime.supportTier}
-                </span>
-                <span className="badge">Setup: {runtime.setupComplexity}</span>
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">{runtime.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">{runtime.summary}</p>
-              {runtime.note ? <p className="mt-3 text-sm leading-6">{runtime.note}</p> : null}
-              <div className="mt-3 text-sm text-[var(--color-fg-muted)]">Best for: {runtime.bestFor.join(", ")}</div>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link href={`/runtime-lab/${runtime.slug}`} className="button-secondary">
-                  View runtime
-                </Link>
-                <Link href={`/runtime-lab/compare?runtimes=${runtime.slug},${compareTarget}`} className="button-ghost">
-                  Compare
+        {runtimes.map((runtime) => (
+          <article key={`runtime-${runtime.slug}`} className="panel p-5">
+            <div className="flex flex-wrap gap-2">
+              <span
+                className="badge"
+                data-tone={
+                  runtime.supportTier === "stable"
+                    ? "accent"
+                    : runtime.supportTier === "emerging"
+                      ? "warning"
+                      : "danger"
+                }
+              >
+                {runtime.supportTier}
+              </span>
+              <span className="badge">Setup: {runtime.setupComplexity}</span>
+            </div>
+            <h3 className="mt-4 text-lg font-semibold">{runtime.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-[var(--color-fg-muted)]">{runtime.summary}</p>
+            {runtime.note ? <p className="mt-3 text-sm leading-6">{runtime.note}</p> : null}
+            <div className="mt-3 text-sm text-[var(--color-fg-muted)]">Best for: {runtime.bestFor.join(", ")}</div>
+            {runtime.slug === "openclaw" || runtime.slug === "nanoclaw" ? (
+              <div className="mt-4">
+                <Link href="/learn/11-openclaw-and-claw-runtime-foundations" className="button-secondary">
+                  Go to OpenClaw path
                 </Link>
               </div>
-            </article>
-          );
-        })}
+            ) : null}
+          </article>
+        ))}
       </div>
     </section>
   );
