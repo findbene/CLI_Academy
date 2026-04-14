@@ -124,9 +124,9 @@ export const PATHS: PathMeta[] = [
   },
   {
     slug: "11-openclaw-and-claw-runtime-foundations",
-    title: "Sandbox Foundations and Safe Execution",
-    summary: "Learn why sandboxes matter, run risky code in isolated environments, and apply safe execution boundaries to agent workflows.",
-    section: "Agent Infrastructure",
+    title: "OpenClaw: Self-Hosted Agent Infrastructure",
+    summary: "Deploy OpenClaw on your own infrastructure. Understand the self-hosting decision, install on macOS, Windows, or a VPS, and verify your gateway is running end to end.",
+    section: "OpenClaw Ecosystem",
     tier: "pro",
     status: "available",
     lessonCount: 7,

@@ -1,0 +1,115 @@
+---
+title: "What OpenClaw Is (and What It Is Not)"
+lessonNumber: "11.1.1"
+chapterNumber: "11.1"
+pathNumber: "11"
+groupId: "4.4"
+clawClassification: "advanced"
+prerequisiteLesson: null
+estimatedMinutes: 15
+verifyType: "quiz"
+tutorPreload: "Explain the difference between hosted Claude Code and OpenClaw self-hosting. What does OpenClaw actually control versus what stays on Anthropic's infrastructure?"
+---
+
+# What OpenClaw Is (and What It Is Not)
+
+## What you will build
+
+A clear mental model of where OpenClaw fits — what it controls, what it leaves to Anthropic, and why that boundary matters for your organization.
+
+## Why this matters
+
+Most developers use Claude Code with a personal API key. That works well for individuals. When an organization needs compliance controls, centralized billing, air-gapped operation, or SSO — the personal API key model breaks down. OpenClaw solves exactly that problem. Understanding what it is and is not prevents two common mistakes: over-estimating what it gives you (it is not a self-hosted model) and under-estimating what it replaces (it replaces the entire operational layer between developers and Anthropic).
+
+## Before you start
+
+This lesson is conceptual. No tools are required. By the end you will be able to explain OpenClaw's architecture to a colleague and identify whether it is the right tool for a given organization.
+
+## Walkthrough
+
+### What OpenClaw is
+
+OpenClaw is a self-hosted Claude Code runtime. Your organization deploys it on your own infrastructure — a VPS, a bare-metal server, a private cloud. Developers on your team connect their `claude` CLI to your OpenClaw server instead of to Anthropic directly.
+
+When a developer runs `claude` inside an OpenClaw deployment:
+
+- The Claude CLI connects to your OpenClaw server (not Anthropic)
+- Your server handles authentication, session management, and routing
+- API calls to Anthropic's model endpoints go from your server, not the developer's machine
+- Your organization controls what each developer can do, see, and spend
+
+OpenClaw moves the **control plane** inside your boundary. The intelligence still runs on Anthropic's model infrastructure. OpenClaw is not a self-hosted model — it is a self-hosted operational layer.
+
+### What OpenClaw is not
+
+OpenClaw does not host any AI model. There is no version of OpenClaw that runs inference locally (that is NemoClaw, a separate variant). OpenClaw is a gateway and orchestration layer — it proxies requests to Anthropic's API on behalf of your developers.
+
+This distinction matters for compliance conversations. If an auditor asks "does your code leave your network?", the honest answer with OpenClaw is: your developers' code context goes to your OpenClaw server, and then your OpenClaw server sends it to Anthropic's API. You reduced the attack surface (developers no longer hold API keys, centralized audit logging exists) but you have not eliminated the Anthropic data path.
+
+### How it differs from hosted Claude Code
+
+| Aspect | Hosted Claude Code | OpenClaw |
+|--------|-------------------|----------|
+| **Auth** | Developer holds their own API key | Developer authenticates with your identity provider |
+| **API keys** | Per-developer | One org key, centrally managed |
+| **Data path** | Dev machine → Anthropic | Dev machine → your server → Anthropic |
+| **Access control** | Per-developer API limits | Team-level policies, per-project rules |
+| **Cost visibility** | Per-developer billing | Centralized billing with team breakdowns |
+| **Compliance controls** | Dependent on Anthropic's data handling | Your infrastructure, your audit logs |
+| **Setup time** | Minutes | Hours to days |
+
+### When to self-host
+
+Self-hosting adds operational overhead. It is worth it when your organization:
+
+- Has compliance requirements that prohibit distributing API credentials to individual developers (HIPAA, PCI, government classification)
+- Operates in a private cloud or on-premises environment with restricted outbound internet
+- Needs centralized cost attribution across engineering teams
+- Wants SSO integration with Okta, Active Directory, or another identity provider
+- Requires all API credentials to be vault-managed rather than held by individuals
+
+If you are a solo developer or a small team without compliance constraints, hosted Claude Code is the right default. OpenClaw is not simpler — it is more controllable.
+
+### The architecture in one diagram
+
+```
+┌─────────────────────────────────────────┐
+│           Your Network Boundary          │
+│                                         │
+│  Developer 1  ──┐                       │
+│  Developer 2  ──┼──▶  OpenClaw Server   │
+│  Developer 3  ──┘    (auth, policy,     │
+│  CI Pipeline  ──────▶ session mgmt,     │
+│                       cost tracking)    │
+│                           │             │
+└───────────────────────────│─────────────┘
+                            │
+                     Outbound HTTPS
+                            │
+                   ┌────────▼───────┐
+                   │  Anthropic API  │
+                   │  (model layer)  │
+                   └────────────────┘
+```
+
+Everything inside the boundary is yours: compute, certificates, identity, audit logs. Everything outside is Anthropic's model infrastructure.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Answer the three questions below in your own words."
+  verifyCheck="The learner can articulate the difference between OpenClaw and a self-hosted AI model, and identify the organizational conditions that justify self-hosting."
+  rubricCriteria={[
+    "Correctly identifies that OpenClaw is an operational layer, not a self-hosted model — Anthropic's API is still used for inference",
+    "Can name at least two specific organizational conditions that justify deploying OpenClaw over using hosted Claude Code",
+    "Correctly describes where developer code context travels: dev machine → OpenClaw server → Anthropic API",
+  ]}
+>
+
+**Question 1:** In one sentence, what is OpenClaw?
+
+**Question 2:** Does deploying OpenClaw mean your code never leaves your network? Explain.
+
+**Question 3:** Name two conditions under which OpenClaw is the right choice over hosted Claude Code.
+
+</VerificationBlock>

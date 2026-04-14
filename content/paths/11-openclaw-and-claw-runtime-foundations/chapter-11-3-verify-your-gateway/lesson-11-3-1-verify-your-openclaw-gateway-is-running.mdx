@@ -1,0 +1,155 @@
+---
+title: "Verify Your OpenClaw Gateway Is Running"
+lessonNumber: "11.3.1"
+chapterNumber: "11.3"
+pathNumber: "11"
+groupId: "4.4"
+clawClassification: "advanced"
+prerequisiteLesson: "11.2.1"
+estimatedMinutes: 15
+verifyType: "terminal_output"
+tutorPreload: "Help me verify my OpenClaw gateway is healthy. Walk me through reading logs, checking the health endpoint, testing model routing, and diagnosing common startup failures."
+---
+
+# Verify Your OpenClaw Gateway Is Running
+
+## What you will build
+
+A complete health check of your OpenClaw gateway: health endpoint responding, logs clean, model routing connected to Anthropic, and the Web UI accessible.
+
+## Why this matters
+
+A gateway that starts without errors is not necessarily healthy. The startup sequence can complete while model routing is misconfigured, the API key is invalid, or the heartbeat loop is disabled. This lesson gives you a structured verification procedure you can run after any install or after any configuration change to confirm the gateway is actually working end to end.
+
+## Before you start
+
+Complete at least one of the install lessons (11.2.1, 11.2.2, or 11.2.3) before running this verification. You should have an OpenClaw gateway accessible at `http://localhost:3301` or your VPS IP.
+
+## Walkthrough
+
+### Check 1 — Health endpoint
+
+The health endpoint is the fastest confirmation that the gateway process is running and accepting connections.
+
+```bash
+curl -s http://localhost:3301/health
+```
+
+Expected output:
+```json
+{"status":"ok","version":"3.x.x","uptime_seconds":120}
+```
+
+If you get `connection refused`, the gateway process is not running. Check step 4 (logs) to diagnose why.
+
+### Check 2 — Web UI
+
+Open `http://localhost:3301` in a browser.
+
+You should see the OpenClaw dashboard. If you completed the first-run wizard during install, you will be prompted to log in with the admin password you set.
+
+If you see a blank page or an error, check your browser's developer tools for JavaScript errors — this sometimes indicates a misconfigured `OPENCLAW_WEB_UI` setting in `.env`.
+
+### Check 3 — Read startup logs
+
+```bash
+# Docker deployment
+docker compose logs --tail=50 openclaw
+
+# macOS LaunchAgent deployment
+tail -50 /tmp/openclaw.log
+```
+
+Look for these lines in a healthy startup sequence:
+```
+[INFO] Gateway v3.x.x starting...
+[INFO] Web UI available at http://0.0.0.0:3301
+[INFO] Model routing initialized
+[INFO] Heartbeat loop: active (interval: 30 min)
+[INFO] Gateway ready
+```
+
+If you see `[FATAL]` or `[ERROR]` lines, the following table covers the most common causes.
+
+### Diagnosing startup errors
+
+| Error in logs | Cause | Fix |
+|---------------|-------|-----|
+| `FATAL: ANTHROPIC_API_KEY not set` | Missing key in `.env` | Add `ANTHROPIC_API_KEY=sk-ant-...` to `.env` and restart |
+| `ERROR: API key invalid or unauthorized` | Wrong key or key revoked | Regenerate at console.anthropic.com |
+| `ERROR: Port 3301 already in use` | Another process on that port | Change `OPENCLAW_PORT` in `.env`, restart |
+| `FATAL: OPENCLAW_SECRET not set` | Secret not configured | Generate with `openssl rand -hex 32`, add to `.env` |
+| `WARN: Heartbeat disabled` | `OPENCLAW_HEARTBEAT_ENABLED` is false or missing | Add `OPENCLAW_HEARTBEAT_ENABLED=true` to `.env` |
+
+### Check 4 — Test model routing
+
+The OpenClaw CLI includes a built-in model routing test:
+
+```bash
+openclaw test-model --provider anthropic
+```
+
+Expected output:
+```
+Testing Anthropic model routing...
+✓ API key valid
+✓ Model endpoint reachable
+✓ Test completion received (12 tokens)
+Model routing: OK
+```
+
+If you see an error about the API key, recheck your `.env` configuration. Keys starting with `sk-ant-` are Anthropic keys. Make sure there are no leading or trailing spaces.
+
+### Check 5 — Confirm the gateway status
+
+```bash
+openclaw status
+```
+
+This prints a summary of:
+- Gateway version
+- Uptime
+- Connected messaging channels (none yet — that is a later lesson)
+- Heartbeat status
+- Active model providers
+
+A healthy gateway with no messaging channels connected looks like:
+```
+OpenClaw Gateway v3.x.x
+Uptime: 5 minutes
+Model providers: anthropic (active)
+Messaging channels: 0 connected
+Heartbeat: active (next cycle in 27 min)
+Skills loaded: 0
+```
+
+### Managing the gateway
+
+```bash
+# Stop the gateway
+docker compose stop openclaw        # Docker
+launchctl unload ~/Library/LaunchAgents/dev.openclaw.gateway.plist  # macOS
+
+# Start the gateway
+docker compose start openclaw       # Docker
+launchctl load ~/Library/LaunchAgents/dev.openclaw.gateway.plist   # macOS
+
+# View live logs
+docker compose logs -f openclaw     # Docker
+tail -f /tmp/openclaw.log           # macOS LaunchAgent
+
+# Force restart (applies .env changes)
+docker compose restart openclaw     # Docker
+```
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output showing all five checks passing: health endpoint, startup logs (no FATAL or ERROR), model routing test OK, and openclaw status showing the gateway active."
+  verifyCheck="The OpenClaw gateway is healthy: health endpoint responding, model routing connected to Anthropic, heartbeat active."
+  rubricCriteria={[
+    "curl http://localhost:3301/health returns JSON with status ok",
+    "Startup logs show no FATAL or ERROR lines — INFO and WARN only",
+    "openclaw test-model --provider anthropic reports Model routing: OK",
+  ]}
+/>

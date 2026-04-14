@@ -1,0 +1,242 @@
+---
+title: "Install OpenClaw on a VPS (Always-On)"
+lessonNumber: "11.2.3"
+chapterNumber: "11.2"
+pathNumber: "11"
+groupId: "4.4"
+clawClassification: "advanced"
+prerequisiteLesson: "11.1.3"
+estimatedMinutes: 30
+verifyType: "terminal_output"
+tutorPreload: "I'm deploying OpenClaw on a Linux VPS. Help me with SSH hardening, UFW firewall setup, Docker installation, and the OpenClaw .env configuration."
+---
+
+# Install OpenClaw on a VPS (Always-On)
+
+## What you will build
+
+OpenClaw running 24/7 on a Linux VPS, hardened with SSH key authentication, UFW firewall, and Docker's restart policy. The gateway stays online when your laptop is off.
+
+## Why this matters
+
+A gateway running on your laptop goes offline when you close the lid. A VPS runs constantly — your messaging automations, scheduled skills, and heartbeat loop work at 3am, over weekends, and while you are traveling. For autonomous agent use cases, always-on is the only configuration that delivers real value. A 1 GB VPS at a cloud provider costs $5–7 per month.
+
+## Before you start
+
+You need:
+- A Linux VPS running Ubuntu 22.04 or 24.04 (any provider — DigitalOcean, Hetzner, Linode, Vultr)
+- Root or sudo access via SSH
+- A Pro or Team Claude API key from Anthropic
+- A domain or subdomain pointing to the VPS IP (optional but recommended for HTTPS)
+
+**Important:** Complete Steps 3 and 4 (user and SSH hardening) before exposing any port. A VPS is a public server from the moment it is created.
+
+## Walkthrough
+
+### Step 1 — First SSH connection
+
+```bash
+# From your local terminal
+ssh root@YOUR_VPS_IP
+```
+
+Accept the fingerprint prompt on first connection.
+
+### Step 2 — Create a dedicated non-root user
+
+Running permanently as root is a security risk. Create a dedicated user and give it sudo rights:
+
+```bash
+adduser openclaw
+usermod -aG sudo openclaw
+```
+
+Switch to the new user:
+```bash
+su - openclaw
+```
+
+All remaining commands in this lesson run as the `openclaw` user.
+
+### Step 3 — Set up SSH key authentication
+
+Run these commands on your **local machine**, not the VPS:
+
+```bash
+# Generate an SSH key if you do not have one
+ssh-keygen -t ed25519 -C "openclaw-vps"
+
+# Copy your public key to the VPS
+ssh-copy-id openclaw@YOUR_VPS_IP
+```
+
+Test that key-based login works:
+```bash
+ssh openclaw@YOUR_VPS_IP
+```
+
+Once key login works, disable password authentication on the VPS:
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+Find and update these lines:
+```
+PasswordAuthentication no
+PubkeyAuthentication yes
+PermitRootLogin no
+```
+
+Apply the change:
+```bash
+sudo systemctl restart sshd
+```
+
+Verify key-based login still works in a new terminal before closing your current session.
+
+### Step 4 — Configure UFW firewall
+
+```bash
+sudo apt install ufw -y
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 3301/tcp
+sudo ufw enable
+sudo ufw status
+```
+
+Do not skip `ufw allow ssh` before running `ufw enable` — doing so will lock you out of the server.
+
+### Step 5 — Install Docker
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+```
+
+Log out and back in for the group change to take effect:
+```bash
+exit
+ssh openclaw@YOUR_VPS_IP
+```
+
+Verify Docker works:
+```bash
+docker --version
+docker compose version
+```
+
+### Step 6 — Clone and configure OpenClaw
+
+```bash
+cd ~
+git clone https://github.com/openclaw-project/openclaw.git
+cd openclaw
+cp .env.example .env
+nano .env
+```
+
+Required configuration for a VPS:
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENCLAW_PORT=3301
+OPENCLAW_WEB_UI=true
+OPENCLAW_SECRET=your_64_char_secret_here
+OWNER_DISPLAY_NAME=YourName
+OWNER_TIMEZONE=UTC
+OPENCLAW_HOST=0.0.0.0
+```
+
+Generate the secret:
+```bash
+openssl rand -hex 32
+```
+
+### Step 7 — Start with auto-restart
+
+Edit `docker-compose.yml` to add the restart policy:
+```yaml
+services:
+  openclaw:
+    image: openclaw/gateway:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${OPENCLAW_PORT:-3301}:3301"
+```
+
+Start the gateway:
+```bash
+docker compose up -d
+docker compose logs -f openclaw
+```
+
+Confirm startup, then `Ctrl+C` to exit logs.
+
+### Step 8 — Verify health
+
+```bash
+curl -s http://localhost:3301/health
+```
+
+Expected:
+```json
+{"status":"ok","version":"..."}
+```
+
+### (Optional) Step 9 — HTTPS with Nginx and Let's Encrypt
+
+If you have a domain pointing to your VPS IP:
+
+```bash
+sudo apt install nginx certbot python3-certbot-nginx -y
+
+sudo nano /etc/nginx/sites-available/openclaw
+```
+
+```nginx
+server {
+    server_name agent.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3301;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/openclaw /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+sudo certbot --nginx -d agent.yourdomain.com
+```
+
+Certbot auto-renews. Your gateway is now accessible at `https://agent.yourdomain.com`.
+
+### Common issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| SSH locked out after sshd_config change | Password auth disabled before testing key | Restore via VPS provider console, fix config |
+| `docker: permission denied` | User not added to docker group | `sudo usermod -aG docker $USER`, log out and back in |
+| Port 3301 unreachable from browser | UFW not opened or not enabled | `sudo ufw allow 3301/tcp && sudo ufw status` |
+| Gateway container restarting constantly | Config error in `.env` | `docker compose logs --tail=50 openclaw` to find the error |
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output showing `docker compose ps` with openclaw running, and `curl http://localhost:3301/health` returning status ok from inside the VPS."
+  verifyCheck="OpenClaw is running on the VPS with Docker restart policy and UFW firewall active."
+  rubricCriteria={[
+    "docker compose ps shows the openclaw container in Running state with the restart policy applied",
+    "curl http://localhost:3301/health returns JSON with status ok from inside the VPS",
+    "ufw status shows SSH and port 3301 open, all other incoming traffic blocked",
+  ]}
+/>

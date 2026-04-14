@@ -1,0 +1,104 @@
+---
+title: "When to Self-Host vs. Use the Direct API"
+lessonNumber: "11.1.3"
+chapterNumber: "11.1"
+pathNumber: "11"
+groupId: "4.4"
+clawClassification: "advanced"
+prerequisiteLesson: "11.1.2"
+estimatedMinutes: 10
+verifyType: "quiz"
+tutorPreload: "Help me work through whether my organization should deploy OpenClaw or stick with the direct Anthropic API. What questions should I be asking?"
+---
+
+# When to Self-Host vs. Use the Direct API
+
+## What you will build
+
+A completed self-hosting decision checklist for your own situation, with a clear go/no-go conclusion.
+
+## Why this matters
+
+Deploying OpenClaw takes real effort. If you deploy it when you do not need it, you create maintenance overhead with no benefit. If you do not deploy it when you do need it, you expose your organization to compliance risk or operational fragility. This lesson gives you a structured way to make the call.
+
+## Before you start
+
+Complete lessons 11.1.1 and 11.1.2. This lesson synthesizes the concepts from both into a decision framework.
+
+## Walkthrough
+
+### The honest cost of self-hosting
+
+Before running the decision checklist, acknowledge the costs:
+
+- **Initial setup:** 2–8 hours depending on your infrastructure and familiarity with Docker and Linux
+- **Ongoing maintenance:** OS updates, OpenClaw version upgrades, SSL certificate renewals, log monitoring
+- **Operational responsibility:** if your OpenClaw server goes down, your developers cannot use Claude Code until you fix it
+- **Security surface:** you are now responsible for a server exposed to the internet (for VPS deployments)
+
+None of these are show-stoppers. They are real costs you should go in with eyes open.
+
+### Decision checklist
+
+Work through this checklist for your situation. If you answer yes to **any** of the first five questions, self-hosting is worth the effort:
+
+**Compliance and data handling**
+- [ ] Does your organization have data residency requirements that restrict where source code can be sent?
+- [ ] Do compliance frameworks (HIPAA, PCI, SOC 2, government classification) prohibit sending code to third-party APIs?
+- [ ] Does your security team require centralized audit logs for all AI-assisted development activity?
+
+**Access and identity**
+- [ ] Do you need SSO integration (Okta, Active Directory, SAML) for developer authentication?
+- [ ] Do you need to prevent individual developers from holding API keys and calling Anthropic directly?
+
+**Cost and usage management**
+- [ ] Do you need per-team or per-project cost attribution?
+- [ ] Do you need to enforce daily or monthly spending caps per developer?
+
+**Infrastructure context**
+- [ ] Are you operating in an air-gapped or private network environment?
+- [ ] Do you already maintain a VPS or server that OpenClaw can run on with minimal additional overhead?
+
+**Scale signals**
+- [ ] Do you have more than 5 developers who need Claude Code access?
+- [ ] Do you run automated pipelines (CI, cron) that need authenticated Claude Code access without per-developer keys?
+
+### Scoring
+
+| Yes answers | Recommendation |
+|-------------|----------------|
+| 0 | Stick with hosted Claude Code. Self-hosting adds overhead with no benefit at this stage. |
+| 1–2 | Consider it if the specific yes answers are in the Compliance or Access sections. Otherwise wait. |
+| 3+ | Deploy OpenClaw. The operational overhead is justified by what you gain. |
+
+### The solo developer case
+
+If you are working alone, the honest answer is almost always "use hosted Claude Code." The one exception: if you have specific compliance requirements from a client or employer, or if you want to run an always-on personal agent on a home server. In those cases, NanoClaw on a Raspberry Pi or a $6/month VPS is a reasonable path — but eyes open about the maintenance commitment.
+
+### What you gain from self-hosting (summary)
+
+- Centralized API key management — no developer ever holds a key
+- SSO integration — developers authenticate with company credentials
+- Per-team cost attribution — you know exactly who spent what
+- Audit logs — every prompt, every tool call, timestamped and stored
+- Air-gap readiness — OpenClaw can run with restricted outbound access, calling only Anthropic's model endpoint
+
+## Verification
+
+<VerificationBlock
+  deliverable="Your completed decision checklist with a go/no-go conclusion."
+  verifyCheck="The learner has run the decision checklist against their own situation and can explain the specific reasons behind their conclusion."
+  rubricCriteria={[
+    "Completed the decision checklist with genuine answers for their own context (not hypothetical)",
+    "Arrived at a go/no-go conclusion consistent with their yes/no answers",
+    "Can name the specific cost or benefit that is most relevant to their situation",
+  ]}
+>
+
+Run through the decision checklist above for your own situation (or for a hypothetical organization you are planning for). Record:
+
+1. Which items you answered yes to
+2. Your go/no-go conclusion
+3. The single most important factor driving that conclusion
+
+</VerificationBlock>

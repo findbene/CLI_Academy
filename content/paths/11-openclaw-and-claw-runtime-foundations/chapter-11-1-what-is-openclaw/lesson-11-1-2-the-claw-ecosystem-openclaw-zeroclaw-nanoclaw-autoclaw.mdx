@@ -1,0 +1,79 @@
+---
+title: "The Claw Ecosystem: OpenClaw, ZeroClaw, NanoClaw, and AutoClaw"
+lessonNumber: "11.1.2"
+chapterNumber: "11.1"
+pathNumber: "11"
+groupId: "4.4"
+clawClassification: "advanced"
+prerequisiteLesson: "11.1.1"
+estimatedMinutes: 12
+verifyType: "quiz"
+tutorPreload: "Help me understand the difference between OpenClaw, ZeroClaw, NanoClaw, and AutoClaw. When would I choose each one?"
+---
+
+# The Claw Ecosystem: OpenClaw, ZeroClaw, NanoClaw, and AutoClaw
+
+## What you will build
+
+A decision framework for choosing between Claw variants based on deployment context, hardware, and workflow type.
+
+## Why this matters
+
+The Claw ecosystem has four distinct variants, each solving a different deployment problem. Picking the wrong one wastes setup time. Picking the right one means you never have to migrate. This lesson maps the ecosystem so you can make that call once, correctly.
+
+## Before you start
+
+Complete lesson 11.1.1 (What OpenClaw Is). This lesson builds on that foundation.
+
+## Walkthrough
+
+### The four variants
+
+**OpenClaw** is the core self-hosted runtime. It provides the full Claude Code operational layer — authentication, session management, model routing, the Web UI, skill execution, and the heartbeat loop — on infrastructure you own and control. This is the right starting point for any organizational deployment.
+
+**ZeroClaw** is a fast-path variant optimized for latency-sensitive workflows. It strips non-essential middleware — the Web UI, detailed audit logging, multi-user session management — to minimize round-trip time on each API call. The trade-off: less management surface, lower overhead. ZeroClaw is for situations where sub-100ms routing matters more than admin tooling. Use it for CI/CD integrations, real-time code review pipelines, and edge deployments where the management overhead of full OpenClaw is not justified.
+
+**NanoClaw** (also called NemoClaw in NVIDIA-integrated deployments) is OpenClaw built for low-power and edge hardware — Raspberry Pi, NVIDIA Jetson, and similar ARM-based devices. It runs on 1–2 GB RAM and consumes idle power in the 3–7 W range. NanoClaw is the right variant when you want an always-on OpenClaw gateway on home hardware without running a VPS, or when you need edge-local inference on field devices.
+
+**AutoClaw** is a headless automation variant with no interactive interface. It is designed for CI/CD pipelines, cron-driven code review, and autonomous agent workflows where no human is at the keyboard. AutoClaw consumes fewer resources than full OpenClaw because it removes the Web UI and interactive session layer entirely. Use it when you want OpenClaw's orchestration engine but never need to open a browser to interact with it.
+
+### Choosing between them
+
+| If your situation is... | Use |
+|------------------------|-----|
+| Your team needs centralized auth, audit logs, and a management UI | **OpenClaw** |
+| You are building a pipeline where API latency matters above all else | **ZeroClaw** |
+| You want an always-on gateway on a Raspberry Pi or home server | **NanoClaw** |
+| You are running automated agentic workflows with no human interaction | **AutoClaw** |
+| You are on NVIDIA infrastructure and want GPU-optimized context handling | **NemoClaw** (NanoClaw variant) |
+
+### You start with OpenClaw
+
+Regardless of where you end up, OpenClaw is the right place to start. The variants exist for specific optimizations — you do not need them on day one. Get OpenClaw running, get your team using it, then evaluate whether a variant matches a specific need you have uncovered.
+
+A common progression:
+1. Deploy OpenClaw on a VPS for your team
+2. After a few months, add AutoClaw for nightly code review automation
+3. If CI pipeline latency becomes a concern, evaluate ZeroClaw for that specific integration
+
+This path covers OpenClaw. Paths 28–30 cover OpenClaw configuration, security, and the ZeroClaw/NanoClaw variants in depth.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Answer the scenario questions below."
+  verifyCheck="The learner can correctly map deployment scenarios to the appropriate Claw variant."
+  rubricCriteria={[
+    "Correctly identifies OpenClaw as the starting point for organizational deployments requiring a management UI and audit logs",
+    "Correctly identifies AutoClaw (not OpenClaw) for headless CI/CD pipelines where no interactive interface is needed",
+    "Correctly identifies NanoClaw or ZeroClaw for resource-constrained or latency-sensitive scenarios",
+  ]}
+>
+
+**Scenario A:** Your company wants to deploy a shared Claude Code gateway with SSO, per-team cost tracking, and an admin UI. Which variant?
+
+**Scenario B:** You want to run nightly automated code review on your GitHub repositories using a GitHub Actions workflow. No human interaction required. Which variant?
+
+**Scenario C:** You want an always-on Claude Code gateway on a Raspberry Pi 4 (4 GB RAM) at home. Which variant?
+
+</VerificationBlock>

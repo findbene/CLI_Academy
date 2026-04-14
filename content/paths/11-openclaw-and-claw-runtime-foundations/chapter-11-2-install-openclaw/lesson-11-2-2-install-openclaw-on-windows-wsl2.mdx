@@ -1,0 +1,171 @@
+---
+title: "Install OpenClaw on Windows (WSL2)"
+lessonNumber: "11.2.2"
+chapterNumber: "11.2"
+pathNumber: "11"
+groupId: "4.4"
+clawClassification: "advanced"
+prerequisiteLesson: "11.1.3"
+estimatedMinutes: 25
+verifyType: "terminal_output"
+tutorPreload: "I'm installing OpenClaw on Windows using WSL2 and Docker. Help me troubleshoot any issues with the Docker Desktop WSL integration, .env configuration, or port binding."
+---
+
+# Install OpenClaw on Windows (WSL2)
+
+## What you will build
+
+OpenClaw running inside WSL2 on your Windows machine, accessible at `http://localhost:3301`, with Docker managing the container lifecycle and your `.env` file correctly configured.
+
+## Why this matters
+
+Running OpenClaw natively on Windows (non-WSL) causes path-handling bugs, permission issues, and line-ending problems with skill files. The WSL2 plus Docker path sidesteps all of them. You get a reproducible Linux environment and a container you can stop, start, and update without touching Windows configuration.
+
+## Before you start
+
+You need:
+- Windows 10 (22H2) or Windows 11
+- WSL2 installed with Ubuntu 22.04 or 24.04 as the default distribution
+- Docker Desktop installed with the WSL2 backend enabled (Settings → Resources → WSL Integration → Ubuntu checked)
+- 4 GB RAM available for the gateway
+- A Pro or Team Claude API key from Anthropic
+
+Confirm WSL2 is working before continuing:
+```powershell
+wsl --status
+```
+You should see `Default Distribution: Ubuntu` and `Default Version: 2`.
+
+## Walkthrough
+
+### Step 1 — Open a WSL2 terminal
+
+From Windows Terminal or PowerShell:
+```powershell
+wsl
+```
+
+All following steps run inside the WSL2 Ubuntu session unless noted otherwise.
+
+### Step 2 — Clone and configure
+
+```bash
+cd ~
+git clone https://github.com/openclaw-project/openclaw.git
+cd openclaw
+cp .env.example .env
+nano .env
+```
+
+Set these values:
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENCLAW_PORT=3301
+OPENCLAW_WEB_UI=true
+OPENCLAW_SECRET=replace_with_64_random_chars
+OWNER_DISPLAY_NAME=YourName
+OWNER_TIMEZONE=Europe/London
+```
+
+Generate a secure secret:
+```bash
+openssl rand -hex 32
+```
+
+Press `Ctrl+O` to save in nano, `Ctrl+X` to exit.
+
+### Step 3 — Start with Docker Compose
+
+```bash
+docker compose up -d
+```
+
+Docker pulls the OpenClaw image on first run (approximately 400 MB). Subsequent starts are instant.
+
+Watch startup logs:
+```bash
+docker compose logs -f openclaw
+```
+
+You should see lines including:
+```
+[openclaw] Gateway starting...
+[openclaw] Web UI available at http://0.0.0.0:3301
+[openclaw] Heartbeat loop: active
+```
+
+Press `Ctrl+C` to exit log follow. The container keeps running.
+
+### Step 4 — Open the Web UI
+
+In your Windows browser:
+```
+http://localhost:3301
+```
+
+The first-run wizard will ask you to set an admin password. Complete it.
+
+### Step 5 — Verify the gateway is healthy
+
+From inside WSL2:
+```bash
+curl -s http://localhost:3301/health
+```
+
+Expected output:
+```json
+{"status":"ok","version":"..."}
+```
+
+### Step 6 — Windows Firewall (optional — local network only)
+
+By default Docker on WSL2 binds to `localhost` only. If you want to reach the gateway from another device on your home network:
+
+Run this in Windows PowerShell as Administrator, not in WSL:
+```powershell
+netsh advfirewall firewall add rule `
+  name="OpenClaw Web UI" `
+  dir=in `
+  action=allow `
+  protocol=TCP `
+  localport=3301
+```
+
+Find your Windows IP address with `ipconfig` in PowerShell, then open `http://<your-ip>:3301` on your phone or tablet.
+
+### Auto-restart on container exit
+
+Add a restart policy to `docker-compose.yml` so the container comes back automatically if it crashes:
+
+```yaml
+services:
+  openclaw:
+    image: openclaw/gateway:latest
+    restart: unless-stopped
+```
+
+Then apply:
+```bash
+docker compose down && docker compose up -d
+```
+
+### Common issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `docker: command not found` in WSL | Docker Desktop WSL integration not enabled | Enable in Docker Desktop → Settings → Resources → WSL Integration |
+| Port 3301 already in use | Another process on the port | Change `OPENCLAW_PORT` in `.env` and restart |
+| `ANTHROPIC_API_KEY invalid` | Key pasted with whitespace | Check for leading/trailing spaces — paste carefully |
+| Web UI loads but shows "No model configured" | `.env` not mounted to container | Run `docker compose down && docker compose up -d` to remount |
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output showing `docker compose ps` with the OpenClaw container running, and `curl http://localhost:3301/health` returning a status ok response."
+  verifyCheck="OpenClaw is running in Docker on WSL2 and responding to health checks on port 3301."
+  rubricCriteria={[
+    "docker compose ps shows the openclaw container in Running state",
+    "curl http://localhost:3301/health returns JSON with status ok",
+    "The .env file has ANTHROPIC_API_KEY and OPENCLAW_SECRET correctly set",
+  ]}
+/>
