@@ -1,0 +1,170 @@
+---
+title: "Mini-Project: Build a Self-Improving Agent Loop"
+lessonNumber: "28.3.3"
+chapterNumber: "28.3"
+pathNumber: "28"
+groupId: "4.5"
+clawClassification: "advanced"
+prerequisiteLesson: "28.3.2"
+estimatedMinutes: 30
+verifyType: "code_submission"
+tutorPreload: "Help me build the self-improving agent loop for this mini-project. I need to wire a skill that sends weekly output, capture my corrections via /learn commands, and confirm the corrections apply in the next run."
+---
+
+# Mini-Project: Build a Self-Improving Agent Loop
+
+## What you will build
+
+A complete agent loop that: (1) runs a skill on a weekly schedule, (2) receives your corrections via the `/learn` command, and (3) demonstrably applies those corrections in its next run — proving OpenClaw's memory system is working end to end.
+
+## Why this matters
+
+Understanding the heartbeat and `.learnings/` directory in isolation is not the same as experiencing the loop working. This mini-project connects the pieces: skill runs, you correct something, the correction persists, the skill improves. That experience is the mental model for every OpenClaw automation you will build after this.
+
+## Before you start
+
+Complete all lessons in path 28. Your gateway should be running with:
+- At least one messaging channel connected (WhatsApp or Telegram)
+- The `.learnings/` directory populated with at least basic preferences
+- The heartbeat configured and running
+
+## Walkthrough
+
+### Part 1 — Create a weekly summary skill
+
+Write a `weekly-summary.skill.md` file:
+
+```bash
+nano ~/.openclaw/skills/weekly-summary.skill.md
+```
+
+```markdown
+---
+skill_id: weekly-summary
+name: "Weekly Summary"
+version: 1.0.0
+description: "Send a brief weekly review every Friday at 5pm."
+
+trigger:
+  type: schedule
+  cron: "0 17 * * 5"    # Fridays at 5pm
+
+channels:
+  output: ["whatsapp"]   # or telegram
+
+model:
+  preferred: "claude-3-5-haiku-20241022"
+
+tools:
+  - name: fetch_web
+    permission: auto
+
+cost_controls:
+  max_tokens_per_run: 1500
+---
+
+# Weekly Summary
+
+You are a weekly review assistant for {{OWNER_DISPLAY_NAME}}.
+
+## Your Job
+
+Every Friday at 5pm, send a brief end-of-week summary.
+
+## Contents
+
+Include:
+1. A one-sentence reflection on the week (thoughtful, not generic)
+2. One notable thing that happened in the world of AI this week (fetch from a reliable tech source)
+3. One practical suggestion for next week based on your .learnings context
+
+## Format
+
+Use WhatsApp-friendly formatting:
+- *Bold headings*
+- Each section under 50 words
+- Total message under 150 words
+
+## Tone
+
+Friendly and direct. Like a thoughtful colleague at end of day on Friday.
+```
+
+### Part 2 — Deploy and dry-run
+
+```bash
+openclaw validate-skill ~/.openclaw/skills/weekly-summary.skill.md
+openclaw run-skill weekly-summary --dry-run
+```
+
+Review the content preview. Check:
+- Is the tone right?
+- Is the format correct?
+- Is the AI news item accurate and relevant?
+
+If anything is wrong, revise the skill body and dry-run again.
+
+### Part 3 — Run once for real
+
+```bash
+openclaw run-skill weekly-summary --once
+```
+
+Check your messaging app. Read the output carefully. Find at least one thing you would improve — this is intentional. Common first-run issues:
+
+- Tone is too formal or too casual
+- The AI news item is outdated or irrelevant
+- The "notable thing" section misses what you actually care about
+
+### Part 4 — Apply corrections via /learn
+
+In your messaging app, send a `/learn` command immediately after reading the output:
+
+```
+/learn Weekly summary tone should be warmer — more like a colleague, less like a report
+/learn For the AI news section, prioritize model releases and safety research over product launches
+```
+
+Confirm the corrections were saved:
+```bash
+openclaw memory search "weekly"
+```
+
+You should see your corrections in the output.
+
+### Part 5 — Re-run and verify improvement
+
+Run the skill a second time:
+```bash
+openclaw run-skill weekly-summary --once
+```
+
+Compare the second output to the first. The corrections you applied should be visible in the new output. If they are not, run `openclaw memory stats` to confirm your corrections are being retrieved, then check whether your skill instructions give the agent enough flexibility to apply them.
+
+### What you have built
+
+At this point your OpenClaw installation has:
+1. A skill that runs autonomously on a schedule
+2. A memory system that accumulates your corrections
+3. A feedback loop where corrections demonstrably improve future output
+
+This is the core of the OpenClaw value proposition. Everything in paths 29 and 30 builds on this foundation.
+
+## Verification
+
+<VerificationBlock
+  deliverable="The weekly-summary.skill.md file, your /learn corrections, and side-by-side first-run and second-run output showing the correction applied."
+  verifyCheck="The self-improving loop is working: a skill ran, a correction was applied via /learn, and the next run demonstrably reflected the correction."
+  rubricCriteria={[
+    "weekly-summary.skill.md is valid (openclaw validate-skill passes) and deployed",
+    "At least one /learn correction was applied and is visible in openclaw memory search output",
+    "The second run output shows a measurable difference from the first run that corresponds to the correction made",
+  ]}
+>
+
+Submit:
+1. The full contents of your `weekly-summary.skill.md`
+2. The `/learn` commands you sent
+3. A comparison of the first-run and second-run outputs (paste both or describe the specific difference you observed)
+
+</VerificationBlock>

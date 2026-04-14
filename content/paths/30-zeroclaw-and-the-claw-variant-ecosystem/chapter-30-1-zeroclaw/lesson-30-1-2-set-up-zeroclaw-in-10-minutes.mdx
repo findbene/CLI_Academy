@@ -1,0 +1,186 @@
+---
+title: "Set Up ZeroClaw in 10 Minutes"
+lessonNumber: "30.1.2"
+chapterNumber: "30.1"
+pathNumber: "30"
+groupId: "5.5"
+clawClassification: "advanced"
+prerequisiteLesson: "30.1.1"
+estimatedMinutes: 15
+verifyType: "terminal_output"
+tutorPreload: "Help me install ZeroClaw on a Linux server. Walk me through the binary download, config file setup, TLS certificate, and first developer token creation."
+---
+
+# Set Up ZeroClaw in 10 Minutes
+
+## What you will build
+
+ZeroClaw running on a Linux server, accepting developer connections via HTTPS, with at least one developer token created and verified working.
+
+## Why this matters
+
+ZeroClaw's entire value proposition includes fast deployment. OpenClaw takes hours to configure correctly. ZeroClaw takes minutes. This lesson delivers on that: one binary, one config file, one TLS certificate, done.
+
+## Before you start
+
+You need:
+- A Linux server with Ubuntu 22.04 or 24.04 (2 vCPUs, 2 GB RAM minimum)
+- An Anthropic API key
+- A hostname or domain pointing at your server (or localhost for local testing)
+- Basic familiarity with Linux and SSH
+
+ZeroClaw requires no Docker, no database, no Redis. It is a single binary.
+
+## Walkthrough
+
+### Step 1 — Download the ZeroClaw binary
+
+```bash
+# Get the latest release tag
+LATEST=$(curl -s https://api.github.com/repos/openclaw/zeroclaw/releases/latest \
+  | jq -r '.tag_name')
+
+# Detect architecture
+ARCH=$(uname -m)
+[ "$ARCH" = "x86_64" ] && ARCH="amd64"
+[ "$ARCH" = "aarch64" ] && ARCH="arm64"
+
+# Download and install
+curl -L "https://github.com/openclaw/zeroclaw/releases/download/${LATEST}/zeroclaw-linux-${ARCH}" \
+  -o /usr/local/bin/zeroclaw
+chmod +x /usr/local/bin/zeroclaw
+
+zeroclaw --version
+```
+
+### Step 2 — Create the config file
+
+```bash
+mkdir -p /etc/zeroclaw /var/log/zeroclaw
+```
+
+Create `/etc/zeroclaw/config.yml`:
+
+```yaml
+server:
+  hostname: zeroclaw.yourdomain.com    # or localhost for local testing
+  port: 443
+  tls_cert: /etc/zeroclaw/server.crt
+  tls_key: /etc/zeroclaw/server.key
+
+api:
+  anthropic_api_key: ${ANTHROPIC_API_KEY}
+  default_model: claude-sonnet-4-6
+
+auth:
+  mode: token
+  token_expiry_hours: 24
+
+rate_limit:
+  global_requests_per_minute: 200
+
+logging:
+  path: /var/log/zeroclaw/zeroclaw.log
+  level: info
+```
+
+### Step 3 — Get a TLS certificate
+
+**With a real domain (Let's Encrypt — recommended):**
+```bash
+sudo apt install -y certbot
+sudo certbot certonly --standalone -d zeroclaw.yourdomain.com
+sudo cp /etc/letsencrypt/live/zeroclaw.yourdomain.com/fullchain.pem /etc/zeroclaw/server.crt
+sudo cp /etc/letsencrypt/live/zeroclaw.yourdomain.com/privkey.pem /etc/zeroclaw/server.key
+chmod 600 /etc/zeroclaw/server.key
+```
+
+**For local/internal testing (self-signed):**
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/zeroclaw/server.key \
+  -out /etc/zeroclaw/server.crt \
+  -subj "/CN=zeroclaw.internal"
+chmod 600 /etc/zeroclaw/server.key
+```
+
+### Step 4 — Start ZeroClaw
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+
+zeroclaw serve --config /etc/zeroclaw/config.yml
+```
+
+Verify in a second terminal:
+```bash
+curl -sk https://localhost:443/health
+```
+
+Expected:
+```json
+{"status":"ok","version":"...","sessions":0}
+```
+
+### Step 5 — Run as a systemd service
+
+For production, run ZeroClaw as a service that starts on boot:
+
+```bash
+sudo tee /etc/systemd/system/zeroclaw.service > /dev/null << 'EOF'
+[Unit]
+Description=ZeroClaw Fast-Path Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/zeroclaw serve --config /etc/zeroclaw/config.yml
+Environment=ANTHROPIC_API_KEY=your-api-key-here
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable zeroclaw
+sudo systemctl start zeroclaw
+sudo systemctl status zeroclaw
+```
+
+### Step 6 — Create a developer token and connect
+
+```bash
+# Generate a token for a developer
+zeroclaw token create --label "alice-dev" --expiry 30d
+
+# Output:
+# Token: zc_tok_abc123...
+# Expires: 2026-05-14
+
+# On the developer's machine
+claude config set openclaw.server https://zeroclaw.yourdomain.com
+claude auth login --server https://zeroclaw.yourdomain.com
+# Paste the token when prompted
+```
+
+That is the complete installation. No migration scripts, no database seeds, no container configuration.
+
+### Important: session loss on restart
+
+ZeroClaw uses in-memory session state. When the process restarts (OS update, crash, deployment), all active sessions are terminated. Developers reconnect and continue — no code is lost — but it is a brief disruption. If session persistence is required, use OpenClaw instead.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output from `curl -sk https://localhost:443/health` showing status ok, and `zeroclaw token list` showing at least one active developer token."
+  verifyCheck="ZeroClaw is running, responding to health checks, and has at least one developer token created."
+  rubricCriteria={[
+    "curl https://localhost:443/health returns JSON with status ok",
+    "zeroclaw token list shows at least one token with a label and expiry date",
+    "systemctl status zeroclaw shows the service as active (running) if using systemd",
+  ]}
+/>

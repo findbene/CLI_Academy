@@ -1,0 +1,157 @@
+---
+title: "Security Hardening Checklist"
+lessonNumber: "29.2.1"
+chapterNumber: "29.2"
+pathNumber: "29"
+groupId: "5.4"
+clawClassification: "advanced"
+prerequisiteLesson: "29.1.2"
+estimatedMinutes: 20
+verifyType: "code_submission"
+tutorPreload: "Walk me through the OpenClaw security hardening checklist. Help me verify which items I've already completed and identify what still needs to be configured in my deployment."
+---
+
+# Security Hardening Checklist
+
+## What you will build
+
+A completed security hardening audit of your OpenClaw deployment, with at least 8 of the 12 checklist items verified as complete and a plan for any remaining items.
+
+## Why this matters
+
+A default OpenClaw install prioritizes getting started quickly over maximum security. That is appropriate for a first deployment. Once you are using the gateway for real automation, the security assumptions need to be revisited. This checklist covers the full surface area — server, gateway configuration, skill permissions, and credential management.
+
+## Before you start
+
+Complete lessons 29.1.1 and 29.1.2 (tool approvals and PII scrubbing). This lesson assumes you have a running deployment (macOS, Windows WSL2, or VPS).
+
+## Walkthrough
+
+### Category 1 — Server and network security
+
+For VPS deployments:
+
+**Item 1.1 — SSH key authentication enabled, password authentication disabled:**
+```bash
+# Verify on the VPS
+grep "PasswordAuthentication" /etc/ssh/sshd_config
+# Should show: PasswordAuthentication no
+```
+
+**Item 1.2 — UFW firewall active with only necessary ports open:**
+```bash
+sudo ufw status
+# Should show: SSH and OPENCLAW_PORT open; all others denied
+```
+
+**Item 1.3 — Running as a non-root user:**
+```bash
+whoami
+# Should NOT show: root
+```
+
+**Item 1.4 — Docker containers run without `--privileged` flag:**
+```bash
+docker inspect openclaw | grep Privileged
+# Should show: "Privileged": false
+```
+
+### Category 2 — Gateway configuration
+
+**Item 2.1 — Strict safety profile applied:**
+```bash
+openclaw config set safety_profile=strict
+```
+
+This sets all destructive tools (`delete_*`, `run_command`, `wordpress_publish`) to `deny` by default across all skills.
+
+**Item 2.2 — PII scrubbing enabled globally:**
+```bash
+openclaw config set security.pii_scrub_default=true
+```
+
+**Item 2.3 — Daily spend caps configured:**
+```bash
+openclaw config show | grep DAILY_LIMIT
+# Should show non-zero values for each configured provider
+```
+
+**Item 2.4 — `.env` file protected from skill tool access:**
+
+Add to `openclaw config.yaml`:
+```yaml
+file_access:
+  always_deny:
+    - "~/.env"
+    - "~/.ssh/*"
+    - "~/openclaw/.env"
+    - "**/secrets/**"
+    - "**/.env*"
+```
+
+### Category 3 — Credential management
+
+**Item 3.1 — API keys are not in `.learnings/` files:**
+```bash
+grep -r "sk-ant\|sk-proj\|AIza" ~/.openclaw/.learnings/
+# Should return no results
+```
+
+**Item 3.2 — `.env` file is not world-readable:**
+```bash
+ls -la ~/.openclaw/.env
+# Permissions should be -rw------- (600), not -rw-r--r-- (644)
+```
+
+If permissions are wrong:
+```bash
+chmod 600 ~/.openclaw/.env
+```
+
+**Item 3.3 — Git history does not contain secrets (if using version control):**
+```bash
+git log --all --full-history -- "**/.env" 2>/dev/null
+# Should return nothing — .env should never have been committed
+```
+
+### Category 4 — Skill hygiene
+
+**Item 4.1 — All installed ClawHub skills have been reviewed (not just installed):**
+```bash
+openclaw skill list --source clawhub
+# For each skill: openclaw skill inspect [skill-id]
+```
+
+**Item 4.2 — No skill has `run_command: auto` without an explicit allowlist:**
+```bash
+grep -r "run_command" ~/.openclaw/skills/ | grep "auto"
+# Should return nothing
+```
+
+### Hardening summary
+
+```bash
+openclaw security-check
+```
+
+This command runs items 1.1–4.2 automatically and reports a pass/fail for each. Aim for all green before using OpenClaw for anything business-critical.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Your completed security checklist with status (complete/incomplete) for each of the 12 items and a brief note for any incomplete items explaining your plan."
+  verifyCheck="The learner has audited their deployment against all 12 hardening items and understands which remain to be addressed."
+  rubricCriteria={[
+    "At least 8 of the 12 checklist items are marked complete with evidence (command output or configuration excerpt)",
+    "All Category 3 credential management items are addressed — no API keys in learnings, .env file is permissions-protected",
+    "Any incomplete items have a documented plan, not left blank",
+  ]}
+>
+
+Work through all 12 hardening items for your deployment. For each item:
+- Mark it complete with a brief note of what you verified
+- Or mark it incomplete with your plan to address it
+
+Submit your completed checklist.
+
+</VerificationBlock>

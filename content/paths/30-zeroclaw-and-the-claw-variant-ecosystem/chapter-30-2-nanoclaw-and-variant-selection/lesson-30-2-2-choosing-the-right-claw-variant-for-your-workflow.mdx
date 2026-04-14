@@ -1,0 +1,131 @@
+---
+title: "Choosing the Right Claw Variant for Your Workflow"
+lessonNumber: "30.2.2"
+chapterNumber: "30.2"
+pathNumber: "30"
+groupId: "5.5"
+clawClassification: "advanced"
+prerequisiteLesson: "30.2.1"
+estimatedMinutes: 15
+verifyType: "code_submission"
+tutorPreload: "Help me choose the right Claw variant. Walk me through the decision framework for my specific situation — team size, compliance requirements, hardware, and workflow type."
+---
+
+# Choosing the Right Claw Variant for Your Workflow
+
+## What you will build
+
+A completed variant selection worksheet for your own deployment context, with a clear choice and documented reasoning.
+
+## Why this matters
+
+Getting the variant selection right at the start saves you from either under-provisioning (deploying ZeroClaw then hitting compliance requirements six months in) or over-engineering (deploying full OpenClaw on a Raspberry Pi that cannot sustain its resource footprint). This lesson synthesizes everything from paths 11, 28, 29, and 30 into a single decision framework.
+
+## Before you start
+
+Complete path 30 through lesson 30.2.1. This lesson assumes you have read all four Claw variants and their tradeoffs.
+
+## Walkthrough
+
+### The five-question decision framework
+
+Work through these five questions in order. The first question that produces a definitive answer determines your variant.
+
+**Question 1 — Do you have a human at the keyboard?**
+
+If the deployment is fully automated — CI/CD pipeline, cron job, GitHub Actions, no interactive session required — the answer is AutoClaw. AutoClaw strips the interactive session layer entirely. It is OpenClaw's orchestration engine headless.
+
+If humans will use the gateway interactively, continue to Question 2.
+
+**Question 2 — What are your compliance requirements?**
+
+If your organization requires:
+- SSO/OIDC authentication
+- Synchronous per-request audit logs
+- Per-developer rate limiting
+- Content filtering
+
+...then the answer is **OpenClaw**. No other variant meets these requirements.
+
+If you have no compliance requirements (solo developer, small team, internal tooling), continue to Question 3.
+
+**Question 3 — What hardware are you deploying on?**
+
+If the hardware is:
+- Raspberry Pi, NVIDIA Jetson, or any ARM device with less than 2 GB available RAM
+- A low-power always-on device (power draw is a constraint)
+
+...then the answer is **NanoClaw** (or NemoClaw if on NVIDIA AI Enterprise).
+
+If you have server-class hardware (VPS, bare metal, cloud instance), continue to Question 4.
+
+**Question 4 — How many developers will use the gateway simultaneously?**
+
+If you have fewer than 50 developers with no compliance requirements and latency is a concern (you need sub-100ms routing), **ZeroClaw** is appropriate.
+
+If you have more than 50 developers, or if you anticipate needing per-developer limits as the team grows, **OpenClaw** is more sustainable.
+
+**Question 5 — Are you starting with a prototype or a production deployment?**
+
+If you are validating whether self-hosting is right for your organization, start with **ZeroClaw**. It deploys in minutes and gives you real experience with the operational model before committing to OpenClaw's full setup.
+
+If this is a production deployment from day one, start with **OpenClaw**. Migrating from ZeroClaw to OpenClaw later adds transition cost.
+
+### Variant summary
+
+| Variant | Primary use case | Key requirement |
+|---------|-----------------|----------------|
+| **OpenClaw** | Teams with compliance requirements, multi-tenant environments, long-term production deployments | Linux server, 1 GB+ RAM |
+| **ZeroClaw** | High-concurrency teams without compliance needs, fast prototyping | Linux server, 1 GB+ RAM |
+| **NanoClaw** | Personal always-on gateway, edge devices, IoT deployments | ARM hardware, 512 MB–1 GB RAM |
+| **NemoClaw** | NVIDIA AI Enterprise environments needing GPU optimization | NVIDIA Jetson or compatible hardware |
+| **AutoClaw** | Headless CI/CD, cron automation, fully autonomous workflows | Linux server, no interactive access needed |
+
+### Common scenario mappings
+
+| Scenario | Variant |
+|----------|---------|
+| Solo developer, home Raspberry Pi, personal agent | NanoClaw |
+| 10-person startup, no compliance, VPS deployment | ZeroClaw (start) → OpenClaw (grow) |
+| 50-person company, Okta SSO required, compliance audit coming | OpenClaw from day one |
+| Nightly GitHub Actions code review, no human interaction | AutoClaw |
+| NVIDIA Jetson fleet in manufacturing | NemoClaw |
+| 200-person company evaluating self-hosting | ZeroClaw for pilot, OpenClaw for production |
+
+### The upgrade path
+
+Every variant except OpenClaw has a clear upgrade path to OpenClaw when you outgrow it:
+
+- **ZeroClaw → OpenClaw**: Deploy OpenClaw alongside, migrate developers in batches, decommission ZeroClaw
+- **NanoClaw → OpenClaw**: Move the gateway to server hardware; NanoClaw config is compatible with OpenClaw
+- **AutoClaw → OpenClaw**: Add the interactive session layer; existing skills and HEARTBEAT.md are compatible
+
+OpenClaw is the ceiling of the ecosystem. You can always migrate up.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Your completed variant selection worksheet."
+  verifyCheck="The learner has worked through the five-question framework for their actual deployment context and arrived at a reasoned variant selection."
+  rubricCriteria={[
+    "All five questions are answered specifically for the learner's actual context, not hypothetically",
+    "The variant choice is consistent with the answers — for example, if SSO is required, OpenClaw is selected regardless of other factors",
+    "A brief upgrade path is noted if the learner expects to outgrow their initial choice",
+  ]}
+>
+
+Complete the following for your deployment:
+
+1. **Question 1 — Human at keyboard or fully automated?**
+2. **Question 2 — Compliance requirements?** (SSO, audit, per-developer limits, content filtering — yes/no for each)
+3. **Question 3 — Hardware context?** (ARM/low-power vs. server-class)
+4. **Question 4 — Team size?** (estimate concurrent users)
+5. **Question 5 — Prototype or production from day one?**
+
+**Your variant selection:** [OpenClaw / ZeroClaw / NanoClaw / NemoClaw / AutoClaw]
+
+**Reasoning:** [One paragraph explaining why this variant is right for your situation]
+
+**Upgrade trigger:** [What would cause you to upgrade to a more capable variant, and by when]
+
+</VerificationBlock>

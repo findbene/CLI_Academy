@@ -1,0 +1,174 @@
+---
+title: "Monitoring and Health Checks"
+lessonNumber: "29.3.1"
+chapterNumber: "29.3"
+pathNumber: "29"
+groupId: "5.4"
+clawClassification: "advanced"
+prerequisiteLesson: "29.2.2"
+estimatedMinutes: 16
+verifyType: "terminal_output"
+tutorPreload: "Help me set up monitoring for my OpenClaw gateway. What commands do I use to check health, read logs, watch resource usage, and get alerts when something breaks?"
+---
+
+# Monitoring and Health Checks
+
+## What you will build
+
+A monitoring setup that covers: health endpoint polling, log filtering for errors and warnings, container resource tracking, and at least one alerting rule that notifies you when the gateway goes down.
+
+## Why this matters
+
+Autonomous agents fail silently. A skill can be broken for hours before you notice your daily briefing did not arrive. A heartbeat can stop because the container ran out of memory. Without monitoring, you discover problems by noticing absence — which is the worst possible alarm. This lesson gives you the tools to detect problems as they happen.
+
+## Before you start
+
+Complete path 28 (OpenClaw Configuration and Skills). Your gateway should be running with at least one skill active on the heartbeat.
+
+## Walkthrough
+
+### The four layers of monitoring
+
+**Layer 1 — Health endpoint:** Is the gateway process running?
+
+**Layer 2 — Startup and error logs:** Is it running correctly?
+
+**Layer 3 — Heartbeat logs:** Is the agent loop executing skills as scheduled?
+
+**Layer 4 — Resource monitoring:** Is the container within safe memory and CPU limits?
+
+### Layer 1 — Health endpoint
+
+The health endpoint is the fastest check:
+
+```bash
+curl -s http://localhost:3301/health
+```
+
+Expected response:
+```json
+{"status":"ok","version":"3.x.x","uptime_seconds":86400}
+```
+
+**Poll it on a schedule from another machine or service:**
+```bash
+# Simple cron-based health check (add to crontab on a separate machine)
+*/5 * * * * curl -sf http://YOUR_VPS_IP:3301/health || notify-send "OpenClaw is down"
+```
+
+Or use a free external uptime monitor (UptimeRobot, Better Uptime) pointing at your health endpoint. Set it to alert you via email or Telegram if the endpoint does not respond.
+
+### Layer 2 — Error log filtering
+
+```bash
+# Watch for errors in real time
+docker compose logs -f openclaw 2>&1 | grep -E "ERROR|FATAL|WARN"
+
+# Last 24 hours of errors only
+docker compose logs --since 24h openclaw 2>&1 | grep -E "ERROR|FATAL"
+
+# Save errors to a file for review
+docker compose logs openclaw 2>&1 | grep -E "ERROR|FATAL" > /tmp/openclaw-errors.txt
+```
+
+Common error patterns to watch for:
+
+| Log pattern | Meaning |
+|------------|---------|
+| `FATAL: ANTHROPIC_API_KEY` | API key missing or invalid |
+| `ERROR: rate_limit` | Hit API rate limit — check skill execution frequency |
+| `ERROR: 429` | Same as above |
+| `ERROR: Port 3301 in use` | Port conflict — another process took the port |
+| `WARN: Daily limit reached` | Spend cap hit — review skill token usage |
+
+### Layer 3 — Heartbeat monitoring
+
+```bash
+# Confirm heartbeat is running
+docker compose logs openclaw 2>&1 | grep "HEARTBEAT" | tail -20
+```
+
+What to check:
+- Cycles are completing, not stuck
+- Skills are triggering on schedule
+- Execution time per cycle stays well below the interval
+
+Healthy pattern:
+```
+[HEARTBEAT] 08:00 — Cycle starting
+[HEARTBEAT] 08:00 — daily-briefing → triggered
+[HEARTBEAT] 08:00 — email-check → skipped (quiet hours)
+[HEARTBEAT] 08:00 — Cycle complete (4.3s, 3 API calls)
+[HEARTBEAT] 08:30 — Next cycle
+```
+
+Red flags:
+- No heartbeat log lines for more than 2× the configured interval
+- Execution time approaching or exceeding interval (cycle overlap)
+- `[ERROR]` lines inside heartbeat output
+
+### Layer 4 — Resource monitoring
+
+```bash
+# Container resource usage
+docker stats openclaw
+
+# Single snapshot
+docker stats --no-stream openclaw
+```
+
+Expected idle resource usage:
+```
+CONTAINER   CPU %   MEM USAGE / LIMIT   MEM %
+openclaw    0.1%    85MiB / 1GiB        8%
+```
+
+Warning signs:
+- Memory climbing over time without stabilizing (memory leak)
+- CPU consistently above 5% when no skill is executing
+- Memory approaching container limit (typically 512MB–1GB on small VPS)
+
+### Setting up self-alert on gateway failure
+
+Add a health check alert skill to OpenClaw itself:
+
+```markdown
+---
+skill_id: self-watchdog
+name: "Gateway Self-Watchdog"
+trigger:
+  type: schedule
+  cron: "*/30 * * * *"   # check every 30 minutes
+tools:
+  - name: fetch_web
+    permission: auto
+  - name: send_message
+    permission: auto
+cost_controls:
+  max_tokens_per_run: 100
+---
+
+# Self-Watchdog
+
+Every 30 minutes, send me a brief status:
+- Fetch http://localhost:3301/health
+- If status is "ok", send nothing (quiet mode)
+- If the fetch fails or status is not "ok", send:
+  "Gateway health check failed at {{TIME_NOW}}. Investigate immediately."
+
+Only send a message if there is a problem.
+```
+
+This creates a dead-man's-switch: if the gateway itself is down, this skill also fails — and you would notice the absence of the usual heartbeat. For external alerting, use UptimeRobot or a similar free service.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output from each of the four monitoring layers: health endpoint, error log filter, heartbeat log filter, and docker stats."
+  verifyCheck="All four monitoring layers return usable output — health endpoint responding, no FATAL errors in logs, heartbeat cycles visible, resource usage within normal range."
+  rubricCriteria={[
+    "curl http://localhost:3301/health returns status ok with uptime visible",
+    "grep HEARTBEAT on logs shows at least one complete cycle with start and complete timestamps",
+    "docker stats shows memory usage below 80% of container limit with no excessive CPU",
+  ]}
+/>

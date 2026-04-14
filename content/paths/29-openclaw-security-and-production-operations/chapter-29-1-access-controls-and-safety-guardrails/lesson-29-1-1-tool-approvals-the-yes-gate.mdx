@@ -1,0 +1,166 @@
+---
+title: "Tool Approvals: The YES Gate"
+lessonNumber: "29.1.1"
+chapterNumber: "29.1"
+pathNumber: "29"
+groupId: "5.4"
+clawClassification: "advanced"
+prerequisiteLesson: "28.3.3"
+estimatedMinutes: 20
+verifyType: "code_submission"
+tutorPreload: "Help me understand OpenClaw's tool approval system. When should I use auto vs. prompt vs. deny? What does a good approval request message look like? How do I set timeouts?"
+---
+
+# Tool Approvals: The YES Gate
+
+## What you will build
+
+A skill with a correctly tiered tool permission setup — read operations on auto, write operations on prompt, dangerous operations on deny — and a correctly formatted approval request message for at least one prompt-permission tool.
+
+## Why this matters
+
+Every OpenClaw security incident in the community's history traces back to the same mistake: giving an agent unconditional `auto` permission on an action that deletes, publishes, or sends something irreversible. The YES gate is the human checkpoint that prevents that class of mistake. Understanding it correctly is the most important safety practice in OpenClaw configuration.
+
+## Before you start
+
+Complete path 28 (OpenClaw Configuration and Skills). You should have at least one skill running in the heartbeat and understand the SKILL.md format.
+
+## Walkthrough
+
+### The core principle
+
+The agent should be able to gather all the information it needs without restriction. But before it acts — before it changes, sends, deletes, or publishes anything — it must have your explicit permission.
+
+This principle separates two phases: observation (read, compute, analyze) and action (write, send, delete, publish). The first phase is unrestricted. The second requires a YES.
+
+### The three permission levels
+
+```yaml
+tools:
+  - name: fetch_web
+    permission: auto     # read operations — unrestricted
+  - name: send_email
+    permission: prompt   # action — pause and ask
+  - name: delete_file
+    permission: deny     # too dangerous for this skill's scope
+```
+
+**`auto`** — use for:
+- Reading files, fetching URLs, running calculations
+- Anything that cannot change external state
+- Lookups that carry no side effects
+
+**`prompt`** — use for:
+- All write, delete, send, and publish operations
+- External API calls with side effects
+- Calendar changes or invitations
+- Any action involving third parties
+
+**`deny`** — use for:
+- Tools the skill has no legitimate reason to use
+- Shell commands in skills that don't need them
+- Publishing tools in skills that should only draft
+
+### What a YES gate approval request looks like
+
+When the agent reaches a `prompt` tool, it pauses and sends you an approval message. A good approval request looks like this:
+
+```
+Approval Needed — Email Triage Skill
+
+Ready to send the following draft reply:
+
+TO: james@acmecorp.com
+SUBJECT: Re: Invoice Query #20251
+
+Hi James,
+
+I've checked invoice #20251 and can confirm the outstanding balance
+is £3,200.00, due 30 April 2026. Please let me know if you have
+any questions.
+
+Kind regards, [Your Name]
+
+Reply YES to send.
+Reply EDIT [changes] to revise first.
+Reply NO to discard.
+```
+
+Key elements:
+- Which skill triggered it
+- The **exact** action that will be taken — not a summary
+- Complete content (not truncated)
+- Clear response instructions
+
+### How to reply
+
+| Reply | Effect |
+|-------|--------|
+| `YES` (or `yes`, `Y`) | Action executes |
+| `EDIT [change]` | Agent revises and re-sends the approval request |
+| `NO` or `CANCEL` | Action is cancelled and logged |
+| Anything else | Agent waits — unrecognized replies are ignored |
+
+The YES must be sent in the same conversation thread where the approval request appeared.
+
+### Timeout configuration
+
+```yaml
+approval_timeout:
+  duration: 30m
+  on_timeout: skip
+  reminder_at: 25m
+```
+
+| `on_timeout` value | Behavior |
+|--------------------|----------|
+| `skip` | Skip this action, continue with the rest of the skill |
+| `cancel` | Abandon the entire skill run |
+| `retry` | Re-send the request (maximum 2 retries) |
+
+Use `skip` for routine operations. Use `cancel` for high-stakes operations where partial completion is worse than none.
+
+### Approval requests for destructive operations
+
+For actions that delete or cannot be undone, the request format must be more explicit:
+
+```
+Irreversible Action — Approval Required
+
+Skill: WhatsApp Cleaner
+Action: Archive 14 WhatsApp chats
+
+Chats to archive (last message date):
+- Mum (last message: 2018-03-14) — 3 years ago
+- Old Work Group (last message: 2021-01-05) — 2 years ago
+[+12 more]
+
+This cannot be undone from OpenClaw. Chats remain accessible in the WhatsApp app.
+
+Reply YES to archive all 14.
+Reply LIST to see full list before deciding.
+Reply NO to cancel.
+```
+
+Differences for destructive actions:
+- State clearly what cannot be undone
+- Show actual names and dates — not just a count
+- Offer an intermediate step (LIST, PREVIEW) before commitment
+
+## Verification
+
+<VerificationBlock
+  deliverable="A SKILL.md snippet showing tool permission assignments, and a formatted approval request message for at least one prompt-permission tool."
+  verifyCheck="The learner correctly distinguishes read-safe auto permissions from action-requiring prompt permissions, and has designed an approval message that gives the reviewer everything they need to make the decision."
+  rubricCriteria={[
+    "Read-only tools (fetch_web, read_file, read_calendar) are assigned auto permission",
+    "State-changing tools (send, delete, publish, write) are assigned prompt or deny — none are auto",
+    "The approval request message includes the exact content of the action, not a summary, and provides clear YES/EDIT/NO options",
+  ]}
+>
+
+Submit:
+1. A SKILL.md `tools:` section for a skill of your choice with correctly assigned permission levels and a brief comment explaining why each level was chosen
+2. The approval request message text your skill will send when it reaches a `prompt` tool action
+
+</VerificationBlock>

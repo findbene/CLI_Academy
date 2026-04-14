@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Deployment hardening — all critical and high-priority audit issues resolved.
+OpenClaw curriculum restoration complete. 30 paths, 193 lessons across the 7-group taxonomy plus OpenClaw Ecosystem. Build is clean and all content validates.
 
 ## Deployment audit fixes (2026-04-13)
 
@@ -24,7 +24,7 @@ Deployment hardening — all critical and high-priority audit issues resolved.
 
 ## In progress
 
-- Course content improvements (CONTENT-01, CONTENT-02, CONTENT-03) — deferred by user.
+Nothing currently in progress.
 
 ## Next
 
@@ -32,7 +32,17 @@ Deployment hardening — all critical and high-priority audit issues resolved.
 2. Deploy `infra/migrations/02_atomic_tutor_limit.sql` to production Supabase.
 3. Configure Sentry DSN and PostHog key in deployment environment.
 4. Run load test against tutor endpoint before public launch.
-5. Course and lesson content improvements (user requested reminder).
+5. Editorial QA on paths 11–19 and 28–30.
+
+## OpenClaw Curriculum Restoration (2026-04-14)
+
+- **Path 11 rewritten:** "OpenClaw: Self-Hosted Agent Infrastructure" — 7 lessons covering what OpenClaw is, the Claw ecosystem, the self-host/API decision, install on macOS/Windows/VPS, and gateway verification. Old sandbox content archived to `content/paths_old/2026-04-curriculum-rewrite/sandbox-foundations/`.
+- **Path 28 added:** "OpenClaw Configuration and Skills" — 7 lessons covering model routing, messaging channels, SKILL.md format, skill deployment, .learnings memory system, heartbeat configuration, and the self-improving agent loop mini-project.
+- **Path 29 added:** "OpenClaw Security and Production Operations" — 7 lessons covering tool approvals/YES gate, PII scrubbing, security hardening checklist, three real community incidents case study, monitoring and health checks, and safe update/rollback procedure.
+- **Path 30 added:** "ZeroClaw and the Claw Variant Ecosystem" — 5 lessons covering ZeroClaw architecture, 10-minute setup, limitations and migration signals, NanoClaw on edge hardware, and the variant selection framework.
+- **paths.ts updated:** Paths 11, 28, 29, 30 now registered in the web app under `"OpenClaw Ecosystem"` section.
+- **Content validator:** 193 lessons across 30 paths — all valid.
+- **Build:** `npm run build` in `apps/web/` — clean, zero errors.
 
 ## Completed
 

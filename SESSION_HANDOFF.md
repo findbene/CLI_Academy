@@ -19,6 +19,7 @@
 | Three.js bundle | OPTIMISED | Lazy-loaded in AuthCard via next/dynamic |
 | ESLint errors | FIXED | SavedResourcesClient, VerificationBlock, QuizBlock all clean |
 | **Curriculum redesign** | **COMPLETE** | Full 7-group taxonomy, 27 paths, 175 lessons — see below |
+| **OpenClaw restoration** | **COMPLETE** | 4 paths (11 rewrite + 28, 29, 30), 26 new lessons, 193 total lessons across 30 paths |
 | **Tutor conversation history** | **WIRED** | localStorage persistence per lesson, last 20 turns passed to API |
 | **Tutor rubric-aware prompts** | **WIRED** | rubricCriteria + deliverable passed in system prompt |
 | **New content components** | **ADDED** | DiagramBlock, VideoBlock, DiffBlock, ModelNote in components/content/ |
@@ -67,6 +68,25 @@
 4. **Configure PostHog** — Set `NEXT_PUBLIC_POSTHOG_KEY` in Vercel env vars.
 5. **Stripe configuration** — Set price IDs and webhook secret when billing is ready.
 6. **Record path overview videos** — Video component is wired (VideoBlock), content TBD per group.
+
+## OpenClaw Restoration Summary (This Session)
+
+### What was done
+- **Path 11 rewritten** — "OpenClaw: Self-Hosted Agent Infrastructure" (7 lessons). Old Docker/sandbox lessons archived to `content/paths_old/2026-04-curriculum-rewrite/sandbox-foundations/`.
+- **Path 28 added** — "OpenClaw Configuration and Skills" (7 lessons): model routing, messaging channels, SKILL.md format, skill deployment, memory system, heartbeat, mini-project.
+- **Path 29 added** — "OpenClaw Security and Production Operations" (7 lessons): YES gate, PII scrubbing, hardening checklist, real incidents, monitoring, updates/rollback.
+- **Path 30 added** — "ZeroClaw and the Claw Variant Ecosystem" (5 lessons): ZeroClaw architecture, 10-min setup, limitations/migration, NanoClaw, variant selection.
+- **paths.ts updated** — all 4 paths registered under `"OpenClaw Ecosystem"` section.
+- **Content validator** — 193 lessons, 30 paths, all valid.
+- **Web build** — clean.
+
+### State after this session
+- `content/paths/11-openclaw-and-claw-runtime-foundations/` — 3 new chapters, 7 new lessons
+- `content/paths/28-openclaw-configuration-and-skills/` — 3 chapters, 7 lessons
+- `content/paths/29-openclaw-security-and-production-operations/` — 3 chapters, 7 lessons (29.1.1–29.1.3, 29.2.1–29.2.2, 29.3.1–29.3.2)
+- `content/paths/30-zeroclaw-and-the-claw-variant-ecosystem/` — 2 chapters, 5 lessons
+- Content validator: 194 lessons across 30 paths, all valid
+- Web build: clean
 
 ## Next Action (Optional Enhancements)
 

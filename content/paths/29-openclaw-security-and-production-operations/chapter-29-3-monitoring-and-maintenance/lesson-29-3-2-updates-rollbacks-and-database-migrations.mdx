@@ -1,0 +1,230 @@
+---
+title: "Updates, Rollbacks, and Database Migrations"
+lessonNumber: "29.3.2"
+chapterNumber: "29.3"
+pathNumber: "29"
+groupId: "5.4"
+clawClassification: "advanced"
+prerequisiteLesson: "29.3.1"
+estimatedMinutes: 18
+verifyType: "terminal_output"
+tutorPreload: "Help me update my OpenClaw gateway safely. Walk me through the update procedure, how to roll back if something breaks, and how to handle database migrations between versions."
+---
+
+# Updates, Rollbacks, and Database Migrations
+
+## What you will build
+
+A completed OpenClaw gateway update using the safe update procedure, with the pre-update backup verified and the post-update health check passing.
+
+## Why this matters
+
+OpenClaw receives periodic updates that add features, fix bugs, and patch security vulnerabilities. Updating incorrectly — pulling new code before backing up, skipping migration scripts, not testing health after the update — can corrupt your configuration, break your skills, or lose your `.learnings/` data. This lesson covers the update procedure that keeps your deployment stable.
+
+## Before you start
+
+Complete lesson 29.3.1 (Monitoring and Health Checks). Your gateway should be running and passing all four monitoring layer checks.
+
+## Walkthrough
+
+### The three-phase update procedure
+
+Every OpenClaw update follows the same three phases:
+1. **Backup** — capture current state before touching anything
+2. **Update** — pull new code/image and apply migrations
+3. **Verify** — confirm the gateway is healthy before re-enabling the heartbeat
+
+### Phase 1 — Backup before updating
+
+Back up your configuration and data:
+
+```bash
+# Create a timestamped backup directory
+BACKUP_DIR=~/openclaw-backups/$(date +%Y%m%d_%H%M%S)
+mkdir -p "$BACKUP_DIR"
+
+# Copy configuration and skills
+cp -r ~/.openclaw/.env "$BACKUP_DIR/"
+cp -r ~/.openclaw/skills/ "$BACKUP_DIR/"
+cp -r ~/.openclaw/.learnings/ "$BACKUP_DIR/"
+cp ~/.openclaw/HEARTBEAT.md "$BACKUP_DIR/"
+
+echo "Backup complete: $BACKUP_DIR"
+ls -la "$BACKUP_DIR"
+```
+
+For Docker deployments, also export any named volumes:
+```bash
+docker run --rm -v openclaw_data:/data -v ~/openclaw-backups:/backup \
+  ubuntu tar czf /backup/openclaw-data-$(date +%Y%m%d).tar.gz /data
+```
+
+Verify the backup:
+```bash
+ls -la "$BACKUP_DIR"
+# Should show .env, skills/, .learnings/, HEARTBEAT.md
+```
+
+**Do not skip the backup.** If the update breaks something, the backup is your recovery path.
+
+### Phase 2 — Apply the update
+
+**Docker deployment:**
+```bash
+# Pause the heartbeat (no new skill executions during update)
+openclaw heartbeat pause
+
+# Pull the new image
+docker compose pull openclaw
+
+# Apply the update (down + up applies image changes and runs migration hooks)
+docker compose down
+docker compose up -d
+
+# Watch startup logs
+docker compose logs -f openclaw
+```
+
+**Homebrew deployment (macOS):**
+```bash
+# Pause heartbeat
+openclaw heartbeat pause
+
+# Update via Homebrew
+brew upgrade openclaw
+
+# Restart the LaunchAgent
+launchctl unload ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+launchctl load ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+
+# Or directly
+openclaw restart
+```
+
+**Git clone deployment:**
+```bash
+openclaw heartbeat pause
+
+cd ~/openclaw
+git pull origin main
+
+npm install    # install any new dependencies
+npm run build  # if the update requires a build step
+
+# Run migrations explicitly (required if the release notes mention schema changes)
+openclaw migrate --run
+
+openclaw restart
+```
+
+### Phase 3 — Verify after update
+
+Run through the four monitoring layers:
+
+```bash
+# Layer 1 — health endpoint
+curl -s http://localhost:3301/health
+# Expected: {"status":"ok","version":"NEW_VERSION",...}
+
+# Layer 2 — startup logs
+docker compose logs --tail=30 openclaw | grep -E "ERROR|FATAL|INFO"
+# Expected: startup INFO lines, no FATAL/ERROR
+
+# Layer 3 — heartbeat
+openclaw status
+# Expected: heartbeat active, skills count unchanged
+
+# Layer 4 — resources
+docker stats --no-stream openclaw
+# Expected: memory within normal range
+```
+
+Re-enable the heartbeat:
+```bash
+openclaw heartbeat resume
+```
+
+Force a heartbeat cycle to confirm skills execute correctly:
+```bash
+docker exec -it openclaw openclaw heartbeat --run-now
+```
+
+### Rollback procedure
+
+If the update breaks something:
+
+```bash
+# Stop the broken container
+docker compose down
+
+# Restore your backup
+cp "$BACKUP_DIR/.env" ~/.openclaw/
+cp -r "$BACKUP_DIR/skills/" ~/.openclaw/
+cp -r "$BACKUP_DIR/.learnings/" ~/.openclaw/
+cp "$BACKUP_DIR/HEARTBEAT.md" ~/.openclaw/
+
+# Pull the previous image version (find it in Docker Hub release history)
+docker pull openclaw/gateway:PREVIOUS_VERSION
+docker compose up -d
+
+# Verify
+curl -s http://localhost:3301/health
+```
+
+For Homebrew:
+```bash
+brew install openclaw@PREVIOUS_VERSION
+brew link openclaw@PREVIOUS_VERSION --force
+openclaw restart
+```
+
+### Handling database migrations
+
+OpenClaw stores session state and skill execution history in a local SQLite database. When a new version changes the schema, a migration script runs automatically. If it fails, you see:
+
+```
+[FATAL] Database migration failed: schema version mismatch
+[INFO] Current schema: v12. Required: v13.
+[INFO] Run: openclaw migrate --run to apply migration
+```
+
+Apply the migration manually:
+```bash
+openclaw migrate --run
+```
+
+Check migration status:
+```bash
+openclaw migrate --status
+# Shows: current schema version, pending migrations, applied migrations
+```
+
+If a migration fails after multiple attempts:
+```bash
+# Restore from pre-update backup and stay on the current version
+# File a bug report at github.com/openclaw-project/openclaw/issues
+```
+
+### Update frequency guidance
+
+Check for updates monthly. Security updates (tagged `[SECURITY]` in release notes) should be applied within a week.
+
+```bash
+# Check current version
+openclaw --version
+
+# Check if updates are available
+openclaw check-update
+```
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output showing the backup completed, the update applied, and the post-update health check returning the new version number."
+  verifyCheck="The gateway was updated safely using the three-phase procedure — backup verified, update applied, health check passing."
+  rubricCriteria={[
+    "Pre-update backup directory exists and contains .env, skills/, and .learnings/ files",
+    "Post-update health endpoint returns status ok with the updated version number",
+    "openclaw heartbeat resume was run and openclaw status shows heartbeat active after the update",
+  ]}
+/>

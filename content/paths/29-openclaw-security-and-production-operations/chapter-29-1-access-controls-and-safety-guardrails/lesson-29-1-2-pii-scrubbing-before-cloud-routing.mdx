@@ -1,0 +1,145 @@
+---
+title: "PII Scrubbing Before Cloud Routing"
+lessonNumber: "29.1.2"
+chapterNumber: "29.1"
+pathNumber: "29"
+groupId: "5.4"
+clawClassification: "advanced"
+prerequisiteLesson: "29.1.1"
+estimatedMinutes: 16
+verifyType: "terminal_output"
+tutorPreload: "Help me configure PII scrubbing for my OpenClaw skills. Which categories does it detect? How do I test that it's working? When should I use local model routing instead of scrubbing?"
+---
+
+# PII Scrubbing Before Cloud Routing
+
+## What you will build
+
+At least one skill configured with `pii_scrub: true`, verified working using the `openclaw scrub-test` command, with a clear decision framework for when to scrub vs. when to route fully local.
+
+## Why this matters
+
+Every prompt your OpenClaw agent sends to a cloud model — Anthropic, OpenAI, Google — passes through external infrastructure. Most API providers log prompts for safety monitoring. Standard API usage should be treated as: prompt data may be retained. For skills that process customer emails, contracts, financial documents, or health notes, this is a meaningful risk. PII Scrubbing replaces sensitive identifiers with safe placeholders before any data leaves your machine.
+
+## Before you start
+
+Complete lesson 29.1.1 (Tool Approvals). Optionally have Ollama installed for the local routing portion of this lesson.
+
+## Walkthrough
+
+### What OpenClaw scrubs automatically
+
+When `pii_scrub: true` is set, these patterns are detected and replaced:
+
+| Category | Example | Placeholder |
+|----------|---------|-------------|
+| UK National Insurance Number | AA 12 34 56 C | `[REDACTED-NIN]` |
+| Credit / Debit card | 4929 xxxx xxxx xxxx | `[REDACTED-CARD]` |
+| US Social Security Number | 123-45-6789 | `[REDACTED-SSN]` |
+| UK sort code + account | 12-34-56 / 12345678 | `[REDACTED-BANK-UK]` |
+| IBAN | GB29 NWBK... | `[REDACTED-IBAN]` |
+| Email in documents | user@example.com | `[REDACTED-EMAIL]` |
+| UK/US phone numbers | 07700 900000 | `[REDACTED-PHONE]` |
+| Date of birth (in context) | "born 14/03/1985" | `[REDACTED-DOB]` |
+
+Detection is context-aware — "12345678" only triggers bank detection when adjacent to "account number" or "sort code". This reduces false positives on innocent numbers.
+
+### How the two-pass process works
+
+**Outbound pass (before sending to cloud):**
+```
+Input: "Customer james.h@example.com, card 4929 3456 7890 1234"
+Scrubbed: "Customer [REDACTED-EMAIL], card [REDACTED-CARD]"
+Scrub map (kept in memory, never sent): {
+  REDACTED-EMAIL: james.h@example.com
+  REDACTED-CARD: 4929 3456 7890 1234
+}
+```
+
+**Inbound pass (after cloud response):**
+```
+Cloud response: "Refund issued to [REDACTED-EMAIL] for [REDACTED-CARD]"
+Restored: "Refund issued to james.h@example.com for card ending 1234"
+```
+
+Note: Full card numbers are never restored — only the last 4 digits. The scrub map is held in memory for the duration of the skill run only. It is never written to disk.
+
+### Configure scrubbing per skill
+
+```yaml
+---
+skill_id: email-triage
+safety:
+  pii_scrub: true
+  pii_scrub_categories:    # optional — limit to specific categories
+    - card
+    - nin
+    - bank
+  pii_scrub_log: false     # do not log what was scrubbed
+---
+```
+
+Enable globally for all skills:
+```bash
+openclaw config set security.pii_scrub_default=true
+```
+
+Skills can opt out with `pii_scrub: false` (for skills already using local-only routing).
+
+### Test scrubbing before deploying a sensitive skill
+
+```bash
+openclaw scrub-test "Customer NI number AA 12 34 56 A placed order using card 4111 1111 1111 1111."
+```
+
+Expected output:
+```
+Scrub test result:
+
+Output to cloud:
+"Customer NI number [REDACTED-NIN] placed order using card [REDACTED-CARD]."
+
+Detected and scrubbed:
+  - NIN: AA 12 34 56 A → [REDACTED-NIN]
+  - Card: 4111 1111 1111 1111 → [REDACTED-CARD]
+```
+
+### When to use local model routing instead
+
+Scrubbing handles incidental personal details in business content. Some work is sensitive enough to never go to a cloud model at all.
+
+```yaml
+---
+skill_id: contract-analyser
+model:
+  preferred: "ollama/llama3.1:70b"
+  fallback: null
+  cloud_routing: deny      # hard block on cloud routing
+safety:
+  pii_scrub: false         # unnecessary — nothing leaves the machine
+---
+```
+
+Decision framework:
+
+| Content type | Approach |
+|--------------|----------|
+| Customer emails with names and order info | `pii_scrub: true` on cloud model |
+| Financial docs with account numbers | Local model or `pii_scrub: true` |
+| Contracts with confidential terms | Local model, `cloud_routing: deny` |
+| Medical/health notes | Local model, `cloud_routing: deny` |
+| General coding help, research | Cloud is fine, no scrubbing needed |
+
+**Rule of thumb:** If a breach of this content would cause a compliance problem, use local routing. If it contains incidental personal details in routine business content, scrubbing is sufficient.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output from `openclaw scrub-test` on a sample sentence containing at least two types of PII, showing the scrubbed output and detected categories."
+  verifyCheck="PII scrubbing is configured and working — the scrub-test command correctly redacts PII patterns before they reach any cloud model."
+  rubricCriteria={[
+    "openclaw scrub-test output shows at least two PII categories detected and replaced with placeholders",
+    "The scrubbed output contains no visible PII — only [REDACTED-...] placeholders remain",
+    "At least one skill in the gateway has pii_scrub: true configured in its safety block",
+  ]}
+/>

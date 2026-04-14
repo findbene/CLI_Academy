@@ -1,0 +1,155 @@
+---
+title: "Configure Model Routing"
+lessonNumber: "28.1.1"
+chapterNumber: "28.1"
+pathNumber: "28"
+groupId: "4.5"
+clawClassification: "advanced"
+prerequisiteLesson: "11.3.1"
+estimatedMinutes: 18
+verifyType: "terminal_output"
+tutorPreload: "Help me configure OpenClaw model routing. I want to set up Anthropic as my primary provider, understand daily spend caps, and optionally add a local Ollama fallback."
+---
+
+# Configure Model Routing
+
+## What you will build
+
+An OpenClaw gateway with at least one cloud model provider configured, a daily spend cap set, and model routing verified working end to end.
+
+## Why this matters
+
+OpenClaw separates the agent (skills, heartbeat, memory) from the model completely. You can swap models at any time without touching your skills. This lesson is where you decide your model strategy: cloud models, local models, or a hybrid where sensitive tasks route locally and general tasks use the cloud.
+
+## Before you start
+
+Complete path 11 (OpenClaw foundations). Your gateway should be running and passing health checks. You need at least one API key — Anthropic is recommended for first configuration.
+
+## Walkthrough
+
+### How OpenClaw model routing works
+
+OpenClaw's routing table maps each provider to an API key and optional default model. Skills specify a preferred model; if that model is unavailable, the router falls back to your configured default.
+
+```
+Task Request
+     │
+     ▼
+OpenClaw Router
+     │
+     ├──► Anthropic (Claude)   ◄── ANTHROPIC_API_KEY
+     ├──► OpenAI (GPT-4o)      ◄── OPENAI_API_KEY
+     ├──► Google (Gemini)      ◄── GOOGLE_API_KEY
+     └──► Ollama (local)       ◄── OLLAMA_HOST (no key)
+```
+
+### Step 1 — Configure Anthropic (recommended first provider)
+
+Add to your `.env`:
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_DEFAULT_MODEL=claude-3-5-haiku-20241022
+OPENCLAW_ANTHROPIC_DAILY_LIMIT_USD=2.00
+```
+
+Claude Haiku is the recommended default for OpenClaw — fast, inexpensive, and handles most skill tasks well. For complex analysis you can route specific skills to Sonnet.
+
+The daily limit hard-stops API calls once you have spent $2 in a single day. This is important for autonomous agent deployments where runaway loops could otherwise accumulate unexpected costs.
+
+### Step 2 — Test Anthropic routing
+
+Restart the gateway to apply the new `.env` values:
+```bash
+# Docker
+docker compose restart openclaw
+
+# macOS LaunchAgent
+launchctl unload ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+launchctl load ~/Library/LaunchAgents/dev.openclaw.gateway.plist
+```
+
+Test the connection:
+```bash
+openclaw test-model --provider anthropic
+```
+
+Expected output:
+```
+Testing Anthropic model routing...
+✓ API key valid
+✓ Model endpoint reachable
+✓ Test completion received (12 tokens)
+Model routing: OK
+```
+
+### Step 3 — (Optional) Add local inference with Ollama
+
+Ollama runs a local model server with zero API cost and no data leaving your machine. Use it for privacy-sensitive skills or as a cost-free fallback.
+
+Install Ollama:
+```bash
+# macOS
+brew install ollama
+
+# Linux
+curl -fsSL https://ollama.ai/install.sh | sh
+```
+
+Pull a model:
+```bash
+ollama pull llama3.2
+```
+
+Configure OpenClaw to use it:
+```env
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_DEFAULT_MODEL=llama3.2
+OPENCLAW_LOCAL_ROUTING=true
+```
+
+Test:
+```bash
+openclaw test-model --provider ollama
+```
+
+### Step 4 — Set up hybrid routing (optional)
+
+In `~/.openclaw/routing.yaml` you can route specific skill types to specific models:
+
+```yaml
+default: claude-3-5-haiku-20241022
+
+overrides:
+  read-documents: llama3.2       # local — no data leaves
+  email-draft: claude-3-5-haiku  # cloud — no private data
+  medical-notes: llama3.2        # local — privacy critical
+```
+
+### Step 5 — Set spend alerting
+
+Get a warning before the daily limit cuts off:
+```env
+OPENCLAW_ALERT_SPEND_PCT=80
+```
+
+At 80% of your daily limit, the agent sends you a notification on your configured messaging channel.
+
+### Common issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `API key invalid` | Key pasted with whitespace or expired | Check `.env` for spaces; regenerate at console.anthropic.com |
+| `Model not found` | Model name misspelled | Check model IDs at docs.anthropic.com |
+| Ollama test fails | Ollama service not running | Run `ollama serve` in a separate terminal |
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output from `openclaw test-model --provider anthropic` showing Model routing: OK."
+  verifyCheck="Anthropic model routing is configured and returning successful test completions."
+  rubricCriteria={[
+    "openclaw test-model --provider anthropic returns Model routing: OK without errors",
+    "ANTHROPIC_DEFAULT_MODEL is set to a valid model name in .env",
+    "OPENCLAW_ANTHROPIC_DAILY_LIMIT_USD is set to prevent runaway costs",
+  ]}
+/>

@@ -1,0 +1,120 @@
+---
+title: "NanoClaw: OpenClaw on Edge and Low-Power Hardware"
+lessonNumber: "30.2.1"
+chapterNumber: "30.2"
+pathNumber: "30"
+groupId: "5.5"
+clawClassification: "advanced"
+prerequisiteLesson: "30.1.3"
+estimatedMinutes: 15
+verifyType: "quiz"
+tutorPreload: "Help me understand NanoClaw. What hardware does it run on? What are the differences from full OpenClaw? How do I install it on a Raspberry Pi or NVIDIA Jetson device?"
+---
+
+# NanoClaw: OpenClaw on Edge and Low-Power Hardware
+
+## What you will build
+
+A clear understanding of NanoClaw's hardware targets, resource profile, and configuration differences from OpenClaw — plus a go/no-go assessment of whether NanoClaw is the right fit for your edge deployment.
+
+## Why this matters
+
+Running a full OpenClaw gateway requires at least 1 GB RAM and a reliable server-class environment. Some deployments cannot meet those requirements: a Raspberry Pi 4 at a remote field site, an NVIDIA Jetson on a robotics platform, or a fanless ARM device in an IoT deployment. NanoClaw is OpenClaw rebuilt for these resource-constrained environments. Understanding its differences from full OpenClaw prevents the common mistake of deploying full OpenClaw on hardware that cannot sustain it.
+
+## Before you start
+
+Complete lesson 11.1.2 (The Claw Ecosystem overview). This lesson builds directly on that conceptual foundation.
+
+## Walkthrough
+
+### What NanoClaw is
+
+NanoClaw is an ARM-optimized build of OpenClaw's core gateway, with non-essential components removed to fit in 512 MB–1 GB of RAM. It retains the features that matter for edge deployments:
+
+- The Claude CLI gateway — developers or automated scripts connect to NanoClaw the same way they connect to OpenClaw
+- Model routing — NanoClaw can route to Anthropic's cloud API or to a local Ollama instance on the same device
+- The HEARTBEAT loop — skills run on schedule, enabling autonomous operation
+- Basic authentication — token-based auth without SSO
+
+**What is removed from full OpenClaw:**
+- The full admin Web UI (replaced by a read-only status endpoint)
+- Per-developer rate limiting (global only, same as ZeroClaw)
+- Synchronous audit logging (async batch)
+- Multi-tenant session isolation
+- NemoClaw's GPU telemetry
+
+### Hardware targets and resource profile
+
+| Device | RAM | Idle power | NanoClaw idle RAM | Suitable |
+|--------|-----|-----------|-------------------|---------|
+| Raspberry Pi 4 (4 GB) | 4 GB | 3–5 W | ~180 MB | Yes |
+| Raspberry Pi 4 (2 GB) | 2 GB | 3–5 W | ~180 MB | Yes (tight) |
+| Raspberry Pi 5 | 4–8 GB | 3–8 W | ~180 MB | Comfortable |
+| NVIDIA Jetson Nano | 4 GB | 5–10 W | ~200 MB | Yes |
+| NVIDIA Jetson Orin NX | 8–16 GB | 7–15 W | ~200 MB | Comfortable |
+| Raspberry Pi Zero 2 W | 512 MB | 0.5–1 W | ~180 MB | Marginal |
+| Mac Mini M2 (8 GB) | 8 GB | 7–10 W | ~180 MB | Full OpenClaw is better here |
+
+The Raspberry Pi 4 with 4 GB RAM is the recommended minimum for a stable always-on NanoClaw deployment.
+
+### Installation overview
+
+NanoClaw uses the same installation flow as OpenClaw but pulls an ARM-specific binary:
+
+```bash
+# Raspberry Pi (ARM64 / aarch64)
+curl -L "https://github.com/openclaw-project/nanoclaw/releases/latest/download/nanoclaw-linux-arm64" \
+  -o /usr/local/bin/openclaw
+chmod +x /usr/local/bin/openclaw
+openclaw --version   # should show "nanoclaw" variant identifier
+```
+
+The configuration file is identical to OpenClaw — the same `.env` format, the same SKILL.md files, the same HEARTBEAT.md. You can copy configuration from a full OpenClaw install directly to a NanoClaw device.
+
+Enable auto-start using systemd (preferred on Raspberry Pi):
+```bash
+# Create systemd service
+sudo systemctl enable openclaw
+sudo systemctl start openclaw
+```
+
+### NemoClaw: NanoClaw on NVIDIA infrastructure
+
+NemoClaw is a variant of NanoClaw built on NVIDIA's NIM (NVIDIA Inference Microservices) runtime. It is designed for deployments that already run on NVIDIA's AI Enterprise platform and want GPU-optimized context handling.
+
+NemoClaw adds:
+- GPU-accelerated embedding for the `.learnings/` semantic search
+- Integration with NVIDIA's NIM model serving for local inference
+- NVIDIA telemetry hooks for enterprise monitoring stacks
+
+NemoClaw is relevant only if your organization is already on NVIDIA AI Enterprise. For most edge deployments, standard NanoClaw on a Raspberry Pi or Jetson is the right choice.
+
+### When to use each variant
+
+| Deployment | Right variant |
+|-----------|---------------|
+| Raspberry Pi, Jetson Nano — personal/home agent | NanoClaw |
+| NVIDIA Jetson Orin + NVIDIA AI Enterprise | NemoClaw |
+| VPS, cloud server, standard Linux | OpenClaw |
+| High-concurrency team, no compliance requirements | ZeroClaw |
+| CI/CD pipeline, no human interaction | AutoClaw |
+
+## Verification
+
+<VerificationBlock
+  deliverable="Answers to the three assessment questions below."
+  verifyCheck="The learner can correctly identify the right Claw variant for edge hardware scenarios and understands the resource constraints that make NanoClaw necessary."
+  rubricCriteria={[
+    "Correctly identifies NanoClaw (not full OpenClaw) as the appropriate choice for Raspberry Pi 4 deployment",
+    "Correctly identifies that NanoClaw retains heartbeat, model routing, and auth — but loses the admin Web UI, per-developer rate limits, and synchronous audit",
+    "Correctly identifies NemoClaw as the NVIDIA-specific variant and not applicable to standard ARM deployments",
+  ]}
+>
+
+**Question 1:** You want to run an always-on Claude Code gateway on a Raspberry Pi 4 (4 GB RAM) for personal use. Which variant do you deploy?
+
+**Question 2:** A colleague says "NanoClaw is basically OpenClaw with the heartbeat removed so it's lighter." What is wrong with this statement?
+
+**Question 3:** Your company runs NVIDIA Jetson Orin devices in manufacturing. They are part of NVIDIA's AI Enterprise program. You want local inference with GPU optimization. Which variant is relevant?
+
+</VerificationBlock>

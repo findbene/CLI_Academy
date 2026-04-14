@@ -1,0 +1,171 @@
+---
+title: "Author and Deploy Your First Skill"
+lessonNumber: "28.2.2"
+chapterNumber: "28.2"
+pathNumber: "28"
+groupId: "4.5"
+clawClassification: "advanced"
+prerequisiteLesson: "28.2.1"
+estimatedMinutes: 25
+verifyType: "terminal_output"
+tutorPreload: "Help me deploy my first OpenClaw skill. Walk me through placing the file, validating it, running a dry run, and then adding it to the heartbeat."
+---
+
+# Author and Deploy Your First Skill
+
+## What you will build
+
+A working OpenClaw skill deployed to the heartbeat — validated, dry-run tested, and producing real output on your messaging channel.
+
+## Why this matters
+
+Writing a skill file is half the work. Deploying it correctly — validating syntax, testing before activating, watching the first few live runs — is the other half. This lesson covers the full deployment cycle from file to live agent behavior.
+
+## Before you start
+
+Complete lesson 28.2.1 (SKILL.md format). Have a skill file written and ready to deploy.
+
+## Walkthrough
+
+### Step 1 — Place the skill file
+
+Skill files live in `~/.openclaw/skills/` with the extension `.skill.md`:
+
+```bash
+# Homebrew / macOS install
+nano ~/.openclaw/skills/daily-briefing.skill.md
+
+# Docker install — edit in your project directory, then copy to container
+nano ~/openclaw/skills/daily-briefing.skill.md
+```
+
+Paste or write your skill file content here.
+
+### Step 2 — Validate syntax
+
+Before running anything, validate the frontmatter and tool declarations:
+
+```bash
+openclaw validate-skill ~/.openclaw/skills/daily-briefing.skill.md
+```
+
+A valid skill returns:
+```
+Validating daily-briefing.skill.md...
+✓ Frontmatter valid
+✓ Trigger: schedule (cron: 0 8 * * *)
+✓ Tools declared: fetch_web (auto), read_calendar (auto), send_message (auto)
+✓ Model: claude-3-5-haiku-20241022
+✓ No syntax errors
+Skill is valid.
+```
+
+If you see errors, read the error message — it points to the specific frontmatter field or YAML syntax issue.
+
+### Step 3 — Dry run
+
+A dry run executes the full skill instruction loop but intercepts outbound messages and writes, logging what would have happened instead:
+
+```bash
+openclaw run-skill daily-briefing --dry-run
+```
+
+Expected output:
+```
+Running daily-briefing (dry run)...
+Tool call: fetch_web("https://wttr.in/London?format=3") → [intercepted]
+Tool call: read_calendar(date: "2026-04-14") → [intercepted]
+Skill completed in 4.2s, 847 tokens
+Message would have been sent to: whatsapp
+Content preview: "Good morning [name]! Today is Tuesday..."
+Dry run complete — no actual output sent.
+```
+
+Review the content preview. If it looks wrong (missing data, wrong format, off-tone), revise your skill body instructions and dry-run again.
+
+### Step 4 — Run once for real
+
+When the dry run looks correct, run the skill once for real to confirm actual delivery:
+
+```bash
+openclaw run-skill daily-briefing --once
+```
+
+Check your messaging app. You should receive the message within 30 seconds.
+
+### Step 5 — Add to the heartbeat
+
+Once the live run succeeds, activate the skill in the heartbeat:
+
+```bash
+# Via CLI
+openclaw skill enable daily-briefing
+
+# Or via Web UI: Skills → My Skills → daily-briefing → Enable
+```
+
+Verify it is scheduled:
+```bash
+openclaw skill list
+```
+
+Output:
+```
+daily-briefing    schedule (0 8 * * *)    enabled    last run: just now
+```
+
+### Step 6 — Watch the first automatic run
+
+After enabling, watch the heartbeat logs to confirm the skill runs at its next scheduled time:
+
+```bash
+docker compose logs -f openclaw | grep -E "daily-briefing|HEARTBEAT"
+```
+
+You should see the skill triggered and executed during the next heartbeat cycle.
+
+### Installing from ClawHub instead
+
+If you prefer to start with a pre-built skill rather than writing one:
+
+```bash
+# Browse available skills
+openclaw clawhub search "daily briefing"
+
+# Install
+openclaw clawhub install daily-briefing-starter
+
+# Review before enabling (always do this)
+cat ~/.openclaw/skills/daily-briefing-starter.skill.md
+
+# Validate and enable
+openclaw validate-skill ~/.openclaw/skills/daily-briefing-starter.skill.md
+openclaw skill enable daily-briefing-starter
+```
+
+Always review ClawHub skills before enabling. Check what tools they request and at what permission level. A ClawHub skill that requests `send_email: auto` or `delete_file: auto` deserves scrutiny before you activate it.
+
+### Updating a skill
+
+After the first live run you may want to tweak instructions. Edit the file and apply without restarting the gateway:
+
+```bash
+nano ~/.openclaw/skills/daily-briefing.skill.md
+# ... make changes ...
+
+openclaw skill reload daily-briefing
+```
+
+The heartbeat picks up the new version on its next cycle.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Terminal output from `openclaw run-skill [your-skill-name] --once` showing the skill completed successfully, and confirmation that the message was received in your messaging app."
+  verifyCheck="The skill ran without errors and delivered a message to the configured messaging channel."
+  rubricCriteria={[
+    "openclaw validate-skill returned no errors before the live run",
+    "openclaw run-skill --once completed without FATAL or ERROR log lines",
+    "The message was received in the messaging app within 60 seconds of running the command",
+  ]}
+/>

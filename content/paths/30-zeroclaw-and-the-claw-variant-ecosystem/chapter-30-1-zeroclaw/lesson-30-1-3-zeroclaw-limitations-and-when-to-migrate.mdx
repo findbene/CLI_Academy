@@ -1,0 +1,114 @@
+---
+title: "ZeroClaw Limitations and When to Migrate to OpenClaw"
+lessonNumber: "30.1.3"
+chapterNumber: "30.1"
+pathNumber: "30"
+groupId: "5.5"
+clawClassification: "advanced"
+prerequisiteLesson: "30.1.2"
+estimatedMinutes: 12
+verifyType: "quiz"
+tutorPreload: "Help me understand ZeroClaw's limitations. Which ones matter for my situation? What are the signals that tell me it's time to migrate to OpenClaw?"
+---
+
+# ZeroClaw Limitations and When to Migrate to OpenClaw
+
+## What you will build
+
+A clear assessment of which ZeroClaw limitations apply to your situation, and a go/no-go decision on whether to stay on ZeroClaw or plan a migration timeline.
+
+## Why this matters
+
+ZeroClaw's limitations are intentional design decisions, not bugs. Knowing exactly what was traded away lets you make an informed judgment about whether ZeroClaw is sustainable long-term, or whether you should plan a migration from day one. Starting with ZeroClaw and migrating is a valid pattern — but only if you recognize the migration signals before they become blocking problems.
+
+## Before you start
+
+Complete lessons 30.1.1 and 30.1.2 (ZeroClaw conceptual understanding and installation). This lesson is primarily conceptual.
+
+## Walkthrough
+
+### The complete limitations reference
+
+**Authentication:**
+- No OIDC/SSO — token auth only
+- No automatic token rotation policies
+- No token scope restrictions — all tokens have identical access
+
+**Policies and access control:**
+- No per-developer rate limits — one global limit for all sessions
+- No per-request policy enforcement — policies check at session creation, not per-request
+- No content filtering or block patterns
+- No per-project or per-team usage limits
+
+**Session and state:**
+- In-memory sessions only — lost on process restart
+- No session persistence or export
+- No session management in admin interface
+
+**Observability:**
+- No admin dashboard with session management
+- Async audit logging (events may be lost in a crash)
+- No real-time usage dashboard
+
+**MCP integration:**
+- Unproxied MCP server connections — ZeroClaw cannot audit or control which MCP servers developers connect to
+
+### Six signals that mean it is time to migrate
+
+**Signal 1 — A developer consumed the global rate limit**
+One automation job saturated `global_requests_per_minute` and other developers were blocked. ZeroClaw cannot give different limits to different users. OpenClaw's per-developer limits solve this.
+
+**Signal 2 — Your security team asks for synchronous audit logs**
+ZeroClaw batches audit events asynchronously — in a crash, the last few seconds may not be written. Once compliance asks this question, plan the migration.
+
+**Signal 3 — SSO becomes mandatory**
+Your organization is rolling out mandatory SSO for all tooling. ZeroClaw cannot participate. Begin migration planning as soon as this is announced — migrations take time.
+
+**Signal 4 — Process restarts caused developer disruption**
+ZeroClaw's session loss on restart is a known tradeoff. If the disruption is unacceptable to your team, OpenClaw's persistent session model is the answer.
+
+**Signal 5 — You need per-project or per-team limits**
+Finance team gets Opus access; everyone else gets Sonnet. ZeroClaw cannot do this. OpenClaw's per-project policies can.
+
+**Signal 6 — Team size exceeds 50 developers**
+The global rate limit model becomes increasingly difficult to tune fairly at larger team sizes. OpenClaw scales more predictably with per-developer enforcement.
+
+### Limitations that rarely matter in practice
+
+These are technically real but almost never blocking:
+- No token scope restrictions (most teams are fine with uniform access)
+- No session export (sessions are short-lived; restart disruption is minor)
+- Unproxied MCP (only matters if you actively audit MCP server usage)
+
+### The migration procedure overview
+
+When you hit a signal, the migration from ZeroClaw to OpenClaw follows this sequence:
+
+1. Deploy an OpenClaw instance alongside your running ZeroClaw
+2. Configure OpenClaw with the same API key and rate limits
+3. Issue OpenClaw tokens to developers
+4. Migrate developers in batches — test with a small group first
+5. Run both systems in parallel until all developers are on OpenClaw
+6. Decommission ZeroClaw
+
+Your ZeroClaw config file serves as the starting point for OpenClaw configuration — model routing and auth settings carry over directly.
+
+## Verification
+
+<VerificationBlock
+  deliverable="A completed limitations assessment for your deployment and a go/no-go decision on staying with ZeroClaw or planning a migration."
+  verifyCheck="The learner has matched ZeroClaw's specific limitations against their actual deployment context and arrived at an informed decision."
+  rubricCriteria={[
+    "Each of the six migration signals is assessed against the learner's actual situation (not left as hypothetical)",
+    "The go/no-go conclusion is consistent with the signal assessment — if any signal is currently triggered, a migration plan is proposed",
+    "The learner correctly identifies which limitations are irrelevant to their context",
+  ]}
+>
+
+Work through the six migration signals for your deployment. For each signal:
+- Is it currently triggered? (Yes / No / Not yet but likely)
+- If yes or likely: what is your plan?
+
+End with a clear statement: Stay on ZeroClaw or plan migration, and why.
+
+</VerificationBlock>

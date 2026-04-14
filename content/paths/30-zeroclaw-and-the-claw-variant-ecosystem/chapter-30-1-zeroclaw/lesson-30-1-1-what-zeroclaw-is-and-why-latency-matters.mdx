@@ -1,0 +1,105 @@
+---
+title: "What ZeroClaw Is and Why Latency Matters"
+lessonNumber: "30.1.1"
+chapterNumber: "30.1"
+pathNumber: "30"
+groupId: "5.5"
+clawClassification: "advanced"
+prerequisiteLesson: "11.3.1"
+estimatedMinutes: 12
+verifyType: "quiz"
+tutorPreload: "Explain ZeroClaw to me. What is the fast-path architecture? What does it trade away compared to OpenClaw? When should I choose ZeroClaw over OpenClaw?"
+---
+
+# What ZeroClaw Is and Why Latency Matters
+
+## What you will build
+
+A clear decision framework for when ZeroClaw is the right choice versus OpenClaw, based on your team size, compliance requirements, and latency sensitivity.
+
+## Why this matters
+
+OpenClaw's architecture includes session state management, token usage tracking, policy enforcement middleware, and admin tooling. These features add latency to every request. For most teams, that latency is imperceptible. For large engineering teams or latency-sensitive CI/CD pipelines, it is not. ZeroClaw solves exactly that problem by removing everything from the request path that is not strictly necessary for routing a `claude` command to the Anthropic API.
+
+## Before you start
+
+Complete path 11 (OpenClaw foundations). This lesson assumes you understand what OpenClaw is and why you would self-host.
+
+## Walkthrough
+
+### What "fast-path" means architecturally
+
+In OpenClaw, a developer request travels through synchronous middleware:
+
+```
+Developer CLI → TLS → Auth check → Policy enforcement
+→ Token accounting → Rate limiter → Anthropic API
+→ Response logging → Developer CLI
+```
+
+In ZeroClaw, synchronous middleware is stripped to the minimum:
+
+```
+Developer CLI → TLS → Token validation → Anthropic API → Developer CLI
+
+(Usage accounting happens asynchronously in the background)
+```
+
+The result: sub-100ms routing latency versus 150–300ms for a loaded OpenClaw server. The difference is not dramatic for a single request. At high concurrency — many developers making requests simultaneously — each millisecond of middleware overhead multiplies.
+
+### What ZeroClaw trades away
+
+ZeroClaw achieves speed by removing features. These are the documented gaps:
+
+| Feature | OpenClaw | ZeroClaw |
+|---------|---------|---------|
+| Real-time token usage tracking | Yes | Async (slight delay) |
+| Per-request policy enforcement | Yes | Session-level only |
+| Admin dashboard | Full | Read-only health only |
+| OIDC / SSO authentication | Yes | Token auth only |
+| Per-developer rate limiting | Yes | Global only |
+| Synchronous audit log | Yes | Async batch |
+| Session persistence | Yes | In-memory only |
+| MCP server proxying | Yes | Direct (unproxied) |
+
+None of these gaps matter for most teams. They all matter if you have specific compliance requirements.
+
+### When ZeroClaw is the right choice
+
+**ZeroClaw is the right fit when:**
+- Your team has 50+ developers and peak concurrency causes perceptible OpenClaw latency
+- You are prototyping and want self-hosting running in minutes, not hours
+- You have no SSO requirements and no compliance mandate for synchronous audit logs
+- You want to validate the self-hosting approach before investing in full OpenClaw setup
+
+**ZeroClaw is the wrong fit when:**
+- Your organization requires SSO/OIDC authentication
+- Compliance frameworks require synchronous per-request audit logs
+- You need per-developer rate limiting (one developer cannot cap another with ZeroClaw)
+- Session persistence matters — ZeroClaw sessions are in-memory and lost on restart
+
+### ZeroClaw's place in the ecosystem
+
+ZeroClaw is not a replacement for OpenClaw. It is an alternative entry point — fast to deploy, lower maintenance overhead, but functionally limited. The migration path from ZeroClaw to OpenClaw is well-defined. Many teams start with ZeroClaw to validate self-hosting, then migrate to OpenClaw when management features become necessary.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Answers to the four scenario questions below."
+  verifyCheck="The learner can correctly classify deployment scenarios as ZeroClaw-appropriate or OpenClaw-appropriate based on the feature gaps."
+  rubricCriteria={[
+    "Correctly identifies SSO/OIDC requirements as a blocker for ZeroClaw",
+    "Correctly identifies high-concurrency latency as a ZeroClaw use case",
+    "Correctly identifies compliance/synchronous audit requirements as an OpenClaw requirement",
+  ]}
+>
+
+**Scenario A:** A 100-person engineering team wants fast Claude Code access. No compliance requirements, no SSO mandate. Developers authenticate with personal tokens. Is ZeroClaw appropriate?
+
+**Scenario B:** A fintech startup needs Claude Code for their engineering team of 8. Their security team requires OIDC authentication and synchronous audit logs. Is ZeroClaw appropriate?
+
+**Scenario C:** A solo developer wants to prototype a self-hosted Claude Code setup before committing to a full OpenClaw deployment. Is ZeroClaw appropriate?
+
+**Scenario D:** A team using ZeroClaw notices that one developer's automation job saturated the global rate limit, blocking all other developers. What does this signal?
+
+</VerificationBlock>

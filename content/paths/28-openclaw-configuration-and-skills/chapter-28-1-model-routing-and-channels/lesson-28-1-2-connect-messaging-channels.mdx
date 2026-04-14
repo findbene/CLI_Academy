@@ -1,0 +1,129 @@
+---
+title: "Connect Messaging Channels"
+lessonNumber: "28.1.2"
+chapterNumber: "28.1"
+pathNumber: "28"
+groupId: "4.5"
+clawClassification: "advanced"
+prerequisiteLesson: "28.1.1"
+estimatedMinutes: 15
+verifyType: "screenshot"
+tutorPreload: "Help me connect my OpenClaw gateway to WhatsApp or Telegram. Walk me through the QR code pairing for WhatsApp or the BotFather token setup for Telegram."
+---
+
+# Connect Messaging Channels
+
+## What you will build
+
+Your OpenClaw gateway connected to WhatsApp, Telegram, or both. You will send your first message to the agent and receive a response, proving the full human-to-agent pipeline works.
+
+## Why this matters
+
+The messaging channel is the human interface to your autonomous agent. Once connected, you talk to OpenClaw exactly as you would message a contact — no URL to remember, no app to open. For heartbeat-driven automations, the messaging channel is also how the agent pushes alerts and reports back to you.
+
+## Before you start
+
+Complete lesson 28.1.1 (model routing configured). Your gateway must be running and responding to `openclaw test-model`.
+
+## Walkthrough
+
+### WhatsApp setup
+
+WhatsApp uses a linked device session. OpenClaw connects as a linked device on your account, the same way WhatsApp Web works.
+
+**Step 1 — Navigate to Channels in the Web UI:**
+Open `http://localhost:3301` → Channels → Add Channel → WhatsApp
+
+**Step 2 — Scan the QR code:**
+The Web UI displays a QR code that refreshes every 30 seconds.
+
+On your phone:
+1. Open WhatsApp
+2. Tap Settings (iPhone) or the three-dot menu (Android)
+3. Select Linked Devices
+4. Tap Link a Device
+5. Scan the QR code shown in the Web UI
+
+**Step 3 — Verify connection:**
+The Web UI should update to:
+```
+WhatsApp — Connected
+Session: active
+Linked number: +1 xxx xxxxxxx
+```
+
+**Step 4 — Send a test message:**
+From WhatsApp, message the number linked to your gateway and type:
+```
+/ping
+```
+
+Expected response:
+```
+Pong! Gateway v3.x.x online. Heartbeat: active.
+```
+
+**Important WhatsApp notes:**
+- The session persists when your phone is off — the Gateway continues receiving messages independently
+- WhatsApp allows 4 linked devices per account; the Gateway takes one slot
+- If the container restarts, the session auto-resumes without re-scanning
+
+### Telegram setup
+
+Telegram uses a bot token rather than a linked device. You create a bot via @BotFather.
+
+**Step 1 — Create a Telegram bot:**
+1. Open Telegram and search for **@BotFather**
+2. Send `/newbot`
+3. Enter a display name (e.g. "My OpenClaw Agent")
+4. Enter a username ending in `bot` (e.g. `myopenclaw_bot`)
+5. BotFather replies with your token: `1234567890:ABCdef...`
+
+**Step 2 — Add the token to OpenClaw:**
+In the Web UI: Channels → Add Channel → Telegram → paste your bot token → Save
+
+Or add to `.env` and restart:
+```env
+TELEGRAM_BOT_TOKEN=1234567890:ABCdef...
+```
+
+**Step 3 — Start the bot:**
+In Telegram, search for your bot by username and send `/start`. The Gateway responds with a greeting.
+
+Test:
+```
+/ping
+```
+
+Response:
+```
+Pong! Gateway v3.x.x online. OpenClaw is live on this channel.
+```
+
+**Important Telegram notes:**
+- Bots cannot initiate conversations — they can only reply after you start the chat
+- OpenClaw captures your chat ID when you first message the bot and uses it for outbound heartbeat messages
+- Enable outbound heartbeat messages: Channels → Telegram → Allow Heartbeat Outbound
+
+### Verify the full end-to-end pipeline
+
+Trigger a heartbeat cycle manually to confirm the full stack:
+```bash
+docker exec -it openclaw openclaw heartbeat --run-now
+```
+
+Or from the Web UI: Dashboard → Heartbeat → Run Now
+
+Within 30 seconds you should receive a message from your agent. That confirms: model routing → skill execution → messaging channel delivery all working together.
+
+## Verification
+
+<VerificationBlock
+  deliverable="Screenshot of the OpenClaw Web UI Channels page showing WhatsApp or Telegram as Connected, and a screenshot of the /ping response received in the messaging app."
+  verifyCheck="A messaging channel is connected and the gateway responded to a /ping command."
+  rubricCriteria={[
+    "Web UI Channels page shows at least one channel with Connected status",
+    "A /ping command sent from the messaging app received a Pong response from the gateway",
+    "The Web UI shows the linked number or bot username in the channel configuration",
+  ]}
+/>

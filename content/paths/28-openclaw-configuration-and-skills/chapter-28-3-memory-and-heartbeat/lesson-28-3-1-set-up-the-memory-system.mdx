@@ -1,0 +1,153 @@
+---
+title: "Set Up the Memory System (.learnings/)"
+lessonNumber: "28.3.1"
+chapterNumber: "28.3"
+pathNumber: "28"
+groupId: "4.5"
+clawClassification: "advanced"
+prerequisiteLesson: "28.2.2"
+estimatedMinutes: 18
+verifyType: "code_submission"
+tutorPreload: "Help me understand OpenClaw's .learnings directory. How does it work, how do corrections get saved, and how do I write effective memory entries that the agent will reliably use?"
+---
+
+# Set Up the Memory System (.learnings/)
+
+## What you will build
+
+A populated `.learnings/` directory with corrections, preferences, and context entries that your agent will apply to every skill execution going forward.
+
+## Why this matters
+
+Every AI model starts each conversation knowing nothing specific about you. It does not know you prefer British English, that "the client" means one particular company, or that you never want meetings before 9:30am. The `.learnings/` directory is how OpenClaw accumulates this private, contextual knowledge over time. Without it, you re-explain the same things forever. With it, the agent genuinely improves from experience.
+
+## Before you start
+
+Complete lessons 28.2.1 and 28.2.2 (skill authoring and deployment). Your gateway should be running with at least one skill active.
+
+## Walkthrough
+
+### How .learnings works
+
+The `.learnings/` directory lives in `~/.openclaw/.learnings/` on the machine running the gateway. It is a set of plain Markdown files — human-readable and directly editable.
+
+```
+~/.openclaw/.learnings/
+├── corrections.md     ← facts the agent should know
+├── preferences.md     ← how you want things done
+├── people.md          ← context about contacts
+├── context.md         ← project and business context
+└── skills/
+    ├── daily-briefing.md    ← skill-specific learnings
+    └── email-responder.md   ← skill-specific learnings
+```
+
+At the start of each skill execution, OpenClaw retrieves relevant learnings using semantic similarity — it embeds the skill's purpose and fetches the most relevant entries, keeping the context window focused rather than dumping everything in.
+
+### Adding corrections — three methods
+
+**Method 1 — Inline correction during a conversation:**
+While chatting with your agent in WhatsApp or Telegram, immediately after it says something wrong:
+```
+You: Summarise my emails from today
+Agent: You have 3 new emails today...  [uses American "summarize" spelling]
+You: Remember to always use British English spellings
+```
+
+Messages starting with "Remember" are automatically saved to `corrections.md`.
+
+**Method 2 — Slash command:**
+```
+/learn The client meeting on Fridays is with Hartley Associates, not Bridgewater
+/learn My preferred email sign-off is "Kind regards, [Name]"
+/learn Never schedule meetings before 9:30am
+```
+
+**Method 3 — Direct file editing:**
+```bash
+nano ~/.openclaw/.learnings/corrections.md
+```
+
+### What to write in each file
+
+**corrections.md — facts and context:**
+```markdown
+- "the client" = Hartley Associates (not Bridgewater, our old client)
+- My name is spelled "Biniyam" — not "Binimi" or "Binyam"
+- Product SKU B2847 is "Adjustable Desk Lamp" (not "Desk Light")
+- The VPS IP address is 157.90.xx.xx
+```
+
+**preferences.md — how you want things done:**
+```markdown
+- Morning briefings: bullet-pointed, no longer than 150 words, no headers
+- Emails: professional but warm tone, never stiff
+- British English always
+- When in doubt about scheduling, suggest 2 options — do not book automatically
+- Currency: GBP unless I specify a US client
+```
+
+**people.md — context about contacts:**
+```markdown
+- Sarah Chen (sarah@hartley.co.uk) = Head of Legal at Hartley Associates
+- James = James Whitfield, my business partner (not other email contacts named James)
+- "the team" = Priya, Kofi, and Marcus
+```
+
+**context.md — project and business context:**
+```markdown
+## Current Projects
+- Shopify store: "Northern Gear" — outdoor equipment, UK market
+- We invoice on the 1st and 15th of each month
+
+## Business Context
+- Preferred payment: bank transfer, not PayPal
+- All client-facing documents include the company logo
+```
+
+### Privacy controls
+
+The `.learnings/` directory lives entirely on your hardware. If you use cloud models, relevant learnings are included in the prompt for that request — the model sees them during that call but does not store them.
+
+For sensitive learnings, flag the file as private:
+```markdown
+# ~/.openclaw/.learnings/medical.md
+---
+private: true
+---
+- Currently taking [medication] — mention if relevant to health tasks
+```
+
+Private learnings are only included in prompts that route to local models (Ollama). They never go to cloud APIs.
+
+### Inspecting and managing memory
+
+```bash
+# View all learnings
+openclaw memory list
+
+# Search
+openclaw memory search "Hartley"
+
+# Check which learnings are used most
+openclaw memory stats
+
+# Remove a specific entry
+openclaw memory delete "[Learning ID from list]"
+```
+
+## Verification
+
+<VerificationBlock
+  deliverable="The contents of your .learnings/corrections.md and .learnings/preferences.md files, with at least 3 entries in each."
+  verifyCheck="The learner has populated the memory system with corrections and preferences relevant to their own workflow."
+  rubricCriteria={[
+    "corrections.md contains at least 3 factual corrections or contextual facts specific to the learner's situation",
+    "preferences.md contains at least 3 formatting or behavior preferences",
+    "At least one entry per file is specific enough to be actionable — not generic placeholders",
+  ]}
+>
+
+Create and populate both `~/.openclaw/.learnings/corrections.md` and `~/.openclaw/.learnings/preferences.md` with entries relevant to your own situation. Then paste the contents of both files.
+
+</VerificationBlock>

@@ -1,0 +1,193 @@
+---
+title: "Understand the SKILL.md Format"
+lessonNumber: "28.2.1"
+chapterNumber: "28.2"
+pathNumber: "28"
+groupId: "4.5"
+clawClassification: "advanced"
+prerequisiteLesson: "28.1.2"
+estimatedMinutes: 20
+verifyType: "code_submission"
+tutorPreload: "Explain the SKILL.md format to me. What are all the frontmatter fields, what do tool permission levels mean, and how do I write instructions the agent reliably follows?"
+---
+
+# Understand the SKILL.md Format
+
+## What you will build
+
+A SKILL.md file for a daily briefing skill, written from scratch with correct frontmatter, trigger definition, tool permissions, and clear agent instructions.
+
+## Why this matters
+
+Skills are the unit of work in OpenClaw. Everything the agent does autonomously — morning briefing, email drafting, order notification — is encoded in a skill file. A well-written skill runs reliably without your intervention. A poorly written one produces inconsistent output and requires constant babysitting.
+
+## Before you start
+
+Complete lessons 28.1.1 and 28.1.2 (model routing and messaging channels configured). You need to understand what tools your gateway has access to before writing skill permissions.
+
+## Walkthrough
+
+### The two sections of a SKILL.md file
+
+Every skill file has two sections: **frontmatter** (YAML metadata) and **body** (Markdown instructions).
+
+The frontmatter tells OpenClaw how and when to run the skill. The body tells the AI what to do when it runs.
+
+```markdown
+---
+skill_id: daily-briefing
+name: "Daily Morning Briefing"
+version: 1.0.0
+description: "Send a briefing every morning."
+
+trigger:
+  type: schedule
+  cron: "0 8 * * *"
+
+channels:
+  output: ["whatsapp"]
+
+model:
+  preferred: "claude-3-5-haiku-20241022"
+  fallback: "gpt-4o-mini"
+
+tools:
+  - name: fetch_web
+    permission: auto
+  - name: read_calendar
+    permission: auto
+  - name: send_message
+    permission: auto
+
+cost_controls:
+  max_tokens_per_run: 2000
+
+safety:
+  pii_scrub: false
+---
+
+# Daily Morning Briefing
+
+You are a morning briefing assistant for {{OWNER_DISPLAY_NAME}}.
+
+## Your Job
+
+Compile a concise, personal morning briefing...
+```
+
+### Frontmatter field reference
+
+**Required fields:**
+```yaml
+skill_id: unique-kebab-case-identifier
+name: "Human Readable Name"
+description: "What this skill does, in one sentence."
+```
+
+**Trigger — when to run:**
+```yaml
+trigger:
+  type: schedule              # time-based
+  cron: "0 8 * * *"          # 8am every day
+
+# or event-based:
+trigger:
+  type: event
+  event: "new_email"
+
+# or condition-based:
+trigger:
+  type: condition
+  check: "daily"
+  condition: "Check if CPU usage exceeded 80% in the past hour."
+```
+
+**Model routing:**
+```yaml
+model:
+  preferred: "claude-3-5-haiku-20241022"
+  fallback: "ollama/llama3.2"    # local fallback
+```
+
+**Cost controls:**
+```yaml
+cost_controls:
+  max_tokens_per_run: 3000
+  max_runs_per_day: 5
+```
+
+### Tool permission levels
+
+Tools are the actions the skill can take: reading files, fetching web pages, sending messages, writing drafts.
+
+| Permission | Behavior |
+|-----------|----------|
+| `auto` | Runs immediately without confirmation |
+| `prompt` | Pauses and sends you a confirmation message — waits for your reply before continuing |
+| `deny` | Refuses to use this tool even if the AI tries to call it |
+
+**The rule of thumb:** Start all state-changing tools at `prompt`. Only change to `auto` once you have watched the skill run correctly several times and are confident it behaves as intended.
+
+State-changing tools include: `send_email`, `send_message`, `write_file`, `delete_file`, `post_social`, `place_order`.
+
+### Writing instructions the agent reliably follows
+
+The body of the skill is a system prompt. These four practices produce more reliable execution:
+
+**Be explicit about output format:**
+```markdown
+## Output Format
+
+Return a WhatsApp-formatted message with:
+- *Bold headings* using asterisks
+- Short paragraphs under 50 words each
+- Total length under 200 words
+
+Do not include anything outside the message body.
+```
+
+**Specify exactly what data to use:**
+```markdown
+## Data Sources
+
+1. Fetch today's calendar from read_calendar with today's date
+2. Do not invent events. If the API returns empty, write "No events today."
+3. Do not include events from other dates.
+```
+
+**Give the agent an exit condition:**
+```markdown
+## When to Stop
+
+If any tool fails three times, stop and send:
+"Briefing unavailable: [tool name] failed. Will retry tomorrow."
+Do not continue with partial data.
+```
+
+**Use template variables:**
+```markdown
+Good morning {{OWNER_DISPLAY_NAME}}, today is {{DATE_TODAY}}.
+```
+
+Available variables: `{{OWNER_DISPLAY_NAME}}`, `{{OWNER_TIMEZONE}}`, `{{DATE_TODAY}}`, `{{TIME_NOW}}`.
+
+## Verification
+
+<VerificationBlock
+  deliverable="A complete SKILL.md file for a daily briefing or similar automation."
+  verifyCheck="The skill file has correct frontmatter, at least one tool with explicit permission level, and body instructions that include output format, data sources, and an exit condition."
+  rubricCriteria={[
+    "Frontmatter includes skill_id, name, description, trigger, model, and at least one tool with explicit permission level",
+    "Body instructions specify output format and data sources explicitly — no open-ended instructions",
+    "An exit condition is defined for tool failures",
+  ]}
+>
+
+Write a complete SKILL.md file for one of these:
+- A daily morning briefing (schedule trigger, reads calendar)
+- A new email notifier (event trigger on new_email, drafts but never sends)
+- A weekly summary (schedule trigger, reads task manager, sends Telegram message)
+
+Paste the full file contents.
+
+</VerificationBlock>

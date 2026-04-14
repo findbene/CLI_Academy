@@ -48,3 +48,4 @@
 - [x] Fix missing frontmatter (groupId, clawClassification, prerequisiteLesson) in all path 20 and 21 lesson files.
 - [x] Wire DiagramBlock into 3 path 20 lessons using existing SVG assets.
 - [x] Create Python pytest suite covering health, gamification streak, and daily tutor limit.
+- [x] OpenClaw curriculum restoration: rewrite path 11 (OpenClaw foundations, 7 lessons), add path 28 (configuration and skills, 7 lessons), add path 29 (security and production, 7 lessons), add path 30 (ZeroClaw and variants, 5 lessons). 194 total lessons, 30 paths. All registered in paths.ts under "OpenClaw Ecosystem" section.

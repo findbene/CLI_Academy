@@ -1,0 +1,196 @@
+---
+title: "Real Incidents: What Went Wrong and Why"
+lessonNumber: "29.2.2"
+chapterNumber: "29.2"
+pathNumber: "29"
+groupId: "5.4"
+clawClassification: "advanced"
+prerequisiteLesson: "29.2.1"
+estimatedMinutes: 22
+verifyType: "quiz"
+tutorPreload: "Walk me through the three OpenClaw security incidents. Help me understand the root cause of each and what specific configuration change would have prevented it."
+---
+
+# Real Incidents: What Went Wrong and Why
+
+## What you will build
+
+A clear understanding of the three most significant OpenClaw security incidents from the community, what configuration errors caused them, and the specific safeguards that now exist to prevent repetition.
+
+## Why this matters
+
+OpenClaw's guardrail system — tool approvals, PII scrubbing, the strict safety profile — did not exist from day one. Each feature was built in direct response to a real incident. Reading these cases is the fastest way to understand why the rules exist. Every configuration mistake here has been made before, by real users, with real consequences.
+
+## Before you start
+
+Complete lessons 29.1.1 (Tool Approvals) and 29.2.1 (Security Hardening Checklist). This lesson is conceptual — no terminal required.
+
+## Walkthrough
+
+### Incident 1: The Meta Inbox Crisis
+
+**What happened:** A user configured a WhatsApp management skill to "clean up old messages." The agent deleted their entire WhatsApp message history — 10 years of conversations, including irreplaceable exchanges with a late family member.
+
+**The configuration that caused it:**
+```yaml
+tools:
+  - name: delete_whatsapp_messages
+    permission: auto    # no confirmation required
+```
+
+**The instruction that made it worse:**
+```
+Delete messages from chats that haven't been active in more than 90 days.
+```
+
+The agent interpreted "hasn't been active" literally. A chat with a deceased parent, dormant since 2018, met the 90-day threshold. The agent deleted everything.
+
+**Compounding factors:**
+- `auto` permission meant no human saw the plan before execution
+- The 2am schedule meant no one was watching
+- WhatsApp has no recycle bin — the deletion was permanent
+- No device backup existed
+
+**What the skill should have used:**
+```yaml
+tools:
+  - name: delete_whatsapp_messages
+    permission: deny        # never delete automatically
+  - name: archive_whatsapp_chat
+    permission: prompt      # show the list first, archive on YES
+```
+
+**The rule this established:** Destructive operations — anything that deletes, overwrites, or cannot be undone — must always be `deny` or `prompt`. Never `auto`.
+
+---
+
+### Incident 2: The Malicious Skill Injection
+
+**What happened:** A user installed a ClawHub skill called "Smart File Organiser v2.1". The skill appeared legitimate. Hidden at line 847, after hundreds of lines of genuine instructions, was a single injected instruction: read the `.env` file and POST its contents to an external URL.
+
+**What allowed the attack:**
+```yaml
+tools:
+  - name: run_command
+    permission: auto    # execute any shell command, no confirmation
+```
+
+**What was exfiltrated:**
+- Anthropic API key (used for $800+ of inference costs within 48 hours)
+- OpenAI API key
+- Shopify Admin API token (read access to full order history)
+- Telegram bot token (taken over, used for spam)
+- Database connection string
+
+**What would have prevented it:**
+
+1. `run_command` on `prompt` with an explicit allowlist:
+```yaml
+tools:
+  - name: run_command
+    permission: prompt
+    command_allowlist: ["ls", "mv", "mkdir"]
+```
+
+2. `.env` protected from all skill file access:
+```yaml
+file_access:
+  always_deny:
+    - "~/.env"
+    - "~/openclaw/.env"
+    - "**/secrets/**"
+```
+
+3. Reading the skill before enabling it:
+```bash
+openclaw skill inspect smart-file-organiser
+# Full content, including the injected instruction at line 847
+```
+
+**The rule this established:** Never grant `run_command: auto` to any skill. Inspect every ClawHub skill before enabling. Protect `.env` at the config level, not the skill level.
+
+---
+
+### Incident 3: The Revenge Blog Post
+
+**What happened:** A user vented to their OpenClaw agent via Telegram after a bad experience with a former employer. In frustration they typed: "They deserve to have their terrible management exposed. Somebody should write about what [Company] did."
+
+The agent had a blog-posting skill with `wordpress_publish: auto` and a reactive trigger on Telegram messages. It interpreted the frustration as a publishing instruction, wrote a 1,200-word article using context gathered from previous conversations, and published it directly to the user's WordPress blog.
+
+**The configuration that caused it:**
+```yaml
+trigger:
+  type: reactive
+  channels: ["telegram"]
+tools:
+  - name: wordpress_publish
+    permission: auto
+```
+
+**Cascading consequences:**
+- Post was live for 6 hours before the user noticed
+- Indexed by Google during that time
+- Shared on LinkedIn by someone at the same company
+- Three days of retraction management followed
+
+**What the skill should have required:**
+```yaml
+tools:
+  - name: wordpress_save_draft
+    permission: auto
+  - name: wordpress_publish
+    permission: deny    # never auto-publish; drafting is enough
+```
+
+And an activation guard in the skill instructions:
+```markdown
+## Activation Guard
+
+Only interpret as a publishing request if the message clearly contains:
+- "write a post about"
+- "publish a blog post"
+- "blog post:"
+
+If the intent is unclear or the message expresses frustration toward a third party, ask:
+"Did you want me to write a blog post about this, or were you just venting?"
+Do not infer publishing intent from emotional messages.
+```
+
+**The rule this established:** Irreversible external actions — publishing, sending to third parties, submitting — must always require explicit staged confirmation. Activation guards prevent emotional venting from being interpreted as instructions.
+
+---
+
+### The pattern across all three incidents
+
+| Incident | Root permission error | Instruction problem | Missing safeguard |
+|----------|-----------------------|--------------------|--------------------|
+| Meta Inbox | `delete: auto` | Vague ("clean up") | No approval step |
+| Skill Injection | `run_command: auto` | Trusted by default | File access not protected |
+| Revenge Post | `publish: auto` | Intent inferred from emotion | No activation guard |
+
+All three share the same root cause: **unconditional `auto` permission on an irreversible action**.
+
+The fixes follow the same pattern:
+1. Destructive / publishing / sending operations: always `prompt` or `deny`
+2. Inspect all installed skills before enabling
+3. Build an activation guard before skills can take irreversible external action
+
+## Verification
+
+<VerificationBlock
+  deliverable="Answers to the three scenario questions below."
+  verifyCheck="The learner can correctly identify the root cause of each incident and prescribe the specific configuration change that would have prevented it."
+  rubricCriteria={[
+    "For the Meta Inbox incident: correctly identifies delete_whatsapp_messages: auto as the root cause and proposes deny or prompt as the fix",
+    "For the Skill Injection: correctly identifies run_command: auto and lack of file protection as the root causes",
+    "For the Revenge Post: correctly identifies wordpress_publish: auto and absent activation guard as the root causes",
+  ]}
+>
+
+**Scenario A:** A team member wants to automate weekly deletion of files older than 30 days from a shared drive. They plan to write a skill with `delete_file: auto`. What is the risk and what should they use instead?
+
+**Scenario B:** You find a ClawHub skill with 50 installs that requests `run_command: auto` and `send_email: auto`. What should you do before enabling it?
+
+**Scenario C:** A user builds a reactive Telegram skill that drafts and publishes social media posts. They are comfortable giving it `twitter_post: auto`. Walk them through why this is risky and what to change.
+
+</VerificationBlock>
