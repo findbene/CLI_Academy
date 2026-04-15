@@ -13,8 +13,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  // Bundle the content directory (lives outside apps/web) into serverless functions.
-  // Without this, Vercel's file tracer excludes ../../content and every lesson loads empty.
+  // Include the content directory (outside apps/web) in serverless function bundles.
+  // Requires Vercel Root Directory = repo root so ../../content is accessible during build.
   outputFileTracingRoot: path.join(__dirname, "../../"),
   outputFileTracingIncludes: {
     "/**": ["../../content/**/*"],

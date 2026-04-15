@@ -1,8 +1,8 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "installCommand": "npm ci --legacy-peer-deps",
-  "outputDirectory": ".next",
+  "buildCommand": "cd apps/web && npm run build",
+  "installCommand": "cd apps/web && npm ci --legacy-peer-deps",
+  "outputDirectory": "apps/web/.next",
   "regions": ["iad1"],
   "headers": [
     {
