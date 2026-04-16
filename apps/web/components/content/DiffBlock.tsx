@@ -5,7 +5,7 @@ interface DiffBlockProps {
   caption?: string;
 }
 
-export function DiffBlock({ before, after, language = "bash", caption }: DiffBlockProps) {
+export function DiffBlock({ before, after, language: _language = "bash", caption }: DiffBlockProps) {
   const beforeLines = before.split("\n");
   const afterLines = after.split("\n");
 

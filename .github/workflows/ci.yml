@@ -65,6 +65,8 @@ jobs:
       - run: python -m ruff check .
       - run: python -m compileall .
       - run: python -c "import main"
+      - run: pip install pytest pytest-asyncio
+      - run: python -m pytest tests/ -v
 
   content:
     runs-on: ubuntu-latest

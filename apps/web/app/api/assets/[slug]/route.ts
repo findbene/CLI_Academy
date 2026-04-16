@@ -68,7 +68,7 @@ export async function GET(
       .eq("id", user.id)
       .maybeSingle();
 
-    const isPro = profile?.tier === "pro" || (user.email && process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL);
+    const isPro = profile?.tier === "pro" || (user.email && process.env.ADMIN_EMAIL && user.email.toLowerCase().trim() === process.env.ADMIN_EMAIL.toLowerCase().trim());
 
     if (!isPro) {
       return buildErrorResponse(

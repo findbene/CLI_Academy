@@ -1,3 +1,4 @@
+-- Full database schema including all migrations. Keep this file in sync with any new migrations.
 -- =============================================================================
 -- CLI Academy — Supabase PostgreSQL Schema
 -- =============================================================================
@@ -282,6 +283,47 @@ COMMENT ON COLUMN public.app_events.user_id    IS 'NULL for anonymous / pre-auth
 COMMENT ON COLUMN public.app_events.event_type IS 'Event name — see EventType union in types/index.ts.';
 
 
+-- ---------------------------------------------------------------------------
+-- 3.12  user_progress
+--       Daily streak tracking for gamification. One row per user.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.user_progress (
+  user_id          UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  current_streak   INTEGER     NOT NULL DEFAULT 0,
+  longest_streak   INTEGER     NOT NULL DEFAULT 0,
+  last_activity    TIMESTAMPTZ,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE public.user_progress IS 'Tracks daily streaks for user engagement gamification.';
+
+
+-- ---------------------------------------------------------------------------
+-- 3.13  alumni_status
+--       Clearance level progression: Initiate → Operative → Agent → Commander.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.alumni_status (
+  user_id          UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  clearance_level  TEXT        NOT NULL DEFAULT 'Initiate',
+  unlocked_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE public.alumni_status IS 'Stores global achievements like Alumni status and Pro Clearance levels.';
+
+
+-- ---------------------------------------------------------------------------
+-- 3.14  achievements
+--       Discrete badges unlocked via MDX verification steps.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.achievements (
+  id               UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id          UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  badge_id         TEXT        NOT NULL,
+  unlocked_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, badge_id)
+);
+COMMENT ON TABLE public.achievements IS 'Discrete badges unlocked via MDX verification steps (like Agent Initiator).';
+
+
 -- =============================================================================
 -- 4. INDEXES
 -- =============================================================================
@@ -477,6 +519,26 @@ CREATE POLICY "app_events_insert_anon"
   ON public.app_events FOR INSERT
   WITH CHECK (auth.role() = 'anon');
 
+-- ---------------------------------------------------------------------------
+-- 5.12  user_progress  —  users see and write only their own rows
+-- ---------------------------------------------------------------------------
+ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "user_progress_select_own"  ON public.user_progress FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "user_progress_insert_own"  ON public.user_progress FOR INSERT WITH CHECK (user_id = auth.uid());
+CREATE POLICY "user_progress_update_own"  ON public.user_progress FOR UPDATE USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- 5.13  alumni_status  —  users read only; service_role writes (prevents client cheating)
+-- ---------------------------------------------------------------------------
+ALTER TABLE public.alumni_status ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "alumni_status_select_own"  ON public.alumni_status FOR SELECT USING (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- 5.14  achievements  —  users read only; service_role writes (prevents client cheating)
+-- ---------------------------------------------------------------------------
+ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "achievements_select_own"   ON public.achievements FOR SELECT USING (user_id = auth.uid());
+
 
 -- =============================================================================
 -- 6. TRIGGERS
@@ -541,330 +603,58 @@ CREATE TRIGGER trg_assets_updated_at
   BEFORE UPDATE ON public.assets
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+-- user_progress
+DROP TRIGGER IF EXISTS trg_user_progress_updated_at ON public.user_progress;
+CREATE TRIGGER trg_user_progress_updated_at
+  BEFORE UPDATE ON public.user_progress
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+
+-- =============================================================================
+-- 6.3  increment_tutor_usage RPC (from migration 02_atomic_tutor_limit.sql)
+--      Atomically increments daily tutor usage for a user or raises an
+--      exception when the limit is reached. Replaces read-then-write pattern.
+--      Usage: SELECT increment_tutor_usage('user-uuid', 10);
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION increment_tutor_usage(
+  p_user_id  UUID,
+  p_limit    INT
+)
+RETURNS INT
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_today      DATE := CURRENT_DATE;
+  v_new_count  INT;
+BEGIN
+  INSERT INTO tutor_usage (user_id, used_at, message_count)
+  VALUES (p_user_id, v_today, 1)
+  ON CONFLICT (user_id, used_at)
+  DO UPDATE
+    SET message_count = tutor_usage.message_count + 1
+    WHERE tutor_usage.message_count < p_limit
+  RETURNING message_count INTO v_new_count;
+
+  IF v_new_count IS NULL THEN
+    -- The WHERE clause blocked the update — limit already reached.
+    RAISE EXCEPTION 'daily_limit_reached' USING ERRCODE = 'P0001';
+  END IF;
+
+  RETURN v_new_count;
+END;
+$$;
+
+-- Grant execute permission to the service role used by the API.
+GRANT EXECUTE ON FUNCTION increment_tutor_usage(UUID, INT) TO service_role;
+
 
 -- =============================================================================
 -- 7. SEED DATA
 -- =============================================================================
--- Paths, modules, and lessons matching app/lib/data/paths.ts exactly.
--- UUIDs are stable constants so this block is safe to re-run (ON CONFLICT DO NOTHING).
--- =============================================================================
 
--- ---------------------------------------------------------------------------
--- 7.1  Paths
--- ---------------------------------------------------------------------------
-INSERT INTO public.paths
-  (id, slug, title, description, tier_required, is_published, version_label,
-   last_reviewed_at, supported_tool_versions, is_deprecated, sort_order,
-   category, difficulty, estimated_hours)
-VALUES
-  -- claude-code-beginners
-  (
-    'a1000000-0000-0000-0000-000000000001',
-    'claude-code-beginners',
-    'Claude Code for Beginners',
-    'Start from zero and reach productive confidence with Claude Code. Covers installation, your first CLAUDE.md, basic agent workflows, and safe prompting habits — no prior CLI experience required.',
-    'free', TRUE, 'claude-code@1.x', '2026-03-15',
-    '{"claude-code": "1.x"}', FALSE, 1, 'Foundations', 'beginner', 4.0
-  ),
-  -- claude-code-windows
-  (
-    'a2000000-0000-0000-0000-000000000002',
-    'claude-code-windows',
-    'Claude Code on Windows',
-    'A Windows-first guide to running Claude Code with WSL2 or PowerShell. Covers environment setup, path quirks, file permissions, and Windows-specific gotchas that trip up most tutorials.',
-    'free', TRUE, 'claude-code@1.x', '2026-03-20',
-    '{"claude-code": "1.x"}', FALSE, 2, 'Foundations', 'beginner', 3.0
-  ),
-  -- claude-code-macos
-  (
-    'a3000000-0000-0000-0000-000000000003',
-    'claude-code-macos',
-    'Claude Code on macOS',
-    'Get Claude Code running cleanly on macOS with Homebrew, correct Node versions, and zsh configuration. Includes Apple Silicon and Intel-specific notes.',
-    'free', TRUE, 'claude-code@1.x', '2026-03-20',
-    '{"claude-code": "1.x"}', FALSE, 3, 'Foundations', 'beginner', 2.0
-  ),
-  -- mcp-mastery
-  (
-    'a4000000-0000-0000-0000-000000000004',
-    'mcp-mastery',
-    'MCP Server Mastery',
-    'Master the Model Context Protocol from first principles. Learn to install community MCP servers, configure them safely in Claude Code, and build your first custom server from scratch.',
-    'pro', TRUE, 'mcp@2025', '2026-02-28',
-    '{"mcp": "2025"}', FALSE, 4, 'Agent Infrastructure', 'intermediate', 6.0
-  ),
-  -- vps-deployment
-  (
-    'a5000000-0000-0000-0000-000000000005',
-    'vps-deployment',
-    'Claude Code on a VPS',
-    'Run Claude Code headlessly on a remote VPS for always-on agent workflows. Covers SSH setup, process management with PM2, reverse proxy configuration, and hardening your server.',
-    'pro', TRUE, 'claude-code@1.x', '2026-03-01',
-    '{"claude-code": "1.x"}', FALSE, 5, 'Self-Hosting', 'advanced', 8.0
-  ),
-  -- workflow-automation
-  (
-    'a6000000-0000-0000-0000-000000000006',
-    'workflow-automation',
-    'AI Workflow Automation',
-    'Design and ship repeatable agent workflows without code. Learn to chain Claude Code tasks, schedule automation runs, handle errors gracefully, and build workflows that actually stay working.',
-    'pro', TRUE, 'claude-code@1.x', '2026-03-10',
-    '{"claude-code": "1.x"}', FALSE, 6, 'Workflows', 'intermediate', 5.0
-  )
-ON CONFLICT (slug) DO NOTHING;
-
-
--- ---------------------------------------------------------------------------
--- 7.2  Modules  (one module per path — expandable to multi-module later)
--- ---------------------------------------------------------------------------
-INSERT INTO public.modules (id, path_id, title, sort_order, is_published)
-VALUES
-  ('b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', 'Getting Started with Claude Code', 1, TRUE),
-  ('b2000000-0000-0000-0000-000000000002', 'a2000000-0000-0000-0000-000000000002', 'Windows Setup Guide',              1, TRUE),
-  ('b3000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003', 'macOS Setup Guide',               1, TRUE),
-  ('b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004', 'MCP Fundamentals',                1, TRUE),
-  ('b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005', 'VPS Deployment Guide',            1, TRUE),
-  ('b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006', 'Workflow Automation Foundations', 1, TRUE)
-ON CONFLICT (id) DO NOTHING;
-
-
--- ---------------------------------------------------------------------------
--- 7.3  Lessons
--- ---------------------------------------------------------------------------
-
--- claude-code-beginners (module b1, path a1)
-INSERT INTO public.lessons
-  (id, module_id, path_id, slug, title, description,
-   estimated_minutes, tier_required, is_published, version_label,
-   last_reviewed_at, supported_tool_versions, is_deprecated, has_safety_warning, sort_order)
-VALUES
-  ('c1010000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'what-is-claude-code',           'What Is Claude Code',               'An overview of Claude Code: what it is, how it differs from the Claude chat interface, and why it matters for developers and non-developers alike.',
-   15, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x"}', FALSE, FALSE, 1),
-
-  ('c1020000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'installing-on-your-machine',    'Installing Claude Code on Your Machine', 'Step-by-step installation instructions for Claude Code on any OS. Covers prerequisites, Node.js, and your first successful launch.',
-   20, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x", "node": ">=18"}', FALSE, FALSE, 2),
-
-  ('c1030000-0000-0000-0000-000000000003', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'your-first-claudemd',           'Your First CLAUDE.md',              'Why CLAUDE.md exists, what goes in it, and how to write one that meaningfully shapes agent behavior for your project.',
-   20, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x"}', FALSE, FALSE, 3),
-
-  ('c1040000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'basic-chat-and-file-edits',     'Basic Chat and File Edits',         'Learn the fundamental Claude Code interaction loop: asking questions, editing files, and reviewing diffs before accepting them.',
-   25, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x"}', FALSE, FALSE, 4),
-
-  ('c1050000-0000-0000-0000-000000000005', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'understanding-context-windows', 'Understanding Context Windows',     'What a context window is, why it fills up, and practical strategies to keep Claude Code effective on long sessions.',
-   15, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x"}', FALSE, FALSE, 5),
-
-  ('c1060000-0000-0000-0000-000000000006', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'safe-prompting-habits',         'Safe Prompting Habits',             'The habits that separate confident Claude Code users from those who create messes: staged approvals, scoped tasks, and knowing when to stop.',
-   20, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x"}', FALSE, TRUE, 6),
-
-  ('c1070000-0000-0000-0000-000000000007', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'reading-agent-output',          'Reading Agent Output',              'How to interpret Claude Code''s output: thinking blocks, tool calls, file diffs, and error messages.',
-   15, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x"}', FALSE, FALSE, 7),
-
-  ('c1080000-0000-0000-0000-000000000008', 'b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
-   'next-steps',                    'Next Steps',                        'Where to go after the basics: recommended paths, community resources, and how to keep your Claude Code skills sharp.',
-   10, 'free', TRUE, 'claude-code@1.x', '2026-03-15', '{"claude-code": "1.x"}', FALSE, FALSE, 8)
-
-ON CONFLICT (path_id, slug) DO NOTHING;
-
-
--- claude-code-windows (module b2, path a2)
-INSERT INTO public.lessons
-  (id, module_id, path_id, slug, title, description,
-   estimated_minutes, tier_required, is_published, version_label,
-   last_reviewed_at, supported_tool_versions, is_deprecated, has_safety_warning, sort_order)
-VALUES
-  ('c2010000-0000-0000-0000-000000000001', 'b2000000-0000-0000-0000-000000000002', 'a2000000-0000-0000-0000-000000000002',
-   'windows-environment-options',   'Windows Environment Options',       'A comparison of the three ways to run Claude Code on Windows: WSL2, PowerShell/Git Bash, and Docker. Understand the tradeoffs before you choose.',
-   15, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 1),
-
-  ('c2020000-0000-0000-0000-000000000002', 'b2000000-0000-0000-0000-000000000002', 'a2000000-0000-0000-0000-000000000002',
-   'wsl2-setup',                    'WSL2 Setup',                        'Install and configure WSL2 with Ubuntu, install Node.js via nvm, and get Claude Code running in the Linux subsystem.',
-   30, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x", "wsl": "2"}', FALSE, FALSE, 2),
-
-  ('c2030000-0000-0000-0000-000000000003', 'b2000000-0000-0000-0000-000000000002', 'a2000000-0000-0000-0000-000000000002',
-   'powershell-alternative',        'PowerShell Alternative',            'Run Claude Code directly in PowerShell or Git Bash without WSL2. Useful on locked-down corporate machines.',
-   20, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 3),
-
-  ('c2040000-0000-0000-0000-000000000004', 'b2000000-0000-0000-0000-000000000002', 'a2000000-0000-0000-0000-000000000002',
-   'path-and-permissions',          'PATH and Permissions',              'Fix the most common Windows permission and PATH problems that block Claude Code from running correctly.',
-   20, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 4),
-
-  ('c2050000-0000-0000-0000-000000000005', 'b2000000-0000-0000-0000-000000000002', 'a2000000-0000-0000-0000-000000000002',
-   'windows-file-system-quirks',    'Windows File System Quirks',        'Line endings, case sensitivity, symlinks, and drive letter paths — the Windows file system behaviors that trip up Claude Code users.',
-   15, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 5),
-
-  ('c2060000-0000-0000-0000-000000000006', 'b2000000-0000-0000-0000-000000000002', 'a2000000-0000-0000-0000-000000000002',
-   'first-run-on-windows',          'Your First Run on Windows',         'Verify your Windows setup end-to-end: launch Claude Code, complete a real task, and confirm everything is working.',
-   20, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 6)
-
-ON CONFLICT (path_id, slug) DO NOTHING;
-
-
--- claude-code-macos (module b3, path a3)
-INSERT INTO public.lessons
-  (id, module_id, path_id, slug, title, description,
-   estimated_minutes, tier_required, is_published, version_label,
-   last_reviewed_at, supported_tool_versions, is_deprecated, has_safety_warning, sort_order)
-VALUES
-  ('c3010000-0000-0000-0000-000000000001', 'b3000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003',
-   'macos-prerequisites',           'macOS Prerequisites',               'What you need before installing Claude Code on macOS: Xcode Command Line Tools, Homebrew, and a supported Node version.',
-   10, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 1),
-
-  ('c3020000-0000-0000-0000-000000000002', 'b3000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003',
-   'homebrew-and-node',             'Homebrew and Node',                 'Install Homebrew, use it to install nvm, then install and pin the correct Node.js version for Claude Code.',
-   20, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x", "node": ">=18"}', FALSE, FALSE, 2),
-
-  ('c3030000-0000-0000-0000-000000000003', 'b3000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003',
-   'zsh-configuration',             'zsh Configuration',                 'Configure your .zshrc for a clean Claude Code experience: PATH, nvm hooks, and avoiding common shell initialization pitfalls.',
-   15, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 3),
-
-  ('c3040000-0000-0000-0000-000000000004', 'b3000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003',
-   'apple-silicon-notes',           'Apple Silicon Notes',               'M1/M2/M3-specific considerations: Rosetta 2, native ARM binaries, and performance differences you should know about.',
-   10, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 4),
-
-  ('c3050000-0000-0000-0000-000000000005', 'b3000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003',
-   'first-run-on-macos',            'Your First Run on macOS',           'End-to-end verification: launch Claude Code on macOS, complete a real task, and confirm everything is running natively.',
-   15, 'free', TRUE, 'claude-code@1.x', '2026-03-20', '{"claude-code": "1.x"}', FALSE, FALSE, 5)
-
-ON CONFLICT (path_id, slug) DO NOTHING;
-
-
--- mcp-mastery (module b4, path a4)
-INSERT INTO public.lessons
-  (id, module_id, path_id, slug, title, description,
-   estimated_minutes, tier_required, is_published, version_label,
-   last_reviewed_at, supported_tool_versions, is_deprecated, has_safety_warning, sort_order)
-VALUES
-  ('c4010000-0000-0000-0000-000000000001', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'what-is-mcp',                   'What Is MCP',                       'A plain-English introduction to the Model Context Protocol: why it exists, what problem it solves, and how it fits into Claude Code.',
-   15, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025"}', FALSE, FALSE, 1),
-
-  ('c4020000-0000-0000-0000-000000000002', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'how-mcp-servers-work',          'How MCP Servers Work',              'Understand the MCP server lifecycle: initialization, tool registration, request routing, and response handling.',
-   20, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025"}', FALSE, FALSE, 2),
-
-  ('c4030000-0000-0000-0000-000000000003', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'installing-community-servers',  'Installing Community Servers',      'Find, evaluate, and install MCP servers from the community. Learn to read server documentation and assess trustworthiness.',
-   25, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025"}', FALSE, FALSE, 3),
-
-  ('c4040000-0000-0000-0000-000000000004', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'security-considerations',       'Security Considerations',           'MCP servers run code on your machine. Learn the threat model and how to audit servers before trusting them with your environment.',
-   20, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025"}', FALSE, TRUE, 4),
-
-  ('c4050000-0000-0000-0000-000000000005', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'configuring-in-claude-code',    'Configuring Servers in Claude Code','Add MCP servers to your Claude Code settings, understand config file locations, and manage multiple server profiles.',
-   20, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025", "claude-code": "1.x"}', FALSE, FALSE, 5),
-
-  ('c4060000-0000-0000-0000-000000000006', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'building-your-first-server',    'Building Your First MCP Server',    'Build a minimal MCP server from scratch in Node.js. Covers tool definitions, input schemas, and returning structured results.',
-   40, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025", "node": ">=18"}', FALSE, FALSE, 6),
-
-  ('c4070000-0000-0000-0000-000000000007', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'testing-and-debugging',         'Testing and Debugging MCP Servers', 'Techniques for testing your MCP server locally, inspecting protocol messages, and debugging tool call failures.',
-   25, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025"}', FALSE, FALSE, 7),
-
-  ('c4080000-0000-0000-0000-000000000008', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'production-patterns',           'Production MCP Patterns',           'Patterns for running MCP servers reliably in production: process management, health checks, and graceful restarts.',
-   25, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025"}', FALSE, FALSE, 8),
-
-  ('c4090000-0000-0000-0000-000000000009', 'b4000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000004',
-   'advanced-tool-definitions',     'Advanced Tool Definitions',         'Design rich tool schemas with optional parameters, enums, arrays, and nested objects to give Claude precise control over your tools.',
-   30, 'pro', TRUE, 'mcp@2025', '2026-02-28', '{"mcp": "2025"}', FALSE, FALSE, 9)
-
-ON CONFLICT (path_id, slug) DO NOTHING;
-
-
--- vps-deployment (module b5, path a5)
-INSERT INTO public.lessons
-  (id, module_id, path_id, slug, title, description,
-   estimated_minutes, tier_required, is_published, version_label,
-   last_reviewed_at, supported_tool_versions, is_deprecated, has_safety_warning, sort_order)
-VALUES
-  ('c5010000-0000-0000-0000-000000000001', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'vps-requirements',              'VPS Requirements',                  'Choose the right VPS provider and spec for headless Claude Code: CPU, RAM, storage minimums, and OS recommendations.',
-   15, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x"}', FALSE, FALSE, 1),
-
-  ('c5020000-0000-0000-0000-000000000002', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'ssh-key-setup',                 'SSH Key Setup',                     'Generate an SSH key pair, add the public key to your VPS, and configure your local SSH config for password-less logins.',
-   20, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x"}', FALSE, FALSE, 2),
-
-  ('c5030000-0000-0000-0000-000000000003', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'provisioning-your-server',      'Provisioning Your Server',          'Initial server provisioning: create a non-root user, set up sudo access, and configure basic system settings.',
-   25, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x"}', FALSE, FALSE, 3),
-
-  ('c5040000-0000-0000-0000-000000000004', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'installing-dependencies',       'Installing Dependencies',           'Install Node.js, npm, and Claude Code on your VPS. Handle version pinning and verify the installation.',
-   20, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x", "node": ">=18"}', FALSE, FALSE, 4),
-
-  ('c5050000-0000-0000-0000-000000000005', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'headless-claude-code',          'Running Claude Code Headlessly',    'Configure Claude Code to run without a terminal UI — essential for scripted and scheduled agent workflows on a VPS.',
-   25, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x"}', FALSE, TRUE, 5),
-
-  ('c5060000-0000-0000-0000-000000000006', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'process-management-pm2',        'Process Management with PM2',       'Use PM2 to keep Claude Code agent processes alive across reboots, manage logs, and monitor resource usage.',
-   25, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x", "pm2": "latest"}', FALSE, FALSE, 6),
-
-  ('c5070000-0000-0000-0000-000000000007', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'reverse-proxy-nginx',           'Reverse Proxy with Nginx',          'Set up Nginx as a reverse proxy in front of Claude Code''s API interface. Covers SSL termination and basic authentication.',
-   30, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x", "nginx": "latest"}', FALSE, TRUE, 7),
-
-  ('c5080000-0000-0000-0000-000000000008', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'firewall-and-hardening',        'Firewall and Server Hardening',     'Lock down your VPS with UFW, disable root SSH login, configure fail2ban, and apply OS-level security patches.',
-   30, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x"}', FALSE, TRUE, 8),
-
-  ('c5090000-0000-0000-0000-000000000009', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'monitoring-and-alerts',         'Monitoring and Alerts',             'Set up basic VPS monitoring with uptime checks, disk and memory alerts, and log aggregation for your Claude Code processes.',
-   25, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x"}', FALSE, FALSE, 9),
-
-  ('c5100000-0000-0000-0000-000000000010', 'b5000000-0000-0000-0000-000000000005', 'a5000000-0000-0000-0000-000000000005',
-   'backup-strategies',             'Backup Strategies',                 'Automated backup strategies for VPS-hosted Claude Code: config snapshots, cron-based backups, and off-site storage.',
-   20, 'pro', TRUE, 'claude-code@1.x', '2026-03-01', '{"claude-code": "1.x"}', FALSE, FALSE, 10)
-
-ON CONFLICT (path_id, slug) DO NOTHING;
-
-
--- workflow-automation (module b6, path a6)
-INSERT INTO public.lessons
-  (id, module_id, path_id, slug, title, description,
-   estimated_minutes, tier_required, is_published, version_label,
-   last_reviewed_at, supported_tool_versions, is_deprecated, has_safety_warning, sort_order)
-VALUES
-  ('c6010000-0000-0000-0000-000000000001', 'b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006',
-   'workflow-thinking',             'Workflow Thinking',                 'Learn the mental model behind durable agent workflows: inputs, outputs, side effects, and failure modes before writing a single task.',
-   15, 'pro', TRUE, 'claude-code@1.x', '2026-03-10', '{"claude-code": "1.x"}', FALSE, FALSE, 1),
-
-  ('c6020000-0000-0000-0000-000000000002', 'b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006',
-   'chaining-agent-tasks',          'Chaining Agent Tasks',              'Compose multi-step Claude Code workflows: pass outputs between tasks, handle intermediate state, and keep chains readable.',
-   30, 'pro', TRUE, 'claude-code@1.x', '2026-03-10', '{"claude-code": "1.x"}', FALSE, FALSE, 2),
-
-  ('c6030000-0000-0000-0000-000000000003', 'b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006',
-   'scheduling-with-cron',          'Scheduling with Cron',              'Schedule recurring Claude Code workflows with cron on Linux/macOS or Task Scheduler on Windows.',
-   20, 'pro', TRUE, 'claude-code@1.x', '2026-03-10', '{"claude-code": "1.x"}', FALSE, FALSE, 3),
-
-  ('c6040000-0000-0000-0000-000000000004', 'b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006',
-   'error-handling-patterns',       'Error Handling Patterns',           'Design workflows that degrade gracefully: retries, fallbacks, notifications on failure, and partial-completion recovery.',
-   25, 'pro', TRUE, 'claude-code@1.x', '2026-03-10', '{"claude-code": "1.x"}', FALSE, FALSE, 4),
-
-  ('c6050000-0000-0000-0000-000000000005', 'b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006',
-   'state-and-memory',              'State and Memory in Workflows',     'Persist state between workflow runs using files, environment variables, and simple key-value stores. Know the tradeoffs of each approach.',
-   25, 'pro', TRUE, 'claude-code@1.x', '2026-03-10', '{"claude-code": "1.x"}', FALSE, FALSE, 5),
-
-  ('c6060000-0000-0000-0000-000000000006', 'b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006',
-   'testing-workflows',             'Testing Workflows',                 'Test your agent workflows before relying on them: dry runs, sandboxed execution, diff reviews, and regression checks.',
-   20, 'pro', TRUE, 'claude-code@1.x', '2026-03-10', '{"claude-code": "1.x"}', FALSE, FALSE, 6),
-
-  ('c6070000-0000-0000-0000-000000000007', 'b6000000-0000-0000-0000-000000000006', 'a6000000-0000-0000-0000-000000000006',
-   'real-world-examples',           'Real-World Workflow Examples',      'Walk through five complete, real workflow examples: daily digest, code review assistant, data pipeline, content pipeline, and report generator.',
-   35, 'pro', TRUE, 'claude-code@1.x', '2026-03-10', '{"claude-code": "1.x"}', FALSE, FALSE, 7)
-
-ON CONFLICT (path_id, slug) DO NOTHING;
-
+-- Learning path data is synced programmatically via apps/web/lib/supabase/curriculum-sync.ts on demand. No static seeds needed.
 
 -- =============================================================================
 -- END OF SCHEMA

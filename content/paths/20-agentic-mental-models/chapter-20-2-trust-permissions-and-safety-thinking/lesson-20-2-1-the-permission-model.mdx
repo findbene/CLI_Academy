@@ -13,9 +13,18 @@ estimatedMinutes: 15
 
 # The Permission Model: What Claude Needs Your Approval For
 
-## Objective
+## What you will build
 
-By the end of this lesson you will understand Claude Code's tool approval tiers, be able to explain why each tier exists, and know what `--dangerouslySkipPermissions` actually removes and why that flag carries a real risk. This is a conceptual safety lesson — the understanding here protects your files and your systems.
+A written answer in your notes explaining which tool tier requires the most caution, why, and what the permission model does to protect you — including a concrete example of a dangerous command.
+
+## Why this matters
+
+Claude Code can run shell commands on your machine. The permission model is what stands between "Claude misunderstands a task" and "Claude deletes a directory you needed." Understanding the four tool tiers tells you exactly when to read carefully before approving, and why `--dangerouslySkipPermissions` is not a productivity shortcut on a real development machine.
+
+## Before you start
+
+- Completed Lesson 20.1.3 (Tool Calls: What Happens When Claude Acts)
+- Familiarity with basic shell concepts: what `rm`, `git push`, and `curl | bash` do
 
 <DiagramBlock src="/assets/diagrams/permission-tiers.svg" alt="Permission tiers from safest to most powerful: Read-only, Write-local, Network, Admin (Bash)" caption="Claude's tools sit in four tiers. The Bash tool sits at the top — it can do anything a shell command can do." />
 

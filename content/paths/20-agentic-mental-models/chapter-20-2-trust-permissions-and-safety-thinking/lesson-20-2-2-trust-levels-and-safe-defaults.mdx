@@ -13,9 +13,18 @@ estimatedMinutes: 20
 
 # Trust Levels and Safe Defaults
 
-## Objective
+## What you will build
 
-By the end of this lesson you will have created a `CLAUDE.md` inside `~/cli-academy/projects/` that explicitly restricts Bash tool usage and limits file writes to that directory. You will verify that Claude reads and acknowledges the restrictions when a session starts. This is the practical version of the permission model — you codify your own safe defaults in writing rather than relying on memory.
+A `CLAUDE.md` at `~/cli-academy/projects/` with five hard rules restricting Bash usage and file write scope, verified by a live Claude session that reads and lists those rules back to you.
+
+## Why this matters
+
+Relying on the runtime approval prompts alone means reviewing every action in the moment, under pressure. A well-written `CLAUDE.md` sets your safe defaults in advance so Claude operates within known boundaries from the first tool call. This is the difference between reacting to what Claude does and designing what Claude is allowed to do.
+
+## Before you start
+
+- Completed Lesson 20.2.1 (The Permission Model)
+- Comfortable with an interactive `claude` session — you can open one, type a prompt, and exit with `/exit`
 
 ## Walkthrough
 

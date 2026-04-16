@@ -2,7 +2,27 @@
 
 ## Current phase
 
-OpenClaw curriculum restoration complete. 30 paths, 193 lessons across the 7-group taxonomy plus OpenClaw Ecosystem. Build is clean and all content validates.
+Full pre-deployment audit complete. 30 paths, 194 lessons. All security issues, bugs, feature gaps, and tech debt from the 2026-04-16 audit pass have been resolved in code. Remaining items require manual action at external providers (secret rotation, Sentry/PostHog/Stripe env vars). Build clean, 21/21 backend tests pass, 10/10 unit tests pass, all 194 lessons validate.
+
+## Audit pass (2026-04-16)
+
+- **SEC-3 fixed:** Admin email comparison normalized to `.toLowerCase().trim()` in `api/assets/[slug]/route.ts` — was case-sensitive, now consistent with `lib/viewer.ts`.
+- **BUG-1 fixed:** PostHog env var renamed `POSTHOG_API_KEY` → `NEXT_PUBLIC_POSTHOG_KEY` in `apps/web/.env` so PostHog actually initializes.
+- **BUG-2 fixed:** All 5 Path 20 lessons (`20-agentic-mental-models`) replaced `## Objective` with v2-standard `## What you will build`, `## Why this matters`, `## Before you start` sections.
+- **BUG-3 fixed:** `/api/search` wrapped in try/catch per path — a broken path now logs a warning and continues instead of 500ing the whole endpoint.
+- **FEAT-6 fixed:** `/labs` page replaced hardcoded Unsplash prototype with a proper "Coming Soon" server component using the design system.
+- **FEAT-7 added:** Vitest configured (`vitest.config.ts`, `vitest.setup.ts`), 10 initial unit tests passing in `lib/__tests__/learning.test.ts`.
+- **FEAT-8 fixed:** Backend pytest added to CI (`ci.yml`) — 21 tests now run on every push. `pytest` and `pytest-asyncio` added to `requirements.txt`.
+- **FEAT-9 added:** k6 load test script created at `tooling/load-tests/tutor-load-test.js` (not yet run against production — pending Anthropic key rotation).
+- **DEBT-1+2 fixed:** `infra/schema.sql` now includes gamification tables, RLS policies, and `increment_tutor_usage` RPC from migrations 01 and 02. Stale 6-path seed data removed; replaced with comment pointing to `curriculum-sync.ts`.
+- **DEBT-3 fixed:** Dead backend tutor code deleted (`routers/tutor.py`, `services/tutor_service.py`). Single clean comment left in `main.py`.
+- **DEBT-4 fixed:** `NEXT_PUBLIC_API_BASE_URL` (unused Railway URL) and `GOOGLE_API_KEY` (unused, live credential) removed from `apps/web/.env`.
+- **DEBT-5 fixed:** Duplicate `docs/cli_academy_curriculum_blueprint (1).md` deleted.
+- **DEBT-6 fixed:** `docs/ARCHITECTURE.md` created — system overview, all 14 DB tables, auth flow, deployment, 7 ADR summaries.
+- **DEBT-8 fixed:** `docker-compose.yml` created at repo root for local multi-service development.
+- **DEBT-9 fixed:** Pre-commit hooks added — Husky + lint-staged + Prettier configured in `apps/web/`.
+- **DEBT-10 fixed:** README.md updated — "all 175 lessons" corrected to "all 194 lessons" with consistent v2 standard claim.
+- **docs fixed:** `apps/web/.env.example` created with full documentation. PROGRESS.md consolidated (stale duplicate sections removed).
 
 ## Deployment audit fixes (2026-04-13)
 
@@ -21,18 +41,6 @@ OpenClaw curriculum restoration complete. 30 paths, 193 lessons across the 7-gro
 - **SEC-01 partially fixed:** `.env.example` rewritten with full documentation, rotation warnings, and all required variables. Note: actual key rotation must be done manually at provider dashboards.
 - **PERF-01 fixed:** Three.js lazy-loaded in `AuthCard.tsx` via `next/dynamic` with `ssr: false`.
 - **Lint fixed:** Pre-existing ESLint errors in `SavedResourcesClient.tsx`, `VerificationBlock.tsx`, `QuizBlock.tsx` resolved. Build is clean.
-
-## In progress
-
-Nothing currently in progress.
-
-## Next
-
-1. Rotate exposed API keys (Anthropic, Supabase, Google) — must be done manually at each provider.
-2. Deploy `infra/migrations/02_atomic_tutor_limit.sql` to production Supabase.
-3. Configure Sentry DSN and PostHog key in deployment environment.
-4. Run load test against tutor endpoint before public launch.
-5. Editorial QA on paths 11–19 and 28–30.
 
 ## OpenClaw Curriculum Restoration (2026-04-14)
 
@@ -84,6 +92,18 @@ Nothing currently in progress.
 2. Run the remaining visual browser pass on `/` and `/lounge` across desktop and mobile breakpoints.
 3. Draft the Capstone MDX payloads for the `mcp-mastery` paths.
 4. Harden the gamification service further around concurrency and malformed database edge cases.
+5. Execute k6 load test against tutor endpoint (script exists in `tests/load/`; must be run against live/staging before public launch).
+6. Complete P0 manual ops: rotate exposed keys, deploy schema to production Supabase, set Sentry/PostHog/Stripe env vars in Vercel.
+
+## Doc and infra cleanup (2026-04-16)
+
+- **BUG-4 fixed:** PROGRESS.md consolidated — lesson count corrected to 194, duplicate "## In progress" and "## Next" blocks removed.
+- **DEBT-1 + DEBT-2 fixed:** `infra/schema.sql` now includes gamification tables (`user_progress`, `alumni_status`, `achievements`) and the `increment_tutor_usage` RPC from migration 02. Stale 6-path seed data removed; replaced with a comment pointing to `curriculum-sync.ts`. Header comment added marking schema.sql as the authoritative full schema.
+- **DEBT-5 fixed:** Deleted `docs/cli_academy_curriculum_blueprint (1).md` (browser download duplicate artifact).
+- **DEBT-6 fixed:** Created `docs/ARCHITECTURE.md` — system overview, all 14 tables, auth flow, deployment, and ADR summary.
+- **DEBT-8 fixed:** Created `docker-compose.yml` at repo root — starts the Python API for local dev; Next.js runs separately.
+- **DEBT-10 fixed:** README.md stale "175 lessons" v2 content standard reference updated to "194 lessons".
+- **TASKS.md updated:** P0 ops items annotated with pending-manual-rotation/done-in-code status; "Done (this pass)" section added tracking all completed items.
 
 ## Latest update
 

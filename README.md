@@ -60,7 +60,7 @@ The current structure fixes that by:
 - The active frontend lives in `apps/web/`. The active backend lives in `apps/api/`.
 - Curriculum and downloadable assets live in `content/`.
 - **Curriculum: 30 paths, 194 lessons** across a 7-group taxonomy (Group 0 Orientation → Group 6 Career Pathways) plus an OpenClaw Ecosystem section. Paths 01-27 are the original and redesigned live paths; Paths 28-30 are new OpenClaw deep-dive paths added in April 2026. Path 11 was fully rewritten to actually cover OpenClaw (its slug always promised OpenClaw but previously taught Docker sandboxing).
-- **v2 content standard**: all 175 lessons have `## What you will build`, `## Why this matters`, `## Before you start`, 3-criteria rubric criteria, and verifyType diversity (code_submission 45%, terminal_output 25%, quiz 23%, screenshot 7%).
+- **v2 content standard**: all 194 lessons meet the v2 content standard — `## What you will build`, `## Why this matters`, `## Before you start`, 3-criteria rubric criteria, and verifyType diversity (code_submission 45%, terminal_output 25%, quiz 23%, screenshot 7%).
 - **Deployment hardening complete**: Sentry error tracking, PostHog analytics, Playwright e2e in CI, atomic tutor rate limit (PostgreSQL RPC), Dockerfile non-root with HEALTHCHECK, Vercel config, and deployment runbook.
 - 5 manual launch-gate items remain — secret rotation, migration deploy, Sentry/PostHog env vars, Stripe config. See TASKS.md P0 Ops.
 - Learner-flow support includes onboarding start-route recommendations, dashboard resume targets, section-progress tracking, server-backed lesson verification, browser-local progress fallback/backfill, and password recovery.

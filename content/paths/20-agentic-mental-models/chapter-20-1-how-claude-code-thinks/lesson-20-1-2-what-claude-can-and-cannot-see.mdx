@@ -13,9 +13,18 @@ estimatedMinutes: 20
 
 # What Claude Can and Cannot See
 
-## Objective
+## What you will build
 
-By the end of this lesson you will have run a `claude --print` command in a test directory and seen exactly which files Claude reports. You will understand the difference between files Claude reads automatically, files it reads on request, and information it cannot access at all. This distinction prevents a whole class of bugs where Claude confidently gives wrong answers because it was guessing, not reading.
+A `claude-visibility-test/` directory with five test files, plus terminal output from a `claude --print` command showing exactly which files Claude can and cannot see.
+
+## Why this matters
+
+Claude does not read your entire project automatically. When it gives you a wrong answer about your codebase, the most common cause is not hallucination — it is that Claude has not opened the relevant file yet. Knowing this distinction means you can diagnose wrong answers quickly and write prompts that give Claude the context it actually needs.
+
+## Before you start
+
+- Completed Lesson 20.1.1 (The Loop: Plan, Act, Observe)
+- Claude Code installed and authenticated (`claude auth login` completed)
 
 ## Walkthrough
 

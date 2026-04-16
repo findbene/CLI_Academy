@@ -2,13 +2,13 @@
 
 ## P0 — Ops (manual, launch-gate)
 
-- [ ] Rotate `ANTHROPIC_API_KEY` at console.anthropic.com (was committed to git history)
-- [ ] Rotate `SUPABASE_SERVICE_ROLE_KEY` at Supabase dashboard (was committed to git history)
-- [ ] Rotate `GOOGLE_API_KEY` at Google Cloud Console (was committed to git history)
-- [ ] Deploy `infra/migrations/02_atomic_tutor_limit.sql` to production Supabase
-- [ ] Set `NEXT_PUBLIC_SENTRY_DSN` in Vercel environment variables
-- [ ] Set `NEXT_PUBLIC_POSTHOG_KEY` in Vercel environment variables
-- [ ] Configure Stripe price IDs and webhook secret (billing path, pre-launch)
+- [ ] Rotate `ANTHROPIC_API_KEY` at console.anthropic.com — **pending manual rotation**
+- [ ] Rotate `SUPABASE_SERVICE_ROLE_KEY` at Supabase dashboard — **pending manual rotation**
+- [ ] Rotate `GOOGLE_API_KEY` at Google Cloud Console — **pending manual rotation**
+- [ ] Deploy `infra/migrations/02_atomic_tutor_limit.sql` to production Supabase — **pending manual deploy** (migration + RPC now folded into schema.sql)
+- [ ] Set `NEXT_PUBLIC_SENTRY_DSN` in Vercel environment variables — **Sentry SDK wired in code; env var name fixed (BUG-1); still needs value set in Vercel dashboard**
+- [ ] Set `NEXT_PUBLIC_POSTHOG_KEY` in Vercel environment variables — **PostHog SDK wired in code; env var name fixed (BUG-1); still needs value set in Vercel dashboard**
+- [ ] Configure Stripe price IDs and webhook secret (billing path, pre-launch) — **pending manual config**
 
 ## P0 — Engineering
 
@@ -31,6 +31,26 @@
 - [ ] Add docs freshness checks for root operating files.
 - [ ] Add package boundaries under `packages/` when duplication justifies extraction.
 - [ ] Create durable architecture notes for the curriculum and learner-flow migration decisions.
+
+## Done (this pass)
+
+- [x] **BUG-1** — PostHog env var name fixed in code (`NEXT_PUBLIC_POSTHOG_KEY`); Sentry env var name correct. Both SDKs wired and activating on env var presence. Manual: set values in Vercel dashboard.
+- [x] **BUG-3** — Search error handling fixed.
+- [x] **BUG-4** — PROGRESS.md consolidated: lesson count corrected to 194, duplicate "## In progress" and "## Next" sections removed.
+- [x] **SEC-3** — Admin email secured.
+- [x] **FEAT-6** — Labs page gated.
+- [x] **FEAT-7** — Vitest setup complete.
+- [x] **FEAT-8** — pytest suite in CI (health, gamification streak, daily tutor limit).
+- [x] **FEAT-9** — k6 load test script created (`tests/load/`). Script exists but the test has not been RUN yet — must be executed against a live/staging endpoint before launch. See P2 LOAD-01.
+- [x] **DEBT-1 + DEBT-2** — schema.sql now includes gamification tables (`user_progress`, `alumni_status`, `achievements`) and the `increment_tutor_usage` RPC. Stale 6-path seed data removed; replaced with comment pointing to `curriculum-sync.ts`.
+- [x] **DEBT-3** — (previously done)
+- [x] **DEBT-4** — (previously done)
+- [x] **DEBT-5** — Deleted duplicate `docs/cli_academy_curriculum_blueprint (1).md` (browser download artifact).
+- [x] **DEBT-6** — Created `docs/ARCHITECTURE.md` (was referenced in docs/CLAUDE.md but did not exist).
+- [x] **DEBT-7** — (previously done)
+- [x] **DEBT-8** — Created `docker-compose.yml` at repo root for local API development.
+- [x] **DEBT-9** — (previously done)
+- [x] **DEBT-10** — README.md updated: stale "175 lessons" reference replaced with "194 lessons meet the v2 content standard".
 
 ## Done (this sprint)
 
