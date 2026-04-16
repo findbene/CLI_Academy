@@ -19,15 +19,11 @@ export interface PathAccessState {
   requiresUpgrade: boolean;
 }
 
-function buildPathMeta(meta: PathExperienceMeta): PathExperienceMeta {
-  return meta;
-}
-
 export function getPathExperienceMeta(path: Pick<CatalogPath, "section" | "slug" | "summary" | "title">): PathExperienceMeta {
   const slug = path.slug;
 
   if (slug.startsWith("01-") || slug.startsWith("02-") || slug.startsWith("03-")) {
-    return buildPathMeta({
+    return {
       audience: "New learners who need safe first wins and a reliable mental model.",
       difficulty: "starter",
       format: "foundation",
@@ -37,11 +33,11 @@ export function getPathExperienceMeta(path: Pick<CatalogPath, "section" | "slug"
         "Finish your first real CLI Academy artifact in the same session.",
       ],
       prerequisites: ["No prior path required."],
-    });
+    };
   }
 
   if (slug.startsWith("04-") || slug.startsWith("05-") || slug.startsWith("06-") || slug.startsWith("07-")) {
-    return buildPathMeta({
+    return {
       audience: "Learners who are ready to work inside real repos and need safer execution habits.",
       difficulty: "guided-practice",
       format: "workflow",
@@ -51,11 +47,11 @@ export function getPathExperienceMeta(path: Pick<CatalogPath, "section" | "slug"
         "Move between terminal, IDE, desktop, and browser surfaces with less confusion.",
       ],
       prerequisites: ["Start Here", "Terminal Foundations", "Claude Code: Zero to Productive"],
-    });
+    };
   }
 
   if (slug.startsWith("08-") || slug.startsWith("09-") || slug.startsWith("10-")) {
-    return buildPathMeta({
+    return {
       audience: "Operators and knowledge workers who want practical AI workflows with oversight.",
       difficulty: "applied",
       format: "workflow",
@@ -65,11 +61,11 @@ export function getPathExperienceMeta(path: Pick<CatalogPath, "section" | "slug"
         "Keep human review in the loop while increasing throughput.",
       ],
       prerequisites: ["Claude Code: Zero to Productive"],
-    });
+    };
   }
 
   if (slug.startsWith("18-")) {
-    return buildPathMeta({
+    return {
       audience: "Builders who want portfolio-worthy automations and practical assistants.",
       difficulty: "advanced",
       format: "build",
@@ -79,11 +75,11 @@ export function getPathExperienceMeta(path: Pick<CatalogPath, "section" | "slug"
         "Produce evidence of practical AI builder skill, not just course completion.",
       ],
       prerequisites: ["Repo Workflows", "Debugging and Refactoring", "Skills and Memory"],
-    });
+    };
   }
 
   if (slug.startsWith("19-")) {
-    return buildPathMeta({
+    return {
       audience: "Learners who want job-ready proof, case studies, and strong portfolio artifacts.",
       difficulty: "capstone",
       format: "capstone",
@@ -93,11 +89,11 @@ export function getPathExperienceMeta(path: Pick<CatalogPath, "section" | "slug"
         "Leave the course collection with mastery signals, not just badges.",
       ],
       prerequisites: ["Complete at least one practical build path before starting capstones."],
-    });
+    };
   }
 
   if (path.section === "Agent Infrastructure" || path.section === "Self-Hosting") {
-    return buildPathMeta({
+    return {
       audience: "Intermediate-to-advanced learners who need stronger safety, runtime, and integration habits.",
       difficulty: "advanced",
       format: "infrastructure",
@@ -107,16 +103,16 @@ export function getPathExperienceMeta(path: Pick<CatalogPath, "section" | "slug"
         "Work with infrastructure concepts in a more bounded, reviewable way.",
       ],
       prerequisites: ["Claude Code: Zero to Productive", "Repo workflows and debugging foundations"],
-    });
+    };
   }
 
-  return buildPathMeta({
+  return {
     audience: "Learners who want hands-on guidance with clear next steps and practical outputs.",
     difficulty: "guided-practice",
     format: "workflow",
     outcomes: [path.summary],
     prerequisites: ["Start with the first free paths if this topic feels advanced."],
-  });
+  };
 }
 
 export function getPathAccessState(

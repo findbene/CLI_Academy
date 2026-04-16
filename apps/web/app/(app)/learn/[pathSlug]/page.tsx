@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
 import { PathMasterySnapshot } from "@/components/path/PathMasterySnapshot";
 import { getAcademyRelationships, getAcademyRuntimes } from "@/lib/academy-content";
-import { getPathRuntimeLinks } from "@/lib/academy-recommendations";
+import { getPathRuntimeLinks } from "@/lib/academy-core";
 import { getRecommendedAssetsForPath, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
 import {

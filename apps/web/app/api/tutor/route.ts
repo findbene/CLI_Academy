@@ -12,6 +12,11 @@ import { buildTutorSystemPrompt, getAnthropicClient, getTutorModel } from "@/lib
 
 const encoder = new TextEncoder();
 
+function resolveTierAndLimit(profileTier?: string | null): { tier: "free" | "pro"; dailyLimit: number } {
+  const tier = profileTier === "pro" ? "pro" : "free";
+  return { tier, dailyLimit: tier === "pro" ? 100 : 10 };
+}
+
 function sse(payload: unknown) {
   return encoder.encode(`data: ${JSON.stringify(payload)}\n\n`);
 }
@@ -79,8 +84,7 @@ export async function GET() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const tier = profile?.tier === "pro" ? "pro" : "free";
-  const dailyLimit = tier === "pro" ? 100 : 10;
+  const { tier, dailyLimit } = resolveTierAndLimit(profile?.tier);
   const today = new Date().toISOString().slice(0, 10);
 
   const { data: usage } = await supabaseContext.supabase
@@ -172,8 +176,7 @@ export async function POST(request: Request) {
     .eq("id", user.id)
     .maybeSingle();
 
-  const tier = profile?.tier === "pro" ? "pro" : "free";
-  const dailyLimit = tier === "pro" ? 100 : 10;
+  const { tier, dailyLimit } = resolveTierAndLimit(profile?.tier);
   const today = new Date().toISOString().slice(0, 10);
   const tutorMode = isTutorMode(body.tutorMode)
     ? body.tutorMode

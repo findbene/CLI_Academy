@@ -1,5 +1,5 @@
 import {
-  mergeSavedResources as mergeSavedResourcesCore,
+  mergeSavedResources,
   removeResourceFromList,
   toggleResourceInList,
   type SavedAcademyResource,
@@ -10,7 +10,6 @@ import {
 export type { SavedAcademyResource, SavedAcademyResourceType };
 
 const STORAGE_KEY = "cli_academy_saved_resources_v1";
-const REMOTE_KEY = "__academy_saved_resources";
 
 function canUseStorage() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -36,10 +35,6 @@ function readSavedResources() {
 
 export function getSavedAcademyResources() {
   return readSavedResources();
-}
-
-function mergeSavedResources(resources: SavedAcademyResource[]) {
-  return mergeSavedResourcesCore(resources);
 }
 
 export async function fetchSavedAcademyResourcesFromAccount() {
@@ -144,5 +139,3 @@ export async function clearSavedAcademyResourcesWithSync() {
   clearSavedAcademyResources();
   await persistSavedAcademyResourcesToAccount([]);
 }
-
-export { REMOTE_KEY };

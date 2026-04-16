@@ -14,7 +14,7 @@ import {
   getAcademyRuntimes,
   getAcademyRubrics,
 } from "@/lib/academy-content";
-import { getLessonCompanionBlocks, getLessonResourceLinks } from "@/lib/academy-recommendations";
+import { getLessonCompanionBlocks, getLessonResourceLinks } from "@/lib/academy-core";
 import { getRecommendedAssetsForLesson, toDownloadSurfaceAsset } from "@/lib/assets";
 import { getCatalogPathBySlug } from "@/lib/catalog";
 import { buildLessonGuidance, getPathAccessState } from "@/lib/learning-experience";
