@@ -6,15 +6,15 @@
 
 # Test info
 
-- Name: smoke.spec.ts >> Public pages >> /paths loads without error
-- Location: e2e\smoke.spec.ts:26:9
+- Name: smoke.spec.ts >> Learning discovery >> path detail page exposes freshness and outcomes
+- Location: e2e\smoke.spec.ts:61:7
 
 # Error details
 
 ```
-Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths/01-start-here
 Call log:
-  - navigating to "http://localhost:3000/paths", waiting until "load"
+  - navigating to "http://localhost:3000/paths/01-start-here", waiting until "load"
 
 ```
 
@@ -47,8 +47,7 @@ Call log:
   24  | 
   25  |   for (const route of publicRoutes) {
   26  |     test(`${route.path} loads without error`, async ({ page }) => {
-> 27  |       const response = await page.goto(route.path);
-      |                                   ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
+  27  |       const response = await page.goto(route.path);
   28  |       expect(response?.status()).toBeLessThan(500);
   29  |       await expect(page).toHaveTitle(new RegExp(route.title, "i"));
   30  |     });
@@ -83,7 +82,8 @@ Call log:
   59  |   });
   60  | 
   61  |   test("path detail page exposes freshness and outcomes", async ({ page }) => {
-  62  |     await page.goto("/paths/01-start-here");
+> 62  |     await page.goto("/paths/01-start-here");
+      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths/01-start-here
   63  | 
   64  |     await expect(page.getByText("Path guidance")).toBeVisible();
   65  |     await expect(page.getByText("Freshness:")).toBeVisible();
@@ -149,4 +149,39 @@ Call log:
   125 |   test("login page reflects auth availability", async ({ page }) => {
   126 |     await page.goto("/login");
   127 | 
+  128 |     await expect(page.getByRole("link", { name: "Sign up" }).first()).toBeVisible();
+  129 |     await expect(page.getByRole("link", { name: /forgot password\?/i })).toHaveAttribute("href", "/forgot-password");
+  130 | 
+  131 |     const emailInput = page.getByLabel("Email");
+  132 |     const passwordInput = page.getByLabel("Password");
+  133 |     const submitButton = page.getByRole("button", { name: /sign in/i });
+  134 |     const googleButton = page.getByRole("button", { name: /continue with google/i });
+  135 |     const authUnavailable = (await page.getByText(/authentication is unavailable until/i).count()) > 0;
+  136 | 
+  137 |     if (!authUnavailable) {
+  138 |       await expect(emailInput).toBeEnabled();
+  139 |       await expect(passwordInput).toBeEnabled();
+  140 |       await expect(submitButton).toBeEnabled();
+  141 |       await expect(googleButton).toBeEnabled();
+  142 |       await expect(page.getByText(/authentication is unavailable until/i)).toHaveCount(0);
+  143 |     } else {
+  144 |       await expect(emailInput).toBeDisabled();
+  145 |       await expect(passwordInput).toBeDisabled();
+  146 |       await expect(submitButton).toBeDisabled();
+  147 |       await expect(googleButton).toBeDisabled();
+  148 |       await expect(page.getByText(/authentication is unavailable until/i)).toBeVisible();
+  149 |     }
+  150 |   });
+  151 | 
+  152 |   test("signup page reflects auth availability", async ({ page }) => {
+  153 |     await page.goto("/signup");
+  154 | 
+  155 |     await expect(page.getByRole("link", { name: "Log in" }).first()).toBeVisible();
+  156 | 
+  157 |     const emailInput = page.getByLabel("Email");
+  158 |     const passwordInput = page.getByLabel("Password");
+  159 |     const submitButton = page.getByRole("button", { name: /create your account/i });
+  160 |     const googleButton = page.getByRole("button", { name: /continue with google/i });
+  161 |     const authUnavailable = (await page.getByText(/authentication is unavailable until/i).count()) > 0;
+  162 | 
 ```

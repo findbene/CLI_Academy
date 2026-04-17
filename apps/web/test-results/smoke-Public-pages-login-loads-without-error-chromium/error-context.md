@@ -6,15 +6,15 @@
 
 # Test info
 
-- Name: smoke.spec.ts >> Public pages >> /paths loads without error
+- Name: smoke.spec.ts >> Public pages >> /login loads without error
 - Location: e2e\smoke.spec.ts:26:9
 
 # Error details
 
 ```
-Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/login
 Call log:
-  - navigating to "http://localhost:3000/paths", waiting until "load"
+  - navigating to "http://localhost:3000/login", waiting until "load"
 
 ```
 
@@ -48,7 +48,7 @@ Call log:
   25  |   for (const route of publicRoutes) {
   26  |     test(`${route.path} loads without error`, async ({ page }) => {
 > 27  |       const response = await page.goto(route.path);
-      |                                   ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
+      |                                   ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/login
   28  |       expect(response?.status()).toBeLessThan(500);
   29  |       await expect(page).toHaveTitle(new RegExp(route.title, "i"));
   30  |     });

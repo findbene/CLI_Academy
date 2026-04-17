@@ -12,11 +12,7 @@
 # Error details
 
 ```
-Test timeout of 30000ms exceeded.
-```
-
-```
-Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/
 Call log:
   - navigating to "http://localhost:3000/", waiting until "load"
 
@@ -52,7 +48,7 @@ Call log:
   25  |   for (const route of publicRoutes) {
   26  |     test(`${route.path} loads without error`, async ({ page }) => {
 > 27  |       const response = await page.goto(route.path);
-      |                                   ^ Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+      |                                   ^ Error: page.goto: net::ERR_CONNECTION_RESET at http://localhost:3000/
   28  |       expect(response?.status()).toBeLessThan(500);
   29  |       await expect(page).toHaveTitle(new RegExp(route.title, "i"));
   30  |     });

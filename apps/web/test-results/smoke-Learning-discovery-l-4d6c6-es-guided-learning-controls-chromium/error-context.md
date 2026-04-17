@@ -6,15 +6,15 @@
 
 # Test info
 
-- Name: smoke.spec.ts >> Public pages >> /paths loads without error
-- Location: e2e\smoke.spec.ts:26:9
+- Name: smoke.spec.ts >> Learning discovery >> lesson route exposes guided-learning controls
+- Location: e2e\smoke.spec.ts:52:7
 
 # Error details
 
 ```
-Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace
 Call log:
-  - navigating to "http://localhost:3000/paths", waiting until "load"
+  - navigating to "http://localhost:3000/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace", waiting until "load"
 
 ```
 
@@ -47,8 +47,7 @@ Call log:
   24  | 
   25  |   for (const route of publicRoutes) {
   26  |     test(`${route.path} loads without error`, async ({ page }) => {
-> 27  |       const response = await page.goto(route.path);
-      |                                   ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
+  27  |       const response = await page.goto(route.path);
   28  |       expect(response?.status()).toBeLessThan(500);
   29  |       await expect(page).toHaveTitle(new RegExp(route.title, "i"));
   30  |     });
@@ -74,7 +73,8 @@ Call log:
   50  |   });
   51  | 
   52  |   test("lesson route exposes guided-learning controls", async ({ page }) => {
-  53  |     await page.goto("/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace");
+> 53  |     await page.goto("/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace");
+      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/learn/01-start-here/lesson-1-1-1-create-the-cli-academy-workspace
   54  | 
   55  |     await expect(page.getByText("Mission outcome")).toBeVisible();
   56  |     await expect(page.getByText("Guided checklist")).toBeVisible();
@@ -149,4 +149,30 @@ Call log:
   125 |   test("login page reflects auth availability", async ({ page }) => {
   126 |     await page.goto("/login");
   127 | 
+  128 |     await expect(page.getByRole("link", { name: "Sign up" }).first()).toBeVisible();
+  129 |     await expect(page.getByRole("link", { name: /forgot password\?/i })).toHaveAttribute("href", "/forgot-password");
+  130 | 
+  131 |     const emailInput = page.getByLabel("Email");
+  132 |     const passwordInput = page.getByLabel("Password");
+  133 |     const submitButton = page.getByRole("button", { name: /sign in/i });
+  134 |     const googleButton = page.getByRole("button", { name: /continue with google/i });
+  135 |     const authUnavailable = (await page.getByText(/authentication is unavailable until/i).count()) > 0;
+  136 | 
+  137 |     if (!authUnavailable) {
+  138 |       await expect(emailInput).toBeEnabled();
+  139 |       await expect(passwordInput).toBeEnabled();
+  140 |       await expect(submitButton).toBeEnabled();
+  141 |       await expect(googleButton).toBeEnabled();
+  142 |       await expect(page.getByText(/authentication is unavailable until/i)).toHaveCount(0);
+  143 |     } else {
+  144 |       await expect(emailInput).toBeDisabled();
+  145 |       await expect(passwordInput).toBeDisabled();
+  146 |       await expect(submitButton).toBeDisabled();
+  147 |       await expect(googleButton).toBeDisabled();
+  148 |       await expect(page.getByText(/authentication is unavailable until/i)).toBeVisible();
+  149 |     }
+  150 |   });
+  151 | 
+  152 |   test("signup page reflects auth availability", async ({ page }) => {
+  153 |     await page.goto("/signup");
 ```

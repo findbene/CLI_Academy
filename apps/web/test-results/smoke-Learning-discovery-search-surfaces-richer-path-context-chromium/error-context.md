@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: smoke.spec.ts >> Public pages >> /paths loads without error
-- Location: e2e\smoke.spec.ts:26:9
+- Name: smoke.spec.ts >> Learning discovery >> search surfaces richer path context
+- Location: e2e\smoke.spec.ts:35:7
 
 # Error details
 
@@ -47,8 +47,7 @@ Call log:
   24  | 
   25  |   for (const route of publicRoutes) {
   26  |     test(`${route.path} loads without error`, async ({ page }) => {
-> 27  |       const response = await page.goto(route.path);
-      |                                   ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
+  27  |       const response = await page.goto(route.path);
   28  |       expect(response?.status()).toBeLessThan(500);
   29  |       await expect(page).toHaveTitle(new RegExp(route.title, "i"));
   30  |     });
@@ -57,7 +56,8 @@ Call log:
   33  | 
   34  | test.describe("Learning discovery", () => {
   35  |   test("search surfaces richer path context", async ({ page }) => {
-  36  |     await page.goto("/paths");
+> 36  |     await page.goto("/paths");
+      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/paths
   37  |     await page.waitForFunction(() => {
   38  |       window.dispatchEvent(new Event("open-search"));
   39  |       return Boolean(document.querySelector('input[aria-label="Search"]'));
@@ -149,4 +149,13 @@ Call log:
   125 |   test("login page reflects auth availability", async ({ page }) => {
   126 |     await page.goto("/login");
   127 | 
+  128 |     await expect(page.getByRole("link", { name: "Sign up" }).first()).toBeVisible();
+  129 |     await expect(page.getByRole("link", { name: /forgot password\?/i })).toHaveAttribute("href", "/forgot-password");
+  130 | 
+  131 |     const emailInput = page.getByLabel("Email");
+  132 |     const passwordInput = page.getByLabel("Password");
+  133 |     const submitButton = page.getByRole("button", { name: /sign in/i });
+  134 |     const googleButton = page.getByRole("button", { name: /continue with google/i });
+  135 |     const authUnavailable = (await page.getByText(/authentication is unavailable until/i).count()) > 0;
+  136 | 
 ```
