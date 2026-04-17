@@ -5,13 +5,13 @@
 # The backend deploys to Google Cloud Run in production; this compose file is for local dev only.
 #
 # Usage:
-#   docker compose up --build        # build and start the API
-#   docker compose up -d             # start in background
-#   docker compose logs -f api       # stream logs
-#   docker compose down              # stop and remove containers
+#   cp apps/api/.env.example apps/api/.env   # then fill in real values
+#   docker compose up --build                # build and start the API
+#   docker compose up -d                     # start in background
+#   docker compose logs -f api               # stream logs
+#   docker compose down                      # stop and remove containers
 #
-# The frontend at http://localhost:3000 will proxy API calls to http://localhost:8000.
-# Set NEXT_PUBLIC_API_URL=http://localhost:8000 in apps/web/.env.local for local dev.
+# The backend exposes /health only (gamification and tutor run in Next.js).
 
 version: "3.9"
 services:
@@ -24,9 +24,8 @@ services:
     environment:
       - ENV=development
       - ALLOWED_ORIGINS=http://localhost:3000
-      # Copy your apps/api/.env values here or use env_file
     env_file:
-      - apps/api/.env.example
+      - apps/api/.env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

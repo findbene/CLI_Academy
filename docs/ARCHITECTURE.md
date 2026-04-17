@@ -9,7 +9,7 @@ Reference document for the CLI Academy system. For full decision history see `DE
 CLI Academy is a learner-first web platform teaching Claude Code, Claude Cowork, OpenClaw runtimes, and safe agentic workflows. It has two deployable applications:
 
 - **apps/web** — Next.js 16 frontend (Vercel). Serves all learner-facing surfaces: catalog, lesson player, dashboard, onboarding, auth, tutor, and reference center.
-- **apps/api** — FastAPI Python backend (Docker / Cloud Run). Handles gamification streak logic and daily tutor rate limiting only.
+- **apps/api** — FastAPI Python backend (Docker / Cloud Run). Exposes `/health` for readiness probes only. Gamification streak logic, tutor rate limiting, and all LLM calls run in Next.js API routes directly on Supabase (ARCH-01, 2026-04).
 
 ---
 
@@ -28,9 +28,9 @@ CLI Academy is a learner-first web platform teaching Claude Code, Claude Cowork,
 
 **Auth flow:**
 1. User hits `/login` → Supabase email or Google OAuth
-2. OAuth callback lands at `/auth/callback` → exchanges code for session → redirects to `next` param or `/dashboard`
-3. Middleware (`middleware.ts`) protects `/learn/*`, `/dashboard`, `/onboarding` — unauthenticated requests redirect to `/login?next=<path>`
-4. Layout-level gating is avoided: auth decisions happen at middleware or server component level
+2. OAuth callback lands at `/api/auth/callback` → exchanges code for session → redirects to `next` param or `/dashboard`
+3. Edge proxy (`proxy.ts`) protects `/dashboard`, `/downloads`, `/settings`, `/onboarding` — unauthenticated requests redirect to `/login?next=<path>`
+4. Layout-level gating is avoided: auth decisions happen at the proxy layer (`proxy.ts`) or server component level
 
 **Content loading:**
 - MDX files live under `content/paths/<path-slug>/chapter-<n>/lesson-<n>.mdx`
@@ -51,11 +51,8 @@ CLI Academy is a learner-first web platform teaching Claude Code, Claude Cowork,
 
 **Registered routes:**
 - `GET /health` — readiness probe; returns 503 if Supabase admin credentials are missing
-- `POST /api/gamification/streak` — records lesson completion, updates `user_progress`, promotes `alumni_status` clearance level based on streak milestones
-- Internal: daily tutor limit enforcement calls `increment_tutor_usage` Postgres RPC (atomic, no race condition)
 
-**Why Python instead of Next.js for gamification:**
-Gamification and streak logic involve multi-step Supabase writes that benefit from service-role access and were originally prototyped in Python. Tutor LLM calls go through Next.js `/api/tutor` because latency and streaming are better handled there.
+**Runtime ownership (ARCH-01, 2026-04):** Gamification streak, daily tutor limit, and all LLM calls consolidated into Next.js API routes (`/api/gamification/streak`, `/api/tutor`). The Python backend exists for health checks and future infra extensions; it holds no business logic.
 
 ---
 
@@ -102,10 +99,10 @@ Full schema: `infra/schema.sql` (authoritative, includes all migration content).
 ## 6. Auth
 
 - Provider: Supabase Auth — email/password and Google OAuth
-- Callback route: `apps/web/app/auth/callback/route.ts`
-- Middleware: `apps/web/middleware.ts` — route-level protection, preserves `next` param on redirect
+- Callback route: `apps/web/app/api/auth/callback/route.ts`
+- Proxy: `apps/web/proxy.ts` — route-level protection, preserves `next` param on redirect
 - Password recovery: `/forgot-password` → `/reset-password` flow (added 2026-04)
-- Layout-level gating decision: auth checks are colocated at middleware or server component level, not scattered across layouts (reduces double-render and redirect loops)
+- Layout-level gating decision: auth checks are colocated at the proxy layer (`proxy.ts`) or server component level, not scattered across layouts (reduces double-render and redirect loops)
 
 ---
 

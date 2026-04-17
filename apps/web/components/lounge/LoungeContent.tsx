@@ -24,6 +24,15 @@ function renderInlineContent(text: string) {
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (linkMatch) {
       const [, label, href] = linkMatch;
+      const isSafe =
+        href.startsWith("https://") ||
+        href.startsWith("http://") ||
+        href.startsWith("/") ||
+        href.startsWith("#") ||
+        href.startsWith("mailto:");
+      if (!isSafe) {
+        return <Fragment key={index}>{label}</Fragment>;
+      }
       const external = href.startsWith("http://") || href.startsWith("https://");
 
       return (
@@ -108,14 +117,41 @@ function renderBlock(block: string, index: number) {
     return <CodeBlock key={index} language={language}>{code}</CodeBlock>;
   }
 
-  // Raw HTML embedding (videos, iframes, wrappers)
-  if (block.startsWith("<video") || block.startsWith("<iframe") || block.startsWith("<div")) {
+  const iframeMatch = block.match(/<iframe[^>]*src="([^"]+)"[^>]*><\/iframe>/i);
+  if (iframeMatch) {
+    const src = iframeMatch[1];
+    if (!src.startsWith("https://")) {
+      return null;
+    }
+
     return (
-      <div 
-        key={index} 
-        className="my-8 overflow-hidden rounded-xl shadow-2xl border border-white/5 bg-black"
-        dangerouslySetInnerHTML={{ __html: block }} 
-      />
+      <div key={index} className="my-8 overflow-hidden rounded-xl border border-white/5 bg-black shadow-2xl">
+        <iframe
+          src={src}
+          className="aspect-video w-full"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          referrerPolicy="no-referrer"
+          sandbox="allow-same-origin allow-scripts allow-presentation"
+          title="Embedded lounge media"
+        />
+      </div>
+    );
+  }
+
+  const videoMatch = block.match(/<video[^>]*src="([^"]+)"[^>]*><\/video>/i);
+  if (videoMatch) {
+    const src = videoMatch[1];
+    // Reject protocol-relative URLs (//evil.com) — require a leading slash with no second slash.
+    if (!src.startsWith("/") || src.startsWith("//")) {
+      return null;
+    }
+
+    return (
+      <div key={index} className="my-8 overflow-hidden rounded-xl border border-white/5 bg-black shadow-2xl">
+        <video src={src} className="h-auto w-full" controls preload="metadata" />
+      </div>
     );
   }
 

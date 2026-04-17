@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { buildTutorSupportContext } from "@/lib/support";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 import {
+  FREE_DAILY_TUTOR_LIMIT,
   getTutorModeDefinition,
   isTutorMode,
   isTutorModeAllowed,
   mapLearningModeToTutorMode,
+  PRO_DAILY_TUTOR_LIMIT,
   type TutorMode,
 } from "@/lib/tutor-config";
 import { buildTutorSystemPrompt, getAnthropicClient, getTutorModel } from "@/lib/tutor";
@@ -14,7 +17,7 @@ const encoder = new TextEncoder();
 
 function resolveTierAndLimit(profileTier?: string | null): { tier: "free" | "pro"; dailyLimit: number } {
   const tier = profileTier === "pro" ? "pro" : "free";
-  return { tier, dailyLimit: tier === "pro" ? 100 : 10 };
+  return { tier, dailyLimit: tier === "pro" ? PRO_DAILY_TUTOR_LIMIT : FREE_DAILY_TUTOR_LIMIT };
 }
 
 function sse(payload: unknown) {
@@ -106,6 +109,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!isTrustedWriteOrigin(request)) {
+    return NextResponse.json(
+      {
+        message: "Invalid request origin.",
+        ok: false,
+      },
+      { status: 400 },
+    );
+  }
+
   const body = (await request.json().catch(() => ({}))) as {
     lessonTitle?: string;
     message?: string;

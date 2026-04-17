@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 
 const CLEARANCE_MILESTONES: Array<[number, string]> = [
   [30, "Commander"],
@@ -23,7 +24,11 @@ function clearanceForStreak(streak: number): string {
  *
  * Also promotes clearance_level in alumni_status based on streak milestones.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  if (!isTrustedWriteOrigin(request)) {
+    return NextResponse.json({ ok: false, message: "Invalid request origin." }, { status: 400 });
+  }
+
   const supabaseContext = await createSupabaseServerClient();
 
   if (!supabaseContext) {

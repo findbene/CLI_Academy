@@ -11,7 +11,11 @@ function isProtectedRoute(pathname: string): boolean {
 
 function setSecurityHeaders(response: NextResponse): void {
   const isProd = process.env.NODE_ENV === "production";
-  const scriptSrc = isProd ? "'self' 'unsafe-inline'" : "'self' 'unsafe-inline' 'unsafe-eval'";
+
+  // In dev allow inline scripts/eval for Next.js HMR; in prod enumerate known external scripts.
+  const scriptSrc = isProd
+    ? "'self' https://js.stripe.com https://us.i.posthog.com https://us-assets.i.posthog.com https://*.sentry-cdn.com https://browser.sentry-cdn.com https://unpkg.com https://prod.spline.design"
+    : "'self' 'unsafe-inline' 'unsafe-eval'";
 
   response.headers.set(
     "Content-Security-Policy",
@@ -20,7 +24,10 @@ function setSecurityHeaders(response: NextResponse): void {
       "style-src 'self' 'unsafe-inline'; " +
       "img-src 'self' data: https:; " +
       "font-src 'self' data:; " +
-      "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.stripe.com; " +
+      "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.stripe.com https://m.stripe.network https://r.stripe.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://us.i.posthog.com https://us-assets.i.posthog.com https://prod.spline.design; " +
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com; " +
+      "worker-src 'self' blob:; " +
+      "base-uri 'self'; " +
       "frame-ancestors 'none'",
   );
   response.headers.set("X-Frame-Options", "DENY");

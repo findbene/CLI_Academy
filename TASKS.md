@@ -18,7 +18,9 @@
 
 ## P1 (Product Hardening)
 
-- [ ] Revisit gamification persistence and concurrency semantics.
+- [x] **Audit follow-up (2026-04-17):** CSP launch-blockers fixed, CSRF helper corrected for Vercel previews, FastAPI dead code deleted, lesson-verification hardened, vitest gate real, Lounge XSS edge cases patched, docker-compose and docs consistent. See PROGRESS.md for full list.
+- [ ] Revisit gamification persistence and concurrency semantics (now Next.js-only; streak/alumni logic in `apps/web/app/api/gamification/streak/route.ts`).
+- [ ] Consider iframe host allowlist in `LoungeContent.tsx` (currently allows any `https://` src — low risk, admin content only, but worth tightening before user-submitted Lounge posts if that feature ships).
 - [ ] Verify CI/CD, deployment, and env references after the recent app and curriculum changes.
 - [ ] Reconcile path-overview completion state with browser-local fallback so `/learn/[pathSlug]` does not lag behind the lesson page/dashboard after local-only saves.
 - [ ] Continue Pro-tier scoping for `mcp-mastery` and `workflow-automation`.

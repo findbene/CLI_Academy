@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 # Load environment variables from .env before anything else reads them.
 load_dotenv()
 
-from routers import gamification, health
+from routers import health
 
 # ---------------------------------------------------------------------------
 # Structured Observability / Logging
@@ -78,8 +78,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 app.include_router(health.router)
-app.include_router(gamification.router)
-# LLM tutor calls go through the Next.js /api/tutor route.
+# Streak, daily limit, and tutor calls all go through the Next.js API routes directly on Supabase.
 
 
 # ---------------------------------------------------------------------------

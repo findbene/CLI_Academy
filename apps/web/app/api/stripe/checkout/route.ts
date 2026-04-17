@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 import {
   type BillingInterval,
   getStripeCancelUrl,
@@ -9,6 +10,16 @@ import {
 } from "@/lib/stripe";
 
 export async function POST(request: Request) {
+  if (!isTrustedWriteOrigin(request)) {
+    return NextResponse.json(
+      {
+        message: "Invalid request origin.",
+        ok: false,
+      },
+      { status: 400 },
+    );
+  }
+
   const stripe = getStripeInstance();
   if (!stripe) {
     return NextResponse.json(

@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 
 const ALLOWED_KEYS = ["primary_goal", "host_os", "target_env", "primary_role", "skill_level"];
 
 export async function PATCH(request: NextRequest) {
+  if (!isTrustedWriteOrigin(request)) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 400 });
+  }
+
   const ctx = await createSupabaseServerClient();
   if (!ctx) {
     return NextResponse.json({ error: "Service unavailable" }, { status: 503 });

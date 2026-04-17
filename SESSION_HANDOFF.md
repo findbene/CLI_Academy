@@ -1,5 +1,23 @@
 # SESSION_HANDOFF.md
 
+## Status (updated 2026-04-17)
+
+| Component | State | Notes |
+|-----------|-------|-------|
+| **CSP (script-src / connect-src)** | **FIXED** | Stripe, PostHog, Sentry, Spline, worker-src blob: all added to production CSP in `proxy.ts` |
+| **CSRF helper (Vercel previews)** | **FIXED** | `request-origin.ts` now falls back to `VERCEL_URL`/`VERCEL_BRANCH_URL`; trailing slashes normalized |
+| **Backend dead code** | **DELETED** | `gamification.py`, `daily_limit.py`, and tests removed; backend is health-only |
+| **Lesson verification auth** | **FIXED** | `/api/lesson-verification` now requires auth + origin check + 8 KB cap |
+| **Vitest coverage gate** | **FIXED** | Thresholds raised from near-zero to 80%/70%; `request-origin.ts` fully covered (7 tests) |
+| **Lounge XSS** | **FIXED** | `javascript:`/`data:` hrefs blocked; protocol-relative video src blocked |
+| **docker-compose env_file** | **FIXED** | Points to `apps/api/.env` not `.env.example` |
+| **NEXT_PUBLIC_API_BASE_URL drift** | **FIXED** | Removed from root `.env.example` and compose comment |
+| **ARCHITECTURE.md drift** | **FIXED** | Backend section, proxy terminology, and auth description corrected |
+
+---
+
+## Previous status
+
 ## Status
 
 | Component | State | Notes |

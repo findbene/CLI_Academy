@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
 import { ensurePublishedCurriculumSynced } from "@/lib/supabase/curriculum-sync";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 
 type ProgressBody = {
   completionData?: Record<string, unknown>;
   lessonSlug?: string;
   pathSlug?: string;
 };
+
+const MAX_COMPLETION_DATA_BYTES = 8192;
 
 async function getAuthedSupabaseContext() {
   const supabaseContext = await createSupabaseServerClient();
@@ -171,12 +174,37 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
+  if (!isTrustedWriteOrigin(request)) {
+    return NextResponse.json(
+      {
+        message: "Invalid request origin.",
+        ok: false,
+      },
+      { status: 400 },
+    );
+  }
+
   const auth = await getAuthedSupabaseContext();
   if (auth.errorResponse || !auth.supabaseContext || !auth.user) {
     return auth.errorResponse;
   }
 
   const body = (await request.json().catch(() => ({}))) as ProgressBody;
+  const completionData = body.completionData ?? {};
+
+  if (JSON.stringify(completionData).length > MAX_COMPLETION_DATA_BYTES) {
+    return applySupabaseHeaders(
+      NextResponse.json(
+        {
+          message: `completionData exceeds the ${MAX_COMPLETION_DATA_BYTES}-byte limit.`,
+          ok: false,
+        },
+        { status: 400 },
+      ),
+      auth.supabaseContext.responseHeaders,
+    );
+  }
+
   const resolved = await resolveLesson(auth.supabaseContext, body.pathSlug, body.lessonSlug);
 
   if (!resolved) {
@@ -236,7 +264,7 @@ export async function POST(request: Request) {
     ...(existingProgress?.completion_data && typeof existingProgress.completion_data === "object"
       ? (existingProgress.completion_data as Record<string, unknown>)
       : {}),
-    ...(body.completionData ?? {}),
+    ...completionData,
   };
 
   const { error } = await auth.supabaseContext.supabase.from("lesson_progress").upsert(

@@ -2,6 +2,37 @@
 
 ## Current phase
 
+Audit follow-up pass (2026-04-17) complete. All launch-blocking security gaps from Cursor's pass fixed. See "Audit follow-up pass" section below.
+
+---
+
+## Audit follow-up pass (2026-04-17)
+
+Cursor's security hardening pass left two launch-blocking CSP regressions and several medium-severity gaps. This pass resolves all of them.
+
+- **CSP-1 fixed (critical):** `script-src` in `apps/web/proxy.ts` now enumerates known external scripts (Stripe, PostHog, Sentry, Spline/unpkg) instead of `'self'`-only which blocked all third-party SDKs in production.
+- **CSP-2 fixed (critical):** `connect-src` extended with Sentry ingest, PostHog capture, Stripe network, Spline. Added `frame-src`, `worker-src blob:`, and `base-uri 'self'`.
+- **CSRF-1 fixed (high):** `request-origin.ts` now falls back to `VERCEL_URL` and `VERCEL_BRANCH_URL` for preview deployments, and normalizes trailing slashes. Every Vercel preview deployment's own UI will no longer 400 on POST.
+- **DEAD-1 removed (high):** Deleted `apps/api/routers/gamification.py`, `apps/api/services/daily_limit.py`, and their tests. Unmounted `gamification` router from `main.py`. Next.js is the confirmed single runtime for streak, rate limiting, and tutor. Backend is health-only.
+- **SEC-4 fixed (medium):** `/api/lesson-verification` now requires auth (`supabase.auth.getUser`) and same-origin check. Added 8 KB output cap.
+- **TEST-1 fixed (medium):** `apps/web/lib/security/__tests__/request-origin.test.ts` added — 7 tests, 100% branch coverage. Vitest thresholds narrowed to the two tested modules and raised to 80%/70% from near-zero fractions.
+- **XSS-1 fixed (medium):** `renderInlineContent` link handler now rejects `javascript:` and `data:` hrefs; only `http/https/relative/#/mailto` allowed.
+- **XSS-2 fixed (low):** Video `src` check now rejects protocol-relative `//evil.com/…` paths.
+- **INFRA-1 fixed (medium):** `docker-compose.yml` changed `env_file` from `.env.example` (placeholder strings) to `apps/api/.env` (real values).
+- **DOCS-1 fixed (low):** Root `.env.example` and `docker-compose.yml` comment had contradictory `NEXT_PUBLIC_API_BASE_URL` status. Removed from both — consistent with PROGRESS/SESSION_HANDOFF which already marked it removed.
+- **DOCS-2 fixed (low):** `docs/ARCHITECTURE.md` "middleware" prose updated to "proxy layer (`proxy.ts`)" and backend section corrected to reflect health-only state.
+
+Validation after this pass:
+- `npm run lint` — 0 errors, 2 pre-existing warnings.
+- `npx tsc --noEmit` — clean.
+- `npm run test:unit:coverage` — 17/17 passing, thresholds held.
+- `npm run build` — clean, all pages generated.
+- `python -m pytest tests/ -v` — 5/5 health tests pass.
+
+---
+
+## Current phase (pre-audit)
+
 Full pre-deployment audit complete. 30 paths, 194 lessons. All security issues, bugs, feature gaps, and tech debt from the 2026-04-16 audit pass have been resolved in code. Remaining items require manual action at external providers (secret rotation, Sentry/PostHog/Stripe env vars). Build clean, 21/21 backend tests pass, 10/10 unit tests pass, all 194 lessons validate.
 
 ## Audit pass (2026-04-16)

@@ -1,4 +1,6 @@
 export type TutorTier = "free" | "pro";
+export const FREE_DAILY_TUTOR_LIMIT = 10;
+export const PRO_DAILY_TUTOR_LIMIT = 100;
 
 export type TutorMode =
   | "explain"

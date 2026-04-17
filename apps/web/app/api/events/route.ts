@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 
 const VALID_EVENT_TYPES = new Set([
   "lesson_complete",
@@ -26,6 +27,10 @@ function serverUnavailable() {
 }
 
 export async function POST(request: Request) {
+  if (!isTrustedWriteOrigin(request)) {
+    return badRequest("Invalid request origin.");
+  }
+
   const supabaseContext = await createSupabaseServerClient();
 
   if (!supabaseContext) {

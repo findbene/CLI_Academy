@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { applySupabaseHeaders, createSupabaseServerClient } from "@/lib/supabase/server";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 
 type VerificationBody = {
   deliverable?: string;
@@ -44,9 +46,31 @@ function tokenize(text: string) {
     .filter((token) => token.length >= 4 && !STOPWORDS.has(token));
 }
 
+const MAX_OUTPUT_BYTES = 8192;
+
 export async function POST(request: NextRequest) {
+  if (!isTrustedWriteOrigin(request)) {
+    return NextResponse.json({ message: "Invalid request origin.", ok: false }, { status: 400 });
+  }
+
+  const supabaseContext = await createSupabaseServerClient();
+  if (!supabaseContext) {
+    return NextResponse.json({ message: "Service unavailable.", ok: false }, { status: 503 });
+  }
+
+  const {
+    data: { user },
+  } = await supabaseContext.supabase.auth.getUser();
+
+  if (!user) {
+    return applySupabaseHeaders(
+      NextResponse.json({ message: "Sign in to verify lesson progress.", ok: false }, { status: 401 }),
+      supabaseContext.responseHeaders,
+    );
+  }
+
   const body = (await request.json().catch(() => ({}))) as VerificationBody;
-  const output = body.output?.trim() ?? "";
+  const output = (body.output?.trim() ?? "").slice(0, MAX_OUTPUT_BYTES);
   const rubricCriteria = Array.isArray(body.rubricCriteria)
     ? body.rubricCriteria.filter((criterion): criterion is string => typeof criterion === "string" && criterion.trim().length > 0)
     : [];

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient, applySupabaseHeaders } from "@/lib/supabase/server";
+import { isTrustedWriteOrigin } from "@/lib/security/request-origin";
 
-export async function POST() {
+export async function POST(request: Request) {
+  if (!isTrustedWriteOrigin(request)) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 400 });
+  }
+
   const context = await createSupabaseServerClient();
   
   if (context) {
